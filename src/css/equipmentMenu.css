@@ -1,0 +1,65 @@
+hr {
+  width: 100%;
+}
+
+#equipmentMenu {
+  position: absolute;
+  overflow-y: scroll;
+  top: 15%;
+  left: 10%;
+  pointer-events: all;
+  cursor: pointer;
+  width: 80%;
+  height: 80%;
+  border: 1px solid #fff;
+  color: white;
+}
+
+#equipmentMenu li {
+  list-style-type: none;
+  margin-bottom: 5%;
+}
+
+#equipmentMenu button:hover {
+  color: white;
+}
+
+@media only screen and (max-width: 700px) {
+  #equipmentMenu {
+    font-size: 0.7em;
+  }
+}
+
+#equipmentMenu select,
+#equipmentMenu button,
+#equipmentMenu input {
+  font-family: "Teko", sans-serif;
+  font-weight: 600;
+  margin: 2px 2px;
+  padding: 0 8px;
+  width: auto;
+  border: 1px solid grey !important;
+}
+
+#equipmentMenu table {
+  width: 100%;
+  padding: 12px;
+}
+#equipmentMenu td {
+  text-align: center;
+}
+
+#equipmentMenu .selectedItem {
+  background-color: lightskyblue;
+  border-radius: 4px;
+  margin: 4px 6px;
+}
+#equipmentMenu .nonSelectedItem {
+  background-color: black;
+  border-radius: 4px;
+  margin: 4px 6px;
+}
+
+#equipmentMenu .servoPositionSelect {
+  width: fit-content;
+}

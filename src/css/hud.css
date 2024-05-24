@@ -1,0 +1,63 @@
+.hud {
+  position: absolute;
+  text-transform: uppercase;
+  font-family: "Teko", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  font-variant-numeric: slashed-zero tabular-nums;
+  line-height: 1em;
+  color: lightblue;
+  pointer-events: none;
+}
+
+#upperLeft {
+  top: 40px;
+  left: 2vw;
+  transform: skew(5deg, 5deg);
+  width: 18vw;
+}
+#upperLeft h1 {
+  margin: 0;
+  font-size: 80px;
+  line-height: 1em;
+}
+#upperLeft h2 {
+  display: inline;
+  background-color: transparent;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1em;
+}
+
+#upperRight {
+  text-align: right;
+  top: 250px;
+  right: 2vw;
+  transform: skew(-5deg, -5deg);
+  font-size: 1.5vw;
+  width: 18vw;
+}
+
+@media only screen and (min-width: 500px) {
+  #upperLeft,
+  #upperRight {
+    width: 180px;
+  }
+}
+
+.hudData {
+  position: absolute;
+  width: 100%;
+  font-weight: 300;
+  line-height: 1.2em;
+}
+
+.hudData .toggleContainer {
+  clear: both;
+}
+
+.hudData input,
+.hudData button,
+.hudData .toggleContainer {
+  width: 100%;
+}
