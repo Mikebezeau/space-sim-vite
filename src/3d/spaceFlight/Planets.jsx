@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { useLoader /*useFrame*/ } from "@react-three/fiber";
 import { TextureLoader } from "three/src/loaders/TextureLoader.js";
 import useStore from "../../stores/store";
-import { distance } from "../../util/gameUtil";
+//import { distance } from "../../util/gameUtil";
 import PropTypes from "prop-types";
 
 const Planet = memo(({ planet }) => {
@@ -52,8 +52,8 @@ const Planet = memo(({ planet }) => {
     emissive: planet.type === "SUN" ? planet.color : false,
     emissiveIntensity: 1, //0.2,
     color: planet.color,
-    opacity: planet.opacity,
-    transparent: planet.transparent,
+    //opacity: 1,
+    transparent: false,
     //depthWrite: false, //fixes flickering cloud mesh, but can see shapes through planet
   });
   //too much flickering
@@ -68,6 +68,7 @@ const Planet = memo(({ planet }) => {
     transparent: true,
   });
 */
+  /*
   //ring geometry and material
   const geometrySystemOrbitRing = new THREE.RingGeometry(1.0, 1.01, 128);
   const materialRing = new THREE.MeshBasicMaterial({
@@ -79,7 +80,8 @@ const Planet = memo(({ planet }) => {
   });
 
   const ringRadius = distance(planet.object3d.position, { x: 0, y: 0, z: 0 });
-  //draw planet and line ring in system to show planet orbit
+  */
+
   return (
     <>
       {/* planet and clouds */}
@@ -97,14 +99,14 @@ const Planet = memo(({ planet }) => {
           ></mesh>
         )*/}
       </group>
-      {/* solar system orbit ring */}
+      {/* solar system orbit ring 
       <mesh
         position={[0, 0, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[ringRadius, ringRadius, ringRadius]}
         geometry={geometrySystemOrbitRing}
         material={materialRing}
-      />
+      />*/}
     </>
   );
 });

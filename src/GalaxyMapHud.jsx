@@ -12,7 +12,12 @@ export default function GalaxyMapHud() {
       <div id="upperLeft" className="hud">
         <h1 style={{ fontSize: "50px" }}>Galaxy Map</h1>
         <div className="hudData">
-          <button onClick={() => switchScreen(PLAYER.screen.flight)}>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              switchScreen(PLAYER.screen.flight);
+            }}
+          >
             Exit
           </button>
           <p>System</p>

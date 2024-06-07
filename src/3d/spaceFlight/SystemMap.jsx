@@ -80,13 +80,7 @@ export default function SystemMap({ showPlayer = false }) {
   );
 }
 
-const PreSystem = ({
-  showPlayer,
-  planets,
-  planetScale,
-  systemScale,
-  mapScale,
-}) => {
+const PreSystem = ({ showPlayer, planets, mapScale }) => {
   //function System({ planets, mapScale }) {
   return planets.map((planet, index) => {
     //console.log(planet.type);

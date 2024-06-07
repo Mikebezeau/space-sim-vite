@@ -3,7 +3,7 @@ import AppControls from "./AppControls";
 import AppCanvas from "./AppCanvas";
 import ContextMenu from "./ContextMenu";
 import GalaxyMapHud from "./GalaxyMapHud";
-import CustomCursor from "./CustomCursor";
+//import CustomCursor from "./CustomCursor";
 import TouchControls from "./TouchControls";
 import Hud from "./Hud";
 import EquipmentMenu from "./equipmentDesign/EquipmentMenu";
@@ -16,20 +16,17 @@ function App() {
   //if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {}
   const playerScreen = useStore((state) => state.playerScreen);
   const playerControlMode = useStore((state) => state.playerControlMode);
-  const displayContextMenu = useStore((state) => state.displayContextMenu);
 
-  console.log("app render", "displayContextMenu:", displayContextMenu);
+  console.log("app render");
 
   return (
     <>
       <AppCanvas />
-      {playerScreen === PLAYER.screen.flight && displayContextMenu && (
-        <ContextMenu />
-      )}
+      <ContextMenu />
       {playerScreen === PLAYER.screen.flight && <Hud />}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapHud />}
       {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
-      <CustomCursor />
+      {/*<CustomCursor />*/}
       <AppControls />
       {IS_MOBLIE && playerScreen !== PLAYER.screen.equipmentBuild && (
         <TouchControls

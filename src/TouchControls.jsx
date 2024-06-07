@@ -42,8 +42,6 @@ export default function TouchControls({ playerScreen, playerControlMode }) {
       ) {
         testing.warpToPlanet();
       }
-    } else if (playerScreen === PLAYER.screen.galaxyMap) {
-      actions.detectTargetStar();
     }
   }
   useTouchStartControls("btn-shoot", handleShoot);

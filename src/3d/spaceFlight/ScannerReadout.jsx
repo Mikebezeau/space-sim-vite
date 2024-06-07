@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
@@ -66,7 +66,9 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
   visible: false,
 });
 
-const ScannerReadout = React.memo(({}) => {
+// RERENDERING
+const PreScannerReadout = () => {
+  //console.log("ScannerReadout rendered");
   //export default function ScannerReadout() {
   //const clock = useStore((state) => state.mutation.clock);
   const { camera } = useThree();
@@ -82,17 +84,17 @@ const ScannerReadout = React.memo(({}) => {
     (state) => state.actions
   ); // setTestVariable
 
-  const planetScanit = useRef();
-  const scannerOutput = useRef();
+  const planetScanRef = useRef();
+  const scannerOutputRef = useRef();
 
   useFrame(() => {
-    if (!planetScanit.current) return null;
+    if (!planetScanRef.current) return null;
     let tempFocusPlanetIndex = null;
     let tempFocusTargetIndex = null;
     let smallestTargetAgle = 10;
 
-    setFocusTargetIndex(null);
-    setFocusPlanetIndex(null);
+    //setFocusTargetIndex(null);
+    //setFocusPlanetIndex(null);
 
     //temp planet scanning
     if (planets.length > 0)
@@ -123,18 +125,20 @@ const ScannerReadout = React.memo(({}) => {
           smallestTargetAgle = angleDiff;
           tempFocusPlanetIndex = i;
         }
-        //if angleDiff < 3 place an arrow pointing towards target on edge of max angle
-        const group = planetScanit.current.children[i];
-        const mesh = group.children[0];
-        planet.angleDiff = angleDiff;
-        //if (angleDiff < 0.38) {
-        dummyObj.position.copy(camera.position);
-        dummyObj.lookAt(planets[i].object3d.position);
-        placeTarget(mesh, false, 0, i, 1);
-        //}
       }
+    for (let i = 1; i < planets.length; i++) {
+      //if angleDiff < 3 place an arrow pointing towards target on edge of max angle
+      const group = planetScanRef.current.children[i];
+      const mesh = group.children[0];
+      //if (angleDiff < 0.38) {
+      //if (tempFocusPlanetIndex !== i) {
+      dummyObj.position.copy(camera.position);
+      dummyObj.lookAt(planets[i].object3d.position);
+      const highlight = tempFocusPlanetIndex === i;
+      placeTarget(camera, mesh, highlight, 0, i, 1);
+      //}
+    }
     setFocusPlanetIndex(tempFocusPlanetIndex);
-    smallestTargetAgle = 10;
 
     //save enemy nearest to direction player is facing
     //placing targets on enemies, or arrows toward their location if not infront of ship
@@ -175,13 +179,20 @@ const ScannerReadout = React.memo(({}) => {
         tempFocusTargetIndex = i;
       }
       //if angleDiff < 3 place an arrow pointing towards target on edge of max angle
-      const group = scannerOutput.current.children[i];
+      const group = scannerOutputRef.current.children[i];
       const mesh = group.children[0];
       enemy.angleDiff = angleDiff;
       if (angleDiff < 0.38) {
         dummyObj.position.copy(camera.position);
         dummyObj.lookAt(enemies[i].object3d.position);
-        placeTarget(mesh, false, selectedTargetIndex, i, distanceNormalized);
+        placeTarget(
+          camera,
+          mesh,
+          false,
+          selectedTargetIndex,
+          i,
+          distanceNormalized
+        );
       } else {
         placeArrow(camera, enemy, mesh, selectedTargetIndex, i);
       }
@@ -201,22 +212,23 @@ const ScannerReadout = React.memo(({}) => {
   //TEMP
   //set special rectical around the planet
   //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
-  if (planetScanit.current && focusPlanetIndex !== null) {
-    const group = planetScanit.current.children[focusPlanetIndex];
+  if (planetScanRef.current && focusPlanetIndex !== null) {
+    const group = planetScanRef.current.children[focusPlanetIndex];
     const mesh = group.children[0];
     dummyObj.position.copy(camera.position);
     dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
-    placeTarget(mesh, true, -1, focusPlanetIndex, 1, 1);
+    placeTarget(camera, mesh, true, -1, focusPlanetIndex, 1, true);
   }
 
   //set special rectical around the target
   //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
-  if (scannerOutput.current && focusTargetIndex !== null) {
-    const group = scannerOutput.current.children[focusTargetIndex];
+  if (scannerOutputRef.current && focusTargetIndex !== null) {
+    const group = scannerOutputRef.current.children[focusTargetIndex];
     const mesh = group.children[0];
     dummyObj.position.copy(camera.position);
     dummyObj.lookAt(enemies[focusTargetIndex].object3d.position);
     placeTarget(
+      camera,
       mesh,
       true,
       selectedTargetIndex,
@@ -227,14 +239,14 @@ const ScannerReadout = React.memo(({}) => {
 
   return (
     <>
-      <group ref={planetScanit}>
+      <group ref={planetScanRef}>
         {planets.map((planet, i) => (
           <group key={"p" + i}>
             <mesh index={i} />
           </group>
         ))}
       </group>
-      <group ref={scannerOutput}>
+      <group ref={scannerOutputRef}>
         {enemies.map((enemy, i) => (
           <group key={"e" + i}>
             <mesh index={i} />
@@ -243,11 +255,13 @@ const ScannerReadout = React.memo(({}) => {
       </group>
     </>
   );
-});
+};
 
+const ScannerReadout = memo(PreScannerReadout);
 export default ScannerReadout;
 
 function placeTarget(
+  camera,
   mesh,
   highlight,
   selectedTargetIndex,
@@ -257,7 +271,7 @@ function placeTarget(
 ) {
   dummyObj.translateZ(6 * (1 / distanceNormalized) * SCALE);
   mesh.position.copy(dummyObj.position);
-  mesh.rotation.copy(dummyObj.rotation);
+  mesh.rotation.copy(camera.rotation);
   if (selectedTargetIndex !== null && selectedTargetIndex === enemyIndex) {
     mesh.geometry = selectedRingGeometry;
     mesh.material = isPlanet ? materialPlanetRing : selectedMaterialRing;

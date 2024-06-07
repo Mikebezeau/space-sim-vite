@@ -12,7 +12,8 @@ import {
 import { IS_MOBLIE, PLAYER } from "./util/constants";
 
 const PreAppControls = () => {
-  console.log("app controls render");
+  // rerendering issue
+  //console.log("app controls render");
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
@@ -27,7 +28,6 @@ const PreAppControls = () => {
       basicMenu.editShipMouseRotation(e);
     else if (!IS_MOBLIE && playerScreen !== PLAYER.screen.equipmentBuild)
       actions.updateMouse(e);
-    else if (playerScreen === PLAYER.screen.galaxyMap) actions.updateMouse(e);
   }
   useMouseMove(handleMouseMove);
 
@@ -53,8 +53,6 @@ const PreAppControls = () => {
         } else if (playerControlMode === PLAYER.controls.scan) {
           testing.warpToPlanet();
         }
-      } else if (playerScreen === PLAYER.screen.galaxyMap) {
-        actions.detectTargetStar();
       }
     }
   }
@@ -74,8 +72,6 @@ const PreAppControls = () => {
         playerControlMode === PLAYER.controls.scan)
     )
       actions.speedUp();
-    else if (playerScreen === PLAYER.screen.galaxyMap)
-      actions.galaxyMapZoomIn();
   }
   useKBControls("ArrowUp", handleArrowUp);
 
@@ -87,8 +83,6 @@ const PreAppControls = () => {
         playerControlMode === PLAYER.controls.scan)
     )
       actions.speedDown();
-    else if (playerScreen === PLAYER.screen.galaxyMap)
-      actions.galaxyMapZoomOut();
   }
   useKBControls("ArrowDown", handleArrowDown);
 

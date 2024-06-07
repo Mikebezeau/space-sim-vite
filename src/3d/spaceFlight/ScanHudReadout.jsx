@@ -23,7 +23,9 @@ export const textureMaps = useLoader(TextureLoader, [
 const geometryPlanet = new THREE.SphereGeometry(5, 12, 12);
 
 //basic HTML/CSS heads up display used to show player info
+// RERENDERING
 const PreScanHudReadout = () => {
+  //console.log("ScanHudReadout rendered");
   //export default function MechHudReadout() {
   const { /*height,*/ width } = useWindowDimensions();
   //

@@ -2,6 +2,8 @@ import { create } from "zustand";
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
 
+import generateGalaxy from "../galaxy/generateGalaxy";
+import generateSystem from "../solarSystem/generateSystem";
 import Terrain from "../terrainGen/terrainGen";
 import generateCity from "../terrainGen/cityGen";
 
@@ -18,21 +20,21 @@ import {
   initStationBP,
   initEnemyMechBP,
 } from "../util/initEquipUtil";
-import { /*getRandomArbitrary,*/ distance } from "../util/gameUtil";
+//import { /*getRandomArbitrary,*/ distance } from "../util/gameUtil";
 import { SCALE, SCALE_PLANET_WALK, PLAYER } from "../util/constants";
 
 import { setupFlock } from "../util/boidController";
 
-import StarSystem from "../starSysGen/StarSystem"; //ACCRETE
-
 let guidCounter = 1; //global unique ID
 let explosionGuidCounter = 1; //global unique ID
 
-const starsInGalaxy = 15000;
-const systemScale = 200, //,
-  planetScale = 0.05; //;
+export const starsInGalaxy = 150000;
+const galaxySize = 40;
 
-const numEnemies = 10;
+const systemScale = 200,
+  planetScale = 0.05;
+
+const numEnemies = 9;
 
 const weaponFireSpeed = {
   beam: 100,
@@ -42,12 +44,12 @@ const weaponFireSpeed = {
   melee: 0,
 };
 
-const playerStart = {
-  system: 345,
+export const playerStart = {
+  system: 31232,
   mechBPindex: 0,
-  x: -750,
-  y: 1000 * SCALE, //* planetScale, //15000
-  z: 925, //-50000 * SCALE * planetScale,
+  x: 0, // position set in actions.init()
+  y: 0,
+  z: 0,
 };
 
 //let cancelExplosionTO = undefined;
@@ -99,12 +101,14 @@ const useStore = create((set, get) => {
     //galaxy map
     menuCam: initCamMainMenu(),
     currentStar: playerStart.system,
-    selectedStar: null,
-    galaxyStarPositionsFloat32: initgalaxyStarPositionsFloat32(),
-    galaxyMapZoom: 0,
+    // intial star position selection in galaxy map
+    selectedStar: playerStart.system, // selectedStar set in actions.init()
+    //galaxyStarPositionsFloat32: initgalaxyStarPositionsFloat32(),
+    galaxy: generateGalaxy(starsInGalaxy, galaxySize), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+    //galaxyMapZoom: 0,
     //blueprint design
     blueprintCam: initCamMainMenu(),
-    playerScreen: PLAYER.screen.galaxyMap,
+    playerScreen: PLAYER.screen.flight,
     playerControlMode: PLAYER.controls.scan,
     displayContextMenu: false, //right click menu
     contextMenuPos: { x: 0, y: 0 },
@@ -127,11 +131,7 @@ const useStore = create((set, get) => {
     ),
     enemies: randomEnemies(track),
     enemyBoids: setupFlock(numEnemies),
-    planets: initSolarSystem(
-      seedrandom(playerStart.system),
-      systemScale,
-      planetScale
-    ),
+    planets: generateSystem(playerStart.system, systemScale, planetScale),
     stations: randomStations(seedrandom(playerStart.system), 1),
     //terrain must clear a level spot for the city
     planetTerrain: initTerrain(
@@ -159,6 +159,7 @@ const useStore = create((set, get) => {
       //normal: new THREE.Vector3(), //not used
       clock: new THREE.Clock(false), //used to make enemies rotate
       mouse: new THREE.Vector2(0, 0),
+      mouseScreen: new THREE.Vector2(0, 0),
 
       // Re-usable objects
       dummy: new THREE.Object3D(),
@@ -183,9 +184,9 @@ const useStore = create((set, get) => {
       mapGalaxy() {
         const positions = get().galaxyStarPositionsFloat32;
         let galaxyMapData = [];
-        for (let i = 0; i < positions.length; i = i + 3) {
+        for (let i = 0; i < starsInGalaxy; i++) {
           const systemSeed = i;
-          const planets = initSolarSystem(seedrandom(systemSeed), 1, 1, true);
+          const planets = generateSystem(systemSeed, 1, 1, true);
           let hasTerrestrial = false;
           planets.forEach((planet) => {
             if (planet.data.type === "Terrestrial") hasTerrestrial = true;
@@ -213,7 +214,7 @@ const useStore = create((set, get) => {
           enemie.object3d.position.setX(playerPos.x);
           enemie.object3d.position.setY(playerPos.y);
           enemie.object3d.position.setZ(playerPos.z);
-          enemie.object3d.translateZ(-2000 * SCALE);
+          enemie.object3d.translateZ(-500 * SCALE);
         });
         set(() => ({ enemies: enemies }));
       },
@@ -277,6 +278,8 @@ const useStore = create((set, get) => {
 
         //set player mech info
         actions.initPlayerMech(playerStart.mechBPindex);
+        // set player start position
+        get().actions.setSelectedStar(playerStart.system);
 
         //addEffect will add the following code to what gets run per frame
         //removes exploded emenies and rocks from store data, removes explosions once they have timed out
@@ -476,10 +479,6 @@ const useStore = create((set, get) => {
       initPlayerMech(playerMechBPindex) {
         const { player, playerMechBP } = get();
         player.currentMechBPindex = playerMechBPindex;
-        console.log(
-          "initPlayerMech: playerCurrentMechBPindex",
-          player.currentMechBPindex
-        );
         player.size = playerMechBP[player.currentMechBPindex].size() * SCALE;
         //const playerObj = player.object3d;
         //playerObj.position.setZ(-15000 * SCALE - get().planets[0].radius);
@@ -515,35 +514,22 @@ const useStore = create((set, get) => {
         //hide menu
         set(() => ({ displayContextMenu: false }));
       },
-      galaxyMapZoomIn() {
-        set((state) => ({
-          galaxyMapZoom:
-            state.galaxyMapZoom < 5
-              ? state.galaxyMapZoom + 1
-              : state.galaxyMapZoom < 6.8
-              ? state.galaxyMapZoom + 0.1
-              : state.galaxyMapZoom,
-        }));
-      },
-      galaxyMapZoomOut() {
-        set((state) => ({
-          galaxyMapZoom:
-            state.galaxyMapZoom >= 5
-              ? state.galaxyMapZoom - 0.1
-              : state.galaxyMapZoom - 1,
-        }));
-      },
+
       setFocusPlanetIndex(focusPlanetIndex) {
-        set(() => ({ focusPlanetIndex: focusPlanetIndex }));
+        if (get().focusPlanetIndex !== focusPlanetIndex) {
+          set(() => ({ focusPlanetIndex }));
+        }
       },
 
       setFocusTargetIndex(focusTargetIndex) {
-        set(() => ({ focusTargetIndex: focusTargetIndex }));
+        if (get().focusTargetIndex !== focusTargetIndex) {
+          set(() => ({ focusTargetIndex }));
+        }
       },
 
       setSelectedTargetIndex() {
         //TESTING
-        console.log("player position", get().player.object3d.position);
+        //console.log("player position", get().player.object3d.position);
 
         //make work for enemies as well
         //set new target for current shooter
@@ -851,60 +837,27 @@ const useStore = create((set, get) => {
         }));
         console.log(get().playerScreen, screenNum);
       },
-      //main menu slecting star in galaxy map
-      detectTargetStar() {
+      // intial star position selection in galaxy map
+      getSelectedStar: () => get().selectedStar,
+      // slecting star in galaxy map
+      setSelectedStar(selectedStar) {
+        set(() => ({ selectedStar }));
+        set(() => ({
+          planets: generateSystem(selectedStar, systemScale, planetScale),
+        }));
+        const playerObj = get().player.object3d;
+        playerObj.position.setX(playerStart.x);
+        playerObj.position.setY(playerStart.y);
+        playerObj.position.setZ(-Math.min(get().planets[0].radius * 5, 10000));
+        playerObj.lookAt(0, 0, 0);
+        get().actions.setPlayerObject(playerObj);
         //clear targets
         set(() => ({
           selectedTargetIndex: null,
-        }));
-        set(() => ({
           focusTargetIndex: null,
-        }));
-        set(() => ({
           focusPlanetIndex: null,
         }));
-        //compare camera x,y position to stars x,y and determine which star is closest
-        const positions = get().galaxyStarPositionsFloat32;
-        const menuCam = get().menuCam;
-        let closest = 0;
-        for (let i = 0; i < positions.length; i = i + 3) {
-          if (
-            distance(
-              { x: positions[i], y: positions[i + 1], z: positions[i + 2] },
-              {
-                x: menuCam.position.x,
-                y: menuCam.position.y,
-                z: menuCam.position.z,
-              }
-            ) <=
-            distance(
-              {
-                x: positions[closest],
-                y: positions[closest + 1],
-                z: positions[closest + 2],
-              },
-              {
-                x: menuCam.position.x,
-                y: menuCam.position.y,
-                z: menuCam.position.z,
-              }
-            )
-          )
-            closest = i;
-        }
-        set(() => ({ selectedStar: closest }));
-        set(() => ({
-          planets: initSolarSystem(
-            seedrandom(closest),
-            systemScale,
-            planetScale
-          ),
-        }));
-        //const playerObj = get().player.object3d;
-        //playerObj.position.setZ(-15000 * SCALE - get().planets[0].radius);
-        //get().actions.setPlayerObject(playerObj);
       },
-
       //player ship
       setPlayerObject(obj) {
         set((state) => ({
@@ -963,6 +916,7 @@ const useStore = create((set, get) => {
           (x - window.innerWidth / 2) / window.innerWidth,
           (y - window.innerHeight / 2) / window.innerHeight
         );
+        get().mutation.mouseScreen.set(x, y);
       },
       //save screen touch position (-1 to 1) relative to touch movement control
       updateMouseMobile(event) {
@@ -990,56 +944,6 @@ const useStore = create((set, get) => {
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
-
-//creating galaxy like the milky way
-function initgalaxyStarPositionsFloat32(
-  rng = seedrandom("galaxy_stars"),
-  count = starsInGalaxy
-) {
-  const numArms = 1;
-  const armSeparationDistance = (2 * Math.PI) / numArms;
-  const armOffsetMax = 1;
-  const rotationFactor = 6;
-  const randomOffsetX = 0.3;
-  const randomOffsetY = 0.2;
-
-  let positions = [];
-  for (let i = 0; i < count; i++) {
-    // Choose a distance from the center of the galaxy.
-    let distance = rng();
-    distance = Math.pow(distance, 2) * 2;
-
-    // Choose an angle between 0 and 2 * PI.
-    let angle = rng() * 2 * Math.PI;
-    let armOffset = rng() * armOffsetMax;
-    armOffset = armOffset - armOffsetMax / 2;
-    armOffset = armOffset * (1 / distance);
-
-    const squaredArmOffset = Math.abs(Math.pow(armOffset, 2));
-    armOffset = squaredArmOffset;
-
-    let rotation = distance * rotationFactor;
-
-    angle =
-      Math.floor(angle / armSeparationDistance) * armSeparationDistance +
-      armOffset +
-      rotation;
-
-    // Convert polar coordinates to 2D cartesian coordinates.
-    let starX = Math.cos(angle) * distance;
-    let starY = Math.sin(angle) * distance;
-
-    starX += rng() * randomOffsetX * (1 - distance); // higher distance less offset
-    starY += rng() * randomOffsetY * (1 - distance);
-    let starZ = (0.5 - rng()) * (1 - distance);
-
-    //placae positions in array
-    positions.push(starX);
-    positions.push(starY);
-    positions.push(starZ);
-  }
-  return new Float32Array(positions);
-}
 
 function initPlayer() {
   let obj = new THREE.Object3D();
@@ -1262,272 +1166,6 @@ function initTerrain(playerLocationInfo, cities) {
   return { terrain: terrain, cities: genCities };
 }
 
-function initSolarSystem(
-  rng,
-  systemScale = 1,
-  planetScale = 1,
-  noConsoleLog = true
-) {
-  //Only one in about five hundred thousand stars has more than twenty times the mass of the Sun.
-  let solarMass = rng(0.8) + 0.6; //getRandomArbitrary(0.6, 1.4);
-  solarMass = solarMass < 0.7 ? rng(0.6) + 0.1 : solarMass; //getRandomArbitrary(0.1, 0.7) : solarMass;
-  solarMass = solarMass > 1.3 ? rng(8.7) + 1.3 : solarMass; //getRandomArbitrary(1.3, 10) : solarMass;
-  //15% of stars have a system like earths (with gas giants)
-  //ACCRETE
-  const system = new StarSystem(
-    {
-      //A: getRandomArbitrary(0.00125, 0.0015) * solarMass,
-      //B: getRandomArbitrary(0.000005, 0.000012) * solarMass,
-      //K: getRandomArbitrary(50, 100),
-      //N: 3,
-      //Q: 0.77,
-      //W: getRandomArbitrary(0.15, 0.25),
-      //ALPHA: 5, //getRandomArbitrary(2, 7),
-      mass: solarMass,
-    },
-    rng
-  ); //ACCRETE
-  const newSystem = system.create();
-  const solarRadius = newSystem.radius * SCALE * planetScale;
-
-  if (!noConsoleLog) console.log(newSystem);
-
-  //-------
-  let temp = [];
-  //create sun
-  temp.push({
-    type: "SUN",
-    data: {
-      age: newSystem.age,
-      mass: newSystem.mass,
-      radius: newSystem.radius,
-      luminosity: newSystem.luminosity,
-      ecosphereRadius: newSystem.ecosphereRadius,
-      greenhouseRadius: newSystem.greenhouseRadius,
-    },
-    roughness: 0,
-    metalness: 1,
-    color: new THREE.Color(0xffffff),
-    radius: solarRadius,
-    opacity: 1,
-    textureMap: 0,
-    drawDistanceLevel: 10,
-    transparent: false,
-    object3d: new THREE.Object3D(),
-    //position: { x: 0, y: 0, z: 0 },
-    //rotation: { x: 0, y: 0, z: 0 },
-    /*
-    Sun
-    age: millions - billions
-    mass: 
-      low (average)
-        13 jupiter = 1 sol
-
-    types:
-      cloud: hydrogen / helium
-      few million years gererate yellow/red main sequense star last billions using almost all hydrogen
-      rest of hyrdogen used star expands becomes red giant a few billion years
-      helium flash occurs start pulsats becaomes smaller and bluer
-      white dwarf
-      
-
-    */
-  });
-
-  newSystem.planets.forEach((planet) => {
-    if (!noConsoleLog) console.log(planet.radius, planet.planetType);
-    //planet.radius = planet.radius * SCALE * planetScale;
-    /*
-    Rocky
-
-    Gas
-      Gas Dwarf
-      Jovian
-    
-    temperature.max > this.boilingPoint
-      Venusian
-
-    temperature.day < FREEZING_POINT_OF_WATER
-      Ice
-    iceCover >= 0.95
-      Ice
-
-    surfacePressure <= 250.0
-      Martian
-
-    waterCover >= 0.95
-      Water
-
-    waterCover > 0.05
-      Terrestrial
-    */
-
-    // 1 AU = 150 million kilometres
-    const x = 0; //(a + b * angle) * Math.sin(angle) + temp[0].radius / 3;
-    const y = 0;
-    const z = solarRadius * 2 + planet.a * 1500 * SCALE * systemScale; //(a + b * angle) * Math.cos(angle) + temp[0].radius / 3;
-    const object3d = new THREE.Object3D();
-    object3d.position.set(x, y, z);
-    object3d.rotation.set(planet.axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
-    let color = undefined;
-    let textureMap = undefined;
-    switch (planet.planetType) {
-      case "Rocky":
-        color = new THREE.Color(0x6b6b47);
-        textureMap = 4;
-        break;
-      case "Gas":
-        color = new THREE.Color(0xffe6b3);
-        textureMap = 3;
-        break;
-      case "Gas Dwarf":
-        color = new THREE.Color(0xd5ff80);
-        textureMap = 2;
-        break;
-      case "Gas Giant":
-        color = new THREE.Color(0xbf8040);
-        textureMap = 3;
-        break;
-      case "Venusian":
-        color = new THREE.Color(0xd2a679);
-        textureMap = 6;
-        break;
-      case "Ice":
-        color = new THREE.Color(0xb3ccff);
-        textureMap = 7;
-        break;
-      case "Martian":
-        color = new THREE.Color(0xb30000);
-        textureMap = 4;
-        break;
-      case "Water":
-        color = new THREE.Color(0x3399ff);
-        textureMap = 8;
-        break;
-      case "Terrestrial":
-        color = new THREE.Color(0x3399ff);
-        textureMap = 1;
-        break;
-      default:
-    }
-    temp.push({
-      type: "PLANET",
-      data: planet.toJSONforHud(),
-      roughness: 1,
-      metalness: 0,
-      //color: colors[getRandomInt(4) + 1],
-      color: color,
-      radius: planet.radius * SCALE * planetScale * 10,
-      opacity: 1,
-      drawDistanceLevel: 0,
-      textureMap: textureMap,
-      transparent: false,
-      object3d: object3d,
-      //position: { x, y: 0, z },
-      //rotation: { x: 0, y: 0, z: 0 },
-    });
-  });
-
-  /*
-  //add moons around planets
-  for (let i = 1; i <= numPlanets; i++) {
-    const colors = [
-      new THREE.Color(0x173f5f),
-      new THREE.Color(0x173f5f),
-      new THREE.Color(0x20639b),
-      new THREE.Color(0x3caea3),
-      new THREE.Color(0xf6d55c),
-      new THREE.Color(0xed553b),
-    ];
-    const radius =
-      SCALE * i * 20 * (Math.floor(rng() * 5) + i * 2) * planetScale;
-    const a = 1 * systemScale;
-    //const b = (Math.floor(rng() * 250) + 875) * SCALE * systemScale;
-    const b = Math.floor(rng() * 500) * SCALE * systemScale;
-    const angle = 20 * i * systemScale;
-    const x = (a + b * angle) * Math.cos(angle) + temp[0].radius / 3;
-    const z = (a + b * angle) * Math.sin(angle) + temp[0].radius / 3;
-    temp.push({
-      type: "PLANET",
-      roughness: 1,
-      metalness: 0,
-      //color: colors[getRandomInt(4) + 1],
-      color: colors[Math.floor(rng() * 4) + 1],
-      radius: radius,
-      opacity: 1,
-      drawDistanceLevel: 0,
-      textureMap: Math.floor(rng() * 6) + 1,
-      transparent: false,
-      position: { x, y: 0, z },
-      rotation: { x: 0, y: 0, z: 0 },
-    });
-  }
-  */
-  return temp;
-}
-
-/*
-function randomRings(count, track) {
-  let temp = [];
-  let t = 0.4;
-  for (let i = 0; i < count; i++) {
-    t += 0.003;
-    const pos = track.parameters.path.getPointAt(t);
-    pos.multiplyScalar(15);
-    const segments = track.tangents.length;
-    const pickt = t * segments;
-    const pick = Math.floor(pickt);
-    const lookAt = track.parameters.path
-      .getPointAt((t + 1 / track.parameters.path.getLength()) % 1)
-      .multiplyScalar(15);
-    const matrix = new THREE.Matrix4().lookAt(
-      pos,
-      lookAt,
-      track.binormals[pick]
-    );
-    temp.push([pos.toArray(), matrix]);
-  }
-  return temp;
-}
-*/
-
-/*
-//dirty function to try to make asteroids
-function handleAddAsteroidRing(num) {
-  //Any point (x,y) on the path of the circle is x = rsin(θ), y = rcos(θ)
-  //angle 115, radius 12: (x,y) = (12*sin(115), 12*cos(115))
-  for (let i = 0; i < num; i++) {
-    const colors = ["#999", "#aaa", "#bbb", "#ccc", "#ddd"];
-    const radius = SCALE * 2;
-    const ringRadius = SCALE * 300;
-    const angle = (360 / num) * i;
-    const x = ringRadius * Math.sin(angle);
-    const z = ringRadius * Math.cos(angle);
-    //console.log("xz", x, z);
-    //console.log("r s", ringRadius, Math.sin(angle));
-    setPlanets((prev) => [
-      ...prev,
-      {
-        name: "asteroid",
-        roughness: 1,
-        metalness: 1,
-        color: colors[getRandomInt(6)],
-        texture_map: null,
-        radius: radius,
-        opacity: 1,
-        transparent: false,
-        position: { x, y: 0, z },
-        rotation: {
-          x: getRandomInt(100) / 1000,
-          y: getRandomInt(100) / 1000,
-          z: getRandomInt(100) / 1000,
-        }, //getRandomInt(100)/1000
-      },
-    ]);
-  }
-}
-*/
-
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //   ___  _   _______ _____ _____
@@ -1552,27 +1190,3 @@ function playAudio(audio, volume = 1, loop = false) {
 */
 export default useStore;
 //export { audio, playAudio };
-
-/*
-SEED RANDOM
-// Local PRNG: does not affect Math.random.
-var seedrandom = require('seedrandom');
-var rng = seedrandom('hello.');
-console.log(rng());                  // Always 0.9282578795792454
- 
-// Global PRNG: set Math.random.
-seedrandom('hello.', { global: true });
-console.log(Math.random());          // Always 0.9282578795792454
- 
-// Autoseeded ARC4-based PRNG.
-rng = seedrandom();
-console.log(rng());                  // Reasonably unpredictable.
- 
-// Mixing accumulated entropy.
-rng = seedrandom('added entropy.', { entropy: true });
-console.log(rng());                  // As unpredictable as added entropy.
- 
-// Using alternate algorithms, as listed above.
-var rng2 = seedrandom.xor4096('hello.')
-console.log(rng2());
-*/

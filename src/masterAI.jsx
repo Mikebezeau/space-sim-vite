@@ -43,11 +43,7 @@ export function loopAI(player, enemies, enemyBoids, clock, actionShoot) {
     }
 
     //if leader is too far away for combat change tactic order to reform formation
-    if (
-      isLeader &&
-      distanceToTargetLocation > 2000 * enemy.mechBP.scale * SCALE
-      //distanceToTargetLocation > 1000 * enemy.mechBP.size * SCALE
-    ) {
+    if (isLeader && distanceToTargetLocation > 2000 * SCALE) {
       //player too far away to attack, so regroup
       enemy.tacticOrder = 0;
     }
@@ -68,9 +64,7 @@ export function loopAI(player, enemies, enemyBoids, clock, actionShoot) {
     enemyBoids[index].step(enemyBoids, enemy, isLeader, []);
     //turn towards target
     //direction quat pointing to player location
-    const MVmod =
-      1 /
-      (Math.abs(enemy.mechBP.MV()) === 0 ? 0.1 : Math.abs(enemy.mechBP.MV()));
+    const MVmod = 1; //1 / (Math.abs(enemy.mechBP.MV()) === 0 ? 0.1 : Math.abs(enemy.mechBP.MV()));
 
     //current enemy direction quat
     curQuat.setFromEuler(enemy.object3d.rotation);
@@ -104,12 +98,12 @@ export function loopAI(player, enemies, enemyBoids, clock, actionShoot) {
     const maxWeaponRange = enemy.mechBP.maxWeaponRange();//returns units - transform to space distance??
 */
 
+    /*
     //in combat set speed max
     enemy.speed =
       enemy.tacticOrder === 1
         ? 4 + enemyBoids[index].speed * MVmod * SCALE
         : enemy.speed;
-
     //if far enough away, use boid speed to get in correct position
     enemy.speed =
       distanceToTargetLocation > 2000 * enemy.mechBP.scale * SCALE
@@ -117,11 +111,17 @@ export function loopAI(player, enemies, enemyBoids, clock, actionShoot) {
         : enemy.speed;
 
     //reduce speed to the boid speed
-    if (enemy.speed > enemyBoids[index].speed * 10) {
+    if (enemy.speed > enemyBoids[index].speed * 10 * SCALE) {
       // * 100 * SCALE) {
-      enemy.speed = enemyBoids[index].speed * 10; // * 100 * SCALE;
+      enemy.speed = enemyBoids[index].speed * 10 * SCALE; // * 100 * SCALE;
     }
+    // reducing speed if target is very close
+    if (distanceToTargetLocation < 1000 * enemy.mechBP.scale * SCALE) {
+      enemy.speed = enemy.speed / 2;
+    }
+*/
 
+    enemy.speed = enemyBoids[index].speed * SCALE;
     //move toward target
     enemy.object3d.translateZ(enemy.speed * SCALE);
 

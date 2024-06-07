@@ -1,0 +1,477 @@
+body {
+  background: white;
+  user-select: none;
+}
+
+.container {
+  padding-top: 1rem;
+  border-radius: 50px;
+  background-color: black;
+  border: 4px solid white;
+  outline: 4px solid black;
+}
+
+.part1 {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: 2rem;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 500;
+}
+
+.part1 div {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.part1 span {
+  color: white;
+}
+
+.part1 .phone-icons-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.part2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  font-family: "Orbitron", sans-serif;
+}
+
+.part2 .signal-left {
+  color: white;
+  font-size: 4rem;
+}
+
+.part2 .signal-right {
+  color: yellow;
+  font-size: 4rem;
+}
+
+.part2 .direction {
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  padding: 0.5rem 1rem;
+  background-color: black;
+  border-radius: 10px;
+  border: 2px solid white;
+}
+
+.part2 .direction .div1 {
+  text-align: center;
+  font-weight: 500;
+}
+
+.part2 .direction .div2 .span1 {
+  font-weight: 500;
+}
+
+.part2 .direction .div2 .span2 {
+  font-weight: 400;
+}
+
+.part3 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Orbitron", sans-serif;
+}
+
+.part3 .middle-top {
+  color: white;
+  text-align: center;
+}
+
+.part3 .middle-top .number {
+  font-size: 6rem;
+  font-weight: 900;
+}
+
+.part3 .middle-top .km-h {
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.part3 .middle-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  font-weight: 500;
+}
+
+.part3 .middle-bottom .gas-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  color: red;
+}
+
+.part3 .middle-bottom .gas-icon {
+  font-size: 2rem;
+}
+
+.part3 .middle-bottom .battery-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  color: yellow;
+}
+
+.part3 .middle-bottom .battery-icon {
+  font-size: 2rem;
+}
+
+.part3 .middle-bottom .left-line {
+  border-width: 2px;
+  border-style: solid;
+  border-image: linear-gradient(to top, white, rgba(0, 0, 0, 0)) 1 100%;
+  height: 200px;
+  transform: rotate(40deg);
+}
+
+.part3 .middle-bottom .center-line div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.part3 .middle-bottom .center-line span {
+  font-family: "Rubik Mono One", monospace;
+}
+
+.part3 .middle-bottom .center-line .vehicle-icon {
+  font-size: 4rem;
+  text-align: center;
+  color: white;
+}
+
+.part3 .middle-bottom .right-line {
+  border-width: 2px;
+  border-style: solid;
+  border-image: linear-gradient(to top, white, rgba(0, 0, 0, 0)) 1 100%;
+  height: 200px;
+  transform: rotate(-40deg);
+}
+
+/* tachometer */
+
+.tachometer {
+  position: relative;
+  margin: auto;
+  width: 300px;
+  height: 300px;
+  background-color: black;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+.tachometer-pointer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  margin: -25px 0 0 -25px;
+  border-radius: 50%;
+  background: #000000; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to right,
+    #434343,
+    #000000
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to right,
+    #434343,
+    #000000
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  animation: rotate 2s alternate infinite ease-in-out;
+  transition: all 0.3s ease-out;
+  transform: rotate(90deg);
+}
+@keyframes rotate {
+  from {
+    -webkit-transform: rotate(20deg);
+  }
+  to {
+    -webkit-transform: rotate(340deg);
+  }
+}
+.tachometer-pointer-border {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.tachometer-pointer-box {
+  position: absolute;
+  bottom: -65px;
+  left: 23px;
+  width: 4px;
+  height: 90px;
+  background-color: white;
+  border-bottom-right-radius: 50%;
+  border-bottom-left-radius: 50%;
+}
+.tachometer-item {
+  position: absolute;
+  font-size: 1rem;
+  color: white;
+}
+.tachometer-item.red {
+  color: red;
+}
+.tachometer-item.first {
+  left: 90px;
+  bottom: 20px;
+}
+.tachometer-item.second {
+  left: 40px;
+  bottom: 60px;
+}
+.tachometer-item.third {
+  left: 15px;
+  bottom: 130px;
+}
+.tachometer-item.fourh {
+  left: 30px;
+  top: 70px;
+}
+.tachometer-item.fifth {
+  top: 25px;
+  left: 70px;
+}
+.tachometer-item.sixth {
+  top: 10px;
+  left: 135px;
+}
+.tachometer-item.seventh {
+  top: 25px;
+  right: 70px;
+}
+.tachometer-item.eighth {
+  top: 70px;
+  right: 30px;
+}
+.tachometer-item.ninth {
+  right: 15px;
+  bottom: 130px;
+}
+
+.tachometer-item.tenth {
+  right: 40px;
+  bottom: 60px;
+}
+.tachometer-item.eleventh {
+  right: 90px;
+  bottom: 20px;
+}
+
+.tachometer-icons {
+  font-size: 1.5rem;
+  right: 10%;
+  top: 10%;
+}
+
+.tachometer-icons .door-icon {
+  position: absolute;
+  top: 25%;
+  left: 45%;
+  color: #dddddd;
+}
+
+.tachometer-icons .oil-icon {
+  position: absolute;
+  top: 65%;
+  left: 45%;
+  color: red;
+}
+
+.tachometer-icons .triangle-icon {
+  position: absolute;
+  top: 45%;
+  left: 25%;
+  color: yellow;
+}
+
+.tachometer-icons .key-icon {
+  position: absolute;
+  top: 45%;
+  left: 65%;
+  color: yellow;
+}
+
+/* speedometer */
+
+.speedometer {
+  position: relative;
+  margin: auto;
+  width: 300px;
+  height: 300px;
+  background-color: black;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+.speedometer-pointer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  margin: -25px 0 0 -25px;
+  border-radius: 50%;
+  background: #000000; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to right,
+    #434343,
+    #000000
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to right,
+    #434343,
+    #000000
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  animation: rotate 4s alternate infinite ease-in-out;
+  transition: all 0.3s ease-out;
+  transform: rotate(90deg);
+}
+@keyframes rotate {
+  from {
+    -webkit-transform: rotate(20deg);
+  }
+  to {
+    -webkit-transform: rotate(340deg);
+  }
+}
+.speedometer-pointer-border {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.speedometer-pointer-box {
+  position: absolute;
+  bottom: -65px;
+  left: 23px;
+  width: 4px;
+  height: 90px;
+  background-color: white;
+  border-bottom-right-radius: 50%;
+  border-bottom-left-radius: 50%;
+}
+
+.speedometer-item {
+  position: absolute;
+  font-size: 1rem;
+  color: white;
+}
+.speedometer-item.red {
+  color: red;
+}
+.speedometer-item.first {
+  left: 90px;
+  bottom: 20px;
+}
+.speedometer-item.second {
+  left: 40px;
+  bottom: 60px;
+}
+.speedometer-item.third {
+  left: 15px;
+  bottom: 130px;
+}
+.speedometer-item.fourh {
+  left: 30px;
+  top: 70px;
+}
+.speedometer-item.fifth {
+  top: 25px;
+  left: 70px;
+}
+.speedometer-item.sixth {
+  top: 10px;
+  left: 135px;
+}
+.speedometer-item.seventh {
+  top: 25px;
+  right: 70px;
+}
+.speedometer-item.eighth {
+  top: 70px;
+  right: 30px;
+}
+.speedometer-item.ninth {
+  right: 15px;
+  bottom: 130px;
+}
+.speedometer-item.tenth {
+  right: 40px;
+  bottom: 60px;
+}
+.speedometer-item.eleventh {
+  right: 90px;
+  bottom: 20px;
+}
+
+.speedometer-klm span {
+  position: absolute;
+  color: white;
+  right: 124px;
+  bottom: 80px;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.part4 {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: 1rem;
+  font-family: "Orbitron", sans-serif;
+}
+
+.part4 span {
+  color: white;
+}
+
+.part4 .hover-div div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.part4 .hover-div .tooltip-text {
+  visibility: hidden;
+  background-color: #434343;
+  color: white;
+  text-align: center;
+  padding: 5px;
+  border-radius: 5px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-weight: 400;
+}
+
+.part4 .hover-div:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
