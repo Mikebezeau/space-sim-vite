@@ -1,6 +1,7 @@
 //import { useEffect } from "react";
 import AppControls from "./AppControls";
 import AppCanvas from "./AppCanvas";
+import Cockpit from "./components/cockpitView/Cockpit";
 import ContextMenu from "./ContextMenu";
 import GalaxyMapHud from "./GalaxyMapHud";
 //import CustomCursor from "./CustomCursor";
@@ -22,12 +23,13 @@ function App() {
   return (
     <>
       <AppCanvas />
+      <Cockpit />
       <ContextMenu />
       {playerScreen === PLAYER.screen.flight && <Hud />}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapHud />}
       {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
       {/*<CustomCursor />*/}
-      <AppControls />
+      {!IS_MOBLIE && <AppControls />}
       {IS_MOBLIE && playerScreen !== PLAYER.screen.equipmentBuild && (
         <TouchControls
           playerScreen={playerScreen}

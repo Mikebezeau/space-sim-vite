@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { forwardRef, memo } from "react";
 import { MeshStandardMaterial, Color } from "three";
 import { ServoShapes, WeaponShapes } from "../data/equipShapes";
 import { equipList } from "../data/equipData";
@@ -21,17 +21,20 @@ const directionGlowMatNonLeader = new MeshStandardMaterial({
   emissiveIntensity: 0.5,
 });
 
-const PreBuildMech = ({
-  mechBP,
-  damageReadoutMode,
-  servoHitNames = [],
-  drawDistanceLevel = 0,
-  servoEditId = null,
-  weaponEditId = null,
-  editMode = false,
-  showAxisLines = false,
-  isLeader = false,
-}) => {
+const PreBuildMech = forwardRef(function BuildMech(
+  {
+    mechBP,
+    damageReadoutMode,
+    servoHitNames = [],
+    drawDistanceLevel = 0,
+    servoEditId = null,
+    weaponEditId = null,
+    editMode = false,
+    showAxisLines = false,
+    isLeader = false,
+  },
+  buildMechForwardRef
+) {
   const directionGlowMaterial = isLeader
     ? directionGlowMatLeader
     : directionGlowMatNonLeader;
@@ -45,7 +48,10 @@ const PreBuildMech = ({
   */
   //bmap={mechBP.scale > 3 ? bmap : undefined}
   return (
-    <group scale={editMode ? 2 / equipList.scale.weightMult[mechBP.scale] : 1}>
+    <group
+      ref={buildMechForwardRef}
+      scale={editMode ? 2 / equipList.scale.weightMult[mechBP.scale] : 1}
+    >
       {mechBP.servoList.map((servo, index) => (
         <group
           key={index}
@@ -118,7 +124,7 @@ const PreBuildMech = ({
       )}
     </group>
   );
-};
+});
 
 const BuildMech = memo(PreBuildMech);
 export default BuildMech;

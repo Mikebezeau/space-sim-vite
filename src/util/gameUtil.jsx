@@ -33,6 +33,11 @@ export const flipRotation = (quat) => {
   return newQuat;
 };
 
+// positionVal is relative mouse position, from -0.5 to 0.5
+// return value is in degrees that camera should rotate
+export const calcMouseLookDeg = (positionVal) => positionVal * 20;
+
+export const lerp = (a, b, n) => (1 - n) * a + n * b;
 /*
 //DOUBLE SLIDER LABEL CREATOR
 function doubleSliderLabel(topArr, bottomArr) {

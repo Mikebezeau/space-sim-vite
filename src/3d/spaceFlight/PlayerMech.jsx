@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
@@ -15,8 +15,8 @@ const tempObjectDummy = new THREE.Object3D();
 const rotateQuat = new THREE.Quaternion(),
   camQuat = new THREE.Quaternion(),
   curQuat = new THREE.Quaternion(),
+  mouseQuat = new THREE.Quaternion(),
   endQuat = new THREE.Quaternion();
-
 const lightgreen = new THREE.Color("lightgreen");
 const hotpink = new THREE.Color("hotpink");
 const crossMaterial = new THREE.MeshBasicMaterial({
@@ -24,20 +24,21 @@ const crossMaterial = new THREE.MeshBasicMaterial({
   fog: false,
 });
 
-function Ship() {
+const PrePlayerMech = () => {
+  console.log("PlayerMech rendered");
   const { camera } = useThree();
   const mutation = useStore((state) => state.mutation);
   const { clock, mouse } = mutation;
-  const player = useStore((state) => state.player);
+  const getPlayer = useStore((state) => state.getPlayer);
   const setPlayerObject = useStore((state) => state.actions.setPlayerObject);
-  const {
-    playerMechBP,
-    playerControlMode,
-    displayContextMenu,
-    weaponFireLightTimer,
-  } = useStore((state) => state);
+  const playerControlMode = useStore((state) => state.playerControlMode);
+  const displayContextMenu = useStore((state) => state.displayContextMenu);
+  const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
+  const playerMechBP = useStore((state) => state.playerMechBP);
 
+  const PLAYER_VIEW_MODE = 1; // temp set for cockpit view
   const main = useRef();
+  const buildMechRef = useRef();
   const weaponFireLight = useRef();
   const exhaust = useRef();
   const engineLight = useRef();
@@ -45,22 +46,25 @@ function Ship() {
   const target = useRef();
 
   const servoHitNames = [];
-  /*
-  //not working
-  //on first render have camera look at ship to avoid the camera shift after leaving a menu
-  useEffect(() => {
-    camera.position.copy(main.current.position);
-    camera.translateZ(8 * SCALE);
-    camera.translateY(3 * SCALE);
-    //camera.lookAt(main.current.position);
-    //CAMERA IS SHIFTED A MILLISECOND AFTER FROM PREVIOUS USEFRAME?
-    camera.lookAt(0, 0, 0);
-  }, []);
-  */
 
-  //moving camer, ship, altering crosshairs, engine and weapon lights (activates only while flying)
+  // mech is invisible in cockpit view
+  useEffect(() => {
+    const setVisible = (obj, isVisible) => {
+      obj.traverse((child) => {
+        if (child.isMesh) {
+          child.visible = isVisible;
+        }
+      });
+    };
+    if (PLAYER_VIEW_MODE === 1) {
+      setVisible(buildMechRef.current, false);
+    }
+  }, []);
+
+  //moving camera, ship, altering crosshairs, engine and weapon lights (activates only while flying)
   useFrame(() => {
     if (!main.current) return null;
+    const player = getPlayer();
     //rotate ship based on mouse position
     //new rotation
     const MVmod =
@@ -80,7 +84,7 @@ function Ship() {
       mouseY = mouse.y;
     }
     rotateQuat.setFromAxisAngle(
-      direction.set(-mouseY * 0.25, -mouseX * 0.3, mouseX * 0.4),
+      direction.set(mouseY * 0.05, -mouseX * 0.05, mouseX * 0.1),
       (Math.PI / 10) * MVmod
     );
     //console.log(-mouse.y * 0.25, -mouse.x * 0.3, mouse.x * 0.4);
@@ -94,7 +98,6 @@ function Ship() {
     //move ship forward
     main.current.translateZ(player.speed * SCALE);
     //save ship position / rotation to state
-    //ship.position.copy(main.current.position);
     setPlayerObject(main.current); //made this set to state in this way as to reflect updates to other components (SystemMap)
 
     //CAMERA
@@ -121,6 +124,13 @@ function Ship() {
       //looking at the player ship from the side
       tempObjectDummy.lookAt(main.current.position);
       endQuat.setFromEuler(tempObjectDummy.rotation);
+    } else {
+      // additional camera movement based on mouse position
+      mouseQuat.setFromAxisAngle(
+        direction.set(mouse.y, -mouse.x, 0),
+        Math.PI / 4
+      );
+      endQuat.multiply(mouseQuat);
     }
     //flip the position the camera should be facing so that the ship moves "forward" using a change in positive Z axis
     endQuat.copy(flipRotation(endQuat));
@@ -181,15 +191,9 @@ function Ship() {
       }
     });
   });
-  /*
-const pointLight = new THREE.PointLight( 0xff0000, 1, 100 );
-pointLight.position.set( 10, 10, 10 );
-scene.add( pointLight );
 
-const sphereSize = 1;
-const pointLightHelper = new THREE.PointLightHelper( pointLight, sphereSize );
-scene.add( pointLightHelper );
-*/
+  // to set initial position of player object
+  const player = getPlayer();
 
   return (
     <group
@@ -207,6 +211,7 @@ scene.add( pointLightHelper );
       ]}
     >
       <BuildMech
+        ref={buildMechRef}
         mechBP={playerMechBP[0]}
         servoHitNames={servoHitNames}
         showAxisLines={false}
@@ -275,7 +280,7 @@ scene.add( pointLightHelper );
       />
     </group>
   );
-}
+};
 
-const PlayerMech = memo(Ship);
+const PlayerMech = memo(PrePlayerMech);
 export default PlayerMech;

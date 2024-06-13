@@ -32,7 +32,7 @@ export const starsInGalaxy = 150000;
 const galaxySize = 40;
 
 const systemScale = 200,
-  planetScale = 0.05;
+  planetScale = 0.5;
 
 const numEnemies = 9;
 
@@ -114,6 +114,7 @@ const useStore = create((set, get) => {
     contextMenuPos: { x: 0, y: 0 },
     //flying
     player: initPlayer(),
+    getPlayer: () => get().player,
     playerMechBP: initPlayerMechBP(),
     selectedTargetIndex: null,
     focusPlanetIndex: null,
@@ -158,8 +159,8 @@ const useStore = create((set, get) => {
       //binormal: new THREE.Vector3(),//only used in track
       //normal: new THREE.Vector3(), //not used
       clock: new THREE.Clock(false), //used to make enemies rotate
-      mouse: new THREE.Vector2(0, 0),
-      mouseScreen: new THREE.Vector2(0, 0),
+      mouse: new THREE.Vector2(0, 0), // relative x, y mouse position -0.5 to 0.5
+      mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen
 
       // Re-usable objects
       dummy: new THREE.Object3D(),
@@ -921,13 +922,14 @@ const useStore = create((set, get) => {
       //save screen touch position (-1 to 1) relative to touch movement control
       updateMouseMobile(event) {
         if (event) {
-          var bounds = event.target.getBoundingClientRect();
+          var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
           let x = event.changedTouches[0].clientX - bounds.left;
           let y = event.changedTouches[0].clientY - bounds.top;
 
+          // too fast for now, dividing by 3
           get().mutation.mouse.set(
-            (x - bounds.width / 2) / bounds.width,
-            (y - bounds.height / 2) / bounds.height
+            (x - bounds.width / 2) / bounds.width / 3,
+            (y - bounds.height / 2) / bounds.height / 3
           );
         }
       },

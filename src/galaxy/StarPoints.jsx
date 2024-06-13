@@ -36,8 +36,8 @@ const PreStarPoints = forwardRef(function StarPoints(
         const z = starCoordsBuffer.array[i * 3 + 2];
         const distance = Math.sqrt(x * x + y * y + z * z);
         // to show the nebula sprite particles instead of star
-        nebulaSelectedArray.push(distance > 30 ? 1 : 0);
-        const scaleFactor = (100 / distance) * SCALE * (cameraFar - 1000); // close to max distance visible
+        nebulaSelectedArray.push(distance > 40 ? 1 : 0);
+        const scaleFactor = (100 / distance) * (cameraFar - 1000); // close to max distance visible
         const newX = x * scaleFactor;
         const newY = y * scaleFactor;
         const newZ = z * scaleFactor;

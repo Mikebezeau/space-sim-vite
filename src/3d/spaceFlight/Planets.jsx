@@ -49,13 +49,14 @@ const Planet = memo(({ planet }) => {
   //planet material
   const materialPlanet = new THREE.MeshPhongMaterial({
     map: textureMaps[planet.textureMap],
-    emissive: planet.type === "SUN" ? planet.color : false,
-    emissiveIntensity: 1, //0.2,
     color: planet.color,
-    //opacity: 1,
     transparent: false,
-    //depthWrite: false, //fixes flickering cloud mesh, but can see shapes through planet
   });
+  if (planet.type === "SUN") {
+    materialPlanet.emissiveMap = textureMaps[planet.textureMap];
+    materialPlanet.emissive = planet.color;
+    materialPlanet.emissiveIntensity = 1; //0.2,
+  }
   //too much flickering
   /*
   //cloud shape

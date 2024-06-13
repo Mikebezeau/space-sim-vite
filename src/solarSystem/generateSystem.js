@@ -4,19 +4,17 @@ import { SCALE } from "../util/constants";
 import { generateStarType } from "../galaxy/generateGalaxy";
 import StarSystem from "./StarSystem"; //ACCRETE
 
-const planetSizeMultiple = 10;
-
 const generateSystem = (
   starIndex,
-  systemScale = 1,
+  systemScale = 1, // systemScale and planetScale used for mini system map
   planetScale = 1,
   noConsoleLog = true
 ) => {
-  const star = generateStarType(starIndex);
-  console.log("generateStarType", starIndex, star);
   const rng = seedrandom(starIndex);
+  const star = generateStarType(starIndex);
   //Only one in about five hundred thousand stars has more than twenty times the mass of the Sun.
   let solarMass = star.solarMass;
+  console.log("generateStarType", starIndex, star);
   //15% of stars have a system like earths (with gas giants)
   //ACCRETE
   const system = new StarSystem(
@@ -33,8 +31,7 @@ const generateSystem = (
     rng
   ); //ACCRETE
   const newSystem = system.create();
-  const solarRadius =
-    newSystem.radius * SCALE * planetScale * planetSizeMultiple; //star.size * 700000 * SCALE * planetScale;
+  const solarRadius = newSystem.radius * SCALE * planetScale; //star.size * 700000 * SCALE * planetScale;
   if (!noConsoleLog) console.log(newSystem);
 
   //-------
@@ -153,7 +150,7 @@ types:
       type: "PLANET",
       data: planet.toJSONforHud(),
       color: color,
-      radius: planet.radius * SCALE * planetScale * planetSizeMultiple,
+      radius: planet.radius * SCALE * planetScale,
       textureMap: textureMap,
       object3d: object3d,
     });

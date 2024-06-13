@@ -60,7 +60,7 @@ const PreAppControls = () => {
 
   //mouse right click
   function handleMouseRightClick(e) {
-    actions.activateContextMenu(e.clientX, e.clientY);
+    if (!IS_MOBLIE) actions.activateContextMenu(e.clientX, e.clientY);
   }
   useMouseRightClick(handleMouseRightClick);
 
