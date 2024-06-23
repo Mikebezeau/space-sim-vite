@@ -1,46 +1,77 @@
 import { useState } from "react";
+import useStore from "../../stores/store";
 
 const MonitorReadout = () => {
-  const [selectedSection, setSelectedSection] = useState("");
+  const [hoveredSection, setHoveredSection] = useState("");
+  const [selectedSection, setSelectedSection] = useState("status");
+  //const shield = 0; //useStore((state) => state.player.shield);
+  const currentMechBPindex = useStore(
+    (state) => state.player.currentMechBPindex
+  );
+
+  const playerMechBP = useStore((state) => state.playerMechBP);
+
+  const weaponList = playerMechBP[currentMechBPindex].weaponList;
 
   const handleSectionChange = (section) => {
     setSelectedSection(section);
   };
 
+  const menuItems = [
+    "status",
+    "system",
+    "environmental",
+    "life support",
+    "propulsion",
+    "defensive",
+    "weapon",
+    "communication",
+    "navigation",
+    "power",
+    "maintenance",
+    "crew",
+  ];
   return (
-    <div className="text-xs justify-top">
-      <ul>
-        {selectedSection !== "" ? (
-          <li onClick={() => handleSectionChange("")}>BACK</li>
-        ) : (
-          <>
-            <li onClick={() => handleSectionChange("system")}>System</li>
-            <li onClick={() => handleSectionChange("environmental")}>
-              Environmental
-            </li>
-            <li onClick={() => handleSectionChange("lifeSupport")}>
-              Life Support
-            </li>
-            <li onClick={() => handleSectionChange("propulsion")}>
-              Propulsion
-            </li>
-            <li onClick={() => handleSectionChange("defensive")}>Defensive</li>
-            <li onClick={() => handleSectionChange("weapon")}>Weapon</li>
-            <li onClick={() => handleSectionChange("communication")}>
-              Communication
-            </li>
-            <li onClick={() => handleSectionChange("navigation")}>
-              Navigation
-            </li>
-            <li onClick={() => handleSectionChange("power")}>Power</li>
-            <li onClick={() => handleSectionChange("maintenance")}>
-              Maintenance
-            </li>
-            <li onClick={() => handleSectionChange("crew")}>Crew</li>
-          </>
-        )}
-      </ul>
+    <div className="absolute top-16 left-8">
+      <div className="">{hoveredSection}</div>
+      <div className="flex flex-row">
+        {menuItems.map((item) => (
+          <div
+            className="button-cyber w-3 h-8 ml-[1px]"
+            key={item}
+            onClick={() => handleSectionChange(item)}
+          >
+            <span className="button-cyber-content" />
+          </div>
+        ))}
+      </div>
 
+      {selectedSection === "status" && (
+        <>
+          <div>
+            {weaponList.beam.map((weapon, i) => (
+              <p key={i}>{weapon.data.name}</p>
+            ))}
+            {weaponList.proj.map((weapon, i) => (
+              <p key={i}>{weapon.data.name} / AMMO</p>
+            ))}
+            {weaponList.missile.map((weapon, i) => (
+              <p key={i}>{weapon.data.name} / #</p>
+            ))}
+          </div>
+
+          <div
+            className=""
+            style={
+              {
+                //width: ((shield.max - shield.damage) / shield.max) * 100 + "%",
+              }
+            }
+          >
+            <span>SHIELDS</span>
+          </div>
+        </>
+      )}
       {selectedSection === "system" && (
         <div className="section">
           <h2>System</h2>
@@ -72,7 +103,7 @@ const MonitorReadout = () => {
         </div>
       )}
 
-      {selectedSection === "lifeSupport" && (
+      {selectedSection === "life support" && (
         <div className="section">
           <h2>Life Support</h2>
           <p className="item">Oxygen Generation: 100% Capacity</p>

@@ -7,10 +7,15 @@ import {
 } from "../../hooks/controls/useMouseKBControls";
 import { calcMouseLookDeg, lerp } from "../../util/gameUtil";
 import "../../css/cockpitView/cockpit.css";
-import MonitorReadout from "./controls/MonitorReadout";
-import CockpitControlsLeft from "./controls/CockpitControlsLeft";
-import CockpitControlsMiddle from "./controls/CockpitControlsMiddle";
-import CockpitControlsRight from "./controls/CockpitControlsRight";
+import "../../css/buttonCyber.css";
+import CockpitLeft from "./faces/CockpitLeft";
+import CockpitMiddle from "./faces/CockpitMiddle";
+import CockpitRight from "./faces/CockpitRight";
+import CockpitConsole from "./faces/CockpitConsole";
+import beamImage from "./images/beam.png";
+import crosshairOuter from "../../icons/crosshairOuter.svg";
+import crosshairInner from "../../icons/crosshairInner.svg";
+//import { IS_MOBLIE, PLAYER } from "../../util/constants";
 
 const Cockpit = () => {
   console.log("Cockpit rendered");
@@ -31,7 +36,8 @@ const Cockpit = () => {
     moveZ: 0,
     isZoom: false,
   }); //current view rotation and position
-  const speed = 0.015; //view lerp speed
+  const speed = 0.2; //view lerp speed
+  const rafRef = useRef(null);
 
   //mouse move change rotation of cockpit view
   const smoothViewRender = () => {
@@ -39,6 +45,12 @@ const Cockpit = () => {
     targetView.current.rotateY = calcMouseLookDeg(mouse.x);
     targetView.current.moveX = -mouse.x * 75;
     targetView.current.moveY = -mouse.y * 75;
+
+    const totalTargetMoveX = targetView.current.moveX;
+    const totalTargetMoveY =
+      targetView.current.moveY + (currentView.current.isZoom ? 20 : 0);
+
+    const totalTargetMoveZ = currentView.current.isZoom ? 20 : 0;
 
     currentView.current.rotateX = lerp(
       currentView.current.rotateX,
@@ -52,17 +64,22 @@ const Cockpit = () => {
     );
     currentView.current.moveX = lerp(
       currentView.current.moveX,
-      targetView.current.moveX,
+      totalTargetMoveX,
       speed
     );
     currentView.current.moveY = lerp(
       currentView.current.moveY,
-      targetView.current.moveY,
+      totalTargetMoveY,
+      speed
+    );
+    currentView.current.moveZ = lerp(
+      currentView.current.moveZ,
+      totalTargetMoveZ,
       speed
     );
 
     [...cockpitRef.current.children].forEach((group) => {
-      group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
+      group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
     });
 
     // continue animating if not reached target
@@ -71,68 +88,101 @@ const Cockpit = () => {
         Math.pow(targetView.current.rotateY - currentView.current.rotateY, 2)
     );
     const deltaMove = Math.sqrt(
-      Math.pow(targetView.current.moveX - currentView.current.moveX, 2) +
-        Math.pow(targetView.current.moveY - currentView.current.moveY, 2)
+      Math.pow(totalTargetMoveX - currentView.current.moveX, 2) +
+        Math.pow(totalTargetMoveY - currentView.current.moveY, 2) +
+        Math.pow(totalTargetMoveZ - currentView.current.moveZ, 2)
     );
     if (deltaRotate > 0.001 || deltaMove > 0.001)
-      requestAnimationFrame(smoothViewRender);
+      rafRef.current = requestAnimationFrame(smoothViewRender);
+    else rafRef.current = null;
   };
 
   useMouseDown(() => {
     //cockpitRef.current.style.transform = "translateY(20vh) translateZ(20vh)";
-    currentView.current.isZoom = true;
+    //currentView.current.isZoom = true;
     smoothViewRender();
   });
 
   useMouseUp(() => {
     //cockpitRef.current.style.transform = "translateY(0) translateZ(0)";
-    currentView.current.isZoom = false;
+    //currentView.current.isZoom = false;
     smoothViewRender();
   });
 
   useMouseMove(() => {
-    smoothViewRender();
+    if (!rafRef.current) smoothViewRender();
   });
   /*
   return (
-    <div className="group-3d">
-      <div className="cockpit-view" ref={cockpitRef}>
-        <div className="group-3d screen-container">
-          <div className="face face-test screen-top">s-top</div>
-          <div className="face face-test screen-middle">s-middle</div>
-        </div>
-        <div className="group-3d controls-container">
-          <div className="face face-test middle">c-middle</div>
-          <div className="face face-test left">c-left</div>
-          <div className="face face-test right">c-right</div>
-          
-          <div className="face face-test console-top">c-con-top</div>
-          <div className="face face-test console-front">c-con-front</div>
-          
-        </div>
+    <div className="container-full-screen cockpit-view" ref={cockpitRef}>
+      <div className="perspective-500 preserve-3d container-full-screen controls-container">
+        <div className="face middle test"></div>
+        <div className="face left test"></div>
+        <div className="face right test"></div>
+        <CockpitConsole />
+      </div>
+      <div className="perspective-500 preserve-3d container-full-screen">
+        <div className="face screen-top"></div>
+        <div className="face screen-middle"></div>
       </div>
     </div>
   );
   */
   return (
-    <div className="group-3d">
-      <div className="cockpit-view" ref={cockpitRef}>
-        <div className="group-3d screen-container">
-          <div className="face screen-top"></div>
-          <div className="face screen-middle"></div>
+    <div className="container-full-screen cockpit-view" ref={cockpitRef}>
+      <div className="perspective-500 preserve-3d container-full-screen screen-container">
+        <span className="absolute w-[200px] h-[200px] top-[50vh] left-[50vw] -ml-[100px] -mr-[100px]">
+          <img src={crosshairOuter} alt="crosshair icon" />
+          <span className="absolute w-[100px] h-[100px] top-[50px] left-[50px]">
+            <img src={crosshairInner} alt="crosshair icon" />
+          </span>
+        </span>
+        <div className="preserve-3d face screen-top">
+          <div
+            className="screen-beam screen-beam-right"
+            style={{
+              backgroundImage: `url(${beamImage})`,
+            }}
+          />
+          <div
+            className="screen-beam screen-beam-left"
+            style={{
+              backgroundImage: `url(${beamImage})`,
+            }}
+          />
         </div>
-        <div className="group-3d controls-container">
-          <div className="face middle">
-            <CockpitControlsMiddle />
-          </div>
-          <div className="face left">
-            <MonitorReadout />
-            <CockpitControlsLeft />
-          </div>
-          <div className="face right">
-            <CockpitControlsRight />
-          </div>
+        <div className="preserve-3d face screen-middle">
+          <div
+            className="screen-beam screen-beam-right"
+            style={{
+              backgroundImage: `url(${beamImage})`,
+            }}
+          />
+          <div
+            className="screen-beam screen-beam-left"
+            style={{
+              backgroundImage: `url(${beamImage})`,
+            }}
+          />
+          <div
+            className="screen-beam screen-beam-top"
+            style={{
+              backgroundImage: `url(${beamImage})`,
+            }}
+          />
         </div>
+      </div>
+      <div className="perspective-500 preserve-3d container-full-screen controls-container">
+        <div className="face middle">
+          <CockpitMiddle />
+        </div>
+        <div className="face left">
+          <CockpitLeft />
+        </div>
+        <div className="face right">
+          <CockpitRight />
+        </div>
+        <CockpitConsole />
       </div>
     </div>
   );

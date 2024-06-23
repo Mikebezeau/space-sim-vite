@@ -49,7 +49,7 @@ export function useMouseRightClick(callback) {
 
   useEffect(() => {
     function handleMouseRightClick(e) {
-      e.preventDefault();
+      //e.preventDefault();
       callbackRef.current(e);
     }
 

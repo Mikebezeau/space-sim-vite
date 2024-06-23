@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import useStore from "../../../stores/store";
+import screenImage from "../images/screen.png";
 
-const CockpitControlsLeft = () => {
-  console.log("CockpitControlsLeft rendered");
+const CockpitLeft = () => {
+  console.log("CockpitLeft rendered");
   const planets = useStore((state) => state.planets);
 
   const sunScanData = useMemo(() => {
@@ -16,7 +17,10 @@ const CockpitControlsLeft = () => {
         ? Object.entries(planets[focusPlanetIndex].data)
         : null;
     return (
-      <>
+      <div
+        className="absolute top-0 w-full h-full bg-cover"
+        style={{ backgroundImage: `url(${screenImage})` }}
+      >
         {data ? (
           <>
             <p>Planet Scan</p>
@@ -35,7 +39,7 @@ const CockpitControlsLeft = () => {
         ) : (
           <></>
         )}
-      </>
+      </div>
     );
   };
 
@@ -59,4 +63,4 @@ const CockpitControlsLeft = () => {
   );
 };
 
-export default CockpitControlsLeft;
+export default CockpitLeft;

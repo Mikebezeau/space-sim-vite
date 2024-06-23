@@ -1,9 +1,26 @@
-.cockpit-view {
-  transition: transform 0.5s ease;
+.control-button {
+  width: 160px;
+  background-color: black;
+  border: 2px solid rgb(61, 224, 61);
+  cursor: pointer;
+  font-size: 1rem;
+  outline: none;
+  padding: 4px;
+}
+.control-button:hover {
+  background-color: rgb(61, 224, 61);
+  color: black;
 }
 
-.group-3d {
+.perspective-500 {
   perspective: 500px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.container-full-screen {
   margin: 0;
   position: absolute;
   top: 0;
@@ -12,11 +29,17 @@
   right: 0;
   display: flex;
   justify-content: center;
-  transform-style: preserve-3d;
+}
+
+.cockpit-view {
+  color: rgb(61, 224, 61);
+  transition: transform 0.5s ease;
+  font-size: 1rem;
+  font-family: "tomorrow", sans-serif;
 }
 
 .screen-container {
-  bottom: 20vh;
+  top: 2vh;
 }
 
 .controls-container {
@@ -26,59 +49,96 @@
 .face {
   width: 50vh;
   height: 50vh;
-  background-image: linear-gradient(rgb(94, 94, 94), rgb(40, 40, 40));
   position: absolute;
 }
 
-.face-test {
+.test {
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: Arial, sans-serif;
   font-size: 2rem;
-  border: 2px solid black;
+  background: grey;
+  border: 8px solid black;
   opacity: 0.5;
 }
 
 .screen-top {
-  width: 70vh;
+  width: 78vh;
   background: transparent;
-  border: 8px solid rgb(114, 114, 114);
-  transform: translateY(-2.3vh) translateZ(43vh) rotateX(-75deg);
+  border: 8px solid rgb(0, 0, 0);
+  transform: translateY(-1.5vh) translateZ(46vh) rotateX(-75deg);
 }
 
 .screen-middle {
-  width: 70vh;
+  width: 78vh;
   height: 70vh;
   background: transparent;
-  border: 8px solid rgb(114, 114, 114);
-  transform: translateY(24vh) translateZ(5vh) rotateX(-30deg);
+  border: 8px solid rgb(0, 0, 0);
+  border-bottom: 0;
+  transform: translateY(24.5vh) translateZ(6vh) rotateX(-30deg);
 }
-
+/* 
 .middle {
-  width: 110vh;
+  width: 76vh;
   height: 60vh;
   transform: rotateX(25deg);
+  background-image: none;
+}
+*/
+.middle {
+  width: 80vh;
+  height: 65vh;
+  /*background: blue;*/
+  transform: translateY(2.7vh) translateZ(-8vh) rotateX(7deg);
+  background-image: none;
 }
 
 .left {
-  height: 60vh;
-  transform: translateX(-60vh) translateY(4vh) translateZ(70px) rotateY(45deg);
+  width: 60vh;
+  height: 65vh;
+  transform: translateX(-48.5vh) translateY(4.6vh) translateZ(13vh)
+    rotateX(25deg) rotateY(45deg) rotateZ(-25deg);
 }
 
 .right {
-  height: 60vh;
-  transform: translateX(60vh) translateY(4vh) translateZ(70px) rotateY(-45deg);
+  width: 60vh;
+  height: 65vh;
+  transform: translateX(48.5vh) translateY(4.6vh) translateZ(13vh)
+    rotateX(25deg) rotateY(-45deg) rotateZ(25deg);
 }
 
 .console-top {
-  width: 30vh;
-  height: 10vh;
-  transform: translateY(15vh) translateZ(20vh) rotateX(90deg);
+  width: 26vh;
+  height: 28vh;
+  transform: translateY(16.5vh) translateZ(2.4vh) rotateX(60deg);
 }
 
 .console-front {
-  width: 30vh;
+  width: 23vh;
   height: 20vh;
-  transform: translateY(22.5vh) translateZ(26vh) rotateX(40deg);
+  transform: translateY(36vh) translateZ(14vh) rotateX(-10deg);
+}
+
+.screen-beam {
+  width: 2vh;
+  height: 100%;
+  position: absolute;
+  background-size: 100% 100%;
+}
+
+.screen-beam-right {
+  right: 0;
+  transform: rotateY(-45deg);
+}
+.screen-beam-left {
+  left: 0;
+  transform: rotateY(45deg);
+}
+
+.screen-beam-top {
+  height: 76vh;
+  top: -38vh;
+  left: 36.75vh;
+  transform: rotateZ(90deg);
 }

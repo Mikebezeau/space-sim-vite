@@ -2,7 +2,7 @@
 import AppControls from "./AppControls";
 import AppCanvas from "./AppCanvas";
 import Cockpit from "./components/cockpitView/Cockpit";
-import ContextMenu from "./ContextMenu";
+//import ContextMenu from "./ContextMenu";
 import GalaxyMapHud from "./GalaxyMapHud";
 //import CustomCursor from "./CustomCursor";
 import TouchControls from "./TouchControls";
@@ -23,8 +23,8 @@ function App() {
   return (
     <>
       <AppCanvas />
-      <Cockpit />
-      <ContextMenu />
+      {playerScreen === PLAYER.screen.flight && <Cockpit />}
+      {/*<ContextMenu />*/}
       {playerScreen === PLAYER.screen.flight && <Hud />}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapHud />}
       {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}

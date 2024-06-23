@@ -37,7 +37,24 @@ export const flipRotation = (quat) => {
 // return value is in degrees that camera should rotate
 export const calcMouseLookDeg = (positionVal) => positionVal * 20;
 
-export const lerp = (a, b, n) => (1 - n) * a + n * b;
+export const lerp = (x, y, a) => x * (1 - a) + y * a;
+
+export const findHUDPosition = (obj, camera) => {
+  var vector = new THREE.Vector3();
+
+  obj.updateMatrixWorld();
+  vector.setFromMatrixPosition(obj.matrixWorld);
+  vector.project(camera);
+
+  vector.x = (vector.x * window.innerWidth) / 2;
+  vector.y = (vector.y * window.innerHeight) / 2;
+
+  return {
+    x: vector.x,
+    y: vector.y,
+    z: vector.z,
+  };
+};
 /*
 //DOUBLE SLIDER LABEL CREATOR
 function doubleSliderLabel(topArr, bottomArr) {
