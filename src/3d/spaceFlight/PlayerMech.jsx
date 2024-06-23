@@ -2,12 +2,16 @@ import { memo, useEffect } from "react";
 import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
+import { useGLTF } from "@react-three/drei";
 //import { useLoader } from "@react-three/fiber";
 //import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"; //const { nodes } = useLoader(GLTFLoader, "models/arwing.glb");
 import useStore from "../../stores/store";
 import BuildMech from "../BuildMech";
 import { flipRotation } from "../../util/gameUtil";
 import { SCALE, PLAYER } from "../../util/constants";
+
+useGLTF.preload("./models/SC_Fighter_VX4_.gltf");
+
 const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
@@ -25,7 +29,8 @@ const crossMaterial = new THREE.MeshBasicMaterial({
 });
 
 const PrePlayerMech = () => {
-  console.log("PlayerMech rendered");
+  const { nodes } = useGLTF("./models/SC_Fighter_VX4_.gltf");
+  console.log("PlayerMech rendered: nodes", nodes);
   const { camera } = useThree();
   const mutation = useStore((state) => state.mutation);
   const { clock, mouse } = mutation;
@@ -36,9 +41,9 @@ const PrePlayerMech = () => {
   const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
   const playerMechBP = useStore((state) => state.playerMechBP);
 
-  const PLAYER_VIEW_MODE = 1; // temp set for cockpit view
+  const PLAYER_VIEW_MODE = 0; //1; // temp set for cockpit view
   const main = useRef();
-  const buildMechRef = useRef();
+  const playerMechGroupRef = useRef();
   const weaponFireLight = useRef();
   const exhaust = useRef();
   const engineLight = useRef();
@@ -57,8 +62,11 @@ const PrePlayerMech = () => {
       });
     };
     if (PLAYER_VIEW_MODE === 1) {
-      setVisible(buildMechRef.current, false);
+      setVisible(playerMechGroupRef.current, false);
     }
+    // computeVertexNormals() : to fix lighting issues from blender export
+    playerMechGroupRef.current.children[0].geometry.computeVertexNormals();
+    //console.log("PlayerMech useEffect", playerMechGroupRef.current);
   }, []);
 
   //moving camera, ship, altering crosshairs, engine and weapon lights (activates only while flying)
@@ -210,12 +218,29 @@ const PrePlayerMech = () => {
         player.object3d.rotation.z,
       ]}
     >
+      <group ref={playerMechGroupRef} position={[0, 0, 0]}>
+        <mesh
+          visible
+          geometry={nodes.mech.geometry}
+          scale={0.3}
+          rotation={[0, 0, 0]}
+        >
+          <meshStandardMaterial
+            attach="material"
+            color="grey"
+            roughness={0.9}
+            metalness={0.3}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </group>
+      {/*}
       <BuildMech
-        ref={buildMechRef}
+        ref={playerMechGroupRef}
         mechBP={playerMechBP[0]}
         servoHitNames={servoHitNames}
         showAxisLines={false}
-      />
+      />*/}
       {/*player.boxHelper && (
           <mesh
             geometry={player.boxHelper.geometry}
