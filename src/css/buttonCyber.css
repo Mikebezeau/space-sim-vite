@@ -2,7 +2,7 @@
   position: relative;
   border: 0;
   outline: none;
-  background-color: black;
+  background-color: rgb(0, 204, 255);
   cursor: pointer;
   font-family: tomorrow, sans-serif;
   font-size: 0.85rem;
@@ -24,6 +24,8 @@
   clip-path: polygon(92% 0, 100% 25%, 100% 100%, 8% 100%, 0% 75%, 0 0);
 }
 
-.button-cyber-content:hover {
-  background-color: rgb(0, 204, 255);
+@media only screen and (min-width: 500px) {
+  .button-cyber-content:hover {
+    background-color: rgb(0, 204, 255);
+  }
 }

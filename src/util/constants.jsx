@@ -9,6 +9,10 @@ export const PLAYER = {
     galaxyMap: 2,
     equipmentBuild: 3,
   },
+  view: {
+    firstPerson: 0,
+    thirdPerson: 1,
+  },
   controls: {
     unattended: 1,
     combat: 2,

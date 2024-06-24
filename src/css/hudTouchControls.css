@@ -14,13 +14,11 @@
   border-radius: 500px;
 }
 
-@media only screen and (max-width: 700px) {
-  #lowerLeft {
-    display: block;
-    height: 120px;
-    width: 120px;
-    left: 5%;
-  }
+#lowerLeft {
+  display: block;
+  height: 120px;
+  width: 120px;
+  left: 5%;
 }
 
 #lowerRight {

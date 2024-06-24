@@ -8,7 +8,7 @@ import { useGLTF } from "@react-three/drei";
 import useStore from "../../stores/store";
 import BuildMech from "../BuildMech";
 import { flipRotation } from "../../util/gameUtil";
-import { SCALE, PLAYER } from "../../util/constants";
+import { IS_MOBLIE, SCALE, PLAYER } from "../../util/constants";
 
 useGLTF.preload("./models/SC_Fighter_VX4_.gltf");
 
@@ -40,8 +40,8 @@ const PrePlayerMech = () => {
   const displayContextMenu = useStore((state) => state.displayContextMenu);
   const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
   const playerMechBP = useStore((state) => state.playerMechBP);
+  const playerViewMode = useStore((state) => state.playerViewMode);
 
-  const PLAYER_VIEW_MODE = 0; //1; // temp set for cockpit view
   const main = useRef();
   const playerMechGroupRef = useRef();
   const weaponFireLight = useRef();
@@ -54,6 +54,12 @@ const PrePlayerMech = () => {
 
   // mech is invisible in cockpit view
   useEffect(() => {
+    // computeVertexNormals() : to fix lighting issues from blender export
+    playerMechGroupRef.current.children[0].geometry.computeVertexNormals();
+  }, []);
+
+  // mech is invisible in cockpit view
+  useEffect(() => {
     const setVisible = (obj, isVisible) => {
       obj.traverse((child) => {
         if (child.isMesh) {
@@ -61,13 +67,13 @@ const PrePlayerMech = () => {
         }
       });
     };
-    if (PLAYER_VIEW_MODE === 1) {
+    if (playerViewMode === PLAYER.view.firstPerson) {
       setVisible(playerMechGroupRef.current, false);
+    } else {
+      setVisible(playerMechGroupRef.current, true);
     }
-    // computeVertexNormals() : to fix lighting issues from blender export
-    playerMechGroupRef.current.children[0].geometry.computeVertexNormals();
     //console.log("PlayerMech useEffect", playerMechGroupRef.current);
-  }, []);
+  }, [playerViewMode]);
 
   //moving camera, ship, altering crosshairs, engine and weapon lights (activates only while flying)
   useFrame(() => {
@@ -115,24 +121,32 @@ const PrePlayerMech = () => {
 
     let lerpAmount = 0;
 
+    // viewing mech from side
     if (playerControlMode === PLAYER.controls.unattended) {
       tempObjectDummy.translateX(-8 * SCALE * playerMechBP[0].scale);
       tempObjectDummy.translateY(8 * SCALE * playerMechBP[0].scale);
       //tempObjectDummy.translateZ(2 * SCALE * playerMechBP[0].scale);
       lerpAmount = 1;
     } else {
-      tempObjectDummy.translateZ(-8 * SCALE * playerMechBP[0].scale);
-      tempObjectDummy.translateY(2 * SCALE * playerMechBP[0].scale);
+      if (playerViewMode === PLAYER.view.firstPerson) {
+        tempObjectDummy.translateZ(2 * SCALE * playerMechBP[0].scale);
+        tempObjectDummy.translateY(1 * SCALE * playerMechBP[0].scale);
+      }
+      if (playerViewMode === PLAYER.view.thirdPerson) {
+        tempObjectDummy.translateZ(-8 * SCALE * playerMechBP[0].scale);
+        tempObjectDummy.translateY(2 * SCALE * playerMechBP[0].scale);
+      }
       lerpAmount = 0.95; //distance(state.camera.position, camDummy.position) / 0.8;
     }
 
     camera.position.lerp(tempObjectDummy.position, lerpAmount);
 
+    // viewing mech from side
     if (playerControlMode === PLAYER.controls.unattended) {
       //looking at the player ship from the side
       tempObjectDummy.lookAt(main.current.position);
       endQuat.setFromEuler(tempObjectDummy.rotation);
-    } else {
+    } else if (!IS_MOBLIE) {
       // additional camera movement based on mouse position
       mouseQuat.setFromAxisAngle(
         direction.set(mouse.y, -mouse.x, 0),
@@ -302,6 +316,20 @@ const PrePlayerMech = () => {
         distance={3 * SCALE}
         intensity={0}
         color="lightblue"
+      />
+
+      <pointLight
+        position={[4, 2, -2]}
+        distance={3 * SCALE}
+        intensity={0.005}
+        color="white"
+      />
+
+      <pointLight
+        position={[-4, 2, -2]}
+        distance={3 * SCALE}
+        intensity={0.005}
+        color="white"
       />
     </group>
   );

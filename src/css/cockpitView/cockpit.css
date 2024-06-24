@@ -78,6 +78,10 @@
   border-bottom: 0;
   transform: translateY(24.5vh) translateZ(6vh) rotateX(-30deg);
 }
+
+.screen-mini {
+  transform: translateZ(2vh) rotateX(25deg);
+}
 /* 
 .middle {
   width: 76vh;

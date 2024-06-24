@@ -12,7 +12,9 @@ import PropTypes from "prop-types";
 export default function TouchControls({ playerScreen, playerControlMode }) {
   const testing = useStore((state) => state.testing);
   const { actions, displayContextMenu } = useStore((state) => state);
+  const speed = useStore((state) => state.player.speed);
 
+  /*
   //menu
   function handleContextMenu() {
     actions.activateContextMenu(window.innerWidth / 2, window.innerHeight / 2);
@@ -30,6 +32,7 @@ export default function TouchControls({ playerScreen, playerControlMode }) {
     actions.speedDown();
   }
   useTouchStartControls("btn-speed-down", handleSpeedDown);
+  */
 
   //SHOOT LASERS
   function handleShoot() {
@@ -68,19 +71,38 @@ export default function TouchControls({ playerScreen, playerControlMode }) {
   return (
     <>
       <div id="lowerLeft" className="hud">
-        <div id="btn-ship-move"></div>
+        <div id="btn-ship-move" />
       </div>
       <div id="lowerRight" className="hud">
-        <span id="btn-speed-up">+</span>
-        <span id="btn-speed-down">-</span>
-        <span id="btn-shoot">x</span>
-        <span id="btn-sys">sys</span>
+        <span id="btn-shoot" />
+        {/*<span id="btn-sys">sys</span>*/}
       </div>
+
+      <div className="absolute right-4 bottom-40 flex flex-col">
+        {[1000, 600, 300, 100, 60, 30, 10, 6, 3, 1, 0].map(
+          (speedValue, index) => (
+            <div
+              key={index}
+              className="w-8 h-3 mt-1 border-2 border-black rounded-tl-full rounded-br-full"
+              style={{
+                backgroundColor: speed >= speedValue ? "aqua" : "gray",
+              }}
+              onClick={() => {
+                actions.setSpeed(speedValue);
+              }}
+            />
+          )
+        )}
+      </div>
+      {/*
+      <span id="btn-speed-up">+</span>
+      <span id="btn-speed-down">-</span>
+      */}
     </>
   );
 }
 
 TouchControls.propTypes = {
-  playerScreen: PropTypes.string.isRequired,
-  playerControlMode: PropTypes.string.isRequired,
+  playerScreen: PropTypes.number.isRequired,
+  playerControlMode: PropTypes.number.isRequired,
 };

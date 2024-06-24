@@ -4,6 +4,7 @@ import { useGLTF } from "@react-three/drei";
 useGLTF.preload("./models/mechJ.gltf");
 
 const PreMech = () => {
+  console.log("Mech rendered");
   const groupRef = useRef();
   const { nodes } = useGLTF("./models/mechJ.gltf");
   useEffect(() => {

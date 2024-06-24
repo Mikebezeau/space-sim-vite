@@ -9,13 +9,15 @@ import { calcMouseLookDeg, lerp } from "../../util/gameUtil";
 import "../../css/cockpitView/cockpit.css";
 import "../../css/buttonCyber.css";
 import CockpitLeft from "./faces/CockpitLeft";
-import CockpitMiddle from "./faces/CockpitMiddle";
+import CockpitMiddle from "./faces/cockpitMiddle/CockpitMiddle";
 import CockpitRight from "./faces/CockpitRight";
 import CockpitConsole from "./faces/CockpitConsole";
 import beamImage from "./images/beam.png";
+import screenMini1Image from "./images/cockpit_screen_mini_1.jpg";
+import screenMini2Image from "./images/cockpit_screen_mini_2.jpg";
 import crosshairOuter from "../../icons/crosshairOuter.svg";
 import crosshairInner from "../../icons/crosshairInner.svg";
-//import { IS_MOBLIE, PLAYER } from "../../util/constants";
+import { IS_MOBLIE } from "../../util/constants";
 
 const Cockpit = () => {
   console.log("Cockpit rendered");
@@ -41,60 +43,62 @@ const Cockpit = () => {
 
   //mouse move change rotation of cockpit view
   const smoothViewRender = () => {
-    targetView.current.rotateX = -calcMouseLookDeg(mouse.y);
-    targetView.current.rotateY = calcMouseLookDeg(mouse.x);
-    targetView.current.moveX = -mouse.x * 75;
-    targetView.current.moveY = -mouse.y * 75;
+    if (cockpitRef.current) {
+      targetView.current.rotateX = -calcMouseLookDeg(mouse.y);
+      targetView.current.rotateY = calcMouseLookDeg(mouse.x);
+      targetView.current.moveX = -mouse.x * 75;
+      targetView.current.moveY = -mouse.y * 75;
 
-    const totalTargetMoveX = targetView.current.moveX;
-    const totalTargetMoveY =
-      targetView.current.moveY + (currentView.current.isZoom ? 20 : 0);
+      const totalTargetMoveX = targetView.current.moveX;
+      const totalTargetMoveY =
+        targetView.current.moveY + (currentView.current.isZoom ? 20 : 0);
 
-    const totalTargetMoveZ = currentView.current.isZoom ? 20 : 0;
+      const totalTargetMoveZ = currentView.current.isZoom ? 20 : 0;
 
-    currentView.current.rotateX = lerp(
-      currentView.current.rotateX,
-      targetView.current.rotateX,
-      speed
-    );
-    currentView.current.rotateY = lerp(
-      currentView.current.rotateY,
-      targetView.current.rotateY,
-      speed
-    );
-    currentView.current.moveX = lerp(
-      currentView.current.moveX,
-      totalTargetMoveX,
-      speed
-    );
-    currentView.current.moveY = lerp(
-      currentView.current.moveY,
-      totalTargetMoveY,
-      speed
-    );
-    currentView.current.moveZ = lerp(
-      currentView.current.moveZ,
-      totalTargetMoveZ,
-      speed
-    );
+      currentView.current.rotateX = lerp(
+        currentView.current.rotateX,
+        targetView.current.rotateX,
+        speed
+      );
+      currentView.current.rotateY = lerp(
+        currentView.current.rotateY,
+        targetView.current.rotateY,
+        speed
+      );
+      currentView.current.moveX = lerp(
+        currentView.current.moveX,
+        totalTargetMoveX,
+        speed
+      );
+      currentView.current.moveY = lerp(
+        currentView.current.moveY,
+        totalTargetMoveY,
+        speed
+      );
+      currentView.current.moveZ = lerp(
+        currentView.current.moveZ,
+        totalTargetMoveZ,
+        speed
+      );
 
-    [...cockpitRef.current.children].forEach((group) => {
-      group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
-    });
+      [...cockpitRef.current.children].forEach((group) => {
+        group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
+      });
 
-    // continue animating if not reached target
-    const deltaRotate = Math.sqrt(
-      Math.pow(targetView.current.rotateX - currentView.current.rotateX, 2) +
-        Math.pow(targetView.current.rotateY - currentView.current.rotateY, 2)
-    );
-    const deltaMove = Math.sqrt(
-      Math.pow(totalTargetMoveX - currentView.current.moveX, 2) +
-        Math.pow(totalTargetMoveY - currentView.current.moveY, 2) +
-        Math.pow(totalTargetMoveZ - currentView.current.moveZ, 2)
-    );
-    if (deltaRotate > 0.001 || deltaMove > 0.001)
-      rafRef.current = requestAnimationFrame(smoothViewRender);
-    else rafRef.current = null;
+      // continue animating if not reached target
+      const deltaRotate = Math.sqrt(
+        Math.pow(targetView.current.rotateX - currentView.current.rotateX, 2) +
+          Math.pow(targetView.current.rotateY - currentView.current.rotateY, 2)
+      );
+      const deltaMove = Math.sqrt(
+        Math.pow(totalTargetMoveX - currentView.current.moveX, 2) +
+          Math.pow(totalTargetMoveY - currentView.current.moveY, 2) +
+          Math.pow(totalTargetMoveZ - currentView.current.moveZ, 2)
+      );
+      if (deltaRotate > 0.001 || deltaMove > 0.001)
+        rafRef.current = requestAnimationFrame(smoothViewRender);
+      else rafRef.current = null;
+    }
   };
 
   useMouseDown(() => {
@@ -137,43 +141,63 @@ const Cockpit = () => {
             <img src={crosshairInner} alt="crosshair icon" />
           </span>
         </span>
-        <div className="preserve-3d face screen-top">
-          <div
-            className="screen-beam screen-beam-right"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-          <div
-            className="screen-beam screen-beam-left"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-        </div>
-        <div className="preserve-3d face screen-middle">
-          <div
-            className="screen-beam screen-beam-right"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-          <div
-            className="screen-beam screen-beam-left"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-          <div
-            className="screen-beam screen-beam-top"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-        </div>
+
+        {!IS_MOBLIE ? (
+          <>
+            <div className="preserve-3d face screen-top">
+              <div
+                className="screen-beam screen-beam-right"
+                style={{
+                  backgroundImage: `url(${beamImage})`,
+                }}
+              />
+              <div
+                className="screen-beam screen-beam-left"
+                style={{
+                  backgroundImage: `url(${beamImage})`,
+                }}
+              />
+            </div>
+            <div className="preserve-3d face screen-middle">
+              <div
+                className="screen-beam screen-beam-right"
+                style={{
+                  backgroundImage: `url(${beamImage})`,
+                }}
+              />
+              <div
+                className="screen-beam screen-beam-left"
+                style={{
+                  backgroundImage: `url(${beamImage})`,
+                }}
+              />
+              <div
+                className="screen-beam screen-beam-top"
+                style={{
+                  backgroundImage: `url(${beamImage})`,
+                }}
+              />
+
+              <div
+                className="screen-mini absolute -top-2 left-2 w-[9vh] h-[3vh] bg-cover bg-left border-2 border-black"
+                style={{
+                  backgroundImage: `url(${screenMini1Image})`,
+                }}
+              />
+              <div
+                className="screen-mini absolute -top-2 right-2 w-[9vh] h-[3vh] bg-cover bg-right border-2 border-black"
+                style={{
+                  backgroundImage: `url(${screenMini2Image})`,
+                }}
+              />
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
       <div className="perspective-500 preserve-3d container-full-screen controls-container">
-        <div className="face middle">
+        <div className="face middle" style={{ top: IS_MOBLIE ? "-6vh" : "0" }}>
           <CockpitMiddle />
         </div>
         <div className="face left">

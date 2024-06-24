@@ -110,6 +110,7 @@ const useStore = create((set, get) => {
     blueprintCam: initCamMainMenu(),
     playerScreen: PLAYER.screen.flight,
     playerControlMode: PLAYER.controls.scan,
+    playerViewMode: PLAYER.view.firstPerson,
     displayContextMenu: false, //right click menu
     contextMenuPos: { x: 0, y: 0 },
     //flying
@@ -503,7 +504,10 @@ const useStore = create((set, get) => {
         player.boxHelper.geometry.computeBoundingBox();
         player.hitBox.copy(player.boxHelper.geometry.boundingBox);
       },
-
+      viewModeSelect(selectVal) {
+        // player selection of view: 1st or 3rd person
+        set(() => ({ playerViewMode: selectVal }));
+      },
       activateContextMenu(xPos, yPos) {
         //if options up arleady, hide menu
         set((state) => ({ displayContextMenu: !state.displayContextMenu }));
@@ -893,6 +897,14 @@ const useStore = create((set, get) => {
           },
         }));
       },
+      setSpeed(speedValue) {
+        set((state) => ({
+          player: {
+            ...state.player,
+            speed: speedValue,
+          },
+        }));
+      },
       //dock at spacestation
       stationDock() {
         set((state) => ({
@@ -923,14 +935,13 @@ const useStore = create((set, get) => {
       updateMouseMobile(event) {
         if (event) {
           var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
-          let x = event.changedTouches[0].clientX - bounds.left;
-          let y = event.changedTouches[0].clientY - bounds.top;
-
+          const x = event.changedTouches[0].clientX - bounds.left;
+          const y = event.changedTouches[0].clientY - bounds.top;
+          const radius = bounds.width / 2;
+          const setX = Math.min(1, Math.max(-1, (x - radius) / radius));
+          const setY = Math.min(1, Math.max(-1, (y - radius) / radius));
           // too fast for now, dividing by 3
-          get().mutation.mouse.set(
-            (x - bounds.width / 2) / bounds.width / 3,
-            (y - bounds.height / 2) / bounds.height / 3
-          );
+          get().mutation.mouse.set(setX / 3, setY / 3);
         }
       },
     },

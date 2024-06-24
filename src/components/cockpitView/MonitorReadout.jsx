@@ -2,7 +2,7 @@ import { useState } from "react";
 import useStore from "../../stores/store";
 
 const MonitorReadout = () => {
-  const [hoveredSection, setHoveredSection] = useState("");
+  //const [hoveredSection, setHoveredSection] = useState("");
   const [selectedSection, setSelectedSection] = useState("status");
   //const shield = 0; //useStore((state) => state.player.shield);
   const currentMechBPindex = useStore(
@@ -32,14 +32,20 @@ const MonitorReadout = () => {
     "crew",
   ];
   return (
-    <div className="absolute top-16 left-8">
-      <div className="">{hoveredSection}</div>
+    <div className="absolute top-16 left-8 text-xs">
+      {/*<div className="">{hoveredSection}</div>*/}
       <div className="flex flex-row">
         {menuItems.map((item) => (
           <div
             className="button-cyber w-3 h-8 ml-[1px]"
             key={item}
             onClick={() => handleSectionChange(item)}
+            style={{
+              backgroundColor:
+                selectedSection === item
+                  ? "rgb(0, 204, 255)"
+                  : "rgb(0, 131, 164)",
+            }}
           >
             <span className="button-cyber-content" />
           </div>

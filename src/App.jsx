@@ -2,6 +2,7 @@
 import AppControls from "./AppControls";
 import AppCanvas from "./AppCanvas";
 import Cockpit from "./components/cockpitView/Cockpit";
+import CockpitControls from "./components/cockpitView/CockpitControls";
 //import ContextMenu from "./ContextMenu";
 import GalaxyMapHud from "./GalaxyMapHud";
 //import CustomCursor from "./CustomCursor";
@@ -16,6 +17,7 @@ import { IS_MOBLIE, PLAYER } from "./util/constants";
 function App() {
   //if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {}
   const playerScreen = useStore((state) => state.playerScreen);
+  const playerViewMode = useStore((state) => state.playerViewMode);
   const playerControlMode = useStore((state) => state.playerControlMode);
 
   console.log("app render");
@@ -23,9 +25,21 @@ function App() {
   return (
     <>
       <AppCanvas />
-      {playerScreen === PLAYER.screen.flight && <Cockpit />}
+      {playerScreen === PLAYER.screen.flight && (
+        <>
+          <Hud />
+          {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
+          {(playerViewMode === PLAYER.view.thirdPerson || IS_MOBLIE) && (
+            <div
+              className="absolute flex flex-row w-full bottom-4 justify-center sm:justify-end
+                scale-[0.55] sm:scale-80 left-10 sm:left-[13%]"
+            >
+              <CockpitControls />
+            </div>
+          )}
+        </>
+      )}
       {/*<ContextMenu />*/}
-      {playerScreen === PLAYER.screen.flight && <Hud />}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapHud />}
       {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
       {/*<CustomCursor />*/}

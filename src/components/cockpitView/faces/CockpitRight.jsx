@@ -6,13 +6,13 @@ const CockpitRight = () => {
 
   return (
     <>
-      <div className="absolute z-10">
-        <MonitorReadout />
-      </div>
       <div
         className="absolute top-0 w-full h-full bg-cover scale-x-[-1]"
         style={{ backgroundImage: `url(${screenImage})` }}
       />
+      <div className="">
+        <MonitorReadout />
+      </div>
     </>
   );
 };
