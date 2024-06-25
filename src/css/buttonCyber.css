@@ -2,7 +2,7 @@
   position: relative;
   border: 0;
   outline: none;
-  background-color: rgb(0, 204, 255);
+  background-color: rgb(78, 220, 255);
   cursor: pointer;
   font-family: tomorrow, sans-serif;
   font-size: 0.85rem;
@@ -26,6 +26,6 @@
 
 @media only screen and (min-width: 500px) {
   .button-cyber-content:hover {
-    background-color: rgb(0, 204, 255);
+    background-color: rgb(190, 242, 255);
   }
 }

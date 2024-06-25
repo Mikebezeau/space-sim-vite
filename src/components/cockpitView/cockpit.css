@@ -12,8 +12,8 @@
   color: black;
 }
 
-.perspective-500 {
-  perspective: 500px;
+.perspective-400 {
+  perspective: 400px;
 }
 
 .preserve-3d {
@@ -42,10 +42,6 @@
   top: 2vh;
 }
 
-.controls-container {
-  top: 80vh;
-}
-
 .face {
   width: 50vh;
   height: 50vh;
@@ -67,12 +63,12 @@
   width: 78vh;
   background: transparent;
   border: 8px solid rgb(0, 0, 0);
-  transform: translateY(-1.5vh) translateZ(46vh) rotateX(-75deg);
+  transform: translateY(-1.5vh) translateZ(46vh) rotateX(-71deg);
 }
 
 .screen-middle {
   width: 78vh;
-  height: 70vh;
+  height: 78vh;
   background: transparent;
   border: 8px solid rgb(0, 0, 0);
   border-bottom: 0;
@@ -119,9 +115,9 @@
 }
 
 .console-front {
-  width: 23vh;
+  width: 26vh;
   height: 20vh;
-  transform: translateY(36vh) translateZ(14vh) rotateX(-10deg);
+  transform: translateY(37vh) translateZ(13vh) rotateX(-10deg);
 }
 
 .screen-beam {
@@ -145,4 +141,14 @@
   top: -38vh;
   left: 36.75vh;
   transform: rotateZ(90deg);
+}
+
+.bottom {
+  width: 66vh;
+  height: 35vh;
+  /*background: blue;*/
+  transform: translateY(44vh) translateZ(0vh) rotateX(60deg);
+  border: 10vh solid rgb(0, 0, 0);
+  border-top: none;
+  background-color: rgb(32, 32, 32);
 }

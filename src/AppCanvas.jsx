@@ -27,7 +27,7 @@ const PreAppCanvas = () => {
         rotation: [0, -Math.PI, 0],
         near: 0.001,
         far: 120000,
-        fov: 50,
+        fov: 40,
       }}
       onCreated={
         (/*{ gl, camera, scene }*/) => {

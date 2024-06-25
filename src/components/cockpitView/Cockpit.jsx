@@ -6,7 +6,7 @@ import {
   useMouseMove,
 } from "../../hooks/controls/useMouseKBControls";
 import { calcMouseLookDeg, lerp } from "../../util/gameUtil";
-import "../../css/cockpitView/cockpit.css";
+import "./cockpit.css";
 import "../../css/buttonCyber.css";
 import CockpitLeft from "./faces/CockpitLeft";
 import CockpitMiddle from "./faces/cockpitMiddle/CockpitMiddle";
@@ -46,8 +46,8 @@ const Cockpit = () => {
     if (cockpitRef.current) {
       targetView.current.rotateX = -calcMouseLookDeg(mouse.y);
       targetView.current.rotateY = calcMouseLookDeg(mouse.x);
-      targetView.current.moveX = -mouse.x * 75;
-      targetView.current.moveY = -mouse.y * 75;
+      targetView.current.moveX = -mouse.x * 70;
+      targetView.current.moveY = -mouse.y * 120;
 
       const totalTargetMoveX = targetView.current.moveX;
       const totalTargetMoveY =
@@ -119,13 +119,13 @@ const Cockpit = () => {
   /*
   return (
     <div className="container-full-screen cockpit-view" ref={cockpitRef}>
-      <div className="perspective-500 preserve-3d container-full-screen controls-container">
+      <div className="perspective-400 preserve-3d container-full-screen controls-container">
         <div className="face middle test"></div>
         <div className="face left test"></div>
         <div className="face right test"></div>
         <CockpitConsole />
       </div>
-      <div className="perspective-500 preserve-3d container-full-screen">
+      <div className="perspective-400 preserve-3d container-full-screen">
         <div className="face screen-top"></div>
         <div className="face screen-middle"></div>
       </div>
@@ -133,8 +133,8 @@ const Cockpit = () => {
   );
   */
   return (
-    <div className="container-full-screen cockpit-view" ref={cockpitRef}>
-      <div className="perspective-500 preserve-3d container-full-screen screen-container">
+    <div className="container-full-screen cockpit-view top-16" ref={cockpitRef}>
+      <div className="perspective-400 preserve-3d container-full-screen screen-container">
         <span className="absolute w-[200px] h-[200px] top-[50vh] left-[50vw] -ml-[100px] -mr-[100px]">
           <img src={crosshairOuter} alt="crosshair icon" />
           <span className="absolute w-[100px] h-[100px] top-[50px] left-[50px]">
@@ -196,8 +196,11 @@ const Cockpit = () => {
           <></>
         )}
       </div>
-      <div className="perspective-500 preserve-3d container-full-screen controls-container">
-        <div className="face middle" style={{ top: IS_MOBLIE ? "-6vh" : "0" }}>
+      <div
+        className="perspective-400 preserve-3d container-full-screen"
+        style={{ top: IS_MOBLIE ? "70vh" : "80vh" }}
+      >
+        <div className="face middle">
           <CockpitMiddle />
         </div>
         <div className="face left">
@@ -207,6 +210,7 @@ const Cockpit = () => {
           <CockpitRight />
         </div>
         <CockpitConsole />
+        <div className="face bottom" />
       </div>
     </div>
   );

@@ -53,7 +53,8 @@ const Planet = memo(({ planet }) => {
     transparent: false,
   });
   if (planet.type === "SUN") {
-    materialPlanet.emissiveMap = textureMaps[planet.textureMap];
+    materialPlanet.map = null;
+    //materialPlanet.emissiveMap = textureMaps[planet.textureMap];
     materialPlanet.emissive = planet.color;
     materialPlanet.emissiveIntensity = 1; //0.2,
   }

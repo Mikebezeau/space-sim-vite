@@ -1,5 +1,5 @@
 import useStore from "../../../../stores/store";
-import SpeedReadout from "./SpeedReadout";
+import SpeedReadout from "../../SpeedReadout";
 import {
   CockpitControlMode,
   CockpitControlMap,
@@ -15,11 +15,11 @@ const CockpitMiddle = () => {
 
   return (
     <div
-      className="w-full h-full bg-cover bg-center"
+      className="w-full h-full bg-cover bg-center mt-4"
       style={{ backgroundImage: `url(${cockpitImage})` }}
     >
       {!IS_MOBLIE && (
-        <div className="absolute top-[4vh] left-[32vh]">
+        <div className="absolute top-[7vh] left-[32vh]">
           <SpeedReadout />
         </div>
       )}

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import useStore from "../../../stores/store";
-import screenImage from "../images/screen.png";
+import screenBImage from "../images/screenB.png";
 
 const CockpitLeft = () => {
   console.log("CockpitLeft rendered");
@@ -43,7 +43,7 @@ const CockpitLeft = () => {
   return (
     <div
       className="absolute top-0 w-full h-full bg-cover"
-      style={{ backgroundImage: `url(${screenImage})` }}
+      style={{ backgroundImage: `url(${screenBImage})` }}
     >
       <div className="absolute w-[200px] right-12 top-20 text-right text-xs">
         {sunScanData && !focusPlanetIndex && (

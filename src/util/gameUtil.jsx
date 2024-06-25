@@ -35,7 +35,7 @@ export const flipRotation = (quat) => {
 
 // positionVal is relative mouse position, from -0.5 to 0.5
 // return value is in degrees that camera should rotate
-export const calcMouseLookDeg = (positionVal) => positionVal * 20;
+export const calcMouseLookDeg = (positionVal) => positionVal * 40;
 
 export const lerp = (x, y, a) => x * (1 - a) + y * a;
 
