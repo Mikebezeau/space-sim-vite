@@ -1,6 +1,4 @@
-import { useRef } from "react";
 import useStore from "../stores/store";
-import GalaxyMap from "../galaxy/GalaxyMap";
 import StarPoints from "../galaxy/StarPoints";
 import Planets from "../3d/spaceFlight/Planets";
 import Stations from "../3d/spaceFlight/Stations";
@@ -27,8 +25,6 @@ export default function SpaceFlight() {
       {/* sun light */}
       <pointLight castShadow intensity={5} decay={0} />
       <ambientLight intensity={0.5} />
-
-      {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMap />}
 
       {playerScreen === PLAYER.screen.flight && (
         <>

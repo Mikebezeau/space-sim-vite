@@ -14,10 +14,15 @@ import {
 } from "@react-three/postprocessing";
 import useStore from "../stores/store";
 import {
-  useMouseUp,
   useMouseDown,
+  useMouseUp,
   useMouseMove,
 } from "../hooks/controls/useMouseKBControls";
+import {
+  useTouchStartControls,
+  useTouchEndControls,
+  useTouchMoveControls,
+} from "../hooks/controls/useTouchControls";
 //import { generateGalaxy } from "./galaxyUtils";
 import { STAR_DISPLAY_MODE } from "./galaxyConstants";
 import StarPoints from "./StarPoints";
@@ -222,6 +227,11 @@ const PreGalaxyMap = () => {
       starPointsRef.current.geometry.attributes.aSelected.needsUpdate = true;
     };
 
+    /*
+    useTouchStartControls
+    useTouchEndControls
+    useTouchMoveControls
+    */
     const handleMouseUp = (e) => {
       // only activate on right/left click, and mouse not moved to control camera
       if ((e.button !== 0 && e.button !== 2) || mouseMoved.current === true)

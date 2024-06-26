@@ -5,6 +5,7 @@ import useStore, { playerStart } from "./stores/store";
 import EquipmentBlueprint from "./equipmentDesign/EquipmentBlueprint";
 import SpaceFlightScene from "./scenes/SpaceFlightScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
+import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER } from "./constants/constants";
 
 const AppCanvas = () => {
@@ -55,6 +56,7 @@ const AppCanvas = () => {
       ) : (
         <></>
       )}
+      {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMap />}
       {/*<Effects />*/}
     </Canvas>
   );
