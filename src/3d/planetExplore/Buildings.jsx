@@ -1,7 +1,5 @@
-import React from "react";
-
-const preBuildings = ({ buildings }) => {
-  console.log("buildings render");
+const Buildings = ({ buildings }) => {
+  console.log("Buildings rendered");
   return (
     <group>
       {Object.entries(buildings.buildingMeshList).map(([key, mesh]) => (
@@ -66,5 +64,4 @@ const preBuildings = ({ buildings }) => {
   );
 };
 
-const Buildings = React.memo(preBuildings);
 export default Buildings;

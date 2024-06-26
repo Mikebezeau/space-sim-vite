@@ -3,11 +3,10 @@ import PlayerWalk from "../3d/planetExplore/PlayerWalk";
 import WeaponFire from "../3d/WeaponFire";
 import TestTerrain from "../terrainGen/TestTerrain";
 
-import { SCALE_PLANET_WALK } from "../util/constants";
+import { SCALE_PLANET_WALK } from "../constants/constants";
 
-export default function PlanetWalkMode() {
-  //const { playerScreen, playerControlMode } = useStore((state) => state);
-
+export default function PlanetExploreScene() {
+  console.log("PlanetExploreScene rendered");
   return (
     <>
       <pointLight

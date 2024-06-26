@@ -1,5 +1,6 @@
 import useStore from "../../stores/store";
-import { PLAYER } from "../../util/constants";
+import { PLAYER } from "../../constants/constants";
+import warp from "../../icons/warp-galaxy.svg";
 import gear from "../../icons/gear.svg";
 import radarDish from "../../icons/radarDish.svg";
 import sword from "../../icons/sword.svg";
@@ -62,6 +63,30 @@ export const CockpitControlMap = () => {
   );
 };
 
+export const CockpitControlWarp = () => {
+  const selectedWarpStar = useStore((state) => state.selectedWarpStar);
+  const { setSelectedStar, setSelectedWarpStar } = useStore(
+    (state) => state.actions
+  );
+
+  return (
+    <div
+      className="button-cyber w-[10vh] h-[10vh] mt-1"
+      onClick={() => {
+        console.log(selectedWarpStar);
+        if (selectedWarpStar) {
+          setSelectedStar(selectedWarpStar);
+          setSelectedWarpStar(null);
+        }
+      }}
+    >
+      <span className="button-cyber-content">
+        <img src={warp} alt="warp icon" className="w-[10vh] h-[10vh]" />
+      </span>
+    </div>
+  );
+};
+
 export const CockpitControlView = () => {
   const viewModeSelect = useStore((state) => state.actions.viewModeSelect);
 
@@ -105,6 +130,7 @@ const CockpitControls = () => {
     <>
       <CockpitControlMode />
       <CockpitControlMap />
+      <CockpitControlWarp />
       <CockpitControlView />
       <CockpitControlEquip />
     </>

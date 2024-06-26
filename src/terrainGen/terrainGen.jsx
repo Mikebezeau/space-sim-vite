@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createNoise2D as SimplexNoise } from "simplex-noise";
 import { distance } from "../util/gameUtil";
-import { SCALE_PLANET_WALK } from "../util/constants";
+import { SCALE_PLANET_WALK } from "../constants/constants";
 
 export default class Terrain {
   constructor(seed, genCities, hills = 1, elevation = 0) {

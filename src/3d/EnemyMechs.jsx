@@ -1,9 +1,9 @@
-import React, { useRef } from "react";
+import { memo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../stores/store";
 import BuildMech from "./BuildMech";
-import { SCALE } from "../util/constants";
+import { SCALE } from "../constants/constants";
 
 export default function EnemyMechs() {
   const { showLeaders, enemies } = useStore((state) => state);
@@ -15,7 +15,7 @@ export default function EnemyMechs() {
 const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
-const Enemy = React.memo(({ enemy, showLeaders }) => {
+const PreEnemy = ({ enemy, showLeaders }) => {
   const ref = useRef();
 
   useFrame(() => {
@@ -78,8 +78,6 @@ const Enemy = React.memo(({ enemy, showLeaders }) => {
       )}
     </group>
   );
-});
-/*
+};
 
-      
-      */
+const Enemy = memo(PreEnemy);

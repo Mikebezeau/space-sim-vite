@@ -5,7 +5,7 @@ import starSpriteSrc from "./sprites/sprite120.png";
 import featheredSpriteSrc from "./sprites/feathered60.png";
 import "./starPointsShaderMaterial.js";
 import useStore from "../stores/store.jsx";
-import { SCALE, PLAYER } from "../util/constants.jsx";
+import { PLAYER } from "../constants/constants.jsx";
 
 const PreStarPoints = forwardRef(function StarPoints(
   { view },

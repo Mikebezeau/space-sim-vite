@@ -4,7 +4,7 @@ import {
   useTouchMoveControls,
   useTouchEndControls,
 } from "./hooks/controls/useTouchControls";
-import { PLAYER } from "./util/constants";
+import { PLAYER } from "./constants/constants";
 import "./css/hud.css";
 import "./css/hudTouchControls.css";
 import PropTypes from "prop-types";

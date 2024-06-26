@@ -1,23 +1,17 @@
-import { memo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import useStore, { playerStart } from "./stores/store";
 
 import EquipmentBlueprint from "./equipmentDesign/EquipmentBlueprint";
-import SpaceFlight from "./scenes/SpaceFlight";
-import PlanetExplore from "./scenes/PlanetExplore";
-import { PLAYER } from "./util/constants";
+import SpaceFlightScene from "./scenes/SpaceFlightScene";
+import PlanetExploreScene from "./scenes/PlanetExploreScene";
+import { PLAYER } from "./constants/constants";
 
-const PreAppCanvas = () => {
+const AppCanvas = () => {
+  console.log("AppCanvas rendered");
   const actionInit = useStore((state) => state.actions.init);
   const playerScreen = useStore((state) => state.playerScreen);
 
-  const { locationInfo } = useStore((state) => state.player); // scene = const PLAYER.locationScene
-  /*
-  useEffect(() => {
-    console.log("canvas: locationInfo", locationInfo);
-  }, [locationInfo]);
-*/
   return (
     <Canvas
       camera={{
@@ -53,24 +47,17 @@ const PreAppCanvas = () => {
       {playerScreen === PLAYER.screen.equipmentBuild ? (
         <EquipmentBlueprint />
       ) : (
-        <>
-          {locationInfo.scene === PLAYER.locationScene.space ? (
-            <SpaceFlight />
-          ) : (
-            <></>
-          )}
-          {locationInfo.scene === PLAYER.locationScene.landedPlanet ? (
-            <PlanetExplore />
-          ) : (
-            <></>
-          )}
-        </>
+        <></>
+      )}
+      {playerScreen === PLAYER.screen.flight ? <SpaceFlightScene /> : <></>}
+      {playerScreen === PLAYER.screen.landedPlanet ? (
+        <PlanetExploreScene />
+      ) : (
+        <></>
       )}
       {/*<Effects />*/}
     </Canvas>
   );
 };
 
-const AppCanvas = memo(PreAppCanvas);
-//const AppCanvas = memo(TestCanvas);
 export default AppCanvas;

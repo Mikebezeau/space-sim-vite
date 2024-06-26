@@ -1,10 +1,8 @@
-import { memo } from "react";
-
-const PreRoad = ({ road }) => {
+const Road = ({ road }) => {
+  console.log("Road rendered");
   return (
     <mesh geometry={road.mesh.geometry} material={road.mesh.material}></mesh>
   );
 };
 
-const Road = memo(PreRoad);
 export default Road;

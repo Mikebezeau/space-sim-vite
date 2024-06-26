@@ -17,7 +17,7 @@ import screenMini1Image from "./images/cockpit_screen_mini_1.jpg";
 import screenMini2Image from "./images/cockpit_screen_mini_2.jpg";
 import crosshairOuter from "../../icons/crosshairOuter.svg";
 import crosshairInner from "../../icons/crosshairInner.svg";
-import { IS_MOBLIE } from "../../util/constants";
+import { IS_MOBLIE } from "../../constants/constants";
 
 const Cockpit = () => {
   console.log("Cockpit rendered");

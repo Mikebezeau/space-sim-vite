@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import useStore from "../../stores/store";
 
 const MonitorReadout = () => {
@@ -36,8 +36,8 @@ const MonitorReadout = () => {
       {/*<div className="">{hoveredSection}</div>*/}
       <div className="flex flex-wrap">
         {menuItems.map((item, index) => (
-          <>
-            <div key={item} onClick={() => handleSectionChange(item)}>
+          <Fragment key={item}>
+            <div onClick={() => handleSectionChange(item)}>
               <div className="button-cyber w-[10px] h-10 ml-[1px] mb-1">
                 <span
                   className={`button-cyber-content rounded-tr-full ${
@@ -47,7 +47,7 @@ const MonitorReadout = () => {
               </div>
             </div>
             {index === 3 && <div className="w-full" />}
-          </>
+          </Fragment>
         ))}
       </div>
       <div className="pl-2 pt-1">

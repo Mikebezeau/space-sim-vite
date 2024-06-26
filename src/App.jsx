@@ -12,7 +12,7 @@ import EquipmentMenu from "./equipmentDesign/EquipmentMenu";
 
 import useStore from "./stores/store";
 
-import { IS_MOBLIE, PLAYER } from "./util/constants";
+import { IS_MOBLIE, PLAYER } from "./constants/constants";
 
 function App() {
   //if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {}
@@ -25,9 +25,11 @@ function App() {
   return (
     <>
       <AppCanvas />
+
+      {(playerScreen === PLAYER.screen.flight ||
+        playerScreen === PLAYER.screen.landedPlanet) && <Hud />}
       {playerScreen === PLAYER.screen.flight && (
         <>
-          <Hud />
           {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
           {(playerViewMode === PLAYER.view.thirdPerson || IS_MOBLIE) && (
             <div

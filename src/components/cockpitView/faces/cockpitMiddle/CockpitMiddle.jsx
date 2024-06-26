@@ -3,10 +3,11 @@ import SpeedReadout from "../../SpeedReadout";
 import {
   CockpitControlMode,
   CockpitControlMap,
+  CockpitControlWarp,
   CockpitControlView,
   CockpitControlEquip,
 } from "../../CockpitControls";
-import { IS_MOBLIE, PLAYER } from "../../../../util/constants";
+import { IS_MOBLIE, PLAYER } from "../../../../constants/constants";
 import cockpitImage from "../../images/middle.png"; //import controls from "../../icons/controls.svg";
 
 const CockpitMiddle = () => {
@@ -28,6 +29,7 @@ const CockpitMiddle = () => {
           <div className="absolute top-[10vh] left-[10vh]">
             <CockpitControlMode />
             <CockpitControlMap />
+            <CockpitControlWarp />
           </div>
           <div className="absolute top-[10vh] right-[10vh]">
             <CockpitControlView />

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { MaxEquation } from "three";
-import { SCALE } from "../util/constants";
+import { SCALE } from "../constants/constants";
 
 export function setupFlock(num) {
   const boids = [];

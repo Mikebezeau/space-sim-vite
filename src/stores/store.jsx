@@ -4,10 +4,8 @@ import { default as seedrandom } from "seedrandom";
 
 import generateGalaxy from "../galaxy/generateGalaxy";
 import generateSystem from "../solarSystem/generateSystem";
-import Terrain from "../terrainGen/terrainGen";
-import generateCity from "../terrainGen/cityGen";
+import initTerrain from "../planets/initTerrain";
 
-//import { Curves } from "three/examples/jsm/curves/CurveExtras";
 import { addEffect } from "@react-three/fiber";
 
 //import * as audio from "./audio";
@@ -20,29 +18,24 @@ import {
   initStationBP,
   initEnemyMechBP,
 } from "../util/initEquipUtil";
-//import { /*getRandomArbitrary,*/ distance } from "../util/gameUtil";
-import { SCALE, SCALE_PLANET_WALK, PLAYER } from "../util/constants";
+
+import {
+  SCALE,
+  SCALE_PLANET_WALK,
+  SYSTEM_SCALE,
+  PLANET_SCALE,
+  STARS_IN_GALAXY,
+  GALAXY_SIZE,
+  PLAYER,
+  WEAPON_FIRE_SPEED,
+} from "../constants/constants";
 
 import { setupFlock } from "../util/boidController";
 
 let guidCounter = 1; //global unique ID
 let explosionGuidCounter = 1; //global unique ID
 
-export const starsInGalaxy = 150000;
-const galaxySize = 40;
-
-const systemScale = 200,
-  planetScale = 0.5;
-
 const numEnemies = 9;
-
-const weaponFireSpeed = {
-  beam: 100,
-  proj: 40,
-  missile: 20,
-  eMelee: 0,
-  melee: 0,
-};
 
 export const playerStart = {
   system: 31232,
@@ -60,22 +53,28 @@ const useStore = create((set, get) => {
   //let curve = new Curves.GrannyKnot(); //GrannyKnot
   // Create a curve
   const curve = new THREE.CubicBezierCurve3(
-    new THREE.Vector3(-10000 * SCALE * systemScale, 0, 0),
+    new THREE.Vector3(-10000 * SCALE * SYSTEM_SCALE, 0, 0),
     new THREE.Vector3(
-      -5000 * SCALE * systemScale,
-      15000 * SCALE * systemScale,
+      -5000 * SCALE * SYSTEM_SCALE,
+      15000 * SCALE * SYSTEM_SCALE,
       -5000
     ),
     new THREE.Vector3(
-      5000 * SCALE * systemScale,
-      -15000 * SCALE * systemScale,
+      5000 * SCALE * SYSTEM_SCALE,
+      -15000 * SCALE * SYSTEM_SCALE,
       5000
     ),
-    new THREE.Vector3(10000 * SCALE * systemScale, 0, 0)
+    new THREE.Vector3(10000 * SCALE * SYSTEM_SCALE, 0, 0)
   );
 
   //let track = new THREE.TubeGeometry(curve, 128, 100 * SCALE, 8, false);
-  let track = new THREE.TubeGeometry(curve, 128, systemScale * SCALE, 8, false);
+  let track = new THREE.TubeGeometry(
+    curve,
+    128,
+    SYSTEM_SCALE * SCALE,
+    8,
+    false
+  );
   //these used for weaponFire hits
   const box = new THREE.Box3();
 
@@ -96,29 +95,30 @@ const useStore = create((set, get) => {
     //
     camera: undefined,
     sound: false,
-    systemScale: systemScale,
-    planetScale: planetScale,
     //galaxy map
     menuCam: initCamMainMenu(),
     currentStar: playerStart.system,
     // intial star position selection in galaxy map
     selectedStar: playerStart.system, // selectedStar set in actions.init()
+    selectedWarpStar: null,
     //galaxyStarPositionsFloat32: initgalaxyStarPositionsFloat32(),
-    galaxy: generateGalaxy(starsInGalaxy, galaxySize), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+    galaxy: generateGalaxy(STARS_IN_GALAXY, GALAXY_SIZE), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
     //galaxyMapZoom: 0,
     //blueprint design
     blueprintCam: initCamMainMenu(),
     playerScreen: PLAYER.screen.flight,
+    playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
     displayContextMenu: false, //right click menu
     contextMenuPos: { x: 0, y: 0 },
     //flying
     player: initPlayer(),
-    getPlayer: () => get().player,
+    getPlayer: () => get().player, // getting state to avoid rerenders in components when necessary
     playerMechBP: initPlayerMechBP(),
     selectedTargetIndex: null,
     focusPlanetIndex: null,
+    selectedPanetIndex: null,
     focusTargetIndex: null,
     weaponFireLightTimer: 0,
     stationDock: { stationIndex: 0, portIndex: 0 },
@@ -133,15 +133,15 @@ const useStore = create((set, get) => {
     ),
     enemies: randomEnemies(track),
     enemyBoids: setupFlock(numEnemies),
-    planets: generateSystem(playerStart.system, systemScale, planetScale),
+    planets: generateSystem(playerStart.system, SYSTEM_SCALE, PLANET_SCALE),
     stations: randomStations(seedrandom(playerStart.system), 1),
-    //terrain must clear a level spot for the city
-    planetTerrain: initTerrain(
-      { starSystemId: playerStart.system, landedPlanetId: 2 },
-      { numCity: 4, minSize: 3, maxSize: 25, density: 0.2 }
-    ), // {terrain, city}
-    //terrain: initTerrain({ starSystemId: 2, landedPlanetId: 2 }), //undefined//initTerrain(get().player.locationInfo),
-    //city: generateCity(15, get().terrain.AverageCityElevation()),
+    //initTerrain first parameter is the rng seed
+    planetTerrain: initTerrain(playerStart.system, {
+      numCity: 4,
+      minSize: 3,
+      maxSize: 25,
+      density: 0.2,
+    }),
     mutation: {
       t: 0,
       //position: new THREE.Vector3(),
@@ -186,7 +186,7 @@ const useStore = create((set, get) => {
       mapGalaxy() {
         const positions = get().galaxyStarPositionsFloat32;
         let galaxyMapData = [];
-        for (let i = 0; i < starsInGalaxy; i++) {
+        for (let i = 0; i < STARS_IN_GALAXY; i++) {
           const systemSeed = i;
           const planets = generateSystem(systemSeed, 1, 1, true);
           let hasTerrestrial = false;
@@ -228,19 +228,31 @@ const useStore = create((set, get) => {
       changeLocationSpace() {
         //set player location
         let locationInfo = get().player.locationInfo;
-        locationInfo.scene = PLAYER.locationScene.space;
+        locationInfo.orbitPlanetId = null;
+        locationInfo.landedPlanetId = null;
+        locationInfo.dockedStationId = null;
+        locationInfo.dockedShipI = null;
         set((state) => ({
-          player: { ...state.player, locationInfo: locationInfo },
+          player: {
+            ...state.player,
+            locationInfo: locationInfo,
+            object3d: locationInfo.saveSpaceObject3d,
+          },
         }));
+        set(() => ({ playerScreen: PLAYER.screen.flight }));
       },
       changeLocationPlanet() {
         //set player location
         let locationInfo = get().player.locationInfo;
-        locationInfo.scene = PLAYER.locationScene.landedPlanet;
+        locationInfo.orbitPlanetId = null;
+        locationInfo.landedPlanetId = null;
+        locationInfo.dockedStationId = null;
+        locationInfo.dockedShipI = null;
+        locationInfo.saveSpaceObject3d = get().player.object3d;
         set((state) => ({
           player: { ...state.player, locationInfo: locationInfo },
         }));
-        console.log("changeLocationPlanet", get().player.locationInfo);
+        set(() => ({ playerScreen: PLAYER.screen.landedPlanet }));
       },
       changeLocationCity() {
         get().testing.changeLocationPlanet();
@@ -504,9 +516,13 @@ const useStore = create((set, get) => {
         player.boxHelper.geometry.computeBoundingBox();
         player.hitBox.copy(player.boxHelper.geometry.boundingBox);
       },
-      viewModeSelect(selectVal) {
+      setActionMode(playerActionMode) {
+        // PLAYER.action.inspect: 0, manualControl: 1, autoControl: 2
+        set(() => ({ playerActionMode }));
+      },
+      viewModeSelect(playerViewMode) {
         // player selection of view: 1st or 3rd person
-        set(() => ({ playerViewMode: selectVal }));
+        set(() => ({ playerViewMode }));
       },
       activateContextMenu(xPos, yPos) {
         //if options up arleady, hide menu
@@ -659,14 +675,14 @@ const useStore = create((set, get) => {
         // weapon
         weaponFireObj.position.copy(shooter.object3d.position);
         weaponFireObj.rotation.copy(shooter.object3d.rotation);
-        const fireSpeed = weaponFireSpeed[weapon.data.weaponType];
+        const fireSpeed = WEAPON_FIRE_SPEED[weapon.data.weaponType];
         const weaponFireOffsetZ = fireSpeed / 2;
         weapon.servoOffset = servoUtil.servoLocation(
           weapon.locationServoId,
           mechBP.servoList
         ).offset;
         const currentScale =
-          get().player.locationInfo.scene === PLAYER.locationScene.landedPlanet
+          get().playerScreen === PLAYER.screen.flight
             ? SCALE_PLANET_WALK
             : SCALE;
         weaponFireObj.translateX(
@@ -848,7 +864,7 @@ const useStore = create((set, get) => {
       setSelectedStar(selectedStar) {
         set(() => ({ selectedStar }));
         set(() => ({
-          planets: generateSystem(selectedStar, systemScale, planetScale),
+          planets: generateSystem(selectedStar, SYSTEM_SCALE, PLANET_SCALE),
         }));
         const playerObj = get().player.object3d;
         playerObj.position.setX(playerStart.x);
@@ -858,10 +874,18 @@ const useStore = create((set, get) => {
         get().actions.setPlayerObject(playerObj);
         //clear targets
         set(() => ({
-          selectedTargetIndex: null,
-          focusTargetIndex: null,
           focusPlanetIndex: null,
+          selectedPanetIndex: null,
+          focusTargetIndex: null,
+          selectedTargetIndex: null,
         }));
+      },
+      setSelectedWarpStar(selectedWarpStar) {
+        console.log("selectedWarpStar", selectedWarpStar);
+        set(() => ({ selectedWarpStar }));
+      },
+      setSelectedPanetIndex(planetIndex) {
+        set(() => ({ selectedPanetIndex: planetIndex }));
       },
       //player ship
       setPlayerObject(obj) {
@@ -969,13 +993,11 @@ function initPlayer() {
     isInMech: true,
     currentMechBPindex: playerStart.mechBPindex,
     locationInfo: {
-      scene: PLAYER.locationScene.space,
-      //starSystemId: playerStart.system,
-      orbitPlanetId: 0,
-      landedPlanetId: 0,
-      dockedStationId: 0,
-      dockedShipId: 0,
-      prevPosition: new THREE.Vector3(),
+      orbitPlanetId: null,
+      landedPlanetId: null,
+      dockedStationId: null,
+      dockedShipId: null,
+      saveSpaceObject3d: new THREE.Object3D(),
     },
     object3d: obj,
     speed: 0,
@@ -1137,7 +1159,7 @@ function randomStations(/*rng, num*/) {
     position: {
       x: 0,
       y: 0,
-      z: -14500 * SCALE * systemScale,
+      z: -14500 * SCALE * SYSTEM_SCALE,
     },
 
     rotation: { x: 0, y: 0.5, z: 0 },
@@ -1152,31 +1174,6 @@ function randomStations(/*rng, num*/) {
     }),
   });
   return temp;
-}
-
-function initTerrain(playerLocationInfo, cities) {
-  const rng = seedrandom(
-    playerLocationInfo.starSystemId + "-" + playerLocationInfo.landedPlanetId
-  );
-  //cities.numCity, cities.density, cities.minSize, cities.maxSize
-  //spot must be leveled for city
-  const genCities = [];
-  for (let i = 0; i < cities.numCity; i++) {
-    genCities.push(
-      generateCity(
-        rng,
-        i === 0
-          ? cities.maxSize
-          : Math.floor(
-              rng() * (cities.maxSize - cities.minSize) + cities.minSize
-            ),
-        cities.density
-      )
-    );
-  }
-  //console.log(genCities);
-  const terrain = new Terrain(rng, genCities, 2, 0);
-  return { terrain: terrain, cities: genCities };
 }
 
 //------------------------------------------------------------------------------------

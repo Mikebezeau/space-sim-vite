@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { Object3D, Vector3 } from "three";
+import { Object3D } from "three";
 import { distance } from "./util/gameUtil";
-import { SCALE } from "./util/constants";
+import { SCALE } from "./constants/constants";
 
 const dummyObj = new THREE.Object3D();
 const toTargetQuat = new THREE.Quaternion(),

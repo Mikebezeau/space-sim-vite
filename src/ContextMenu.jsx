@@ -1,5 +1,5 @@
 import useStore from "./stores/store";
-import { PLAYER } from "./util/constants";
+import { PLAYER } from "./constants/constants";
 import "./css/contextMenu.css";
 
 export default function ContextMenu() {

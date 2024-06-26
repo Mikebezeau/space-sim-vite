@@ -11,7 +11,7 @@ import ServoPositionButtons from "../equipmentDesign/ServoPositionButtons";
 //import ServoHydraulics from "./equipment/ServoHydraulics";
 import { Weapons, WeaponsAssignSpaces } from "../equipment/Weapons";
 import { LandingBay, LandingBayAssignSpaces } from "../equipment/LandingBay";
-import { PLAYER } from "../util/constants";
+import { PLAYER } from "../constants/constants";
 import "../css/equipmentMenu.css";
 
 export default function EquipmentMenu() {

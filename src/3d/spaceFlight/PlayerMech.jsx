@@ -8,7 +8,7 @@ import { useGLTF } from "@react-three/drei";
 import useStore from "../../stores/store";
 import BuildMech from "../BuildMech";
 import { flipRotation } from "../../util/gameUtil";
-import { IS_MOBLIE, SCALE, PLAYER } from "../../util/constants";
+import { IS_MOBLIE, SCALE, PLAYER } from "../../constants/constants";
 
 useGLTF.preload("./models/SC_Fighter_VX4_.gltf");
 
@@ -30,7 +30,7 @@ const crossMaterial = new THREE.MeshBasicMaterial({
 
 const PrePlayerMech = () => {
   const { nodes } = useGLTF("./models/SC_Fighter_VX4_.gltf");
-  console.log("PlayerMech rendered: nodes", nodes);
+  console.log("PlayerMech rendered"); //: nodes", nodes);
   const { camera } = useThree();
   const mutation = useStore((state) => state.mutation);
   const { clock, mouse } = mutation;

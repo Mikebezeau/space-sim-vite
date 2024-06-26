@@ -61,9 +61,11 @@
 
 .screen-top {
   width: 78vh;
+  height: 45vh;
   background: transparent;
   border: 8px solid rgb(0, 0, 0);
-  transform: translateY(-1.5vh) translateZ(46vh) rotateX(-71deg);
+  border-bottom: 0;
+  transform: translateY(-5vh) translateZ(49vh) rotateX(-71deg);
 }
 
 .screen-middle {
@@ -71,8 +73,9 @@
   height: 78vh;
   background: transparent;
   border: 8px solid rgb(0, 0, 0);
+  border-top: 0;
   border-bottom: 0;
-  transform: translateY(24.5vh) translateZ(6vh) rotateX(-30deg);
+  transform: translateY(19.5vh) translateZ(9vh) rotateX(-30deg);
 }
 
 .screen-mini {

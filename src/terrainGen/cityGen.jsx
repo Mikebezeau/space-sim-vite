@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createNoise2D as SimplexNoise } from "simplex-noise";
 import { CSG } from "three-csg-ts";
-import { SCALE_PLANET_WALK } from "../util/constants";
+import { SCALE_PLANET_WALK } from "../constants/constants";
 // Color hex codes
 const colors = {
   WHITE: 0xffffff,

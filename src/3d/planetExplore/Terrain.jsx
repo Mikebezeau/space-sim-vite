@@ -1,6 +1,5 @@
-import { memo } from "react";
-
-const PreTerrain = ({ terrain }) => {
+const Terrain = ({ terrain }) => {
+  console.log("Terrain rendered");
   return (
     <mesh
       geometry={terrain.Mesh.geometry}
@@ -9,5 +8,4 @@ const PreTerrain = ({ terrain }) => {
   );
 };
 
-const Terrain = memo(PreTerrain);
 export default Terrain;

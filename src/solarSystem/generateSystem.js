@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
-import { SCALE } from "../util/constants";
+import { SCALE } from "../constants/constants";
 import { generateStarType } from "../galaxy/generateGalaxy";
 import StarSystem from "./StarSystem"; //ACCRETE
 

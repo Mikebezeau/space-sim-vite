@@ -5,7 +5,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import Mech from "./Mech";
 import { flipRotation } from "../../util/gameUtil";
-import { SCALE_PLANET_WALK, PLAYER } from "../../util/constants";
+import { SCALE_PLANET_WALK, PLAYER } from "../../constants/constants";
 const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
@@ -22,15 +22,14 @@ const crossMaterial = new THREE.MeshBasicMaterial({
 });
 
 export default function PlayerWalk() {
-  console.log("player walk component loaded");
+  console.log("PlayerWalk rendered");
   const { camera } = useThree();
   const mutation = useStore((state) => state.mutation);
-  const { mouse } = mutation;
-  const player = useStore((state) => state.player);
+  const getPlayer = useStore((state) => state.getPlayer);
   const setPlayerObject = useStore((state) => state.actions.setPlayerObject);
-  const { playerMechBP, playerControlMode, displayContextMenu } = useStore(
-    (state) => state
-  );
+  const playerMechBP = useStore((state) => state.playerMechBP);
+  const playerControlMode = useStore((state) => state.playerControlMode);
+  const displayContextMenu = useStore((state) => state.displayContextMenu);
   const { terrain } = useStore((state) => state.planetTerrain);
 
   const main = useRef();
@@ -42,6 +41,8 @@ export default function PlayerWalk() {
   //testing
   useFrame(() => {
     if (!main.current) return null;
+    const player = getPlayer();
+    const { mouse } = mutation;
     //rotate ship based on mouse position
     //new rotation
     const MVmod =
@@ -194,20 +195,7 @@ export default function PlayerWalk() {
 
   //console.log(player.object3d.position);
   return (
-    <group
-      ref={main}
-      scale={SCALE_PLANET_WALK}
-      position={[
-        player.object3d.position.x,
-        player.object3d.position.y,
-        player.object3d.position.z,
-      ]}
-      rotation={[
-        player.object3d.rotation.x,
-        player.object3d.rotation.y,
-        player.object3d.rotation.z,
-      ]}
-    >
+    <group ref={main} scale={SCALE_PLANET_WALK}>
       {/*<Suspense>*/}
       <Mech />
       {/*</Suspense>*/}

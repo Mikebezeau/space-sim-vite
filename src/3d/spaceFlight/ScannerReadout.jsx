@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import { distance } from "../../util/gameUtil";
-import { SCALE } from "../../util/constants";
+import { SCALE } from "../../constants/constants";
 
 const dummyObj = new THREE.Object3D();
 const targetQuat = new THREE.Quaternion(),

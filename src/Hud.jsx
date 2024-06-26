@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import useStore from "./stores/store";
-import { PLAYER } from "./util/constants";
+import { PLAYER } from "./constants/constants";
 import { ToggleTestControls } from "./testingControls/ToggleTestControls";
 //import { TestingMapGalaxy } from "./testingControls/TestingMapGalaxy";
 import { TestingEnemyControls } from "./testingControls/TestingEnemyControls";
@@ -79,7 +79,7 @@ export default function Hud() {
             <h1>{speed}</h1>
           </>
         )}
-        <div className="hudData">
+        <div className="hudData mt-20">
           <ToggleTestControls />
           {!toggleTestControls && (
             <>

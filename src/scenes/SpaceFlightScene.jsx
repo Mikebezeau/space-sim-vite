@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../stores/store";
 import GalaxyMap from "../galaxy/GalaxyMap";
 import StarPoints from "../galaxy/StarPoints";
@@ -16,17 +15,12 @@ import ScanHudReadout from "../3d/spaceFlight/ScanHudReadout";
 import WeaponFire from "../3d/WeaponFire";
 import SystemMap from "../3d/spaceFlight/SystemMap";
 //import Skybox from "../3d/spaceFlight/Skybox";
-import { SCALE, PLAYER } from "../util/constants";
+import { SCALE, PLAYER } from "../constants/constants";
 
-export default function SpaceFlightMode() {
-  const { playerScreen, playerControlMode } = useStore((state) => state);
-  const starPointsRef = useRef();
-  const camera = useThree((state) => state.camera);
-
-  useFrame(() => {
-    if (starPointsRef.current)
-      starPointsRef.current.position.copy(camera.position);
-  });
+export default function SpaceFlight() {
+  //console.log("SpaceFlightMode rendered");
+  const playerScreen = useStore((state) => state.playerScreen);
+  const playerControlMode = useStore((state) => state.playerControlMode);
 
   return (
     <>
@@ -38,11 +32,7 @@ export default function SpaceFlightMode() {
 
       {playerScreen === PLAYER.screen.flight && (
         <>
-          <group
-            ref={starPointsRef}
-            position={[0, 0, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
+          <group position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
             <StarPoints view={PLAYER.screen.flight} />
           </group>
           {/*<Explosions />*/}

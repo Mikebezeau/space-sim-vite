@@ -9,15 +9,16 @@ import {
   useMouseUp,
   useMouseDown,
 } from "./hooks/controls/useMouseKBControls";
-import { IS_MOBLIE, PLAYER } from "./util/constants";
+import { IS_MOBLIE, PLAYER } from "./constants/constants";
 
 const PreAppControls = () => {
   // rerendering issue
-  //console.log("app controls render");
+  console.log("app controls render");
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
   const playerScreen = useStore((state) => state.playerScreen);
+  const payerIsInMech = useStore((state) => state.player.isInMech);
   const playerControlMode = useStore((state) => state.playerControlMode);
   const displayContextMenu = useStore((state) => state.displayContextMenu);
   const basicMenu = useEquipStore((state) => state.equipActions.basicMenu);
@@ -47,7 +48,7 @@ const PreAppControls = () => {
   //mouse click
   function handleMouseClick() {
     if (!IS_MOBLIE) {
-      if (playerScreen === PLAYER.screen.flight && !displayContextMenu) {
+      if (payerIsInMech && !displayContextMenu) {
         if (playerControlMode === PLAYER.controls.combat) {
           actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
         } else if (playerControlMode === PLAYER.controls.scan) {
@@ -67,7 +68,7 @@ const PreAppControls = () => {
   //SPEED UP
   function handleArrowUp() {
     if (
-      playerScreen === PLAYER.screen.flight &&
+      payerIsInMech &&
       (playerControlMode === PLAYER.controls.combat ||
         playerControlMode === PLAYER.controls.scan)
     )
@@ -78,7 +79,7 @@ const PreAppControls = () => {
   //SPEED DOWN
   function handleArrowDown() {
     if (
-      playerScreen === PLAYER.screen.flight &&
+      payerIsInMech &&
       (playerControlMode === PLAYER.controls.combat ||
         playerControlMode === PLAYER.controls.scan)
     )

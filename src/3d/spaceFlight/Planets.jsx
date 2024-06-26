@@ -6,7 +6,8 @@ import useStore from "../../stores/store";
 //import { distance } from "../../util/gameUtil";
 import PropTypes from "prop-types";
 
-const Planet = memo(({ planet }) => {
+const Planet = ({ planet, textureMaps }) => {
+  console.log("Planet rendered");
   //planet rotation
   //const { clock } = useStore((state) => state.mutation);
   const planetRef = useRef();
@@ -31,19 +32,6 @@ const Planet = memo(({ planet }) => {
     "images/maps/earthcloudmaptrans.jpg"
   );
 */
-
-  const textureMaps = useLoader(TextureLoader, [
-    "images/maps/sunmap.jpg",
-    "images/maps/earthmap1k.jpg",
-    "images/maps/jupitermap.jpg",
-    "images/maps/jupiter2_1k.jpg",
-    "images/maps/mercurymap.jpg",
-    "images/maps/moonmap1k.jpg",
-    "images/maps/venusmap.jpg",
-    "images/maps/earthcloudmaptrans.jpg",
-    "images/maps/earthcloudmap.jpg",
-  ]);
-
   //planet shape
   const geometryPlanet = new THREE.SphereGeometry(planet.radius, 64, 64);
   //planet material
@@ -111,23 +99,38 @@ const Planet = memo(({ planet }) => {
       />*/}
     </>
   );
-});
+};
 
 Planet.propTypes = {
   planet: PropTypes.object.isRequired,
+  textureMaps: PropTypes.array.isRequired,
 };
 
-// memo displayName
-Planet.displayName = "PlanetMemo";
+const PrePlanets = () => {
+  console.log("Planets rendered");
 
-export default function Planets() {
+  const textureMaps = useLoader(TextureLoader, [
+    "images/maps/sunmap.jpg",
+    "images/maps/earthmap1k.jpg",
+    "images/maps/jupitermap.jpg",
+    "images/maps/jupiter2_1k.jpg",
+    "images/maps/mercurymap.jpg",
+    "images/maps/moonmap1k.jpg",
+    "images/maps/venusmap.jpg",
+    "images/maps/earthcloudmaptrans.jpg",
+    "images/maps/earthcloudmap.jpg",
+  ]);
+
   const planets = useStore((state) => state.planets);
 
   return (
     <>
       {planets.map((planet, index) => (
-        <Planet key={index} planet={planet} />
+        <Planet key={index} planet={planet} textureMaps={textureMaps} />
       ))}
     </>
   );
-}
+};
+
+const Planets = memo(PrePlanets);
+export default Planets;

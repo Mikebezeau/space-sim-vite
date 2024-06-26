@@ -1,10 +1,10 @@
 import * as THREE from "three";
 //import React, { useRef, useMemo, useEffect } from "react";
-import React, { useRef, useMemo } from "react";
+import { memo, useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../stores/store";
 //import useStore, { audio, playAudio } from "../store";
-import { SCALE } from "../util/constants";
+import { SCALE } from "../constants/constants";
 
 function make(color, speed) {
   return {
@@ -26,14 +26,7 @@ function make(color, speed) {
   };
 }
 
-export default function Explosions() {
-  const explosions = useStore((state) => state.explosions);
-  return explosions.map(({ id, object3d }) => (
-    <Explosion key={id} position={object3d.position} />
-  ));
-}
-
-const Explosion = React.memo(({ position, scale }) => {
+const PreExplosion = ({ position, scale }) => {
   //function Explosion({ position, scale }) {
   const group = useRef();
   const { dummy } = useStore((state) => state.mutation);
@@ -65,7 +58,7 @@ const Explosion = React.memo(({ position, scale }) => {
   return (
     <group ref={group} position={position} scale={SCALE}>
       {particles.map(({ color, data }, index) => (
-        <instancedMesh key={Math.random()} args={[null, null, data.length]}>
+        <instancedMesh key={index} args={[null, null, data.length]}>
           <dodecahedronGeometry attach="geometry" args={[100 * SCALE, 0]} />
           <meshBasicMaterial
             attach="material"
@@ -80,4 +73,13 @@ const Explosion = React.memo(({ position, scale }) => {
       ))}
     </group>
   );
-});
+};
+
+const Explosion = memo(PreExplosion);
+
+export default function Explosions() {
+  const explosions = useStore((state) => state.explosions);
+  return explosions.map(({ id, object3d }) => (
+    <Explosion key={id} position={object3d.position} />
+  ));
+}

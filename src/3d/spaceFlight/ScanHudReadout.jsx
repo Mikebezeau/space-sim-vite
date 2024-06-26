@@ -2,8 +2,8 @@ import { memo, useRef } from "react";
 import * as THREE from "three";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
-import { SCALE } from "../../util/constants";
-import useWindowDimensions from "../../useWindowDimensions";
+import { SCALE } from "../../constants/constants";
+import useWindowDimensions from "../../hooks/useWindowDimensions";
 /*import { useLoader } from "@react-three/fiber";
 import { TextureLoader } from "three/src/loaders/TextureLoader.js";
 

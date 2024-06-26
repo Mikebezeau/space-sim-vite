@@ -1,5 +1,5 @@
 import useStore from "./stores/store";
-import { PLAYER } from "./util/constants";
+import { PLAYER } from "./constants/constants";
 import "./css/hudSpaceFlight.css";
 
 //basic HTML/CSS heads up display used to show player info

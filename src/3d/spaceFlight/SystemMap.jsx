@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import { memo, useRef } from "react"; //useMemo
+import { useRef } from "react"; //useMemo
 import { useThree, useFrame } from "@react-three/fiber";
 import { distance } from "../../util/gameUtil";
 import useStore from "../../stores/store";
-import { SCALE } from "../../util/constants";
+import { SCALE, SYSTEM_SCALE } from "../../constants/constants";
 
 const ringGeometry = new THREE.RingGeometry(1, 1.01, 32);
 const ringMaterial = new THREE.MeshBasicMaterial({
@@ -21,17 +21,30 @@ const planetMaterial = new THREE.MeshBasicMaterial({
 });
 const shipMaterial = new THREE.MeshBasicMaterial({
   color: new THREE.Color("lightskyblue"),
-  //emissive: "lightskyblue",
-  //emissiveIntensity: "0.5",
   wireframe: true,
 });
 
 const maxMapSize = 25;
 
 export default function SystemMap({ showPlayer = false }) {
-  const { player, systemScale, planetScale } = useStore((state) => state);
-  const systemMap = useRef();
+  console.log("SystemMap rendered");
   const { camera } = useThree();
+  const planets = useStore((state) => state.planets);
+  const systemMap = useRef(null);
+  const mapScaleRef = useRef(null);
+
+  // planet at end of array has largest orbit
+  // this is not working in a useEffect
+  let maxRadius = 0;
+  planets.forEach((planet) => {
+    const distanceToSun = distance(planet.object3d.position, {
+      x: 0,
+      y: 0,
+      z: 0,
+    });
+    maxRadius = distanceToSun > maxRadius ? distanceToSun : maxRadius;
+  });
+  mapScaleRef.current = showPlayer ? maxMapSize / maxRadius : 0.015;
 
   useFrame(() => {
     if (!systemMap.current) return null;
@@ -46,41 +59,23 @@ export default function SystemMap({ showPlayer = false }) {
         new THREE.Vector3(1, 0, 0),
         -Math.PI * 0.3
       );
+    } else {
       systemMap.current.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
     }
     //could make the detected enemies show up on map and only update once per 5 seconds
   });
 
-  const planets = useStore((state) => state.planets);
-  //planet at end of array has largest orbit
-  let maxRadius = 0;
-  planets.forEach((planet) => {
-    const distanceToSun = distance(planet.object3d.position, {
-      x: 0,
-      y: 0,
-      z: 0,
-    });
-    maxRadius = distanceToSun > maxRadius ? distanceToSun : maxRadius;
-  });
-  const mapScale = showPlayer ? maxMapSize / maxRadius : 0.015;
-  //console.log(mapScale, maxMapSize, maxRadius);
   return (
-    <group ref={systemMap} scale={showPlayer ? SCALE : 20 / systemScale}>
-      <System
-        showPlayer={showPlayer}
-        planets={planets}
-        planetScale={planetScale}
-        systemScale={systemScale}
-        mapScale={mapScale}
-      />
-      {showPlayer && (
-        <ShipPositions mapScale={mapScale} playerObj={player.object3d} />
-      )}
+    <group ref={systemMap} scale={showPlayer ? SCALE : 20 / SYSTEM_SCALE}>
+      <System showPlayer={showPlayer} mapScale={mapScaleRef.current} />
+      {showPlayer && <ShipPositions mapScale={mapScaleRef.current} />}
     </group>
   );
 }
 
-const PreSystem = ({ showPlayer, planets, mapScale }) => {
+const System = ({ showPlayer, mapScale }) => {
+  console.log("System rendered", mapScale);
+  const planets = useStore((state) => state.planets);
   //function System({ planets, mapScale }) {
   return planets.map((planet, index) => {
     //console.log(planet.type);
@@ -109,18 +104,25 @@ const PreSystem = ({ showPlayer, planets, mapScale }) => {
     );
   });
 };
-const System = memo(PreSystem);
 
-function ShipPositions({ mapScale, playerObj }) {
-  //, enemies }) {
+function ShipPositions({ mapScale }) {
+  console.log("ShipPositions rendered");
+  const getPlayer = useStore((state) => state.getPlayer);
+  const playerRef = useRef(null);
+
+  useFrame(() => {
+    playerRef.current.position.set(
+      mapScale * getPlayer().object3d.position.x,
+      mapScale * getPlayer().object3d.position.z,
+      0
+    );
+  });
+
   return (
     <group>
       <mesh
-        position={[
-          mapScale * playerObj.position.x,
-          mapScale * playerObj.position.z,
-          0,
-        ]}
+        ref={playerRef}
+        position={[0, 0, 0]}
         geometry={shipGeometry}
         material={shipMaterial}
       ></mesh>
