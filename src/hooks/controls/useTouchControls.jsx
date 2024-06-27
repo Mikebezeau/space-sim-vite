@@ -1,86 +1,53 @@
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { IS_MOBLIE } from "../../constants/constants";
 
 export function useTouchStartControls(elementID, callback) {
-  const callbackRef = useRef(callback);
-
+  //console.log("useTouchStartControls", elementID);
   useEffect(() => {
-    callbackRef.current = callback;
-  });
-
-  useEffect(() => {
-    function handleTouchStart() {
-      callbackRef.current();
-    }
-
     if (IS_MOBLIE)
       document
         .getElementById(elementID)
-        .addEventListener("touchstart", handleTouchStart);
-    //document.addEventListener("keyup", handleKeyUp);
+        .addEventListener("touchstart", callback, { passive: true });
 
     return (elementID) => {
       if (document.getElementById(elementID))
         document
           .getElementById(elementID)
-          .removeEventListener("touchstart", handleTouchStart);
-      //document.removeEventListener("keyup", handleKeyUp);
+          .removeEventListener("touchstart", callback, { passive: true });
     };
   }, []);
 }
 
 export function useTouchMoveControls(elementID, callback) {
-  const callbackRef = useRef(callback);
-
+  //console.log("useTouchMoveControls", elementID);
   useEffect(() => {
-    callbackRef.current = callback;
-  });
-
-  useEffect(() => {
-    function handleTouchMove(event) {
-      callbackRef.current(event);
-    }
-
     if (IS_MOBLIE)
       document
         .getElementById(elementID)
-        .addEventListener("touchmove", handleTouchMove);
-    //document.addEventListener("keyup", handleKeyUp);
+        .addEventListener("touchmove", callback, { passive: true });
 
     return (elementID) => {
       if (document.getElementById(elementID))
         document
           .getElementById(elementID)
-          .removeEventListener("touchmove", handleTouchMove);
-      //document.removeEventListener("keyup", handleKeyUp);
+          .removeEventListener("touchmove", callback, { passive: true });
     };
-  }, []);
+  }, [callback, elementID]);
 }
 
 export function useTouchEndControls(elementID, callback) {
-  const callbackRef = useRef(callback);
-
+  //console.log("useTouchEndControls", elementID);
   useEffect(() => {
-    callbackRef.current = callback;
-  });
-
-  useEffect(() => {
-    function handleTouchEnd(event) {
-      callbackRef.current(event);
-    }
-
     if (IS_MOBLIE)
       document
         .getElementById(elementID)
-        .addEventListener("touchend", handleTouchEnd);
-    //document.addEventListener("keyup", handleKeyUp);
+        .addEventListener("touchend", callback, { passive: true });
 
     return (elementID) => {
       if (document.getElementById(elementID))
         document
           .getElementById(elementID)
-          .removeEventListener("touchend", handleTouchEnd);
-      //document.removeEventListener("keyup", handleKeyUp);
+          .removeEventListener("touchend", callback, { passive: true });
     };
-  }, []);
+  }, [callback, elementID]);
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, memo, useRef, Suspense } from "react";
+import { useCallback, useEffect, useRef, Suspense } from "react";
 import * as THREE from "three";
 import { useThree, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
@@ -21,10 +21,9 @@ import {
 import {
   useTouchStartControls,
   useTouchEndControls,
-  useTouchMoveControls,
 } from "../hooks/controls/useTouchControls";
-//import { generateGalaxy } from "./galaxyUtils";
 import { STAR_DISPLAY_MODE } from "./galaxyConstants";
+//import { IS_MOBLIE } from "../constants/constants";
 import StarPoints from "./StarPoints";
 
 /*
@@ -54,7 +53,7 @@ function Box(props) {
 
 const RAYCAST_THRESHOLD = 1;
 
-const PreGalaxyMap = () => {
+const GalaxyMap = () => {
   console.log("GalaxyMap rendered");
   const { camera, scene } = useThree();
   const controlsRef = useRef(null);
@@ -83,7 +82,8 @@ const PreGalaxyMap = () => {
     );
 
     const starPointsRef = useRef(null);
-    const mouseMoved = useRef(false);
+    const mouseMovedStart = useRef(new THREE.Vector2(0, 0));
+    const mouseMovedEnd = useRef(new THREE.Vector2(0, 0));
     const mouseButtonDown = useRef(false);
 
     const getStarBufferPoisition = useCallback(
@@ -134,8 +134,9 @@ const PreGalaxyMap = () => {
         setStarSelectionBuffer(STAR_DISPLAY_MODE.dim);
         viewSelectedStar(selectedStarIndex);
         // set secondary selected stars to secondary selected mode
+        // these are stars within close proximity to selected star
         setSecondarySelectedStars(selectedStarIndex);
-        // set players star to selected mode after secondary selected stars are set
+        // overwrite current selected star (star player is at) to selected mode after secondary selected stars are set
         starSelectedBuffer.array[selectedStarIndex] =
           STAR_DISPLAY_MODE.selected;
         // set selectedStarRef to selected star for line drawing
@@ -143,7 +144,7 @@ const PreGalaxyMap = () => {
         // update star points aSelected attribute
         updateStarPointsSelectedAttribute();
       } else resestControlsCameraPosition();
-    }, []);
+    });
 
     const getRaycasterIntersects = (e, threshold) => {
       const raycaster = new THREE.Raycaster();
@@ -227,73 +228,7 @@ const PreGalaxyMap = () => {
       starPointsRef.current.geometry.attributes.aSelected.needsUpdate = true;
     };
 
-    /*
-    useTouchStartControls
-    useTouchEndControls
-    useTouchMoveControls
-    */
-    const handleMouseUp = (e) => {
-      // only activate on right/left click, and mouse not moved to control camera
-      if ((e.button !== 0 && e.button !== 2) || mouseMoved.current === true)
-        return;
-
-      // clear line
-      lineToPointsRef.current = [];
-      // right click to clear selection
-      if (e.button === 2) {
-        setStarSelectionBuffer(STAR_DISPLAY_MODE.unselected);
-        selectedStarRef.current = null;
-        hoveredStarIndexRef.current = null;
-        warpToStarIndexRef.current = null;
-        lineToWarpPointsRef.current = [];
-        resestControlsCameraPosition();
-      }
-      // only activate selection if left mouse button is clicked
-      else {
-        if (hoveredStarIndexRef.current !== null) {
-          // clear old warp to selection
-          if (warpToStarIndexRef.current !== null) {
-            starSelectedBuffer.array[warpToStarIndexRef.current] =
-              STAR_DISPLAY_MODE.secondarySelected;
-          }
-          warpToStarIndexRef.current = hoveredStarIndexRef.current;
-          // set warp to line
-          const warpToStarPosition = getStarBufferPoisition(
-            warpToStarIndexRef.current
-          );
-          console.log(warpToStarIndexRef.current, warpToStarPosition);
-          lineToWarpPointsRef.current = [
-            [
-              warpToStarPosition.x + galaxyRef.current.position.x,
-              warpToStarPosition.y + galaxyRef.current.position.y,
-              warpToStarPosition.z + galaxyRef.current.position.z,
-            ],
-          ];
-          // new warp to selection
-          starSelectedBuffer.array[warpToStarIndexRef.current] =
-            STAR_DISPLAY_MODE.selected;
-          // set warp target star index
-          setSelectedWarpStar(warpToStarIndexRef.current);
-        } else {
-          setStarRaycastSelection(e);
-        }
-      }
-      // update star points aSelected attribute
-      updateStarPointsSelectedAttribute();
-    };
-
-    useMouseUp((e) => {
-      mouseButtonDown.current = false;
-      handleMouseUp(e);
-    });
-
-    useMouseDown(() => {
-      mouseButtonDown.current = true;
-      mouseMoved.current = false;
-    });
-
-    useMouseMove((e) => {
-      mouseMoved.current = true;
+    const setHoveredSelectedStar = (e) => {
       if (selectedStarRef.current && !mouseButtonDown.current) {
         const intersects = getRaycasterIntersects(e, RAYCAST_THRESHOLD / 4);
         // get hovered over star to draw a line to
@@ -319,7 +254,99 @@ const PreGalaxyMap = () => {
           lineToPointsRef.current = [];
         }
       }
+    };
+
+    const setSelectedWarpToStar = (e) => {
+      // clear line
+      lineToPointsRef.current = [];
+      if (hoveredStarIndexRef.current !== null) {
+        // clear old warp to selection
+        if (warpToStarIndexRef.current !== null) {
+          starSelectedBuffer.array[warpToStarIndexRef.current] =
+            STAR_DISPLAY_MODE.secondarySelected;
+        }
+        warpToStarIndexRef.current = hoveredStarIndexRef.current;
+        // set warp to line
+        const warpToStarPosition = getStarBufferPoisition(
+          warpToStarIndexRef.current
+        );
+        lineToWarpPointsRef.current = [
+          [
+            warpToStarPosition.x + galaxyRef.current.position.x,
+            warpToStarPosition.y + galaxyRef.current.position.y,
+            warpToStarPosition.z + galaxyRef.current.position.z,
+          ],
+        ];
+        // new warp to selection
+        starSelectedBuffer.array[warpToStarIndexRef.current] =
+          STAR_DISPLAY_MODE.selected;
+        // set warp target star index
+        setSelectedWarpStar(warpToStarIndexRef.current);
+      } else {
+        // select primary and secondary stars with raycaster
+        setStarRaycastSelection(e);
+      }
+      // update star points aSelected attribute
+      updateStarPointsSelectedAttribute();
+    };
+
+    const viewGalaxy = () => {
+      setStarSelectionBuffer(STAR_DISPLAY_MODE.unselected);
+      selectedStarRef.current = null;
+      hoveredStarIndexRef.current = null;
+      warpToStarIndexRef.current = null;
+      lineToWarpPointsRef.current = [];
+      resestControlsCameraPosition();
+      // update star points aSelected attribute
+      updateStarPointsSelectedAttribute();
+    };
+
+    const handleMouseDown = (e) => {
+      mouseButtonDown.current = true;
+      mouseMovedStart.current.set(e.clientX, e.clientY);
+    };
+    useTouchStartControls("root", (e) => {
+      handleMouseDown(e.changedTouches[0]);
     });
+    useMouseDown(handleMouseDown);
+
+    useMouseUp((e) => {
+      // only activate on right/left click
+      if (e.button !== 0 && e.button !== 2) return;
+
+      mouseButtonDown.current = false;
+      // only activate if mouse/finger not moved to control camera
+      mouseMovedEnd.current.set(e.clientX, e.clientY);
+      if (mouseMovedStart.current.distanceTo(mouseMovedEnd.current) > 10)
+        return;
+
+      if (e.button === 2) {
+        // right click to clear selection and view full galaxy
+        viewGalaxy();
+      } else {
+        // set selected star if left mouse button is clicked
+        setSelectedWarpToStar(e);
+      }
+    });
+
+    useTouchEndControls("root", (e) => {
+      mouseButtonDown.current = false;
+      mouseMovedEnd.current.set(
+        e.changedTouches[0].clientX,
+        e.changedTouches[0].clientY
+      );
+      console.log(mouseMovedEnd.current);
+      if (mouseMovedStart.current.distanceTo(mouseMovedEnd.current) > 10)
+        return;
+      // set hoveredSelectedStar on first touch
+      const currentHoveredStarIndex = hoveredStarIndexRef.current;
+      setHoveredSelectedStar(e.changedTouches[0]);
+      // if user is selecting the same star again, setSelectedWarpToStar
+      if (currentHoveredStarIndex === hoveredStarIndexRef.current)
+        setSelectedWarpToStar(e.changedTouches[0]);
+    });
+
+    useMouseMove(setHoveredSelectedStar);
 
     /*
     useFrame((state) => {
@@ -395,5 +422,4 @@ const PreGalaxyMap = () => {
   );
 };
 
-const GalaxyMap = memo(PreGalaxyMap);
 export default GalaxyMap;

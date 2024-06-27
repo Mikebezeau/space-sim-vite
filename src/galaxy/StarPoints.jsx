@@ -1,4 +1,4 @@
-import { forwardRef, useRef, memo, useLayoutEffect } from "react";
+import { forwardRef, useRef, useLayoutEffect } from "react";
 import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
 import { useThree } from "@react-three/fiber";
 import starSpriteSrc from "./sprites/sprite120.png";
@@ -7,7 +7,7 @@ import "./starPointsShaderMaterial.js";
 import useStore from "../stores/store.jsx";
 import { PLAYER } from "../constants/constants.jsx";
 
-const PreStarPoints = forwardRef(function StarPoints(
+const StarPoints = forwardRef(function StarPoints(
   { view },
   starPointsForwardRef
 ) {
@@ -93,5 +93,4 @@ const PreStarPoints = forwardRef(function StarPoints(
   );
 });
 
-const StarPoints = memo(PreStarPoints);
 export default StarPoints;

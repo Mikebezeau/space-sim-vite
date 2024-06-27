@@ -1,3 +1,4 @@
+import { memo } from "react";
 import useStore from "./stores/store";
 import {
   useTouchStartControls,
@@ -9,9 +10,11 @@ import "./css/hud.css";
 import "./css/hudTouchControls.css";
 import PropTypes from "prop-types";
 
-export default function TouchControls({ playerScreen, playerControlMode }) {
+const PreTouchControls = ({ playerScreen, playerControlMode }) => {
+  console.log("TouchControls rendered");
   const testing = useStore((state) => state.testing);
-  const { actions, displayContextMenu } = useStore((state) => state);
+  const actions = useStore((state) => state.actions);
+  const displayContextMenu = useStore((state) => state.displayContextMenu);
   const speed = useStore((state) => state.player.speed);
 
   /*
@@ -43,6 +46,7 @@ export default function TouchControls({ playerScreen, playerControlMode }) {
         playerControlMode === PLAYER.controls.scan &&
         !displayContextMenu
       ) {
+        console.log("warpToPlanet");
         testing.warpToPlanet();
       }
     }
@@ -100,9 +104,12 @@ export default function TouchControls({ playerScreen, playerControlMode }) {
       */}
     </>
   );
-}
+};
 
-TouchControls.propTypes = {
+PreTouchControls.propTypes = {
   playerScreen: PropTypes.number.isRequired,
   playerControlMode: PropTypes.number.isRequired,
 };
+
+const TouchControls = memo(PreTouchControls);
+export default TouchControls;

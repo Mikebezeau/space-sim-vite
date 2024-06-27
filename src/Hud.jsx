@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import useStore from "./stores/store";
 import { PLAYER } from "./constants/constants";
 import { ToggleTestControls } from "./testingControls/ToggleTestControls";
-//import { TestingMapGalaxy } from "./testingControls/TestingMapGalaxy";
 import { TestingEnemyControls } from "./testingControls/TestingEnemyControls";
 import { TestingPlayerLocationControls } from "./testingControls/TestingPlayerLocationControls";
 import { TestingBoidControls } from "./testingControls/TestingBoidControls";
@@ -117,7 +116,6 @@ export default function Hud() {
           )}
           {toggleTestControls && (
             <>
-              {/*<TestingMapGalaxy />*/}
               <button
                 onClick={() => switchScreen(PLAYER.screen.equipmentBuild)}
               >

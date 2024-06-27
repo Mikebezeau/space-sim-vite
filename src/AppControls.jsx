@@ -13,7 +13,7 @@ import { IS_MOBLIE, PLAYER } from "./constants/constants";
 
 const PreAppControls = () => {
   // rerendering issue
-  console.log("app controls render");
+  console.log("AppControls render");
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
