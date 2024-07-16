@@ -298,7 +298,7 @@ function getWaterMesh(boxGeometryParameters, position) {
     };
 
   // Use a mesh phong meterial, which can be used for shiny surfaces with specular highlights
-  material = new THREE.MeshPhongMaterial({
+  material = new THREE.MeshLambertMaterial({
     color: colors.WATER,
     transparent: true,
     opacity: 0.6,
@@ -559,9 +559,10 @@ function generateGroundBlocks(rng, gridSize /*, elevation*/) {
     treesMeshList = [],
     parkingMeshList = [];
 
+  /*
   //add a fun little building in the center of big cities
   if (gridSize > 8) {
-    const pyramidMaterial = new THREE.MeshPhongMaterial({
+    const pyramidMaterial = new THREE.MeshLambertMaterial({
       color: new THREE.Color("#EEE"),
       side: THREE.DoubleSide,
       //castShadow: 1,
@@ -580,6 +581,7 @@ function generateGroundBlocks(rng, gridSize /*, elevation*/) {
     //pyramid.castShadow = true;
     buildingMeshList = buildingMeshList.concat(pyramid);
   }
+  */
   // Go through each one of our grid blocks
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
@@ -1131,7 +1133,7 @@ function generateBuildingBlock(
 
 // Function which initializes all of our city / scene elements
 function generateCity(rng, gridSize, density) {
-  console.log("generating city");
+  //console.log("generating city");
   generatePreceduralMaps(rng, gridSize, density);
   const buildings = generateGroundBlocks(rng, gridSize);
   const terrain = null; //generateCityTerrain(gridSize, elevation);

@@ -1,6 +1,7 @@
 //import React, { useMemo, useRef, useEffect } from "react";
 import { useState } from "react";
-import useStore from "../stores/store";
+import EquipmentMenuControlsMouseKB from "../controls/EquipmentMenuControlsMouseKB";
+import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
 import mechDesigns from "../data/mechDesigns";
 
@@ -15,6 +16,7 @@ import { PLAYER } from "../constants/constants";
 import "../css/equipmentMenu.css";
 
 export default function EquipmentMenu() {
+  console.log("EquipmentMenu rendered");
   //BLUEPRINT SELECTION MENU
   const { playerMechBP, equipActions } = useEquipStore((state) => state);
 
@@ -66,7 +68,7 @@ export default function EquipmentMenu() {
   };
 
   //MAIN DESIGN MENU
-  const { switchScreen } = useStore((state) => state.actions);
+  const { switchScreen } = usePlayerControlsStore((state) => state.actions);
 
   const { mainMenuSelection } = useEquipStore((state) => state); //top menu
 
@@ -154,6 +156,7 @@ export default function EquipmentMenu() {
 
   return (
     <>
+      <EquipmentMenuControlsMouseKB />
       <div id="equipmentMenu">
         <div>
           <button onClick={() => switchScreen(PLAYER.screen.flight)}>

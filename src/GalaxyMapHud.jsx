@@ -1,11 +1,12 @@
 import useStore from "./stores/store";
+import usePlayerControlsStore from "./stores/playerControlsStore";
 import { PLAYER } from "./constants/constants";
 import "./css/hudSpaceFlight.css";
 
 //basic HTML/CSS heads up display used to show player info
 export default function GalaxyMapHud() {
-  const { switchScreen } = useStore((state) => state.actions);
   const { planets } = useStore((state) => state);
+  const { switchScreen } = usePlayerControlsStore((state) => state.actions);
 
   return (
     <>

@@ -18,18 +18,24 @@ export const getRandomArbitrary = (min, max) => {
   return Math.random() * (max - min) + min;
 };
 
-export const flipRotation = (quat) => {
-  //const tempObject = new THREE.Object3D();
-  const flipQuat = new THREE.Quaternion(),
-    newQuat = new THREE.Quaternion();
+export const setVisible = (obj, isVisible) => {
+  obj.traverse((child) => {
+    if (child.isMesh) {
+      child.visible = isVisible;
+    }
+  });
+};
 
-  //object.getWorldQuaternion(newQuat);
-  //newQuat.setFromQuaternion(quat);
+// avoiding creating new objects in loop
+const flipQuat = new THREE.Quaternion(),
+  newQuat = new THREE.Quaternion();
+const axisVector = new THREE.Vector3(0, 1, 0);
+flipQuat.setFromAxisAngle(axisVector, Math.PI);
+// function to flip the rotation of a quaternion
+export const flipRotation = (quat) => {
+  // should be using quat.invert()
   //flip the opposite direction
-  flipQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
   newQuat.multiplyQuaternions(quat, flipQuat);
-  //
-  //tempObject.rotation.setFromQuaternion(newQuat);
   return newQuat;
 };
 

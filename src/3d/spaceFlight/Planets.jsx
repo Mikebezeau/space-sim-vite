@@ -5,9 +5,10 @@ import { TextureLoader } from "three/src/loaders/TextureLoader.js";
 import useStore from "../../stores/store";
 //import { distance } from "../../util/gameUtil";
 import PropTypes from "prop-types";
+import { DEBUG_RENDERS } from "../../constants/debugConstants";
 
 const Planet = ({ planet, textureMaps }) => {
-  console.log("Planet rendered");
+  console.log("Planet rendered", DEBUG_RENDERS);
   //planet rotation
   //const { clock } = useStore((state) => state.mutation);
   const planetRef = useRef();
@@ -35,10 +36,9 @@ const Planet = ({ planet, textureMaps }) => {
   //planet shape
   const geometryPlanet = new THREE.SphereGeometry(planet.radius, 64, 64);
   //planet material
-  const materialPlanet = new THREE.MeshPhongMaterial({
+  const materialPlanet = new THREE.MeshLambertMaterial({
     map: textureMaps[planet.textureMap],
     color: planet.color,
-    transparent: false,
   });
   if (planet.type === "SUN") {
     materialPlanet.map = null;

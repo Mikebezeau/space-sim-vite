@@ -7,14 +7,13 @@ import StarSystem from "./StarSystem"; //ACCRETE
 const generateSystem = (
   starIndex,
   systemScale = 1, // systemScale and planetScale used for mini system map
-  planetScale = 1,
-  noConsoleLog = true
+  planetScale = 1
 ) => {
   const rng = seedrandom(starIndex);
   const star = generateStarType(starIndex);
   //Only one in about five hundred thousand stars has more than twenty times the mass of the Sun.
   let solarMass = star.solarMass;
-  console.log("generateStarType", starIndex, star);
+  //console.log("generateStarType", starIndex, star);
   //15% of stars have a system like earths (with gas giants)
   //ACCRETE
   const system = new StarSystem(
@@ -32,11 +31,9 @@ const generateSystem = (
   ); //ACCRETE
   const newSystem = system.create();
   const solarRadius = newSystem.radius * SCALE * planetScale; //star.size * 700000 * SCALE * planetScale;
-  if (!noConsoleLog) console.log(newSystem);
 
   //-------
   let temp = [];
-  console.log("star.colorHex", star.colorHex, new THREE.Color(star.colorHex));
   //create sun
   temp.push({
     type: "SUN",
@@ -69,7 +66,7 @@ types:
     
 */
   newSystem.planets.forEach((planet) => {
-    if (!noConsoleLog) console.log(planet.radius, planet.planetType);
+    //console.log(planet.radius, planet.planetType);
     //planet.radius = planet.radius * SCALE * planetScale;
     /*
     Rocky

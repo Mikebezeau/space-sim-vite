@@ -1,27 +1,27 @@
-import { forwardRef, memo } from "react";
-import { MeshStandardMaterial, Color } from "three";
+import { forwardRef } from "react";
+import { MeshBasicMaterial, Color } from "three";
 import { ServoShapes, WeaponShapes } from "../data/equipShapes";
 import { equipList } from "../data/equipData";
 
-const glowMaterial = new MeshStandardMaterial({
+const blueMaterial = new MeshBasicMaterial({
   color: new Color("lightblue"),
-  emissive: new Color("lightblue"),
-  emissiveIntensity: 0.5,
+  //emissive: new Color("lightblue"),
+  //emissiveIntensity: 0.5,
 });
 
-const directionGlowMatLeader = new MeshStandardMaterial({
+const directionPointerLeaderMaterial = new MeshBasicMaterial({
   color: new Color("green"),
-  emissive: new Color("green"),
-  emissiveIntensity: 0.5,
+  //emissive: new Color("green"),
+  //emissiveIntensity: 0.5,
 });
 
-const directionGlowMatNonLeader = new MeshStandardMaterial({
+const directionPointerFollowerMaterial = new MeshBasicMaterial({
   color: new Color("red"),
-  emissive: new Color("red"),
-  emissiveIntensity: 0.5,
+  //emissive: new Color("red"),
+  //emissiveIntensity: 0.5,
 });
 
-const PreBuildMech = forwardRef(function BuildMech(
+const BuildMech = forwardRef(function BuildMech(
   {
     mechBP,
     damageReadoutMode,
@@ -31,13 +31,15 @@ const PreBuildMech = forwardRef(function BuildMech(
     weaponEditId = null,
     editMode = false,
     showAxisLines = false,
+    isWireFrame = false,
     isLeader = false,
   },
   buildMechForwardRef
 ) {
-  const directionGlowMaterial = isLeader
-    ? directionGlowMatLeader
-    : directionGlowMatNonLeader;
+  console.log("BuildMech rendered");
+  const directionPointerMaterial = isLeader
+    ? directionPointerLeaderMaterial
+    : directionPointerFollowerMaterial;
   //const axesHelper = new THREE.AxesHelper( 5 );
 
   /*
@@ -60,6 +62,7 @@ const PreBuildMech = forwardRef(function BuildMech(
           <ServoShapes
             name={servo.id + "_servo"}
             damageReadoutMode={damageReadoutMode}
+            isWireFrame={isWireFrame}
             isHit={servoHitNames.find((name) => name === servo.id + "_servo")}
             servo={servo}
             drawDistanceLevel={drawDistanceLevel}
@@ -76,6 +79,7 @@ const PreBuildMech = forwardRef(function BuildMech(
               <WeaponShapes
                 name={weapon.id + "_weapon"}
                 damageReadoutMode={damageReadoutMode}
+                isWireFrame={isWireFrame}
                 isHit={servoHitNames.find(
                   (name) => name === weapon.id + "_weapon"
                 )}
@@ -92,7 +96,7 @@ const PreBuildMech = forwardRef(function BuildMech(
           <mesh
             position={[0, 0, 150]}
             rotation={[Math.PI / 2, 0, 0]}
-            material={directionGlowMaterial}
+            material={directionPointerMaterial}
           >
             <cylinderGeometry attach="geometry" args={[0.25, 0.25, 300, 4]} />
           </mesh>
@@ -101,7 +105,7 @@ const PreBuildMech = forwardRef(function BuildMech(
               <mesh
                 position={[0, 0, 0]}
                 rotation={[0, Math.PI / 2, 0]}
-                material={glowMaterial}
+                material={blueMaterial}
               >
                 <cylinderGeometry
                   attach="geometry"
@@ -111,7 +115,7 @@ const PreBuildMech = forwardRef(function BuildMech(
               <mesh
                 position={[0, 0, 0]}
                 rotation={[0, 0, Math.PI / 2]}
-                material={glowMaterial}
+                material={blueMaterial}
               >
                 <cylinderGeometry
                   attach="geometry"
@@ -126,5 +130,4 @@ const PreBuildMech = forwardRef(function BuildMech(
   );
 });
 
-const BuildMech = memo(PreBuildMech);
 export default BuildMech;

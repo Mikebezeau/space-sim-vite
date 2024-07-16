@@ -1,53 +1,43 @@
 import { useEffect } from "react";
-import { IS_MOBLIE } from "../../constants/constants";
 
 export function useTouchStartControls(elementID, callback) {
-  //console.log("useTouchStartControls", elementID);
   useEffect(() => {
-    if (IS_MOBLIE)
-      document
-        .getElementById(elementID)
-        .addEventListener("touchstart", callback, { passive: true });
+    const element = document.getElementById(elementID);
+    const isSupported = element && element.addEventListener;
+    if (!isSupported) return;
 
-    return (elementID) => {
-      if (document.getElementById(elementID))
-        document
-          .getElementById(elementID)
-          .removeEventListener("touchstart", callback, { passive: true });
+    element.addEventListener("touchstart", callback, { passive: true });
+
+    return () => {
+      element.removeEventListener("touchstart", callback, { passive: true });
     };
   }, []);
 }
 
 export function useTouchMoveControls(elementID, callback) {
-  //console.log("useTouchMoveControls", elementID);
   useEffect(() => {
-    if (IS_MOBLIE)
-      document
-        .getElementById(elementID)
-        .addEventListener("touchmove", callback, { passive: true });
+    const element = document.getElementById(elementID);
+    const isSupported = element && element.addEventListener;
+    if (!isSupported) return;
 
-    return (elementID) => {
-      if (document.getElementById(elementID))
-        document
-          .getElementById(elementID)
-          .removeEventListener("touchmove", callback, { passive: true });
+    element.addEventListener("touchmove", callback, { passive: true });
+
+    return () => {
+      element.removeEventListener("touchmove", callback, { passive: true });
     };
   }, [callback, elementID]);
 }
 
 export function useTouchEndControls(elementID, callback) {
-  //console.log("useTouchEndControls", elementID);
   useEffect(() => {
-    if (IS_MOBLIE)
-      document
-        .getElementById(elementID)
-        .addEventListener("touchend", callback, { passive: true });
+    const element = document.getElementById(elementID);
+    const isSupported = element && element.addEventListener;
+    if (!isSupported) return;
 
-    return (elementID) => {
-      if (document.getElementById(elementID))
-        document
-          .getElementById(elementID)
-          .removeEventListener("touchend", callback, { passive: true });
+    element.addEventListener("touchend", callback, { passive: true });
+
+    return () => {
+      element.removeEventListener("touchend", callback, { passive: true });
     };
   }, [callback, elementID]);
 }

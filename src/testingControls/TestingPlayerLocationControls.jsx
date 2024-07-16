@@ -1,4 +1,3 @@
-import React from "react";
 import useStore from "../stores/store";
 import "../css/toggleControl.css";
 
@@ -8,9 +7,10 @@ export function TestingPlayerLocationControls() {
 
   return (
     <>
-      <button onClick={testing.changeLocationSpace}>SpaceFlight</button>
-      <button onClick={testing.changeLocationPlanet}>PlanetWalk</button>
-      <button onClick={testing.changeLocationCity}>ToCity</button>
+      <button onClick={testing.changeLocationSpace}>Space Flight</button>
+      <button onClick={testing.warpToStation}>To Station</button>
+      <button onClick={testing.changeLocationPlanet}>Planet Walk</button>
+      <button onClick={testing.changeLocationCity}>To City</button>
     </>
   );
 }

@@ -1,10 +1,24 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
+import usePlayerControlsStore from "./playerControlsStore";
+import {
+  initCamMainMenu,
+  initPlayer,
+  randomData,
+  randomEnemies,
+  randomStations,
+} from "../util/initGameUtil";
+import {
+  guid,
+  initPlayerMechBP,
+  //initStationBP,
+  //initEnemyMechBP,
+} from "../util/initEquipUtil";
 
 import generateGalaxy from "../galaxy/generateGalaxy";
 import generateSystem from "../solarSystem/generateSystem";
-import initTerrain from "../planets/initTerrain";
+import generateTerrain from "../planets/generateTerrain";
 
 import { addEffect } from "@react-three/fiber";
 
@@ -12,12 +26,6 @@ import { addEffect } from "@react-three/fiber";
 import { loopAI } from "../masterAI";
 
 import { servoUtil } from "../util/mechServoUtil";
-import {
-  guid,
-  initPlayerMechBP,
-  initStationBP,
-  initEnemyMechBP,
-} from "../util/initEquipUtil";
 
 import {
   SCALE,
@@ -27,23 +35,15 @@ import {
   STARS_IN_GALAXY,
   GALAXY_SIZE,
   PLAYER,
+  PLAYER_START,
   WEAPON_FIRE_SPEED,
 } from "../constants/constants";
 
 import { setupFlock } from "../util/boidController";
 
-let guidCounter = 1; //global unique ID
 let explosionGuidCounter = 1; //global unique ID
 
 const numEnemies = 9;
-
-export const playerStart = {
-  system: 31232,
-  mechBPindex: 0,
-  x: 0, // position set in actions.init()
-  y: 0,
-  z: 0,
-};
 
 //let cancelExplosionTO = undefined;
 
@@ -97,19 +97,15 @@ const useStore = create((set, get) => {
     sound: false,
     //galaxy map
     menuCam: initCamMainMenu(),
-    currentStar: playerStart.system,
+    currentStar: PLAYER_START.system,
     // intial star position selection in galaxy map
-    selectedStar: playerStart.system, // selectedStar set in actions.init()
+    selectedStar: PLAYER_START.system, // selectedStar set in actions.init()
     selectedWarpStar: null,
     //galaxyStarPositionsFloat32: initgalaxyStarPositionsFloat32(),
     galaxy: generateGalaxy(STARS_IN_GALAXY, GALAXY_SIZE), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
     //galaxyMapZoom: 0,
     //blueprint design
     blueprintCam: initCamMainMenu(),
-    playerScreen: PLAYER.screen.flight,
-    playerActionMode: PLAYER.action.inspect,
-    playerControlMode: PLAYER.controls.scan,
-    playerViewMode: PLAYER.view.firstPerson,
     displayContextMenu: false, //right click menu
     contextMenuPos: { x: 0, y: 0 },
     //flying
@@ -131,12 +127,12 @@ const useStore = create((set, get) => {
       50 * SCALE,
       () => 1 + Math.random() * 2.5
     ),
-    enemies: randomEnemies(track),
+    enemies: randomEnemies(numEnemies, track),
     enemyBoids: setupFlock(numEnemies),
-    planets: generateSystem(playerStart.system, SYSTEM_SCALE, PLANET_SCALE),
-    stations: randomStations(seedrandom(playerStart.system), 1),
-    //initTerrain first parameter is the rng seed
-    planetTerrain: initTerrain(playerStart.system, {
+    planets: generateSystem(PLAYER_START.system, SYSTEM_SCALE, PLANET_SCALE),
+    stations: randomStations(seedrandom(PLAYER_START.system), 1),
+    //generateTerrain first parameter is the rng seed
+    planetTerrain: generateTerrain(PLAYER_START.system, {
       numCity: 4,
       minSize: 3,
       maxSize: 25,
@@ -239,7 +235,9 @@ const useStore = create((set, get) => {
             object3d: locationInfo.saveSpaceObject3d,
           },
         }));
-        set(() => ({ playerScreen: PLAYER.screen.flight }));
+        usePlayerControlsStore
+          .getState()
+          .actions.switchScreen(PLAYER.screen.flight);
       },
       changeLocationPlanet() {
         //set player location
@@ -252,10 +250,15 @@ const useStore = create((set, get) => {
         set((state) => ({
           player: { ...state.player, locationInfo: locationInfo },
         }));
-        set(() => ({ playerScreen: PLAYER.screen.landedPlanet }));
+        usePlayerControlsStore
+          .getState()
+          .actions.switchScreen(PLAYER.screen.landedPlanet);
       },
       changeLocationCity() {
-        get().testing.changeLocationPlanet();
+        //get().testing.changeLocationPlanet();
+        usePlayerControlsStore
+          .getState()
+          .actions.switchScreen(PLAYER.screen.landedPlanet);
         let player = get().player;
         player.object3d.position.setX(
           get().planetTerrain.terrain.CityPositions[0].position.x
@@ -265,6 +268,24 @@ const useStore = create((set, get) => {
           get().planetTerrain.terrain.CityPositions[0].position.z
         );
         set(() => ({ player: player }));
+      },
+      warpToStation() {
+        let player = get().player;
+        if (get().stations[0]) {
+          const targetStation = get().stations[0];
+          player.object3d.position.set(
+            targetStation.position.x,
+            targetStation.position.y,
+            targetStation.position.z
+          );
+          player.object3d.translateZ(-15000 * SCALE);
+          player.object3d.lookAt(
+            targetStation.position.x,
+            targetStation.position.y,
+            targetStation.position.z
+          );
+          set(() => ({ player: player }));
+        }
       },
       warpToPlanet() {
         let player = get().player;
@@ -291,16 +312,15 @@ const useStore = create((set, get) => {
         //actions.toggleSound(get().sound);
 
         //set player mech info
-        actions.initPlayerMech(playerStart.mechBPindex);
+        actions.initPlayerMech(PLAYER_START.mechBPindex);
         // set player start position
-        get().actions.setSelectedStar(playerStart.system);
+        get().actions.setSelectedStar(PLAYER_START.system);
 
         //addEffect will add the following code to what gets run per frame
         //removes exploded emenies and rocks from store data, removes explosions once they have timed out
         addEffect(() => {
           const {
             player,
-            playerScreen,
             selectedTargetIndex,
             playerMechBP,
             weaponFireList,
@@ -312,7 +332,11 @@ const useStore = create((set, get) => {
             actions,
           } = get();
 
-          if (playerScreen !== PLAYER.screen.flight) return;
+          if (
+            usePlayerControlsStore.getState().playerScreen !==
+            PLAYER.screen.flight
+          )
+            return;
 
           //run enemy AI routine
           //find enemies in area of player
@@ -415,10 +439,18 @@ const useStore = create((set, get) => {
               const servoHit = playerMechBP[
                 player.currentMechBPindex
               ].getServoById(parseInt(shotHit.servoHitName));
-
-              servoHit.structureDamage =
-                servoHit.structureDamage + damageThroughShield;
-
+              if (!servoHit) {
+                console.log(
+                  "servoHit error id:",
+                  parseInt(shotHit.servoHitName),
+                  shotHit,
+                  "shotHit",
+                  shotHit
+                );
+              } else {
+                servoHit.structureDamage =
+                  servoHit.structureDamage + damageThroughShield;
+              }
               player.shield.damage =
                 player.shield.damage + shotHit.weapon.damage();
             });
@@ -506,36 +538,21 @@ const useStore = create((set, get) => {
           player.size * 5000
         );
         const yellow = new THREE.Color("yellow");
-        const mesh = new THREE.MeshStandardMaterial({
+        const mesh = new THREE.MeshBasicMaterial({
           color: yellow,
-          emissive: yellow,
-          emissiveIntensity: 1,
+          //emissive: yellow,
+          //emissiveIntensity: 1,
           wireframe: true,
         });
         player.boxHelper = new THREE.Mesh(box, mesh); //visible bounding box, geometry of which is used to calculate hit detection box
         player.boxHelper.geometry.computeBoundingBox();
         player.hitBox.copy(player.boxHelper.geometry.boundingBox);
       },
-      setActionMode(playerActionMode) {
-        // PLAYER.action.inspect: 0, manualControl: 1, autoControl: 2
-        set(() => ({ playerActionMode }));
-      },
-      viewModeSelect(playerViewMode) {
-        // player selection of view: 1st or 3rd person
-        set(() => ({ playerViewMode }));
-      },
       activateContextMenu(xPos, yPos) {
         //if options up arleady, hide menu
         set((state) => ({ displayContextMenu: !state.displayContextMenu }));
         set(() => ({ contextMenuPos: { x: xPos, y: yPos } }));
       },
-      contextMenuSelect(selectVal) {
-        // player selection of control options
-        set(() => ({ playerControlMode: selectVal }));
-        //hide menu
-        set(() => ({ displayContextMenu: false }));
-      },
-
       setFocusPlanetIndex(focusPlanetIndex) {
         if (get().focusPlanetIndex !== focusPlanetIndex) {
           set(() => ({ focusPlanetIndex }));
@@ -682,7 +699,8 @@ const useStore = create((set, get) => {
           mechBP.servoList
         ).offset;
         const currentScale =
-          get().playerScreen === PLAYER.screen.flight
+          usePlayerControlsStore.getState().playerScreen ===
+          PLAYER.screen.flight
             ? SCALE_PLANET_WALK
             : SCALE;
         weaponFireObj.translateX(
@@ -724,7 +742,11 @@ const useStore = create((set, get) => {
         else if (!autoFire) angleDiff = 1; //!isPlayer?
 
         //this sucks
-        if (get().playerScreen !== PLAYER.screen.flight) return null;
+        if (
+          usePlayerControlsStore.getState().playerScreen !==
+          PLAYER.screen.flight
+        )
+          return null;
 
         //checking if angle is not within limit for player firing
         if (autoFire && angleDiff > 0.3) return null;
@@ -762,10 +784,10 @@ const useStore = create((set, get) => {
           0.1 * currentScale,
           200 * currentScale
         );
-        const mesh = new THREE.MeshStandardMaterial({
+        const mesh = new THREE.MeshBasicMaterial({
           color: new THREE.Color("yellow"),
-          emissive: new THREE.Color("yellow"),
-          emissiveIntensity: 1,
+          //emissive: new THREE.Color("yellow"),
+          //emissiveIntensity: 1,
           wireframe: true,
         });
         const boxHelper = new THREE.Mesh(box, mesh); //visible bounding box, geometry of which is used to calculate hit detection box
@@ -851,13 +873,6 @@ const useStore = create((set, get) => {
         }));
       },
 
-      //changing player screen
-      switchScreen(screenNum) {
-        set(() => ({
-          playerScreen: screenNum,
-        }));
-        console.log(get().playerScreen, screenNum);
-      },
       // intial star position selection in galaxy map
       getSelectedStar: () => get().selectedStar,
       // slecting star in galaxy map
@@ -867,8 +882,8 @@ const useStore = create((set, get) => {
           planets: generateSystem(selectedStar, SYSTEM_SCALE, PLANET_SCALE),
         }));
         const playerObj = get().player.object3d;
-        playerObj.position.setX(playerStart.x);
-        playerObj.position.setY(playerStart.y);
+        playerObj.position.setX(PLAYER_START.x);
+        playerObj.position.setY(PLAYER_START.y);
         playerObj.position.setZ(-Math.min(get().planets[0].radius * 5, 10000));
         playerObj.lookAt(0, 0, 0);
         get().actions.setPlayerObject(playerObj);
@@ -971,210 +986,6 @@ const useStore = create((set, get) => {
     },
   };
 });
-
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-
-function initPlayer() {
-  let obj = new THREE.Object3D();
-  obj.position.setX(playerStart.x);
-  obj.position.setY(playerStart.y);
-  obj.position.setZ(playerStart.z);
-  return {
-    id: 0,
-    team: 0,
-    isInMech: true,
-    currentMechBPindex: playerStart.mechBPindex,
-    locationInfo: {
-      orbitPlanetId: null,
-      landedPlanetId: null,
-      dockedStationId: null,
-      dockedShipId: null,
-      saveSpaceObject3d: new THREE.Object3D(),
-    },
-    object3d: obj,
-    speed: 0,
-    shield: { max: 50, damage: 0 }, //will be placed in mechBP once shields are completed
-
-    ray: new THREE.Ray(), // RAY FROM SHIP for weaponFire hit detection
-    hitBox: new THREE.Box3(),
-    hit: new THREE.Vector3(),
-    shotsTesting: [],
-    shotsHit: [],
-    //servoHitNames: [],
-  };
-}
-//set camera to view galaxy in main menu
-function initCamMainMenu() {
-  let cam = new THREE.Object3D();
-  cam.position.setX(0);
-  cam.position.setY(0);
-  cam.position.setZ(0);
-  cam.setRotationFromAxisAngle(new THREE.Vector3(), 0);
-  return cam;
-}
-
-//used to create space dedrie and asteroids
-function randomData(count, track, radius, size, randomScale) {
-  return new Array(count).fill().map(() => {
-    const t = Math.random();
-    //new pos will be translateZ
-    const pos = track.parameters.path.getPointAt(t);
-    pos.multiplyScalar(15);
-    //const pos = track.position;
-
-    const offset = pos
-      .clone()
-      .add(
-        new THREE.Vector3(
-          -radius + Math.random() * radius * 2,
-          -radius + Math.random() * radius * 2,
-          -radius + Math.random() * radius * 2
-        )
-      );
-    //get rid of offset completely
-    const object3d = new THREE.Object3D();
-    object3d.position.copy(offset);
-    return {
-      guid: guidCounter++,
-      scale: typeof randomScale === "function" ? randomScale() : randomScale,
-      size,
-      offset,
-      object3d,
-      pos,
-      speed: 0,
-      radius,
-      t,
-      hit: new THREE.Vector3(),
-      distance: 1000,
-    };
-  });
-}
-
-function randomEnemies(track) {
-  let enemies = randomData(numEnemies, track, 5 * SCALE, 0, 1);
-
-  enemies.forEach((enemy, index) => {
-    //if (index === 0) {
-    //  enemy.object3d.position.set(playerStart.x, playerStart.y, playerStart.z);
-    //}
-    enemy.id = guid(enemies);
-    enemy.team = index < 40 ? 1 : 2;
-
-    enemy.groupLeaderGuid = 0;
-    //enemy.groupLeaderGuid = index < 10 ? enemies[0].id : enemies[10].id;
-
-    enemy.groupId = 0;
-    enemy.tacticOrder = 0; //0 = follow leader, 1 = attack player
-    //enemy.prevAngleToTargetLocation = 0;
-    //enemy.prevAngleToLeaderLocation = 0;
-    enemy.formation = null;
-    enemy.formationPosition = new THREE.Vector3();
-    enemy.speed = 300 + Math.floor(Math.random() * 3);
-    enemy.mechBP = initEnemyMechBP(
-      index === 0
-        ? 1
-        : //index < numEnemies / 20 ? 1 : 0
-          //Math.random() < 0.05 ? 1 : 0
-          0
-    );
-    enemy.size = enemy.mechBP.size() * SCALE;
-    enemy.drawDistanceLevel = 0;
-
-    const box = new THREE.BoxGeometry(
-      enemy.size * 5000,
-      enemy.size * 5000,
-      enemy.size * 5000
-    );
-    const yellow = new THREE.Color("yellow");
-    const green = new THREE.Color("green");
-    const mesh = new THREE.MeshStandardMaterial({
-      color: yellow,
-      emissive: yellow,
-      emissiveIntensity: 1,
-      wireframe: true,
-    });
-    enemy.boxHelper = new THREE.Mesh(box, mesh); //visible bounding box, geometry of which is used to calculate hit detection box
-    enemy.boxHelper.geometry.computeBoundingBox();
-    enemy.greenMat = new THREE.MeshStandardMaterial({
-      color: green,
-      emissive: green,
-      emissiveIntensity: 1,
-      wireframe: true,
-    });
-
-    enemy.ray = new THREE.Ray(); //USED FOR RAY FROM SHIP to  test friendly fire hit detection
-    enemy.hitBox = new THREE.Box3(); //used with rays for hit detection
-    enemy.hitBox.copy(enemy.boxHelper.geometry.boundingBox);
-    enemy.shotsTesting = []; //registers shots that have hit the bounding hitbox, then tested if hit actual servos
-    enemy.shotsHit = []; //registers shots that have hit the mech, to remove shots from space
-    enemy.servoHitNames = []; //names of servos hit stored and will flash red on 1 frame of animation
-    // in the animation loop, compute the current bounding box with the world matrix
-    //hitBox.applyMatrix4( enemy.boxHelper.matrixWorld );
-  });
-
-  //group enemies into squads
-  enemies.forEach((enemy) => {
-    let groupCount = 0;
-    //enemy with no group: make group leader and select all nearby enemies to join group
-    if (!enemy.groupLeaderGuid) {
-      enemies
-        .filter(
-          (e) =>
-            !e.groupLeaderGuid &&
-            //distance(enemy.object3d.position, e.object3d.position) <
-            //  20000 * SCALE &&
-            enemy.mechBP.scale >= e.mechBP.scale
-        )
-        .forEach((eGroup) => {
-          //this will apply to leader as well as all those nearby
-          if (groupCount <= enemy.mechBP.scale * enemy.mechBP.scale) {
-            eGroup.groupLeaderGuid = enemy.id;
-            //console.log(eGroup.groupLeaderGuid);
-          }
-          groupCount++;
-        });
-    }
-  });
-  return enemies;
-}
-
-function randomStations(/*rng, num*/) {
-  let temp = [];
-  //create station
-  temp.push({
-    id: 1, //id(),
-    type: "EQUIPMENT",
-    name: "X-22",
-    roughness: 1,
-    metalness: 5,
-    ports: [{ x: 0.5, y: 0.5, z: 0.5 }],
-    position: {
-      x: 0,
-      y: 0,
-      z: -14500 * SCALE * SYSTEM_SCALE,
-    },
-
-    rotation: { x: 0, y: 0.5, z: 0 },
-
-    stationBP: initStationBP(0),
-    material: new THREE.MeshPhongMaterial({
-      color: 0x222222,
-      emissive: 0x222222,
-      emissiveIntensity: 0.01,
-      //roughness: station.roughness,
-      //metalness: station.metalness,
-    }),
-  });
-  return temp;
-}
 
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------

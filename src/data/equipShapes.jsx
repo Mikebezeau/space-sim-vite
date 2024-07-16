@@ -119,19 +119,19 @@ export const weaponShapeData = {
   ],
 };
 
-const constructionMaterial = new THREE.MeshStandardMaterial({
+const constructionMaterial = new THREE.MeshLambertMaterial({
   color: new THREE.Color("#666"),
   emissive: new THREE.Color("#666"),
   emissiveIntensity: 0.1,
 });
 
-const hitMaterial = new THREE.MeshStandardMaterial({
+const hitMaterial = new THREE.MeshLambertMaterial({
   color: new THREE.Color("#006"),
   emissive: new THREE.Color("#006"),
   emissiveIntensity: 0.1,
 });
 
-const selectMaterial = new THREE.MeshStandardMaterial({
+const selectMaterial = new THREE.MeshLambertMaterial({
   color: new THREE.Color("#669"),
   emissive: new THREE.Color("#669"),
   emissiveIntensity: 0.2,
@@ -153,9 +153,15 @@ const readoutMaterial_100 = new THREE.MeshBasicMaterial({
   color: new THREE.Color("#000"),
 });
 
+const wireFrameMaterial = new THREE.MeshBasicMaterial({
+  color: new THREE.Color("#0F0"),
+  wireframe: true,
+});
+
 const PreServoShapes = ({
   name,
   damageReadoutMode = false,
+  isWireFrame = false,
   isHit,
   servo,
   drawDistanceLevel,
@@ -186,12 +192,14 @@ const PreServoShapes = ({
   }
   const useMaterial = damageReadoutMode
     ? readoutMaterial
+    : isWireFrame
+    ? wireFrameMaterial
     : editing
     ? selectMaterial
     : constructionMaterial; //servo.material;
 
   /*
-  const visibilityMaterial = new THREE.MeshStandardMaterial({
+  const visibilityMaterial = new THREE.MeshLambertMaterial({
     color: new THREE.Color("#669"),
     emissive: new THREE.Color("#669"),
     emissiveIntensity: 0.8,
@@ -237,7 +245,7 @@ const PreServoShapes = ({
 
     //add a translucent forcefield type shape on hole
     /*
-    const landingBayGlowMaterial = new THREE.MeshStandardMaterial({
+    const landingBayGlowMaterial = new THREE.MeshLambertMaterial({
       color: new THREE.Color("#669"),
       emissive: new THREE.Color("#669"),
       emissiveIntensity: 0.8,
@@ -276,6 +284,7 @@ const PreServoShapes = ({
 export const WeaponShapes = function ({
   name,
   damageReadoutMode = false,
+  isWireFrame = false,
   isHit,
   weapon,
   weaponEditId,
@@ -290,10 +299,13 @@ export const WeaponShapes = function ({
     switch (weaponPercent) {
       case weaponPercent >= 100:
         readoutMaterial = readoutMaterial_100;
+        break;
       case weaponPercent > 75:
         readoutMaterial = readoutMaterial_75;
+        break;
       case weaponPercent > 25:
         readoutMaterial = readoutMaterial_25;
+        break;
       default:
         readoutMaterial = readoutMaterial_0;
     }
@@ -301,6 +313,8 @@ export const WeaponShapes = function ({
 
   const useMaterial = damageReadoutMode
     ? readoutMaterial
+    : isWireFrame
+    ? wireFrameMaterial
     : editing
     ? selectMaterial
     : constructionMaterial; //weapon.material;

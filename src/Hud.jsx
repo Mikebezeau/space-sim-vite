@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import useStore from "./stores/store";
+import usePlayerControlsStore from "./stores/playerControlsStore";
 import { PLAYER } from "./constants/constants";
 import { ToggleTestControls } from "./testingControls/ToggleTestControls";
 import { TestingEnemyControls } from "./testingControls/TestingEnemyControls";
@@ -14,23 +15,23 @@ import "./css/toggleControl.css";
 export default function Hud() {
   //console.log("Hud rendered");
   const toggleTestControls = useStore((state) => state.toggleTestControls);
-  const switchScreen = useStore((state) => state.actions.switchScreen);
   const speed = useStore((state) => state.player.speed);
   const shield = useStore((state) => state.player.shield);
   const currentMechBPindex = useStore(
     (state) => state.player.currentMechBPindex
   );
-  const playerControlMode = useStore((state) => state.playerControlMode);
-
   const playerMechBP = useStore((state) => state.playerMechBP);
-
   const planets = useStore((state) => state.planets);
-
   const weaponList = playerMechBP[currentMechBPindex].weaponList;
-
   //const sound = useStore((state) => state.sound);
   //const toggle = useStore((state) => state.actions.toggleSound);
-  //const speedVal = useMemo(() => speed + "Km/s", [speed]);
+
+  const playerControlMode = usePlayerControlsStore(
+    (state) => state.playerControlMode
+  );
+  const switchScreen = usePlayerControlsStore(
+    (state) => state.actions.switchScreen
+  );
 
   const sunScanData = useMemo(() => {
     Object.entries(planets[0].data);

@@ -229,6 +229,11 @@ const GalaxyMap = () => {
     };
 
     const setHoveredSelectedStar = (e) => {
+      // stupid way to stop triggering selection event when trying to exit screen
+      if (mouseMovedEnd.current.x < 170 && mouseMovedEnd.current.y < 200) {
+        console.log("setHoveredSelectedStar cancelled");
+        return;
+      }
       if (selectedStarRef.current && !mouseButtonDown.current) {
         const intersects = getRaycasterIntersects(e, RAYCAST_THRESHOLD / 4);
         // get hovered over star to draw a line to
@@ -238,10 +243,10 @@ const GalaxyMap = () => {
           limitSecondarySelected
         );
         if (hoveredStar) {
-          // set hoveredStarIndexRef to hovered star, user can select with mouse click
+          // setting hoveredStarIndexRef and lineToPointsRef for line drawing
           hoveredStarIndexRef.current = hoveredStar.index;
-          // offest galaxyRef.current.position for when inspecting selected star
-          // selected star is moved to (0,0,0) for inspection
+          // offest galaxyRef.current.position since galaxy is moved so that
+          // the main central star (current player position) is moved to (0,0,0) for inspection
           const hoveredStarPosition = getStarBufferPoisition(hoveredStar.index);
           lineToPointsRef.current = [
             [
@@ -251,6 +256,7 @@ const GalaxyMap = () => {
             ],
           ];
         } else {
+          // clear line if no star is hovered over
           lineToPointsRef.current = [];
         }
       }
@@ -319,7 +325,6 @@ const GalaxyMap = () => {
       mouseMovedEnd.current.set(e.clientX, e.clientY);
       if (mouseMovedStart.current.distanceTo(mouseMovedEnd.current) > 10)
         return;
-
       if (e.button === 2) {
         // right click to clear selection and view full galaxy
         viewGalaxy();
@@ -335,13 +340,13 @@ const GalaxyMap = () => {
         e.changedTouches[0].clientX,
         e.changedTouches[0].clientY
       );
-      console.log(mouseMovedEnd.current);
       if (mouseMovedStart.current.distanceTo(mouseMovedEnd.current) > 10)
         return;
       // set hoveredSelectedStar on first touch
       const currentHoveredStarIndex = hoveredStarIndexRef.current;
+      // set hoveredSelectedStar to closest star to touch
       setHoveredSelectedStar(e.changedTouches[0]);
-      // if user is selecting the same star again, setSelectedWarpToStar
+      // if user has touching the same star again, set as warp to star
       if (currentHoveredStarIndex === hoveredStarIndexRef.current)
         setSelectedWarpToStar(e.changedTouches[0]);
     });
@@ -359,7 +364,6 @@ const GalaxyMap = () => {
   };
 
   const Line = ({ color, type }) => {
-    console.log("Line rendered");
     const lineRef = useRef();
     const prePoints = useRef([]);
 

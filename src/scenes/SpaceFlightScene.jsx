@@ -1,5 +1,6 @@
-import useStore from "../stores/store";
-import StarPoints from "../galaxy/StarPoints";
+import { useLayoutEffect, useState } from "react";
+import { Scene } from "three";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import Planets from "../3d/spaceFlight/Planets";
 import Stations from "../3d/spaceFlight/Stations";
 //import Particles from "../3d/spaceFlight/Particles";
@@ -7,53 +8,49 @@ import EnemyMechs from "../3d/EnemyMechs";
 //import Rocks from "../3d/spaceFlight/Rocks";
 //import Explosions from "../3d/Explosions";
 import PlayerMech from "../3d/spaceFlight/PlayerMech";
-import ScannerReadout from "../3d/spaceFlight/ScannerReadout";
-import MechHudReadout from "../3d/MechHudReadout";
-import ScanHudReadout from "../3d/spaceFlight/ScanHudReadout";
+import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
 import WeaponFire from "../3d/WeaponFire";
-import SystemMap from "../3d/spaceFlight/SystemMap";
 //import Skybox from "../3d/spaceFlight/Skybox";
-import { SCALE, PLAYER } from "../constants/constants";
+import useStore from "../stores/store";
+import { SCALE } from "../constants/constants";
+import { flipRotation } from "../util/gameUtil";
 
-export default function SpaceFlight() {
-  //console.log("SpaceFlightMode rendered");
-  const playerScreen = useStore((state) => state.playerScreen);
-  const playerControlMode = useStore((state) => state.playerControlMode);
+export default function SpaceFlightScene() {
+  console.log("SpaceFlight Scene rendered");
+  const [scene] = useState(() => new Scene());
+  const { camera } = useThree();
+  const getPlayer = useStore((state) => state.getPlayer);
 
-  return (
+  useLayoutEffect(() => {
+    // set camera when returning to flight screen
+    const playerObj = getPlayer().object3d;
+    camera.position.copy(playerObj.position);
+    camera.rotation.setFromQuaternion(flipRotation(playerObj.quaternion));
+  }, []);
+
+  // render scene overtop of star points scene
+  useFrame(
+    ({ gl }) =>
+      void ((gl.autoClear = false), gl.clearDepth(), gl.render(scene, camera)),
+    10
+  );
+
+  return createPortal(
     <>
       {/* sun light */}
       <pointLight castShadow intensity={5} decay={0} />
-      <ambientLight intensity={0.5} />
-
-      {playerScreen === PLAYER.screen.flight && (
-        <>
-          <group position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <StarPoints view={PLAYER.screen.flight} />
-          </group>
-          {/*<Explosions />*/}
-          {/*<Particles />*/}
-          <PlayerMech />
-          <ScannerReadout />
-          {playerControlMode === PLAYER.controls.scan && (
-            <>
-              <SystemMap showPlayer={true} />
-              <ScanHudReadout />
-            </>
-          )}
-          {playerControlMode === PLAYER.controls.combat && (
-            <>
-              <MechHudReadout />
-            </>
-          )}
-          {/*<Rocks />*/}
-          <Planets />
-          <EnemyMechs />
-          <Stations />
-          {/*<Skybox />*/}
-          <WeaponFire scale={SCALE} />
-        </>
-      )}
-    </>
+      <ambientLight intensity={0.6} />
+      {/*<Explosions />*/}
+      {/*<Particles />*/}
+      <PlayerMech />
+      {/*<Rocks />*/}
+      <Planets />
+      <EnemyMechs />
+      <Stations />
+      <SpaceFlightHud />
+      <WeaponFire scale={SCALE} />
+      {/*<Skybox />*/}
+    </>,
+    scene
   );
 }

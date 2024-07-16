@@ -14,10 +14,9 @@ export default class Terrain {
     this._cityPositions = this._cityInfo(genCities);
     this._geometry = this._createGeometry();
     this.roads = this._createRoads();
-    this._material = new THREE.MeshPhongMaterial({
+    this._material = new THREE.MeshLambertMaterial({
       vertexColors: true,
       flatShading: true,
-      shininess: 0,
     });
 
     this._mesh = new THREE.Mesh(this._geometry, this._material);
@@ -362,7 +361,7 @@ export default class Terrain {
 
           g.attributes.position.needsUpdate = true;
           //g.attributes.normal.needsUpdate = true;
-
+          /*
           var material = [
             new THREE.MeshBasicMaterial({
               color: 0x00ff00,
@@ -385,7 +384,12 @@ export default class Terrain {
               wireframe: true,
             }),
           ];
-
+*/
+          var material = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            side: THREE.DoubleSide,
+            wireframe: true,
+          });
           g.translate(city.position.x, city.position.y, city.position.z);
           var mesh = new THREE.Mesh(g, material);
 

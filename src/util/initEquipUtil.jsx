@@ -142,10 +142,10 @@ const initMechBP = function (guid) {
       melee: [],
     },
 
-    material: new THREE.MeshStandardMaterial({
+    material: new THREE.MeshLambertMaterial({
       color: new THREE.Color("#999"),
-      emissive: new THREE.Color("#999"),
-      emissiveIntensity: 0.01,
+      //emissive: new THREE.Color("#999"),
+      //emissiveIntensity: 0.01,
       //roughness: station.roughness,
       //metalness: station.metalness,
     }),
@@ -268,10 +268,10 @@ const initMechServo = function (guid, scale, classIndex = 0, type = "Torso") {
     armorDamage: 0,
     structureDamage: 0,
 
-    material: new THREE.MeshStandardMaterial({
+    material: new THREE.MeshLambertMaterial({
       color: new THREE.Color("#999"),
-      emissive: new THREE.Color("#999"),
-      emissiveIntensity: 0.01,
+      //emissive: new THREE.Color("#999"),
+      //emissiveIntensity: 0.01,
       //roughness: station.roughness,
       //metalness: station.metalness,
     }),
@@ -460,12 +460,10 @@ const initWeaponBP = function (guid, weaponType, scale) {
     id: guid,
     offset: { x: 0, y: 0, z: 0 },
     locationServoId: null,
-    material: new THREE.MeshStandardMaterial({
+    material: new THREE.MeshLambertMaterial({
       color: new THREE.Color("#999"),
-      emissive: new THREE.Color("#999"),
-      emissiveIntensity: 0.01,
-      //roughness: station.roughness,
-      //metalness: station.metalness,
+      //emissive: new THREE.Color("#999"),
+      //emissiveIntensity: 0.01,
     }),
 
     armorDamage: 0,

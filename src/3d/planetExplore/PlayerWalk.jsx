@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
+import usePlayerControlsStore from "../../stores/playerControlsStore";
 import Mech from "./Mech";
 import { flipRotation } from "../../util/gameUtil";
 import { SCALE_PLANET_WALK, PLAYER } from "../../constants/constants";
@@ -28,9 +29,11 @@ export default function PlayerWalk() {
   const getPlayer = useStore((state) => state.getPlayer);
   const setPlayerObject = useStore((state) => state.actions.setPlayerObject);
   const playerMechBP = useStore((state) => state.playerMechBP);
-  const playerControlMode = useStore((state) => state.playerControlMode);
-  const displayContextMenu = useStore((state) => state.displayContextMenu);
   const { terrain } = useStore((state) => state.planetTerrain);
+
+  const playerControlMode = usePlayerControlsStore(
+    (state) => state.playerControlMode
+  );
 
   const main = useRef();
   const cross = useRef();
@@ -54,9 +57,8 @@ export default function PlayerWalk() {
     let mouseX = 0,
       mouseY = 0;
     if (
-      (playerControlMode === PLAYER.controls.combat ||
-        playerControlMode === PLAYER.controls.scan) &&
-      !displayContextMenu
+      playerControlMode === PLAYER.controls.combat ||
+      playerControlMode === PLAYER.controls.scan
     ) {
       mouseX = mouse.x;
       mouseY = mouse.y;

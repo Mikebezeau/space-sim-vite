@@ -1,4 +1,3 @@
-//import useStore from "../stores/store";
 import PlayerWalk from "../3d/planetExplore/PlayerWalk";
 import WeaponFire from "../3d/WeaponFire";
 import TestTerrain from "../terrainGen/TestTerrain";

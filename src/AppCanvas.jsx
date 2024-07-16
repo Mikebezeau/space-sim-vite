@@ -1,27 +1,29 @@
 import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
-import useStore, { playerStart } from "./stores/store";
-
-import EquipmentBlueprint from "./equipmentDesign/EquipmentBlueprint";
+import useStore from "./stores/store";
+import usePlayerControlsStore from "./stores/playerControlsStore";
 import SpaceFlightScene from "./scenes/SpaceFlightScene";
+import StarPointsScene from "./scenes/StarPointsScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
+import StationDockScene from "./scenes/StationDockScene";
+import EquipmentBlueprint from "./equipmentDesign/EquipmentBlueprint";
 import GalaxyMap from "./galaxy/GalaxyMap";
-import { PLAYER } from "./constants/constants";
+import { PLAYER, PLAYER_START } from "./constants/constants";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
   const actionInit = useStore((state) => state.actions.init);
-  const playerScreen = useStore((state) => state.playerScreen);
+  const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
 
   return (
     <Canvas
       camera={{
         // setting camera position to player start position
-        position: [playerStart.x, playerStart.y, playerStart.z],
+        position: [PLAYER_START.x, PLAYER_START.y, PLAYER_START.z],
         // giving rotation to camera to match player ship
         rotation: [0, -Math.PI, 0],
         near: 0.001,
-        far: 120000,
+        far: 120000000,
         fov: 40,
       }}
       onCreated={
@@ -45,18 +47,30 @@ const AppCanvas = () => {
         }}
       />
 
-      {playerScreen === PLAYER.screen.equipmentBuild ? (
-        <EquipmentBlueprint />
+      {playerScreen === PLAYER.screen.flight ? (
+        <>
+          <StarPointsScene />
+          <SpaceFlightScene />
+        </>
       ) : (
         <></>
       )}
-      {playerScreen === PLAYER.screen.flight ? <SpaceFlightScene /> : <></>}
       {playerScreen === PLAYER.screen.landedPlanet ? (
         <PlanetExploreScene />
       ) : (
         <></>
       )}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMap />}
+      {playerScreen === PLAYER.screen.equipmentBuild ? (
+        <EquipmentBlueprint />
+      ) : (
+        <></>
+      )}
+      {playerScreen === PLAYER.screen.dockedStation ? (
+        <StationDockScene />
+      ) : (
+        <></>
+      )}
       {/*<Effects />*/}
     </Canvas>
   );

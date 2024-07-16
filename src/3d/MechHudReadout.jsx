@@ -1,4 +1,4 @@
-import { memo, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../stores/store";
@@ -7,12 +7,15 @@ import { SCALE } from "../constants/constants";
 import useWindowDimensions from "../hooks/useWindowDimensions";
 
 //basic HTML/CSS heads up display used to show player info
-const PreMechHudReadout = () => {
+const MechHudReadout = () => {
+  console.log("MechHudReadout rendered");
   //export default function MechHudReadout() {
   const { /*height,*/ width } = useWindowDimensions();
   //
-  const { currentMechBPindex } = useStore((state) => state.player);
-  const { playerMechBP } = useStore((state) => state);
+  const currentMechBPindex = useStore(
+    (state) => state.player.currentMechBPindex
+  );
+  const playerMechBP = useStore((state) => state.playerMechBP);
 
   const mechDamageReadout = useRef();
   const { camera } = useThree();
@@ -43,5 +46,4 @@ const PreMechHudReadout = () => {
   );
 };
 
-const MechHudReadout = memo(PreMechHudReadout);
 export default MechHudReadout;

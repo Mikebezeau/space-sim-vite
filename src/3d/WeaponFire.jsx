@@ -18,10 +18,10 @@ const weaponFireGeometry = {
 };
 
 const weaponFireMaterial = {
-  beam: new THREE.MeshPhongMaterial({
+  beam: new THREE.MeshBasicMaterial({
     color: purple,
-    emissive: purple,
-    emissiveIntensity: 100,
+    //emissive: purple,
+    //emissiveIntensity: 100,
   }),
   proj: new THREE.MeshBasicMaterial({
     color: red,

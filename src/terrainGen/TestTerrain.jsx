@@ -7,7 +7,7 @@ import Terrain from "../3d/planetExplore/Terrain";
 
 const cityLightGeometry = new THREE.SphereGeometry(2, 8, 8);
 
-const cityLightYellowMaterial = new THREE.MeshStandardMaterial({
+const cityLightYellowMaterial = new THREE.MeshLambertMaterial({
   emissive: new THREE.Color("yellow"),
   emissiveIntensity: 0.9,
 });

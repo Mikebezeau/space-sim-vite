@@ -3,9 +3,9 @@ import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
 import { useThree } from "@react-three/fiber";
 import starSpriteSrc from "./sprites/sprite120.png";
 import featheredSpriteSrc from "./sprites/feathered60.png";
-import "./starPointsShaderMaterial.js";
 import useStore from "../stores/store.jsx";
 import { PLAYER } from "../constants/constants.jsx";
+import "./shaders/starPointsShaderMaterial.js";
 
 const StarPoints = forwardRef(function StarPoints(
   { view },
@@ -13,7 +13,7 @@ const StarPoints = forwardRef(function StarPoints(
 ) {
   const { camera } = useThree();
   const displayAsBackground = view === PLAYER.screen.flight;
-  console.log("StarPoints rendered");
+  console.log("StarPoints rendered, displayAsBackground:", displayAsBackground);
   const starPointsBufferGeoRef = useRef();
   const starSprite = new TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new TextureLoader().load(featheredSpriteSrc);
@@ -62,7 +62,7 @@ const StarPoints = forwardRef(function StarPoints(
       // needsUpdate not needed due to useLayoutEffect timing
       //starPointsBufferGeoRef.current.attributes.position.needsUpdate = true;
     }
-  }, [displayAsBackground, starCoordsBuffer.array]);
+  }, [camera.far, displayAsBackground, starCoordsBuffer.array]);
 
   return (
     <points ref={starPointsForwardRef}>
@@ -77,12 +77,13 @@ const StarPoints = forwardRef(function StarPoints(
       </bufferGeometry>
       {/*
       depthTest={true} so sprites are not visible through objects 
+        changed to false, now rendered as background scene
       depthWrite={false} fix sprite particle transparency issue 
       */}
       <starPointsShaderMaterial
         transparent
         blending={AdditiveBlending}
-        depthTest={true}
+        depthTest={false}
         depthWrite={false}
         vertexColors
         uTexture={starSprite}

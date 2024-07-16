@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import BuildMech from "../BuildMech";
@@ -6,13 +6,14 @@ import { SCALE } from "../../constants/constants";
 
 const servoHitNames = [];
 
-const Station = React.memo(({ station }) => {
+const Station = ({ station }) => {
+  console.log("Station rendered", station);
   //station rotation
   const { clock } = useStore((state) => state.mutation);
   const ref = useRef();
   useFrame(() => {
     if (ref.current) {
-      const r = clock.getElapsedTime() / 50;
+      const r = clock.getElapsedTime() / 30;
       ref.current.rotation.set(0, r, 0);
     }
   });
@@ -23,7 +24,6 @@ const Station = React.memo(({ station }) => {
       position={[station.position.x, station.position.y, station.position.z]}
       rotation={[station.rotation.x, station.rotation.y, station.rotation.z]}
       scale={SCALE}
-      key={station.guid}
     >
       <BuildMech
         mechBP={station.stationBP}
@@ -52,7 +52,7 @@ const Station = React.memo(({ station }) => {
       />
     </group>
   );
-});
+};
 
 function Stations() {
   const stations = useStore((state) => state.stations);
