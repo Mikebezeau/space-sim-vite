@@ -31,11 +31,7 @@ const ControlsMouseKBSpaceFlight = () => {
 
   //mouse click
   function handleMouseClick() {
-    if (playerControlMode === PLAYER.controls.combat) {
-      actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
-    } else if (playerControlMode === PLAYER.controls.scan) {
-      testing.warpToPlanet();
-    }
+    actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
   }
   useMouseClick(handleMouseClick);
 

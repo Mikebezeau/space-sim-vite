@@ -243,7 +243,7 @@ const Cockpit = () => {
         <div className="face bottom" />
       </div>
 
-      <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
+      <div className="pointer-events-none perspective-400 preserve-3d container-full-screen top-[78vh]">
         <div className="face middle absolute top-[12vh] sm:top-[18vh] left-1/2 ml-[6vw] sm:-ml-[28vh]">
           <Cockpit1stPersonControls />
         </div>

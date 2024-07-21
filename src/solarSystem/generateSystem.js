@@ -4,16 +4,16 @@ import { SCALE } from "../constants/constants";
 import { generateStarType } from "../galaxy/generateGalaxy";
 import StarSystem from "./StarSystem"; //ACCRETE
 
-const generateSystem = (
-  starIndex,
-  systemScale = 1, // systemScale and planetScale used for mini system map
-  planetScale = 1
-) => {
+// used in galaxy map
+export const generateSystemInfo = (starIndex) => {
+  //console.log("generateStarType", starIndex, star);
   const rng = seedrandom(starIndex);
-  const star = generateStarType(starIndex);
+  //15% of stars have a system like earths (with gas giants)
+  //ACCRETE
+  const star = generateStarType(starIndex); // rng is used in generateStarType
+  //console.log("generateStarType", starIndex, star);
   //Only one in about five hundred thousand stars has more than twenty times the mass of the Sun.
   let solarMass = star.solarMass;
-  //console.log("generateStarType", starIndex, star);
   //15% of stars have a system like earths (with gas giants)
   //ACCRETE
   const system = new StarSystem(
@@ -30,14 +30,24 @@ const generateSystem = (
     rng
   ); //ACCRETE
   const newSystem = system.create();
-  const solarRadius = newSystem.radius * SCALE * planetScale; //star.size * 700000 * SCALE * planetScale;
+  return [star, newSystem];
+};
 
+const generateSystem = (
+  starIndex,
+  systemScale = 1, // systemScale and planetScale used for mini system map
+  planetScale = 1
+) => {
+  //const rng = seedrandom(starIndex);
+  const [star, newSystem] = generateSystemInfo(starIndex);
+  const solarRadius = newSystem.radius * SCALE * planetScale; //star.size * 700000 * SCALE * planetScale;
   //-------
   let temp = [];
   //create sun
   temp.push({
     type: "SUN",
     data: {
+      class: star.starClass,
       age: newSystem.age,
       mass: newSystem.mass,
       radius: newSystem.radius,

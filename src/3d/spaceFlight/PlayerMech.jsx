@@ -5,7 +5,7 @@ import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import PlayerCrosshair from "./PlayerCrosshair";
 import BuildMech from "../BuildMech";
-import MeshLineTrail from "./MeshLineTrail";
+//import MeshLineTrail from "./MeshLineTrail";
 import { setVisible } from "../../util/gameUtil";
 import { SCALE, PLAYER } from "../../constants/constants";
 
@@ -117,7 +117,7 @@ const PrePlayerMech = () => {
           color="lightblue"
         />
       </group>
-      <MeshLineTrail followRef={main} />
+      {/*<MeshLineTrail followRef={main} />*/}
     </>
   );
 };

@@ -38,7 +38,6 @@ export function useMouseRightClick(callback) {
 export function useMouseWheelClick(callback) {
   useEffect(() => {
     const handleMouseWheelClick = (e) => {
-      console.log(e);
       if (e.button === 1) callback(e);
     };
     document.addEventListener("auxclick", handleMouseWheelClick);

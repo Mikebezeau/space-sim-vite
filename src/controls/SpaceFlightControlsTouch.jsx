@@ -1,4 +1,5 @@
 import useStore from "../stores/store";
+import controls from "../icons/controls.svg";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import {
   useTouchStartControls,
@@ -15,20 +16,12 @@ const SpaceFlightControlsTouch = () => {
   );
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
   const { actionModeSelect } = usePlayerControlsStore((state) => state.actions);
-  const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
   const speed = useStore((state) => state.player.speed);
 
   //SHOOT LASERS
   function handleShoot() {
-    if (playerScreen === PLAYER.screen.flight) {
-      if (playerControlMode === PLAYER.controls.combat) {
-        actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
-      } else if (playerControlMode === PLAYER.controls.scan) {
-        console.log("warpToPlanet");
-        testing.warpToPlanet();
-      }
-    }
+    actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
   }
   useTouchStartControls("btn-shoot", handleShoot);
 
@@ -55,12 +48,19 @@ const SpaceFlightControlsTouch = () => {
 
   return (
     <>
-      <div className="absolute w-[180px] h-[180px] bottom-5 left-2 pointer-events-none">
+      <div className="absolute w-[40vw] h-[40vw] bottom-5 left-2 pointer-events-none">
         <div
           id="btn-ship-move"
           className="rounded-full w-full h-full bg-gray-500 pointer-events-auto"
-        />
+        >
+          <img
+            src={controls}
+            alt="controls icon"
+            className="absolute pointer-event-none w-3/4 h-3/4 left-[5vw] top-[5vw] opacity-25"
+          />
+        </div>
       </div>
+
       <div className="absolute w-[200px] h-[100px] bottom-5 right-5 flex justify-end pointer-events-none">
         <div
           id="btn-shoot"

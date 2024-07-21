@@ -100,6 +100,8 @@ const useStore = create((set, get) => {
     currentStar: PLAYER_START.system,
     // intial star position selection in galaxy map
     selectedStar: PLAYER_START.system, // selectedStar set in actions.init()
+    showInfoHoveredStarIndex: null, // used in galaxy map ui
+    showInfoTargetStarIndex: null,
     selectedWarpStar: null,
     //galaxyStarPositionsFloat32: initgalaxyStarPositionsFloat32(),
     galaxy: generateGalaxy(STARS_IN_GALAXY, GALAXY_SIZE), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
@@ -273,17 +275,9 @@ const useStore = create((set, get) => {
         let player = get().player;
         if (get().stations[0]) {
           const targetStation = get().stations[0];
-          player.object3d.position.set(
-            targetStation.position.x,
-            targetStation.position.y,
-            targetStation.position.z
-          );
-          player.object3d.translateZ(-15000 * SCALE);
-          player.object3d.lookAt(
-            targetStation.position.x,
-            targetStation.position.y,
-            targetStation.position.z
-          );
+          player.object3d.position.copy(targetStation.object3d.position);
+          player.object3d.translateZ(-30000 * SCALE);
+          player.object3d.lookAt(targetStation.object3d.position);
           set(() => ({ player: player }));
         }
       },
@@ -304,7 +298,7 @@ const useStore = create((set, get) => {
     },
 
     actions: {
-      init() {
+      beginSpaceFlightSceneLoop() {
         const { mutation, actions } = get();
         //set({ camera });//set in App canvas
         //clock used in auto rotations
@@ -566,6 +560,7 @@ const useStore = create((set, get) => {
       },
 
       setSelectedTargetIndex() {
+        return;
         //TESTING
         //console.log("player position", get().player.object3d.position);
 
@@ -882,9 +877,9 @@ const useStore = create((set, get) => {
           planets: generateSystem(selectedStar, SYSTEM_SCALE, PLANET_SCALE),
         }));
         const playerObj = get().player.object3d;
-        playerObj.position.setX(PLAYER_START.x);
-        playerObj.position.setY(PLAYER_START.y);
-        playerObj.position.setZ(-Math.min(get().planets[0].radius * 5, 10000));
+        playerObj.position.setX(0);
+        playerObj.position.setY(0);
+        playerObj.position.setZ(get().planets[0].radius * 5);
         playerObj.lookAt(0, 0, 0);
         get().actions.setPlayerObject(playerObj);
         //clear targets
@@ -894,9 +889,29 @@ const useStore = create((set, get) => {
           focusTargetIndex: null,
           selectedTargetIndex: null,
         }));
+        // set position of space station near a planet
+        const stations = get().stations;
+        const stationOrbitPlanet = get().planets[1] || get().planets[0];
+        if (stations[0]) {
+          stations[0].object3d.position.set(
+            stationOrbitPlanet.object3d.position.x,
+            stationOrbitPlanet.object3d.position.y,
+            stationOrbitPlanet.object3d.position.z +
+              stationOrbitPlanet.radius * 1.5
+          );
+          console.log("position station", get().planets, stations[0].position);
+          set(() => ({
+            stations,
+          }));
+        }
+      },
+      setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
+        set(() => ({ showInfoHoveredStarIndex }));
+      },
+      setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
+        set(() => ({ showInfoTargetStarIndex }));
       },
       setSelectedWarpStar(selectedWarpStar) {
-        console.log("selectedWarpStar", selectedWarpStar);
         set(() => ({ selectedWarpStar }));
       },
       setSelectedPanetIndex(planetIndex) {

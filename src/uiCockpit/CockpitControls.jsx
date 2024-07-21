@@ -37,7 +37,7 @@ const ActionCancelPilot = () => {
 
   return (
     <div
-      className="button-cyber w-[10vh] h-[10vh] mt-1"
+      className="button-cyber w-[10vh] h-[10vh]"
       onClick={() => actionModeSelect(PLAYER.action.inspect)}
     >
       <span className="button-cyber-content">
@@ -49,6 +49,22 @@ const ActionCancelPilot = () => {
       </span>
     </div>
   );
+};
+
+const ActionWarpToPlanet = () => {
+  const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
+  const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
+  return focusPlanetIndex ? (
+    <div className="button-cyber w-[10vh] h-[10vh]" onClick={warpToPlanet}>
+      <span className="button-cyber-content">
+        <img
+          src={warp}
+          alt="cancel controls icon"
+          className="w-[10vh] h-[10vh]"
+        />
+      </span>
+    </div>
+  ) : null;
 };
 
 export const ActionModeControls = () => {
@@ -73,6 +89,16 @@ export const ActionModeControls = () => {
         </span>*/
       )}
 
+      <div
+        className={`absolute top-1/2 left-1/2 -ml-[5vh] ${
+          !IS_MOBLIE && playerActionMode === PLAYER.action.inspect
+            ? "mt-[12vh]"
+            : "-mt-[5vh]"
+        }`}
+      >
+        <ActionWarpToPlanet />
+      </div>
+
       {!IS_MOBLIE && playerActionMode !== PLAYER.action.inspect && (
         <div className="absolute bottom-8 right-8">
           <ActionCancelPilot />
@@ -94,7 +120,7 @@ export const CockpitControlMode = () => {
     <>
       {playerControlMode !== PLAYER.controls.combat && (
         <div
-          className="button-cyber w-[10vh] h-[10vh] mt-1"
+          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
           onClick={() => controlModeSelect(PLAYER.controls.combat)}
         >
           <span className="button-cyber-content">
@@ -108,7 +134,7 @@ export const CockpitControlMode = () => {
       )}
       {playerControlMode !== PLAYER.controls.scan && (
         <div
-          className="button-cyber w-[10vh] h-[10vh] mt-1"
+          className="button-cyber w-[10vh] h-[10vh]"
           onClick={() => controlModeSelect(PLAYER.controls.scan)}
         >
           <span className="button-cyber-content">
@@ -131,7 +157,7 @@ export const CockpitControlMap = () => {
 
   return (
     <div
-      className="button-cyber w-[10vh] h-[10vh] mt-1"
+      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
       onClick={() => switchScreen(PLAYER.screen.galaxyMap)}
     >
       <span className="button-cyber-content">
@@ -149,7 +175,7 @@ export const CockpitControlWarp = () => {
 
   return (
     <div
-      className={`button-cyber w-[10vh] h-[10vh] mt-1 ${
+      className={`pointer-events-auto button-cyber w-[10vh] h-[10vh] ${
         !selectedWarpStar && "opacity-50"
       }`}
       onClick={() => {
@@ -173,14 +199,13 @@ export const CockpitControlView = () => {
   const viewModeSelect = usePlayerControlsStore(
     (state) => state.actions.viewModeSelect
   );
-
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
 
   return (
     <div
-      className="button-cyber w-[10vh] h-[10vh] mt-1"
+      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
       onClick={() =>
         viewModeSelect(
           playerViewMode === PLAYER.view.firstPerson
@@ -200,11 +225,15 @@ export const CockpitControlDockStation = () => {
   const switchScreen = usePlayerControlsStore(
     (state) => state.actions.switchScreen
   );
+  const warpToStation = useStore((state) => state.testing.warpToStation);
 
   return (
     <div
-      className="button-cyber w-[10vh] h-[10vh] mt-1"
-      onClick={() => switchScreen(PLAYER.screen.dockedStation)}
+      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+      onClick={() => {
+        switchScreen(PLAYER.screen.dockedStation);
+        warpToStation();
+      }}
     >
       <span className="button-cyber-content">
         <img src={satellite} alt="station icon" className="w-[10vh] h-[10vh]" />
@@ -220,7 +249,7 @@ export const CockpitControlEquip = () => {
 
   return (
     <div
-      className="button-cyber w-[10vh] h-[10vh] mt-1"
+      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
       onClick={() => switchScreen(PLAYER.screen.equipmentBuild)}
     >
       <span className="button-cyber-content">
@@ -232,13 +261,13 @@ export const CockpitControlEquip = () => {
 
 export const Cockpit1stPersonControls = () => {
   return (
-    <div className="flex flex-row gap-1 sm:gap-[36vh]">
-      <div className="flex flex-col">
+    <div className="flex flex-row sm:gap-[36vh] gap-1">
+      <div className="flex flex-col gap-1">
         <CockpitControlMode />
         <CockpitControlMap />
         <CockpitControlWarp />
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-1">
         <CockpitControlView />
         <CockpitControlDockStation />
         <CockpitControlEquip />
@@ -249,13 +278,13 @@ export const Cockpit1stPersonControls = () => {
 
 export const Cockpit3rdPersonControls = () => {
   return (
-    <div className="absolute bottom-8 right-8 mr-[10vh] flex flex-col sm:flex-row">
-      <div className="flex flex-row">
+    <div className="absolute -bottom-4 right-12 sm:bottom-8 sm:right-8 sm:mr-[10vh] flex flex-row gap-2 sm:gap-0 sm:flex-col scale-75">
+      <div className="flex flex-col sm:flex-row gap-2">
         <CockpitControlMode />
         <CockpitControlMap />
         <CockpitControlWarp />
       </div>
-      <div className="flex flex-row">
+      <div className="flex flex-col sm:flex-row gap-2">
         <CockpitControlView />
         <CockpitControlDockStation />
         <CockpitControlEquip />

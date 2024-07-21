@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
 import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
@@ -20,6 +21,11 @@ const AppUI = () => {
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
+  const transitionFadeDiv = useRef(null);
+
+  useEffect(() => {
+    transitionFadeDiv.current.style.display = "none";
+  }, [playerScreen]);
 
   return (
     <>
@@ -50,6 +56,10 @@ const AppUI = () => {
         </>
       )}
       {/*<CustomCursor />*/}
+      <div
+        ref={transitionFadeDiv}
+        className="absolute top-0 right-0 bottom-0 left-0 bg-black"
+      />
     </>
   );
 };

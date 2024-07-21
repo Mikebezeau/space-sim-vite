@@ -7,7 +7,7 @@ import { SCALE } from "../../constants/constants";
 const servoHitNames = [];
 
 const Station = ({ station }) => {
-  console.log("Station rendered", station);
+  console.log("Station rendered");
   //station rotation
   const { clock } = useStore((state) => state.mutation);
   const ref = useRef();
@@ -21,8 +21,16 @@ const Station = ({ station }) => {
   return (
     <group
       ref={ref}
-      position={[station.position.x, station.position.y, station.position.z]}
-      rotation={[station.rotation.x, station.rotation.y, station.rotation.z]}
+      position={[
+        station.object3d.position.x,
+        station.object3d.position.y,
+        station.object3d.position.z,
+      ]}
+      rotation={[
+        station.object3d.rotation.x,
+        station.object3d.rotation.y,
+        station.object3d.rotation.z,
+      ]}
       scale={SCALE}
     >
       <BuildMech
@@ -30,26 +38,14 @@ const Station = ({ station }) => {
         servoHitNames={servoHitNames}
         showAxisLines={0}
       />
-
+      {/*
       <pointLight
-        position={[0, 5, 0]}
-        distance={0}
-        intensity={0.2}
-        color="lightblue"
-      />
-
-      <pointLight
-        position={[0, -5, 0]}
-        distance={0}
-        intensity={0.2}
-        color="lightblue"
-      />
-      <pointLight
-        position={[0, 0, -7]}
-        distance={0}
-        intensity={0.2}
-        color="lightblue"
-      />
+        position={[175, 0, 0]}
+        distance={200}
+        decay={0.5}
+        intensity={1}
+        color="blue"
+      />*/}
     </group>
   );
 };

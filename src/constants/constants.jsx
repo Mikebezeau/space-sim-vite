@@ -1,4 +1,5 @@
 export const SCALE = 0.001; //=0.001
+// SCALE todo: stationDockScene buildMech is not scaled
 export const SCALE_PLANET_WALK = 2;
 export const SYSTEM_SCALE = 1000;
 export const PLANET_SCALE = 10;

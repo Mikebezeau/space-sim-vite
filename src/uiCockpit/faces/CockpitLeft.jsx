@@ -12,10 +12,10 @@ const CockpitLeft = () => {
 
   const PlanetScanData = () => {
     //console.log("PlanetScanData rendered");
-    const data =
-      focusPlanetIndex !== null
-        ? Object.entries(planets[focusPlanetIndex].data)
-        : null;
+    const data = planets[focusPlanetIndex]
+      ? Object.entries(planets[focusPlanetIndex].data)
+      : null;
+
     return (
       <>
         {data ? (
@@ -54,7 +54,9 @@ const CockpitLeft = () => {
                 <span key={key}>
                   {key}:{" "}
                   <span>
-                    {Math.floor(value * 1000) / 1000 /*rounding off*/}
+                    {typeof value === "number"
+                      ? Math.floor(value * 1000) / 1000 // rounding off
+                      : value}
                   </span>
                   <br />
                 </span>

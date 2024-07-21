@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import {
   SCALE,
-  SYSTEM_SCALE,
+  //SYSTEM_SCALE,
   //PLANET_SCALE,
   //STARS_IN_GALAXY,
   //GALAXY_SIZE,
@@ -185,25 +185,9 @@ export const randomStations = (/*rng, num*/) => {
     id: 1, //id(),
     type: "EQUIPMENT",
     name: "X-22",
-    roughness: 1,
-    metalness: 5,
     ports: [{ x: 0.5, y: 0.5, z: 0.5 }],
-    position: {
-      x: 0,
-      y: 0,
-      z: -14500 * SCALE * SYSTEM_SCALE,
-    },
-
-    rotation: { x: 0, y: 0.5, z: 0 },
-
     stationBP: initStationBP(0),
-    material: new THREE.MeshLambertMaterial({
-      color: 0x222222,
-      //emissive: 0x222222,
-      //emissiveIntensity: 0.01,
-      //roughness: station.roughness,
-      //metalness: station.metalness,
-    }),
+    object3d: new THREE.Object3D(),
   });
   return stations;
 };

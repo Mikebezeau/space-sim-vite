@@ -1,23 +1,5 @@
-// Random (distributed with `n`) numbers for node/browser
-export const rand = (min = 0, max = min + 1, rng, n = 2) => {
-  //return Math.random() * (max - min) + min;
+export const rand = (min = 0, max = min + 1, rng) => {
   return rng() * (max - min) + min;
-  /*
-  const vals = new Uint16Array(Math.round(n));
-
-  if (typeof module !== "undefined" && module.exports) {
-    let i = Math.round(n);
-    while (i-- > 0)
-      vals[i] = parseInt(require("crypto").randomBytes(2).toString("hex"), 16);
-  } else {
-    crypto.getRandomValues(vals);
-  }
-
-  return Math.max(
-    min,
-    Math.min(max, (max * vals.reduce((out, v) => out + v / 65536, 0)) / n)
-  );
-  */
 };
 
 export const convert = {

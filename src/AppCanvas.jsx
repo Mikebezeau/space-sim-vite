@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import useStore from "./stores/store";
@@ -11,8 +12,11 @@ import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER, PLAYER_START } from "./constants/constants";
 
 const AppCanvas = () => {
-  console.log("AppCanvas rendered");
-  const actionInit = useStore((state) => state.actions.init);
+  //const canvasContainerRef = useRef();
+  //console.log("AppCanvas rendered", canvasContainerRef.current);
+  const beginSpaceFlightSceneLoop = useStore(
+    (state) => state.actions.beginSpaceFlightSceneLoop
+  );
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
 
   return (
@@ -26,11 +30,12 @@ const AppCanvas = () => {
         far: 120000000,
         fov: 40,
       }}
+      gl={{ logarithmicDepthBuffer: true }}
       onCreated={
         (/*{ gl, camera, scene }*/) => {
           //---------------------------------------------
           // init ship weapon, clock, and enemy movement
-          actionInit();
+          beginSpaceFlightSceneLoop();
           //---------------------------------------------
           //gl.gammaInput = true;
           //gl.toneMapping = THREE.Uncharted2ToneMapping;

@@ -1,9 +1,8 @@
 import { useRef /*, useState*/ } from "react";
 //import { BufferAttribute, DynamicDrawUsage, Object3D } from "three";
-import { useFrame } from "@react-three/fiber";
-import { useTrail } from "../../hooks/useTrail";
-import { extend } from "@react-three/fiber";
+import { extend, useFrame } from "@react-three/fiber";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
+import { useTrail } from "../../hooks/useTrail";
 //import { setCustomData } from "r3f-perf";
 
 extend({ MeshLineGeometry, MeshLineMaterial });

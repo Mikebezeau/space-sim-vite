@@ -14,6 +14,7 @@ export const generateStarType = (starIndex) => {
       break;
     }
   }
+  const starClass = starTypes.class[starTypeIndex];
   const massRange = starTypes.mass[starTypeIndex];
   const solarMass = rng() * (massRange[1] - massRange[0]) + massRange[0];
   //const sizeRange = starTypes.size[starTypeIndex];
@@ -21,7 +22,7 @@ export const generateStarType = (starIndex) => {
   const size = Math.pow(solarMass, 0.74);
   const colorHex = starTypes.colorHex[starTypeIndex];
   const colorRGB = starTypes.colorRGB[starTypeIndex];
-  const star = { solarMass, size, colorHex, colorRGB };
+  const star = { starClass, solarMass, size, colorHex, colorRGB };
   return star;
 };
 
