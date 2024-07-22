@@ -99,7 +99,7 @@ const useStore = create((set, get) => {
     menuCam: initCamMainMenu(),
     currentStar: PLAYER_START.system,
     // intial star position selection in galaxy map
-    selectedStar: PLAYER_START.system, // selectedStar set in actions.init()
+    playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
     showInfoHoveredStarIndex: null, // used in galaxy map ui
     showInfoTargetStarIndex: null,
     selectedWarpStar: null,
@@ -308,7 +308,7 @@ const useStore = create((set, get) => {
         //set player mech info
         actions.initPlayerMech(PLAYER_START.mechBPindex);
         // set player start position
-        get().actions.setSelectedStar(PLAYER_START.system);
+        get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
 
         //addEffect will add the following code to what gets run per frame
         //removes exploded emenies and rocks from store data, removes explosions once they have timed out
@@ -534,19 +534,19 @@ const useStore = create((set, get) => {
         const yellow = new THREE.Color("yellow");
         const mesh = new THREE.MeshBasicMaterial({
           color: yellow,
-          //emissive: yellow,
-          //emissiveIntensity: 1,
           wireframe: true,
         });
         player.boxHelper = new THREE.Mesh(box, mesh); //visible bounding box, geometry of which is used to calculate hit detection box
         player.boxHelper.geometry.computeBoundingBox();
         player.hitBox.copy(player.boxHelper.geometry.boundingBox);
       },
+      /*
       activateContextMenu(xPos, yPos) {
         //if options up arleady, hide menu
         set((state) => ({ displayContextMenu: !state.displayContextMenu }));
         set(() => ({ contextMenuPos: { x: xPos, y: yPos } }));
       },
+      */
       setFocusPlanetIndex(focusPlanetIndex) {
         if (get().focusPlanetIndex !== focusPlanetIndex) {
           set(() => ({ focusPlanetIndex }));
@@ -869,12 +869,16 @@ const useStore = create((set, get) => {
       },
 
       // intial star position selection in galaxy map
-      getSelectedStar: () => get().selectedStar,
+      getPlayerCurrentStarIndex: () => get().playerCurrentStarIndex,
       // slecting star in galaxy map
-      setSelectedStar(selectedStar) {
-        set(() => ({ selectedStar }));
+      setPlayerCurrentStarIndex(playerCurrentStarIndex) {
+        set(() => ({ playerCurrentStarIndex }));
         set(() => ({
-          planets: generateSystem(selectedStar, SYSTEM_SCALE, PLANET_SCALE),
+          planets: generateSystem(
+            playerCurrentStarIndex,
+            SYSTEM_SCALE,
+            PLANET_SCALE
+          ),
         }));
         const playerObj = get().player.object3d;
         playerObj.position.setX(0);
@@ -899,7 +903,6 @@ const useStore = create((set, get) => {
             stationOrbitPlanet.object3d.position.z +
               stationOrbitPlanet.radius * 1.5
           );
-          console.log("position station", get().planets, stations[0].position);
           set(() => ({
             stations,
           }));
@@ -908,6 +911,7 @@ const useStore = create((set, get) => {
       setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
         set(() => ({ showInfoHoveredStarIndex }));
       },
+      getShowInfoTargetStarIndex: () => get().showInfoTargetStarIndex,
       setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
         set(() => ({ showInfoTargetStarIndex }));
       },
@@ -960,6 +964,7 @@ const useStore = create((set, get) => {
         }));
       },
       //dock at spacestation
+      /*
       stationDock() {
         set((state) => ({
           stationDock: {
@@ -969,6 +974,7 @@ const useStore = create((set, get) => {
           },
         }));
       },
+      */
       /*
       toggleSound(sound = !get().sound) {
         set({ sound });
@@ -985,7 +991,8 @@ const useStore = create((set, get) => {
         );
         get().mutation.mouseScreen.set(x, y);
       },
-      //save screen touch position (-1 to 1) relative to touch movement control
+      //save screen touch position (-1 to 1) relative to
+      // triggering event.target (i.e. movement controls or full screen)
       updateMouseMobile(event) {
         if (event) {
           var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
@@ -994,7 +1001,8 @@ const useStore = create((set, get) => {
           const radius = bounds.width / 2;
           const setX = Math.min(1, Math.max(-1, (x - radius) / radius));
           const setY = Math.min(1, Math.max(-1, (y - radius) / radius));
-          // too fast for now, dividing by 3
+          // too fast for movement now, dividing by 3
+          // todo fix this!
           get().mutation.mouse.set(setX / 3, setY / 3);
         }
       },
@@ -1024,5 +1032,6 @@ function playAudio(audio, volume = 1, loop = false) {
   } else audio.pause();
 }
 */
+
 export default useStore;
 //export { audio, playAudio };

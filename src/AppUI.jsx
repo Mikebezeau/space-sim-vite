@@ -12,7 +12,7 @@ import GalaxyMapHud from "./GalaxyMapHud";
 import StationDockHud from "./StationDockHud";
 import EquipmentMenu from "./equipmentDesign/EquipmentMenu";
 //import CustomCursor from "./CustomCursor";
-import { IS_MOBLIE, PLAYER } from "./constants/constants";
+import { IS_MOBILE, PLAYER } from "./constants/constants";
 
 const AppUI = () => {
   console.log("AppUI render");
@@ -47,7 +47,7 @@ const AppUI = () => {
       {(playerScreen === PLAYER.screen.flight ||
         playerScreen === PLAYER.screen.landedPlanet) && (
         <>
-          {IS_MOBLIE ? (
+          {IS_MOBILE ? (
             <SpaceFlightControlsTouch />
           ) : (
             <SpaceFlightControlsMouseKB />

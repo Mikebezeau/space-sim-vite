@@ -120,15 +120,11 @@ export const weaponShapeData = {
 };
 
 const constructionMaterial = new THREE.MeshLambertMaterial({
-  color: new THREE.Color("#666"),
-  emissive: new THREE.Color("#666"),
-  emissiveIntensity: 0.1,
+  color: new THREE.Color("#FFF"),
 });
 
 const hitMaterial = new THREE.MeshLambertMaterial({
   color: new THREE.Color("#006"),
-  emissive: new THREE.Color("#006"),
-  emissiveIntensity: 0.1,
 });
 
 const selectMaterial = new THREE.MeshLambertMaterial({

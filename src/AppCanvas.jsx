@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import useStore from "./stores/store";
@@ -12,8 +11,7 @@ import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER, PLAYER_START } from "./constants/constants";
 
 const AppCanvas = () => {
-  //const canvasContainerRef = useRef();
-  //console.log("AppCanvas rendered", canvasContainerRef.current);
+  console.log("AppCanvas rendered");
   const beginSpaceFlightSceneLoop = useStore(
     (state) => state.actions.beginSpaceFlightSceneLoop
   );

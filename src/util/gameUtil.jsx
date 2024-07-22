@@ -27,16 +27,16 @@ export const setVisible = (obj, isVisible) => {
 };
 
 // avoiding creating new objects in loop
-const flipQuat = new THREE.Quaternion(),
-  newQuat = new THREE.Quaternion();
-const axisVector = new THREE.Vector3(0, 1, 0);
-flipQuat.setFromAxisAngle(axisVector, Math.PI);
+const flipRotationQuat = new THREE.Quaternion(),
+  flippedRotationQuat = new THREE.Quaternion();
+const flipRotationAxisVector = new THREE.Vector3(0, 1, 0);
+flipRotationQuat.setFromAxisAngle(flipRotationAxisVector, Math.PI);
 // function to flip the rotation of a quaternion
 export const flipRotation = (quat) => {
   // should be using quat.invert()
   //flip the opposite direction
-  newQuat.multiplyQuaternions(quat, flipQuat);
-  return newQuat;
+  flippedRotationQuat.multiplyQuaternions(quat, flipRotationQuat);
+  return flippedRotationQuat;
 };
 
 // positionVal is relative mouse position, from -0.5 to 0.5
@@ -45,22 +45,24 @@ export const calcMouseLookDeg = (positionVal) => positionVal * 40;
 
 export const lerp = (x, y, a) => x * (1 - a) + y * a;
 
-export const findHUDPosition = (obj, camera) => {
-  var vector = new THREE.Vector3();
-
+const object3dScreenPositionVector = new THREE.Vector3();
+export const getObject3dScreenPosition = (obj, camera) => {
   obj.updateMatrixWorld();
-  vector.setFromMatrixPosition(obj.matrixWorld);
-  vector.project(camera);
+  object3dScreenPositionVector.setFromMatrixPosition(obj.matrixWorld);
+  object3dScreenPositionVector.project(camera);
 
-  vector.x = (vector.x * window.innerWidth) / 2;
-  vector.y = (vector.y * window.innerHeight) / 2;
+  object3dScreenPositionVector.x =
+    (object3dScreenPositionVector.x * window.innerWidth) / 2;
+  object3dScreenPositionVector.y =
+    (object3dScreenPositionVector.y * window.innerHeight) / 2;
 
   return {
-    x: vector.x,
-    y: vector.y,
-    z: vector.z,
+    x: object3dScreenPositionVector.x,
+    y: object3dScreenPositionVector.y,
+    z: object3dScreenPositionVector.z,
   };
 };
+
 /*
 //DOUBLE SLIDER LABEL CREATOR
 function doubleSliderLabel(topArr, bottomArr) {

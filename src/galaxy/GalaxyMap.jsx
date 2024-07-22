@@ -24,6 +24,7 @@ import {
   useTouchEndControls,
 } from "../hooks/controls/useTouchControls";
 import { STAR_DISPLAY_MODE } from "./galaxyConstants";
+import { IS_MOBILE } from "../constants/constants";
 import StarPoints from "./StarPoints";
 import { isMouseOverStarInfoCard } from "../galaxy/StarInfoCard";
 
@@ -77,7 +78,8 @@ const GalaxyMap = () => {
   const StarPointsWithControls = () => {
     console.log("StarPointsWithControls rendered");
     const {
-      getSelectedStar,
+      getPlayerCurrentStarIndex,
+      getShowInfoTargetStarIndex,
       setShowInfoHoveredStarIndex,
       setShowInfoTargetStarIndex,
     } = useStore((state) => state.actions);
@@ -132,19 +134,26 @@ const GalaxyMap = () => {
     }, []);
 
     useEffect(() => {
-      const selectedStarIndex = getSelectedStar();
-      if (selectedStarIndex !== null) {
+      const playerCurrentStarIndex = getPlayerCurrentStarIndex();
+      if (playerCurrentStarIndex !== null) {
         // dim all stars
         setStarSelectionBuffer(STAR_DISPLAY_MODE.dim);
-        viewSelectedStar(selectedStarIndex);
+        viewSelectedStar(playerCurrentStarIndex);
         // set secondary selected stars to secondary selected mode
         // these are stars within close proximity to selected star
-        setSecondarySelectedStars(selectedStarIndex);
+        setSecondarySelectedStars(playerCurrentStarIndex);
         // overwrite current selected star (star player is at) to selected mode after secondary selected stars are set
-        starSelectedBuffer.array[selectedStarIndex] =
+        starSelectedBuffer.array[playerCurrentStarIndex] =
           STAR_DISPLAY_MODE.selected;
         // set centerOnStarIndexRef to selected star for line drawing
-        centerOnStarIndexRef.current = { index: selectedStarIndex };
+        centerOnStarIndexRef.current = playerCurrentStarIndex;
+        // reset target star player was looking at last time viewing galaxy map
+        // must set the hovered and target star indexes
+        targetStarIndexRef.current = getShowInfoTargetStarIndex();
+        if (targetStarIndexRef.current) {
+          hoveredStarIndexRef.current = targetStarIndexRef.current;
+          setSelectedTargetStar();
+        }
         // update star points aSelected attribute
         updateStarPointsSelectedAttribute();
       } else resestControlsCameraPosition();
@@ -194,11 +203,11 @@ const GalaxyMap = () => {
       if (centerOnStarIndexRef.current) {
         // set all stars to dim mode
         setStarSelectionBuffer(STAR_DISPLAY_MODE.dim);
-        starSelectedBuffer.array[centerOnStarIndexRef.current.index] =
+        starSelectedBuffer.array[centerOnStarIndexRef.current] =
           STAR_DISPLAY_MODE.selected;
         // secondary selected stars in close proximity
         const centerOnStarPosition = getStarBufferPoisition(
-          centerOnStarIndexRef.current.index
+          centerOnStarIndexRef.current
         );
         // check all stars intersecting with raycaster ray for distance to selected star
         // calculated with starCoordsBuffer for accurate coordinates - raycaster ray not achieving accurate results
@@ -206,7 +215,7 @@ const GalaxyMap = () => {
         intersects.forEach((intersect) => {
           secondaryStarPosition.copy(getStarBufferPoisition(intersect.index));
           // secondary star selections are stars close to selected star
-          if (intersect.index !== centerOnStarIndexRef.current.index) {
+          if (intersect.index !== centerOnStarIndexRef.current) {
             const distance = centerOnStarPosition.distanceTo(
               secondaryStarPosition
             );
@@ -221,9 +230,7 @@ const GalaxyMap = () => {
           }
         });
         // set view to selected star
-        viewSelectedStar(centerOnStarIndexRef.current.index);
-        // warp ship to selected star system
-        //setSelectedStar(centerOnStarIndexRef.current.index);
+        viewSelectedStar(centerOnStarIndexRef.current);
       }
     };
 
@@ -237,7 +244,7 @@ const GalaxyMap = () => {
     };
 
     const setHoveredSelectedStar = (e) => {
-      if (isMouseOverStarInfoCard(e)) {
+      if (e && isMouseOverStarInfoCard(e)) {
         hoveredStarIndexRef.current = null;
         setShowInfoHoveredStarIndex(null);
         lineToHoveredStarPointRef.current = null;
@@ -270,6 +277,7 @@ const GalaxyMap = () => {
         } else {
           // clear hovered star if no star is hovered over
           hoveredStarIndexRef.current = null;
+          // clear star info card (store state)
           setShowInfoHoveredStarIndex(null);
           // clear line if no star is hovered over
           lineToHoveredStarPointRef.current = null;
@@ -277,13 +285,14 @@ const GalaxyMap = () => {
       }
     };
 
+    // change hovered star to  selected star
+    // on mobile we set and check for hovered star existance before setSelectedTargetStar
     const setSelectedTargetStar = (e) => {
-      if (isMouseOverStarInfoCard(e)) {
+      if (e && isMouseOverStarInfoCard(e)) {
         return;
       }
-      // clear line
+      // clear line to hovered over star position
       lineToHoveredStarPointRef.current = null;
-      // mobile
       if (hoveredStarIndexRef.current !== null) {
         // clear old target star selection
         if (targetStarIndexRef.current !== null) {
@@ -295,21 +304,24 @@ const GalaxyMap = () => {
         const targetStarPosition = getStarBufferPoisition(
           targetStarIndexRef.current
         );
+        // offset by galaxy position (centered on current player star position)
         lineToTargetStarPointRef.current = [
           targetStarPosition.x + galaxyRef.current.position.x,
           targetStarPosition.y + galaxyRef.current.position.y,
           targetStarPosition.z + galaxyRef.current.position.z,
         ];
-        // new target star selection
+        // new target star selection (makes star green)
         starSelectedBuffer.array[targetStarIndexRef.current] =
           STAR_DISPLAY_MODE.selected;
-        // set warp target star index
+        // set target star index
         setShowInfoTargetStarIndex(targetStarIndexRef.current);
       } else {
+        // this allows player to select a star when viewing full galaxy map
         // select primary and secondary stars with raycaster
+        // might not need this at all
         setStarRaycastSelection(e);
       }
-      // update star points aSelected attribute
+      // update star points aSelected buffer attribute
       updateStarPointsSelectedAttribute();
     };
 
@@ -359,18 +371,9 @@ const GalaxyMap = () => {
       );
       if (mouseMovedStart.current.distanceTo(mouseMovedEnd.current) > 10)
         return;
-      // todo fix up confusing code
+      // must set hovered star before setting selected star
       setHoveredSelectedStar(e.changedTouches[0]);
       setSelectedTargetStar(e.changedTouches[0]);
-      /*
-      // set hoveredSelectedStar on first touch
-      const currentHoveredStarIndex = hoveredStarIndexRef.current;
-      // set hoveredSelectedStar to closest star to touch
-      setHoveredSelectedStar(e.changedTouches[0]);
-      // if user has touching the same star again, set as target star star
-      if (currentHoveredStarIndex === hoveredStarIndexRef.current)
-        setSelectedTargetStar(e.changedTouches[0]);
-      */
     });
 
     useMouseMove((e) => {
@@ -379,6 +382,7 @@ const GalaxyMap = () => {
     });
 
     /*
+    // incase we want to animate star points
     useFrame((state) => {
       //const { clock } = state;
       //starPointsRef.current.material.uniforms.uTime.value = clock.elapsedTime;
@@ -417,9 +421,10 @@ const GalaxyMap = () => {
 
             lineVectors.push(centerPoint, midPoint, endPoint);
           }
+          const lineWidth = IS_MOBILE ? 1 : 0;
           // p is a decimal percentage of the number of points
           lineRef.current.setPoints(lineVectors, (p) => {
-            return p == 0.5 ? 1 : 0; // setting width of meshLine at mid point to make an arrow shape
+            return p === 0.5 ? lineWidth + 1 : lineWidth; // setting width of meshLine at mid point to make an arrow shape
           });
         }
       }

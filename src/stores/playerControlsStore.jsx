@@ -2,7 +2,7 @@ import { create } from "zustand";
 import useStore from "./store";
 import * as THREE from "three";
 import { flipRotation } from "../util/gameUtil";
-import { IS_MOBLIE, SCALE, PLAYER } from "../constants/constants";
+import { IS_MOBILE, SCALE, PLAYER } from "../constants/constants";
 
 const usePlayerControlsStore = create((set, get) => {
   const tempObjectDummy = new THREE.Object3D();
@@ -33,6 +33,10 @@ const usePlayerControlsStore = create((set, get) => {
         ? true
         : false;
     },
+    loadingPlayerScreen: true,
+    setPlayerScreenLoaded(isLoaded = true) {
+      set(() => ({ loadingPlayerScreen: isLoaded }));
+    },
 
     actions: {
       actionModeSelect(playerActionMode) {
@@ -51,6 +55,7 @@ const usePlayerControlsStore = create((set, get) => {
 
       //changing player screen
       switchScreen(playerScreen) {
+        set(() => ({ loadingPlayerScreen: true }));
         set(() => ({ playerScreen }));
       },
     },
@@ -98,36 +103,19 @@ const usePlayerControlsStore = create((set, get) => {
 
       let lerpAmount = 0;
 
-      // viewing mech from side
-      if (get().playerControlMode === PLAYER.controls.unattended) {
-        tempObjectDummy.translateX(-8 * SCALE * currentPlayerMechBP.scale);
-        tempObjectDummy.translateY(8 * SCALE * currentPlayerMechBP.scale);
-        //tempObjectDummy.translateZ(2 * SCALE * currentPlayerMechBP.scale);
-        lerpAmount = 1;
-      } else {
-        if (get().playerViewMode === PLAYER.view.firstPerson) {
-          tempObjectDummy.translateZ(2 * SCALE * currentPlayerMechBP.scale);
-          tempObjectDummy.translateY(1 * SCALE * currentPlayerMechBP.scale);
-        }
-        if (get().playerViewMode === PLAYER.view.thirdPerson) {
-          tempObjectDummy.translateZ(-8 * SCALE * currentPlayerMechBP.scale);
-          tempObjectDummy.translateY(2 * SCALE * currentPlayerMechBP.scale);
-        }
-        lerpAmount = 0.95; //distance(state.camera.position, camDummy.position) / 0.8;
+      if (get().playerViewMode === PLAYER.view.firstPerson) {
+        // todo find a way to set camera position based on mech cockpit servo position
+        tempObjectDummy.translateY(1 * SCALE * currentPlayerMechBP.scale);
+        camera.position.copy(tempObjectDummy.position);
       }
-
-      camera.position.lerp(tempObjectDummy.position, lerpAmount);
-
-      // viewing mech from side
-      if (get().playerControlMode === PLAYER.controls.unattended) {
-        //looking at the player ship from the side
-        tempObjectDummy.lookAt(main.current.position);
-        endQuat.setFromEuler(tempObjectDummy.rotation);
-      } else if (
-        !IS_MOBLIE ||
-        get().playerActionMode === PLAYER.action.inspect
-      ) {
-        // additional camera movement based on mouse position
+      if (get().playerViewMode === PLAYER.view.thirdPerson) {
+        tempObjectDummy.translateZ(-8 * SCALE * currentPlayerMechBP.scale);
+        tempObjectDummy.translateY(2 * SCALE * currentPlayerMechBP.scale);
+        lerpAmount = 0.95; //distance(state.camera.position, camDummy.position) / 0.8;
+        camera.position.lerp(tempObjectDummy.position, lerpAmount);
+      }
+      // additional camera movement based on mouse position
+      if (!IS_MOBILE || get().playerActionMode === PLAYER.action.inspect) {
         mouseQuat.setFromAxisAngle(
           direction.set(mouse.y, -mouse.x, 0),
           Math.PI / 4

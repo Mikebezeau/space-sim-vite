@@ -7,7 +7,7 @@ export const PLANET_SCALE = 10;
 export const STARS_IN_GALAXY = 150000;
 export const GALAXY_SIZE = 40;
 
-export const IS_MOBLIE = /Mobi|Android/i.test(navigator.userAgent);
+export const IS_MOBILE = /Mobi|Android/i.test(navigator.userAgent);
 
 export const PLAYER_START = {
   system: 31232,

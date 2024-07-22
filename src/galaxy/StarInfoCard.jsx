@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { generateSystemInfo } from "../solarSystem/generateSystem";
-import { IS_MOBLIE, PLAYER } from "../constants/constants";
+import { IS_MOBILE, PLAYER } from "../constants/constants";
 import "../css/buttonCyber.css";
 
 export const isMouseOverStarInfoCard = (e) => {
@@ -47,7 +47,7 @@ const StarInfoCard = () => {
 
   //can use this to poition box when get screen position of star viewed
   useEffect(() => {
-    if (IS_MOBLIE) {
+    if (IS_MOBILE) {
       systemInfoCardRef.current.style.top = "10px";
       systemInfoCardRef.current.style.right = "10px";
     } else {

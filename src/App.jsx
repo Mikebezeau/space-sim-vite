@@ -1,5 +1,6 @@
 import AppUI from "./AppUI";
 import AppCanvas from "./AppCanvas";
+import AppUICanvas from "./AppUICanvas";
 //import MainUI from "./mainUI/MainUI";
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
       {/*<MainUI />*/}
       <AppCanvas />
       <AppUI />
+      <AppUICanvas />
     </>
   );
 }

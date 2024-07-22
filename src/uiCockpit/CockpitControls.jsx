@@ -1,6 +1,6 @@
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import { IS_MOBLIE, PLAYER } from "../constants/constants";
+import { IS_MOBILE, PLAYER } from "../constants/constants";
 import controls from "../icons/controls.svg";
 import rightClick from "../icons/mouse/right-click-1.svg";
 import warp from "../icons/warp-galaxy.svg";
@@ -10,6 +10,7 @@ import radarDish from "../icons/radarDish.svg";
 import sword from "../icons/sword.svg";
 import stars from "../icons/stars.svg";
 import camera from "../icons/camera-change.svg";
+import { SCALE } from "../constants/constants";
 //import destinationTargetIcon from "../../icons/destinationTarget.svg";
 //import crosshairOuter from "../../icons/crosshairOuter.svg";
 //import crosshairInner from "../../icons/crosshairInner.svg";
@@ -74,7 +75,7 @@ export const ActionModeControls = () => {
 
   return (
     <>
-      {!IS_MOBLIE && playerActionMode === PLAYER.action.inspect ? (
+      {!IS_MOBILE && playerActionMode === PLAYER.action.inspect ? (
         <div className="absolute top-1/2 left-1/2">
           <ActionControlPilot />
         </div>
@@ -91,7 +92,7 @@ export const ActionModeControls = () => {
 
       <div
         className={`absolute top-1/2 left-1/2 -ml-[5vh] ${
-          !IS_MOBLIE && playerActionMode === PLAYER.action.inspect
+          !IS_MOBILE && playerActionMode === PLAYER.action.inspect
             ? "mt-[12vh]"
             : "-mt-[5vh]"
         }`}
@@ -99,7 +100,7 @@ export const ActionModeControls = () => {
         <ActionWarpToPlanet />
       </div>
 
-      {!IS_MOBLIE && playerActionMode !== PLAYER.action.inspect && (
+      {!IS_MOBILE && playerActionMode !== PLAYER.action.inspect && (
         <div className="absolute bottom-8 right-8">
           <ActionCancelPilot />
         </div>
@@ -134,7 +135,7 @@ export const CockpitControlMode = () => {
       )}
       {playerControlMode !== PLAYER.controls.scan && (
         <div
-          className="button-cyber w-[10vh] h-[10vh]"
+          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
           onClick={() => controlModeSelect(PLAYER.controls.scan)}
         >
           <span className="button-cyber-content">
@@ -169,7 +170,7 @@ export const CockpitControlMap = () => {
 
 export const CockpitControlWarp = () => {
   const selectedWarpStar = useStore((state) => state.selectedWarpStar);
-  const { setSelectedStar, setSelectedWarpStar } = useStore(
+  const { setPlayerCurrentStarIndex, setSelectedWarpStar } = useStore(
     (state) => state.actions
   );
 
@@ -181,7 +182,7 @@ export const CockpitControlWarp = () => {
       onClick={() => {
         console.log(selectedWarpStar);
         if (selectedWarpStar) {
-          setSelectedStar(selectedWarpStar);
+          setPlayerCurrentStarIndex(selectedWarpStar);
           setSelectedWarpStar(null);
         }
       }}
@@ -226,13 +227,29 @@ export const CockpitControlDockStation = () => {
     (state) => state.actions.switchScreen
   );
   const warpToStation = useStore((state) => state.testing.warpToStation);
+  const getPlayer = useStore((state) => state.getPlayer);
+  const stations = useStore((state) => state.stations);
+
+  const isStationCloseEnoughToDock = () => {
+    console.log(
+      getPlayer().object3d.position.distanceTo(stations[0].object3d.position),
+      SCALE
+    );
+    return (
+      getPlayer().object3d.position.distanceTo(stations[0].object3d.position) <
+      50000 * SCALE
+    );
+  };
 
   return (
     <div
       className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
       onClick={() => {
-        switchScreen(PLAYER.screen.dockedStation);
-        warpToStation();
+        if (isStationCloseEnoughToDock()) {
+          switchScreen(PLAYER.screen.dockedStation);
+        } else {
+          warpToStation();
+        }
       }}
     >
       <span className="button-cyber-content">
