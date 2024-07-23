@@ -13,7 +13,7 @@ import {
   useTouchMoveControls,
 } from "../hooks/controls/useTouchControls";
 
-import { calcMouseLookDeg, lerp } from "../util/gameUtil";
+import { lerp } from "../util/gameUtil";
 import "./cockpit.css";
 import "../css/buttonCyber.css";
 import CockpitLeft from "./faces/CockpitLeft";
@@ -59,15 +59,15 @@ const Cockpit = () => {
   // isNoLerp is used to skip lerp animation
   const smoothViewRender = (isNoLerp = false) => {
     //console.log("smoothViewRender rafRef.current", rafRef.current);
-    //if (rafRef.current !== null) return;
+    //if (rafRef.current === null) return;
     let isResetView = false;
     if (getPlayerState().playerActionMode !== PLAYER.action.inspect) {
       isResetView = true;
     }
     const speed = isNoLerp ? 1 : 0.2; //view lerp speed
     if (cockpitRef.current) {
-      targetView.current.rotateX = isResetView ? 0 : -calcMouseLookDeg(mouse.y);
-      targetView.current.rotateY = isResetView ? 0 : calcMouseLookDeg(mouse.x);
+      targetView.current.rotateX = isResetView ? 0 : -mouse.y * 40;
+      targetView.current.rotateY = isResetView ? 0 : mouse.x * 40;
       targetView.current.moveX = isResetView ? 0 : -mouse.x * 70;
       targetView.current.moveY = isResetView ? 0 : -mouse.y * 120;
 

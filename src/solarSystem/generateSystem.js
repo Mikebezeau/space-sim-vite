@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
-import { SCALE } from "../constants/constants";
+import { SCALE, SYSTEM_SCALE, PLANET_SCALE } from "../constants/constants";
 import { generateStarType } from "../galaxy/generateGalaxy";
 import StarSystem from "./StarSystem"; //ACCRETE
 
@@ -35,8 +35,8 @@ export const generateSystemInfo = (starIndex) => {
 
 const generateSystem = (
   starIndex,
-  systemScale = 1, // systemScale and planetScale used for mini system map
-  planetScale = 1
+  systemScale = SYSTEM_SCALE, // systemScale and planetScale used for mini system map
+  planetScale = PLANET_SCALE
 ) => {
   //const rng = seedrandom(starIndex);
   const [star, newSystem] = generateSystemInfo(starIndex);

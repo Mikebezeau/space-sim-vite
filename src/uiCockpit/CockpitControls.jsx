@@ -26,7 +26,11 @@ const ActionControlPilot = () => {
       className="w-[20vh] h-[20vh] pointer-events-auto -mt-[10vh] -ml-[10vh]"
       onClick={() => actionModeSelect(PLAYER.action.manualControl)}
     >
-      <img src={controls} alt="controls icon" className="w-full h-full" />
+      <img
+        src={controls}
+        alt="controls icon"
+        className="w-full h-full pointer-events-none"
+      />
     </div>
   );
 };
@@ -45,7 +49,7 @@ const ActionCancelPilot = () => {
         <img
           src={rightClick}
           alt="cancel controls icon"
-          className="w-[10vh] h-[10vh]"
+          className="w-[10vh] h-[10vh] pointer-events-none"
         />
       </span>
     </div>
@@ -61,7 +65,7 @@ const ActionWarpToPlanet = () => {
         <img
           src={warp}
           alt="cancel controls icon"
-          className="w-[10vh] h-[10vh]"
+          className="w-[10vh] h-[10vh] pointer-events-none"
         />
       </span>
     </div>
@@ -82,7 +86,7 @@ export const ActionModeControls = () => {
       ) : (
         <></>
         /*
-        <span className="absolute w-[200px] h-[200px] top-[50vh] left-[50vw] -ml-[100px] -mr-[100px]">
+        <span className="pointer-events-none absolute w-[200px] h-[200px] top-[50vh] left-[50vw] -ml-[100px] -mr-[100px]">
           <img src={crosshairOuter} alt="crosshair icon" />
           <span className="absolute w-[100px] h-[100px] top-[50px] left-[50px]">
             <img src={crosshairInner} alt="crosshair icon" />
@@ -128,7 +132,7 @@ export const CockpitControlMode = () => {
             <img
               src={sword}
               alt="comabt mode icon"
-              className="w-[10vh] h-[10vh]"
+              className="w-[10vh] h-[10vh] pointer-events-none"
             />
           </span>
         </div>
@@ -142,7 +146,7 @@ export const CockpitControlMode = () => {
             <img
               src={radarDish}
               alt="radar icon"
-              className="w-[10vh] h-[10vh]"
+              className="w-[10vh] h-[10vh] pointer-events-none"
             />
           </span>
         </div>
@@ -162,7 +166,11 @@ export const CockpitControlMap = () => {
       onClick={() => switchScreen(PLAYER.screen.galaxyMap)}
     >
       <span className="button-cyber-content">
-        <img src={stars} alt="stars icon" className="w-[10vh] h-[10vh]" />
+        <img
+          src={stars}
+          alt="stars icon"
+          className="w-[10vh] h-[10vh] pointer-events-none"
+        />
       </span>
     </div>
   );
@@ -190,7 +198,11 @@ export const CockpitControlWarp = () => {
       <span
         className={`button-cyber-content ${selectedWarpStar && "bg-green-500"}`}
       >
-        <img src={warp} alt="warp icon" className="w-[10vh] h-[10vh]" />
+        <img
+          src={warp}
+          alt="warp icon"
+          className="w-[10vh] h-[10vh] pointer-events-none"
+        />
       </span>
     </div>
   );
@@ -216,7 +228,11 @@ export const CockpitControlView = () => {
       }
     >
       <span className="button-cyber-content">
-        <img src={camera} alt="camera icon" className="w-[10vh] h-[10vh]" />
+        <img
+          src={camera}
+          alt="camera icon"
+          className="w-[10vh] h-[10vh] pointer-events-none"
+        />
       </span>
     </div>
   );
@@ -253,7 +269,11 @@ export const CockpitControlDockStation = () => {
       }}
     >
       <span className="button-cyber-content">
-        <img src={satellite} alt="station icon" className="w-[10vh] h-[10vh]" />
+        <img
+          src={satellite}
+          alt="station icon"
+          className="w-[10vh] h-[10vh] pointer-events-none"
+        />
       </span>
     </div>
   );
@@ -270,7 +290,11 @@ export const CockpitControlEquip = () => {
       onClick={() => switchScreen(PLAYER.screen.equipmentBuild)}
     >
       <span className="button-cyber-content">
-        <img src={gear} alt="gear icon" className="w-[10vh] h-[10vh]" />
+        <img
+          src={gear}
+          alt="gear icon"
+          className="w-[10vh] h-[10vh] pointer-events-none"
+        />
       </span>
     </div>
   );

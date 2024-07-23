@@ -315,12 +315,12 @@ const GalaxyMap = () => {
           STAR_DISPLAY_MODE.selected;
         // set target star index
         setShowInfoTargetStarIndex(targetStarIndexRef.current);
-      } else {
+      } /* else {
         // this allows player to select a star when viewing full galaxy map
         // select primary and secondary stars with raycaster
         // might not need this at all
-        setStarRaycastSelection(e);
-      }
+        // setStarRaycastSelection(e);
+      }*/
       // update star points aSelected buffer attribute
       updateStarPointsSelectedAttribute();
     };
@@ -421,10 +421,10 @@ const GalaxyMap = () => {
 
             lineVectors.push(centerPoint, midPoint, endPoint);
           }
-          const lineWidth = IS_MOBILE ? 1 : 0;
+          const midLineWidth = IS_MOBILE ? 2 : 1;
           // p is a decimal percentage of the number of points
           lineRef.current.setPoints(lineVectors, (p) => {
-            return p === 0.5 ? lineWidth + 1 : lineWidth; // setting width of meshLine at mid point to make an arrow shape
+            return p === 0 ? 0 : p === 0.5 ? midLineWidth : 0; // setting width of meshLine at mid point to make an arrow shape
           });
         }
       }

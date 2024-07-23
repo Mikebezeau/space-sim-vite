@@ -125,7 +125,7 @@ const PrePlanets = () => {
 
   return (
     <>
-      {planets.map((planet, index) => (
+      {planets?.map((planet, index) => (
         <Planet key={index} planet={planet} textureMaps={textureMaps} />
       ))}
     </>

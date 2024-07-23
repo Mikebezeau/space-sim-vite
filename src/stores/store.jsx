@@ -31,7 +31,6 @@ import {
   SCALE,
   SCALE_PLANET_WALK,
   SYSTEM_SCALE,
-  PLANET_SCALE,
   STARS_IN_GALAXY,
   GALAXY_SIZE,
   PLAYER,
@@ -80,10 +79,9 @@ const useStore = create((set, get) => {
 
   //globally available variables
   return {
-    //testing
-    toggleTestControls: false,
+    showTestControls: false,
     showLeaders: false,
-    galaxyMapDataOutput: "",
+    galaxyMapDataOutput: "", // used with mapGalaxyDataToJSON function to collect galaxy map data
     boidMod: {
       boidMinRangeMod: 0,
       boidNeighborRangeMod: 0,
@@ -118,6 +116,14 @@ const useStore = create((set, get) => {
     focusPlanetIndex: null,
     selectedPanetIndex: null,
     focusTargetIndex: null,
+    getTargets: () => {
+      return {
+        selectedTargetIndex: get().selectedTargetIndex,
+        focusPlanetIndex: get().focusPlanetIndex,
+        selectedPanetIndex: get().selectedPanetIndex,
+        focusTargetIndex: get().focusTargetIndex,
+      };
+    },
     weaponFireLightTimer: 0,
     stationDock: { stationIndex: 0, portIndex: 0 },
     weaponFireList: [], //
@@ -130,9 +136,10 @@ const useStore = create((set, get) => {
       () => 1 + Math.random() * 2.5
     ),
     enemies: randomEnemies(numEnemies, track),
+    getEnemies: () => get().enemies,
     enemyBoids: setupFlock(numEnemies),
-    planets: generateSystem(PLAYER_START.system, SYSTEM_SCALE, PLANET_SCALE),
-    stations: randomStations(seedrandom(PLAYER_START.system), 1),
+    planets: null, // set in call to setPlayerCurrentStarIndex
+    stations: null, // set in call to setPlayerCurrentStarIndex
     //generateTerrain first parameter is the rng seed
     planetTerrain: generateTerrain(PLAYER_START.system, {
       numCity: 4,
@@ -178,15 +185,18 @@ const useStore = create((set, get) => {
     testing: {
       toggleTestControls() {
         set((state) => ({
-          toggleTestControls: !state.toggleTestControls,
+          showTestControls: !state.showTestControls,
         }));
       },
-      mapGalaxy() {
+      /*
+      // this can be used to collect a JSON string of the galaxy map data
+      // for use in the galaxy map UI. i.e. where are terrestrial planets located
+      mapGalaxyDataToJSON() {
         const positions = get().galaxyStarPositionsFloat32;
         let galaxyMapData = [];
         for (let i = 0; i < STARS_IN_GALAXY; i++) {
           const systemSeed = i;
-          const planets = generateSystem(systemSeed, 1, 1, true);
+          const planets = generateSystemInfo(systemSeed);
           let hasTerrestrial = false;
           planets.forEach((planet) => {
             if (planet.data.type === "Terrestrial") hasTerrestrial = true;
@@ -207,6 +217,7 @@ const useStore = create((set, get) => {
           galaxyMapDataOutput: JSON.stringify(galaxyMapData),
         }));
       },
+      */
       summonEnemy() {
         let enemies = get().enemies;
         let playerPos = get().player.object3d.position;
@@ -874,11 +885,7 @@ const useStore = create((set, get) => {
       setPlayerCurrentStarIndex(playerCurrentStarIndex) {
         set(() => ({ playerCurrentStarIndex }));
         set(() => ({
-          planets: generateSystem(
-            playerCurrentStarIndex,
-            SYSTEM_SCALE,
-            PLANET_SCALE
-          ),
+          planets: generateSystem(playerCurrentStarIndex),
         }));
         const playerObj = get().player.object3d;
         playerObj.position.setX(0);
@@ -886,17 +893,19 @@ const useStore = create((set, get) => {
         playerObj.position.setZ(get().planets[0].radius * 5);
         playerObj.lookAt(0, 0, 0);
         get().actions.setPlayerObject(playerObj);
-        //clear targets
+        //clear variables
         set(() => ({
           focusPlanetIndex: null,
           selectedPanetIndex: null,
           focusTargetIndex: null,
           selectedTargetIndex: null,
+          showInfoTargetStarIndex: null,
         }));
         // set position of space station near a planet
-        const stations = get().stations;
+        const stations = randomStations(seedrandom(playerCurrentStarIndex), 1);
         const stationOrbitPlanet = get().planets[1] || get().planets[0];
         if (stations[0]) {
+          console.log("setting station[0]");
           stations[0].object3d.position.set(
             stationOrbitPlanet.object3d.position.x,
             stationOrbitPlanet.object3d.position.y,

@@ -1,10 +1,12 @@
-import React from "react";
 import useStore from "../stores/store";
 import "../css/toggleControl.css";
 
 export function ToggleTestControls() {
   //testing
-  const { testing, toggleTestControls } = useStore((state) => state);
+  const showTestControls = useStore((state) => state.showTestControls);
+  const toggleTestControls = useStore(
+    (state) => state.testing.toggleTestControls
+  );
 
   return (
     <>
@@ -13,9 +15,9 @@ export function ToggleTestControls() {
         <label className="switch">
           <input
             type="checkbox"
-            checked={toggleTestControls}
-            value={1}
-            onChange={testing.toggleTestControls}
+            checked={showTestControls}
+            value={true}
+            onChange={toggleTestControls}
           />
           <span className="toggleslider"></span>
         </label>

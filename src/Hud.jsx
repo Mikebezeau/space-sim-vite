@@ -13,8 +13,8 @@ import "./css/toggleControl.css";
 
 //basic HTML/CSS heads up display used to show player info
 export default function Hud() {
-  //console.log("Hud rendered");
-  const toggleTestControls = useStore((state) => state.toggleTestControls);
+  console.log("Hud rendered");
+  const showTestControls = useStore((state) => state.showTestControls);
   const speed = useStore((state) => state.player.speed);
   const shield = useStore((state) => state.player.shield);
   const currentMechBPindex = useStore(
@@ -34,7 +34,7 @@ export default function Hud() {
   );
 
   const sunScanData = useMemo(() => {
-    Object.entries(planets[0].data);
+    planets ? Object.entries(planets[0].data) : null;
   }, [planets]);
   //console.log("planets[0].data", planets[0].data);
 
@@ -81,7 +81,7 @@ export default function Hud() {
         )}
         <div className="hudData mt-20">
           <ToggleTestControls />
-          {!toggleTestControls && (
+          {!showTestControls && (
             <>
               {playerControlMode === PLAYER.controls.combat && (
                 <>
@@ -115,7 +115,7 @@ export default function Hud() {
               )}
             </>
           )}
-          {toggleTestControls && (
+          {showTestControls && (
             <>
               <button
                 onClick={() => switchScreen(PLAYER.screen.equipmentBuild)}
@@ -144,9 +144,11 @@ export default function Hud() {
 
         <br />
         <div className="hudData">
-          {!toggleTestControls &&
-            playerControlMode === PLAYER.controls.scan && <PlanetScanData />}
-          {toggleTestControls && <TestingBoidControls />}
+          {showTestControls ? (
+            <TestingBoidControls />
+          ) : (
+            playerControlMode === PLAYER.controls.scan && <PlanetScanData />
+          )}
         </div>
       </div>
     </>

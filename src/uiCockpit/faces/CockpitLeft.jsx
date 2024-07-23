@@ -6,15 +6,19 @@ const CockpitLeft = () => {
   //console.log("CockpitLeft rendered");
   const planets = useStore((state) => state.planets);
 
-  const sunScanData = useMemo(() => Object.entries(planets[0].data), [planets]);
+  const sunScanData = useMemo(
+    () => (planets ? Object.entries(planets[0].data) : null),
+    [planets]
+  );
 
   const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
 
   const PlanetScanData = () => {
     //console.log("PlanetScanData rendered");
-    const data = planets[focusPlanetIndex]
-      ? Object.entries(planets[focusPlanetIndex].data)
-      : null;
+    const data =
+      planets && planets[focusPlanetIndex]
+        ? Object.entries(planets[focusPlanetIndex].data)
+        : null;
 
     return (
       <>

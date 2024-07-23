@@ -45,15 +45,14 @@ const SpaceFlightControlsTouch = () => {
   return (
     <>
       <div className="absolute w-40 h-40 bottom-5 left-2 pointer-events-none">
-        <div className="rounded-full w-full h-full bg-gray-500 pointer-events-auto">
+        <div
+          id="btn-ship-move"
+          className="rounded-full w-full h-full bg-gray-500 pointer-events-auto"
+        >
           <img
             src={controls}
             alt="controls icon"
-            className="absolute w-36 h-36 left-2 top-2 opacity-25"
-          />
-          <div
-            id="btn-ship-move"
-            className="rounded-full w-full h-full pointer-events-auto"
+            className="absolute w-36 h-36 left-2 top-2 opacity-25 pointer-events-none"
           />
         </div>
       </div>

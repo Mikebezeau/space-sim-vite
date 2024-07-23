@@ -55,7 +55,7 @@ function Stations() {
 
   return (
     <>
-      {stations.map((station, index) => (
+      {stations?.map((station, index) => (
         <Station key={index} station={station} />
       ))}
     </>

@@ -60,7 +60,7 @@ const StarInfoCard = () => {
     <div
       ref={systemInfoCardRef}
       id="star-info-card"
-      className={`button-cyber pointer-events-none w-64 h-40 ${
+      className={`button-cyber pointer-events-none w-48 sm:w-64 h-40 ${
         showInfo && viewStarIndex ? "absolute" : "hidden"
       }`}
     >

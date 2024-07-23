@@ -36,7 +36,7 @@ export default function SystemMap({ showPlayer = false }) {
   // planet at end of array has largest orbit
   // this is not working in a useEffect
   let maxRadius = 0;
-  planets.forEach((planet) => {
+  planets?.forEach((planet) => {
     const distanceToSun = distance(planet.object3d.position, {
       x: 0,
       y: 0,
@@ -77,7 +77,7 @@ const System = ({ showPlayer, mapScale }) => {
   console.log("System rendered", mapScale);
   const planets = useStore((state) => state.planets);
   //function System({ planets, mapScale }) {
-  return planets.map((planet, index) => {
+  return planets?.map((planet, index) => {
     //console.log(planet.type);
     const ringRadius =
       mapScale * distance(planet.object3d.position, { x: 0, y: 0, z: 0 });

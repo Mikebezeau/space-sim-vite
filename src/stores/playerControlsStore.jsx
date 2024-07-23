@@ -18,12 +18,14 @@ const usePlayerControlsStore = create((set, get) => {
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
     playerScreen: PLAYER.screen.flight,
+    isResetCamera: true,
     getPlayerState: () => {
       return {
         playerActionMode: get().playerActionMode,
         playerControlMode: get().playerControlMode,
         playerViewMode: get().playerViewMode,
         playerScreen: get().playerScreen,
+        isResetCamera: get().isResetCamera,
       };
     },
     isPlayerPilotControl: () => {
@@ -49,6 +51,7 @@ const usePlayerControlsStore = create((set, get) => {
 
       viewModeSelect(playerViewMode) {
         // player selection of view: 1st or 3rd person
+        set(() => ({ isResetCamera: true }));
         get().actions.actionModeSelect(PLAYER.action.inspect);
         set(() => ({ playerViewMode }));
       },
@@ -56,6 +59,7 @@ const usePlayerControlsStore = create((set, get) => {
       //changing player screen
       switchScreen(playerScreen) {
         set(() => ({ loadingPlayerScreen: true }));
+        set(() => ({ isResetCamera: true }));
         set(() => ({ playerScreen }));
       },
     },
@@ -74,10 +78,16 @@ const usePlayerControlsStore = create((set, get) => {
 
       let mouseX = 0,
         mouseY = 0;
-      if (get().isPlayerPilotControl()) {
+
+      let resetCameraLerpSpeed = null;
+      if (get().isResetCamera) {
+        resetCameraLerpSpeed = 1;
+        set(() => ({ isResetCamera: false }));
+      } else if (get().isPlayerPilotControl()) {
         mouseX = mouse.x;
         mouseY = mouse.y;
       }
+
       rotateQuat.setFromAxisAngle(
         direction.set(mouseY * 0.05, -mouseX * 0.05, mouseX * 0.1),
         (Math.PI / 10) * MVmod
@@ -101,8 +111,6 @@ const usePlayerControlsStore = create((set, get) => {
       tempObjectDummy.position.copy(main.current.position);
       tempObjectDummy.rotation.copy(main.current.rotation);
 
-      let lerpAmount = 0;
-
       if (get().playerViewMode === PLAYER.view.firstPerson) {
         // todo find a way to set camera position based on mech cockpit servo position
         tempObjectDummy.translateY(1 * SCALE * currentPlayerMechBP.scale);
@@ -111,17 +119,20 @@ const usePlayerControlsStore = create((set, get) => {
       if (get().playerViewMode === PLAYER.view.thirdPerson) {
         tempObjectDummy.translateZ(-8 * SCALE * currentPlayerMechBP.scale);
         tempObjectDummy.translateY(2 * SCALE * currentPlayerMechBP.scale);
-        lerpAmount = 0.95; //distance(state.camera.position, camDummy.position) / 0.8;
-        camera.position.lerp(tempObjectDummy.position, lerpAmount);
-      }
-      // additional camera movement based on mouse position
-      if (!IS_MOBILE || get().playerActionMode === PLAYER.action.inspect) {
-        mouseQuat.setFromAxisAngle(
-          direction.set(mouse.y, -mouse.x, 0),
-          Math.PI / 4
+        const thirdPersonCameraLerpSpeed = resetCameraLerpSpeed || 0.95; //distance(state.camera.position, camDummy.position) / 0.8;
+        camera.position.lerp(
+          tempObjectDummy.position,
+          thirdPersonCameraLerpSpeed
         );
-        endQuat.multiply(mouseQuat);
       }
+      // additional camera movement based on mouse position (looking around)
+      //if (!IS_MOBILE || get().playerActionMode === PLAYER.action.inspect) {
+      mouseQuat.setFromAxisAngle(
+        direction.set(mouse.y, -mouse.x, 0),
+        Math.PI / 4
+      );
+      endQuat.multiply(mouseQuat);
+      //}
       //flip the position the camera should be facing so that the ship moves "forward" using a change in positive Z axis
       endQuat.copy(flipRotation(endQuat));
 
@@ -129,7 +140,7 @@ const usePlayerControlsStore = create((set, get) => {
       camQuat.setFromEuler(camera.rotation);
       // rotate towards target quaternion
       camera.rotation.setFromQuaternion(
-        camQuat.slerp(endQuat, 0.2).normalize()
+        camQuat.slerp(endQuat, resetCameraLerpSpeed || 0.2).normalize()
       );
       camera.updateProjectionMatrix();
     },

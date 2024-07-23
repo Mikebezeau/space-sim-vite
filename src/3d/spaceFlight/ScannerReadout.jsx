@@ -1,4 +1,4 @@
-import { memo } from "react";
+//import { memo } from "react";
 import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
@@ -67,19 +67,17 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 });
 
 // RERENDERING
-const PreScannerReadout = () => {
-  //console.log("ScannerReadout rendered");
+const ScannerReadout = () => {
+  console.log("ScannerReadout rendered");
   //export default function ScannerReadout() {
   //const clock = useStore((state) => state.mutation.clock);
   const { camera } = useThree();
-  const {
-    focusPlanetIndex,
-    selectedTargetIndex,
-    focusTargetIndex,
-    enemies,
-    player,
-    planets,
-  } = useStore((state) => state); // planets
+  const getPlayer = useStore((state) => state.getPlayer);
+  const getEnemies = useStore((state) => state.getEnemies);
+  const numEnemies = useStore((state) => state.enemies.length);
+  const getTargets = useStore((state) => state.getTargets);
+  const planets = useStore((state) => state.planets);
+
   const { setFocusPlanetIndex, setFocusTargetIndex } = useStore(
     (state) => state.actions
   ); // setTestVariable
@@ -89,12 +87,13 @@ const PreScannerReadout = () => {
 
   useFrame(() => {
     if (!planetScanRef.current) return null;
+    const player = getPlayer();
+    const enemies = getEnemies();
+    const { focusPlanetIndex, selectedTargetIndex, focusTargetIndex } =
+      getTargets();
     let tempFocusPlanetIndex = null;
     let tempFocusTargetIndex = null;
     let smallestTargetAgle = 10;
-
-    //setFocusTargetIndex(null);
-    //setFocusPlanetIndex(null);
 
     //temp planet scanning
     if (planets.length > 0)
@@ -199,55 +198,48 @@ const PreScannerReadout = () => {
     });
     //setTestVariable("scanner: " + );
     setFocusTargetIndex(tempFocusTargetIndex);
-    /*
-    
-      const opacity =
-        1 - Math.floor((distanceToPlayer / 1000000 / SCALE) * 10) / 10;
-      mesh.material.opacity = opacity;
-     
-      */
+
+    //TEMP
+    //set special rectical around the planet
+    //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
+    if (planetScanRef.current && focusPlanetIndex !== null) {
+      const group = planetScanRef.current.children[focusPlanetIndex];
+      const mesh = group.children[0];
+      dummyObj.position.copy(camera.position);
+      dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
+      placeTarget(camera, mesh, true, -1, focusPlanetIndex, 1, true);
+    }
+
+    //set special rectical around the target
+    //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
+    if (scannerOutputRef.current && focusTargetIndex !== null) {
+      const group = scannerOutputRef.current.children[focusTargetIndex];
+      const mesh = group.children[0];
+      dummyObj.position.copy(camera.position);
+      dummyObj.lookAt(enemies[focusTargetIndex].object3d.position);
+      placeTarget(
+        camera,
+        mesh,
+        true,
+        selectedTargetIndex,
+        focusTargetIndex,
+        enemies[focusTargetIndex].distanceNormalized
+      );
+    }
   });
   //console.log(focusTargetIndex);
-
-  //TEMP
-  //set special rectical around the planet
-  //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
-  if (planetScanRef.current && focusPlanetIndex !== null) {
-    const group = planetScanRef.current.children[focusPlanetIndex];
-    const mesh = group.children[0];
-    dummyObj.position.copy(camera.position);
-    dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
-    placeTarget(camera, mesh, true, -1, focusPlanetIndex, 1, true);
-  }
-
-  //set special rectical around the target
-  //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
-  if (scannerOutputRef.current && focusTargetIndex !== null) {
-    const group = scannerOutputRef.current.children[focusTargetIndex];
-    const mesh = group.children[0];
-    dummyObj.position.copy(camera.position);
-    dummyObj.lookAt(enemies[focusTargetIndex].object3d.position);
-    placeTarget(
-      camera,
-      mesh,
-      true,
-      selectedTargetIndex,
-      focusTargetIndex,
-      enemies[focusTargetIndex].distanceNormalized
-    );
-  }
 
   return (
     <>
       <group ref={planetScanRef}>
-        {planets.map((planet, i) => (
+        {planets?.map((planet, i) => (
           <group key={"p" + i}>
             <mesh index={i} />
           </group>
         ))}
       </group>
       <group ref={scannerOutputRef}>
-        {enemies.map((enemy, i) => (
+        {[...Array(numEnemies)].map((e, i) => (
           <group key={"e" + i}>
             <mesh index={i} />
           </group>
@@ -257,7 +249,6 @@ const PreScannerReadout = () => {
   );
 };
 
-const ScannerReadout = memo(PreScannerReadout);
 export default ScannerReadout;
 
 function placeTarget(

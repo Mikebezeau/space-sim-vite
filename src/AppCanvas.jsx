@@ -12,6 +12,7 @@ import { PLAYER, PLAYER_START } from "./constants/constants";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
+
   const beginSpaceFlightSceneLoop = useStore(
     (state) => state.actions.beginSpaceFlightSceneLoop
   );
