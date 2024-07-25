@@ -4,7 +4,7 @@ import usePlayerControlsStore from "./stores/playerControlsStore";
 import BuildMech from "./3d/BuildMech";
 import PlanetScanReadout from "./3d/spaceFlight/PlanetScanReadout";
 import useStore from "./stores/store";
-import { /*IS_MOBILE,*/ PLAYER } from "./constants/constants";
+import { IS_MOBILE, PLAYER } from "./constants/constants";
 
 function MyCanvas(props) {
   const canvas = useRef();
@@ -31,15 +31,20 @@ function AppUICanvas() {
   );
   const playerMechBP = useStore((state) => state.playerMechBP);
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
-  const playerViewMode = usePlayerControlsStore(
+  /*const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
-  );
+  );*/
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
 
   return (
-    <div className="pointer-events-none absolute top-1/2 right-4 sm:right-10 w-[200px] h-[200px]">
+    <div
+      className={`pointer-events-none absolute bottom-1/2 right-2 w-[200px] h-[200px] ${
+        playerControlMode === PLAYER.controls.scan &&
+        "bottom-4 right-1/2 mr-[-100px]"
+      }`}
+    >
       <MyCanvas
         onCreated={(state) => {
           //console.log(state.events)

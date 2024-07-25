@@ -56,20 +56,20 @@ const Cockpit = () => {
   const rafRef = useRef(null);
 
   // mouse move change rotation of cockpit view
-  // isNoLerp is used to skip lerp animation
-  const smoothViewRender = (isNoLerp = false) => {
+  // isInitializeNoLerp is used to skip lerp animation
+  const smoothViewRender = (isInitializeNoLerp = false) => {
     //console.log("smoothViewRender rafRef.current", rafRef.current);
     //if (rafRef.current === null) return;
-    let isResetView = false;
+    let isPlayerPilotControl = false;
     if (getPlayerState().playerActionMode !== PLAYER.action.inspect) {
-      isResetView = true;
+      isPlayerPilotControl = true;
     }
-    const speed = isNoLerp ? 1 : 0.2; //view lerp speed
+    const speed = isInitializeNoLerp ? 1 : 0.2; //view lerp speed
     if (cockpitRef.current) {
-      targetView.current.rotateX = isResetView ? 0 : -mouse.y * 40;
-      targetView.current.rotateY = isResetView ? 0 : mouse.x * 40;
-      targetView.current.moveX = isResetView ? 0 : -mouse.x * 70;
-      targetView.current.moveY = isResetView ? 0 : -mouse.y * 120;
+      targetView.current.rotateX = isPlayerPilotControl ? 0 : -mouse.y * 40;
+      targetView.current.rotateY = isPlayerPilotControl ? 0 : mouse.x * 40;
+      targetView.current.moveX = isPlayerPilotControl ? 0 : -mouse.x * 70;
+      targetView.current.moveY = isPlayerPilotControl ? 0 : -mouse.y * 120;
 
       // not using zoom in yet
       const totalTargetMoveX = targetView.current.moveX;
@@ -128,8 +128,8 @@ const Cockpit = () => {
 
   // starting position
   useLayoutEffect(() => {
-    const isNoLerp = true;
-    smoothViewRender(isNoLerp);
+    const isInitializeNoLerp = true;
+    smoothViewRender(isInitializeNoLerp);
   });
 
   useMouseDown(() => {
@@ -244,7 +244,7 @@ const Cockpit = () => {
       </div>
 
       <div className="pointer-events-none perspective-400 preserve-3d container-full-screen top-[78vh]">
-        <div className="face middle absolute top-[12vh] sm:top-[18vh] left-1/2 ml-[6vw] sm:-ml-[28vh]">
+        <div className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[28vh]">
           <Cockpit1stPersonControls />
         </div>
       </div>

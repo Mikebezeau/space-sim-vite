@@ -46,7 +46,7 @@ const CockpitLeft = () => {
 
   return (
     <div
-      className="absolute top-0 w-full h-full bg-cover"
+      className="absolute top-0 w-full h-full bg-cover pointer-events-none"
       style={{ backgroundImage: `url(${screenBImage})` }}
     >
       <div className="absolute w-[200px] right-12 top-20 text-right text-xs">

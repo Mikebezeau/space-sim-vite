@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
-import { PLAYER } from "./constants/constants";
+import { IS_MOBILE, PLAYER } from "./constants/constants";
 import { ToggleTestControls } from "./testingControls/ToggleTestControls";
 import { TestingEnemyControls } from "./testingControls/TestingEnemyControls";
 import { TestingPlayerLocationControls } from "./testingControls/TestingPlayerLocationControls";
@@ -13,7 +13,6 @@ import "./css/toggleControl.css";
 
 //basic HTML/CSS heads up display used to show player info
 export default function Hud() {
-  console.log("Hud rendered");
   const showTestControls = useStore((state) => state.showTestControls);
   const speed = useStore((state) => state.player.speed);
   const shield = useStore((state) => state.player.shield);
@@ -26,6 +25,9 @@ export default function Hud() {
   //const sound = useStore((state) => state.sound);
   //const toggle = useStore((state) => state.actions.toggleSound);
 
+  const playerViewMode = usePlayerControlsStore(
+    (state) => state.playerViewMode
+  );
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
@@ -73,7 +75,7 @@ export default function Hud() {
     <>
       {/*<DashboardReadout />*/}
       <div id="upperLeft" className="hud">
-        {playerControlMode !== PLAYER.controls.unattended && (
+        {(IS_MOBILE || playerViewMode === PLAYER.view.thirdPerson) && (
           <>
             <h2>Speed</h2>
             <h1>{speed}</h1>
@@ -97,7 +99,7 @@ export default function Hud() {
                 </>
               )}
 
-              {playerControlMode === PLAYER.controls.scan && (
+              {/*playerControlMode === PLAYER.controls.scan && (
                 <>
                   <p>System</p>
                   {sunScanData?.map(([key, value]) => {
@@ -105,14 +107,14 @@ export default function Hud() {
                       <span key={key}>
                         {key}:{" "}
                         <span className="floatRight">
-                          {Math.floor(value * 1000) / 1000 /*rounding off*/}
+                          {Math.floor(value * 1000) / 1000}
                         </span>
                         <br />
                       </span>
                     );
                   })}
                 </>
-              )}
+              )*/}
             </>
           )}
           {showTestControls && (
@@ -128,7 +130,7 @@ export default function Hud() {
           )}
         </div>
       </div>
-      <div id="upperRight" className="hud">
+      <div id="upperRight" className="hud mt-12">
         {playerControlMode === PLAYER.controls.combat && shield.max > 0 && (
           <div className="shieldsBarContainer">
             <div
@@ -143,11 +145,12 @@ export default function Hud() {
         )}
 
         <br />
-        <div className="hudData">
+        <div className="hudData -top-12">
           {showTestControls ? (
             <TestingBoidControls />
           ) : (
-            playerControlMode === PLAYER.controls.scan && <PlanetScanData />
+            playerControlMode === PLAYER.controls.scan &&
+            playerViewMode === PLAYER.view.thirdPerson && <PlanetScanData />
           )}
         </div>
       </div>

@@ -28,6 +28,7 @@ const usePlayerControlsStore = create((set, get) => {
         isResetCamera: get().isResetCamera,
       };
     },
+    isReverseSideTouchControls: true,
     isPlayerPilotControl: () => {
       return (get().playerControlMode === PLAYER.controls.combat ||
         get().playerControlMode === PLAYER.controls.scan) &&

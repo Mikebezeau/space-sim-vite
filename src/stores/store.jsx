@@ -165,8 +165,8 @@ const useStore = create((set, get) => {
       //binormal: new THREE.Vector3(),//only used in track
       //normal: new THREE.Vector3(), //not used
       clock: new THREE.Clock(false), //used to make enemies rotate
-      mouse: new THREE.Vector2(0, 0), // relative x, y mouse position -0.5 to 0.5
-      mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen
+      mouse: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
+      mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
 
       // Re-usable objects
       dummy: new THREE.Object3D(),
@@ -992,17 +992,18 @@ const useStore = create((set, get) => {
         playAudio(audio.bg, 1, true);
       },
       */
-      //save mouse position (-1 to 1) based on location on screen
       updateMouse({ clientX: x, clientY: y }) {
+        // save mouse position (-1 to 1) based on location on screen
         get().mutation.mouse.set(
           (x - window.innerWidth / 2) / window.innerWidth,
           (y - window.innerHeight / 2) / window.innerHeight
         );
+        // save x, y pixel position on screen
         get().mutation.mouseScreen.set(x, y);
       },
-      //save screen touch position (-1 to 1) relative to
-      // triggering event.target (i.e. movement controls or full screen)
-      updateMouseMobile(event) {
+      // save screen touch position (-1 to 1) relative to
+      // triggering event.target (mobile movement control circle)
+      updateTouchMobileMoveShip(event) {
         if (event) {
           var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
           const x = event.changedTouches[0].clientX - bounds.left;

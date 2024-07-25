@@ -56,19 +56,34 @@ const ActionCancelPilot = () => {
   );
 };
 
-const ActionWarpToPlanet = () => {
+export const ActionWarpToPlanet = () => {
   const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
   const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
   return focusPlanetIndex ? (
-    <div className="button-cyber w-[10vh] h-[10vh]" onClick={warpToPlanet}>
-      <span className="button-cyber-content">
-        <img
-          src={warp}
-          alt="cancel controls icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
-      </span>
-    </div>
+    <>
+      {IS_MOBILE ? (
+        <div className="button-cyber w-[10vh] h-[10vh]" onClick={warpToPlanet}>
+          <span className="button-cyber-content">
+            <img
+              src={warp}
+              alt="cancel controls icon"
+              className="w-[10vh] h-[10vh] pointer-events-none"
+            />
+          </span>
+        </div>
+      ) : (
+        <div
+          className="w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
+          onClick={warpToPlanet}
+        >
+          <img
+            src={warp}
+            alt="cancel controls icon"
+            className="w-full h-full pointer-events-none"
+          />
+        </div>
+      )}
+    </>
   ) : null;
 };
 
@@ -93,17 +108,11 @@ export const ActionModeControls = () => {
           </span>
         </span>*/
       )}
-
-      <div
-        className={`absolute top-1/2 left-1/2 -ml-[5vh] ${
-          !IS_MOBILE && playerActionMode === PLAYER.action.inspect
-            ? "mt-[12vh]"
-            : "-mt-[5vh]"
-        }`}
-      >
-        <ActionWarpToPlanet />
-      </div>
-
+      {!IS_MOBILE && (
+        <div className="absolute bottom-24 left-1/2">
+          <ActionWarpToPlanet />
+        </div>
+      )}
       {!IS_MOBILE && playerActionMode !== PLAYER.action.inspect && (
         <div className="absolute bottom-8 right-8">
           <ActionCancelPilot />
@@ -302,7 +311,7 @@ export const CockpitControlEquip = () => {
 
 export const Cockpit1stPersonControls = () => {
   return (
-    <div className="flex flex-row sm:gap-[36vh] gap-1">
+    <div className="flex flex-row gap-1 sm:gap-[36vh]">
       <div className="flex flex-col gap-1">
         <CockpitControlMode />
         <CockpitControlMap />
@@ -319,7 +328,7 @@ export const Cockpit1stPersonControls = () => {
 
 export const Cockpit3rdPersonControls = () => {
   return (
-    <div className="absolute -bottom-4 right-12 sm:bottom-8 sm:right-8 sm:mr-[10vh] flex flex-row gap-2 sm:gap-0 sm:flex-col scale-75">
+    <div className="absolute -bottom-4 right-12 sm:bottom-8 sm:right-8 sm:mr-[10vh] flex flex-row gap-2 sm:flex-col scale-75">
       <div className="flex flex-col sm:flex-row gap-2">
         <CockpitControlMode />
         <CockpitControlMap />
