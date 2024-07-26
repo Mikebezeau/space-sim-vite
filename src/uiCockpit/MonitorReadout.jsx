@@ -37,14 +37,15 @@ const MonitorReadout = () => {
       <div className="flex flex-wrap">
         {menuItems.map((item, index) => (
           <Fragment key={item}>
-            <div onClick={() => handleSectionChange(item)}>
-              <div className="button-cyber w-[10px] h-10 ml-[1px] mb-1">
-                <span
-                  className={`button-cyber-content rounded-tr-full ${
-                    selectedSection === item && "bg-cyan-400"
-                  }`}
-                />
-              </div>
+            <div
+              onClick={() => handleSectionChange(item)}
+              className="pointer-events-auto button-cyber w-[10px] h-10 ml-[1px] mb-1"
+            >
+              <span
+                className={`button-cyber-content rounded-tr-full ${
+                  selectedSection === item && "bg-cyan-400"
+                }`}
+              />
             </div>
             {index === 3 && <div className="w-full" />}
           </Fragment>

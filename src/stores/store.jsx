@@ -936,34 +936,6 @@ const useStore = create((set, get) => {
           player: { ...state.player, object3d: obj },
         }));
       },
-      //player ship speed up
-      speedUp() {
-        set((state) => ({
-          player: {
-            ...state.player,
-            speed:
-              state.player.speed < 0
-                ? 0
-                : state.player.speed < 5
-                ? state.player.speed + 1
-                : state.player.speed + 10,
-          },
-        }));
-      },
-      //player ship speed down
-      speedDown() {
-        set((state) => ({
-          player: {
-            ...state.player,
-            speed:
-              state.player.speed > 0
-                ? 0
-                : state.player.speed > -5
-                ? state.player.speed - 1
-                : state.player.speed - 10,
-          },
-        }));
-      },
       setSpeed(speedValue) {
         set((state) => ({
           player: {

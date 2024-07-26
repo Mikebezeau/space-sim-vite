@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import useStore from "./store";
 import * as THREE from "three";
-import { flipRotation } from "../util/gameUtil";
-import { IS_MOBILE, SCALE, PLAYER } from "../constants/constants";
+import { flipRotation, lerp } from "../util/gameUtil";
+import { PLAYER, SCALE, SPEED_VALUES } from "../constants/constants";
 
 const usePlayerControlsStore = create((set, get) => {
   const tempObjectDummy = new THREE.Object3D();
@@ -28,7 +28,8 @@ const usePlayerControlsStore = create((set, get) => {
         isResetCamera: get().isResetCamera,
       };
     },
-    isReverseSideTouchControls: true,
+    playerSpeedSetting: 1, // used in throttle control, and updatePlayerFrame below
+    getPlayerSpeedSetting: () => get().playerSpeedSetting,
     isPlayerPilotControl: () => {
       return (get().playerControlMode === PLAYER.controls.combat ||
         get().playerControlMode === PLAYER.controls.scan) &&
@@ -36,6 +37,7 @@ const usePlayerControlsStore = create((set, get) => {
         ? true
         : false;
     },
+    isReverseSideTouchControls: true,
     loadingPlayerScreen: true,
     setPlayerScreenLoaded(isLoaded = true) {
       set(() => ({ loadingPlayerScreen: isLoaded }));
@@ -63,12 +65,30 @@ const usePlayerControlsStore = create((set, get) => {
         set(() => ({ isResetCamera: true }));
         set(() => ({ playerScreen }));
       },
+
+      setPlayerSpeedSetting(playerSpeedSetting) {
+        set(() => ({ playerSpeedSetting }));
+      },
     },
 
     updatePlayerFrame: (camera, main) => {
       const player = useStore.getState().getPlayer();
       const currentPlayerMechBP = useStore.getState().playerMechBP[0];
+      const setSpeed = useStore.getState().actions.setSpeed;
       const mouse = useStore.getState().mutation.mouse;
+
+      //set speed
+      if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
+        let speed = lerp(
+          player.speed,
+          SPEED_VALUES[get().playerSpeedSetting],
+          0.6
+        );
+        // round speed to integer
+        speed = Math.round(speed);
+        setSpeed(speed);
+      }
+
       //rotate ship based on mouse position
       //new rotation
       const MVmod =

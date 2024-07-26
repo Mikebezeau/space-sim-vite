@@ -20,7 +20,7 @@ const MenuItems = ({
                 index + baseIndex === selectedItem &&
                 "transition-colors ease-in delay-300"
               }
-             flex relative cursor-pointer z-0`}
+             pointer-events-auto flex relative cursor-pointer z-0`}
           >
             <div className="relative w-full md:w-1/2 h-6 mb-2 flex hover:bg-menu-item select-none">
               <div className="absolute w-full">

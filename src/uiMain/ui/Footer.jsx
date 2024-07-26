@@ -5,7 +5,7 @@ const Footer = () => {
   const totalWeight = useMainUIStore((state) => state.totalWeight);
   const weight = totalWeight();
   return (
-    <div className="pointer-events-none relative flex flex-col m-4 text-white">
+    <div className="relative flex flex-col m-4 text-white">
       <AnimatedOuterBox />
       <div className="flex mb-4 text-xs items-center">
         <div className="flex items-center justify-center h-8 w-32 mr-4 bg-red-500">

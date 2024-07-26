@@ -28,7 +28,7 @@ const AppUI = () => {
   }, [playerScreen]);
 
   return (
-    <>
+    <div className="pointer-events-none touch-none">
       {playerScreen === PLAYER.screen.flight && (
         <>
           {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
@@ -60,7 +60,7 @@ const AppUI = () => {
         ref={transitionFadeDiv}
         className="absolute top-0 right-0 bottom-0 left-0 bg-black"
       />
-    </>
+    </div>
   );
 };
 

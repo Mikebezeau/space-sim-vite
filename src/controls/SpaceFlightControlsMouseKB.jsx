@@ -7,20 +7,26 @@ import {
   useMouseRightClick,
   useMouseWheelClick,
 } from "../hooks/controls/useMouseKBControls";
-import { PLAYER } from "../constants/constants";
+import { PLAYER, SPEED_VALUES } from "../constants/constants";
+import { get } from "lodash";
 
 const ControlsMouseKBSpaceFlight = () => {
   console.log("MouseKBControlsSpaceFlight render");
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
-
   const payerIsInMech = useStore((state) => state.player.isInMech);
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
   const actionModeSelect = usePlayerControlsStore(
     (state) => state.actions.actionModeSelect
+  );
+  const getPlayerSpeedSetting = usePlayerControlsStore(
+    (state) => state.getPlayerSpeedSetting
+  );
+  const setPlayerSpeedSetting = usePlayerControlsStore(
+    (state) => state.actions.setPlayerSpeedSetting
   );
 
   //mouse move
@@ -36,7 +42,8 @@ const ControlsMouseKBSpaceFlight = () => {
   useMouseClick(handleMouseClick);
 
   //mouse right click
-  function handleMouseRightClick() {
+  function handleMouseRightClick(event) {
+    if (import.meta.env.PROD) event.preventDefault();
     actionModeSelect(PLAYER.action.inspect);
   }
   useMouseRightClick(handleMouseRightClick);
@@ -51,8 +58,11 @@ const ControlsMouseKBSpaceFlight = () => {
       payerIsInMech &&
       (playerControlMode === PLAYER.controls.combat ||
         playerControlMode === PLAYER.controls.scan)
-    )
-      actions.speedUp();
+    ) {
+      if (getPlayerSpeedSetting() < SPEED_VALUES.length - 1) {
+        setPlayerSpeedSetting(getPlayerSpeedSetting() + 1);
+      }
+    }
   }
   useKBControls("ArrowUp", handleArrowUp);
 
@@ -62,8 +72,11 @@ const ControlsMouseKBSpaceFlight = () => {
       payerIsInMech &&
       (playerControlMode === PLAYER.controls.combat ||
         playerControlMode === PLAYER.controls.scan)
-    )
-      actions.speedDown();
+    ) {
+      if (getPlayerSpeedSetting() > 0) {
+        setPlayerSpeedSetting(getPlayerSpeedSetting() - 1);
+      }
+    }
   }
   useKBControls("ArrowDown", handleArrowDown);
 

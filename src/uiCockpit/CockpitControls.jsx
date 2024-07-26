@@ -62,7 +62,10 @@ export const ActionWarpToPlanet = () => {
   return focusPlanetIndex ? (
     <>
       {IS_MOBILE ? (
-        <div className="button-cyber w-[10vh] h-[10vh]" onClick={warpToPlanet}>
+        <div
+          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+          onClick={warpToPlanet}
+        >
           <span className="button-cyber-content">
             <img
               src={warp}
@@ -73,7 +76,7 @@ export const ActionWarpToPlanet = () => {
         </div>
       ) : (
         <div
-          className="w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
+          className="pointer-events-auto w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
           onClick={warpToPlanet}
         >
           <img
@@ -328,7 +331,7 @@ export const Cockpit1stPersonControls = () => {
 
 export const Cockpit3rdPersonControls = () => {
   return (
-    <div className="absolute -bottom-4 right-12 sm:bottom-8 sm:right-8 sm:mr-[10vh] flex flex-row gap-2 sm:flex-col scale-75">
+    <div className="absolute bottom-48 -right-3 sm:bottom-8 sm:right-8 sm:mr-[10vh] flex flex-row gap-2 sm:flex-col scale-75">
       <div className="flex flex-col sm:flex-row gap-2">
         <CockpitControlMode />
         <CockpitControlMap />

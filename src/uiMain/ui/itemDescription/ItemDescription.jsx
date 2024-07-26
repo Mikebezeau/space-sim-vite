@@ -43,7 +43,7 @@ const ItemDescription = () => {
   };
 
   return (
-    <div className="pointer-events-none w-full md:w-1/3 relative md:fixed right-0 mt-6 md:mt-0">
+    <div className="w-full md:w-1/3 relative md:fixed right-0 mt-6 md:mt-0">
       <div className="w-full md:w-2/3 relative px-3">
         {isTriggered && <SideMenuEffect selectedItem={selectedItem} />}
         {isTriggered ? <AnimatedOuterBox /> : <OuterBox />}

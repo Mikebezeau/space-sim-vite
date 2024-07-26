@@ -37,6 +37,8 @@ export const PLAYER = {
   },
 };
 
+export const SPEED_VALUES = [-10, 0, 10, 100, 500, 1000];
+
 export const WEAPON_FIRE_SPEED = {
   beam: 100,
   proj: 40,

@@ -40,7 +40,7 @@ function AppUICanvas() {
 
   return (
     <div
-      className={`pointer-events-none absolute bottom-1/2 right-2 w-[200px] h-[200px] ${
+      className={`pointer-events-none touch-none absolute bottom-1/2 right-2 w-[200px] h-[200px] ${
         playerControlMode === PLAYER.controls.scan &&
         "bottom-4 right-1/2 mr-[-100px]"
       }`}

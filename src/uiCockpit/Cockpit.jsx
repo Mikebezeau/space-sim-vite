@@ -64,7 +64,7 @@ const Cockpit = () => {
     if (getPlayerState().playerActionMode !== PLAYER.action.inspect) {
       isPlayerPilotControl = true;
     }
-    const speed = isInitializeNoLerp ? 1 : 0.2; //view lerp speed
+    const lerpSpeed = isInitializeNoLerp ? 1 : 0.2; //view lerp speed
     if (cockpitRef.current) {
       targetView.current.rotateX = isPlayerPilotControl ? 0 : -mouse.y * 40;
       targetView.current.rotateY = isPlayerPilotControl ? 0 : mouse.x * 40;
@@ -81,27 +81,27 @@ const Cockpit = () => {
       currentView.current.rotateX = lerp(
         currentView.current.rotateX,
         targetView.current.rotateX,
-        speed
+        lerpSpeed
       );
       currentView.current.rotateY = lerp(
         currentView.current.rotateY,
         targetView.current.rotateY,
-        speed
+        lerpSpeed
       );
       currentView.current.moveX = lerp(
         currentView.current.moveX,
         totalTargetMoveX,
-        speed
+        lerpSpeed
       );
       currentView.current.moveY = lerp(
         currentView.current.moveY,
         totalTargetMoveY,
-        speed
+        lerpSpeed
       );
       currentView.current.moveZ = lerp(
         currentView.current.moveZ,
         totalTargetMoveZ,
-        speed
+        lerpSpeed
       );
 
       [...cockpitRef.current.children].forEach((group) => {
@@ -243,7 +243,7 @@ const Cockpit = () => {
         <div className="face bottom" />
       </div>
 
-      <div className="pointer-events-none perspective-400 preserve-3d container-full-screen top-[78vh]">
+      <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
         <div className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[28vh]">
           <Cockpit1stPersonControls />
         </div>
