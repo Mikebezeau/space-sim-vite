@@ -1,19 +1,16 @@
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
-import controls from "../icons/controls.svg";
-import rightClick from "../icons/mouse/right-click-1.svg";
-import warp from "../icons/warp-galaxy.svg";
-import gear from "../icons/gear.svg";
-import satellite from "../icons/space/satellite.svg";
-import radarDish from "../icons/radarDish.svg";
-import sword from "../icons/sword.svg";
-import stars from "../icons/stars.svg";
-import camera from "../icons/camera-change.svg";
+import controls from "../assets/icons/controls.svg";
+import rightClick from "../assets/icons/mouse/right-click-1.svg";
+import warp from "../assets/icons/warp-galaxy.svg";
+import gear from "../assets/icons/gear.svg";
+import satellite from "../assets/icons/space/satellite.svg";
+import radarDish from "../assets/icons/radarDish.svg";
+import sword from "../assets/icons/sword.svg";
+import stars from "../assets/icons/stars.svg";
+import camera from "../assets/icons/camera-change.svg";
 import { SCALE } from "../constants/constants";
-//import destinationTargetIcon from "../../icons/destinationTarget.svg";
-//import crosshairOuter from "../../icons/crosshairOuter.svg";
-//import crosshairInner from "../../icons/crosshairInner.svg";
 
 // for mouse users, click to enter manual control mode of piloting
 const ActionControlPilot = () => {
@@ -97,19 +94,10 @@ export const ActionModeControls = () => {
 
   return (
     <>
-      {!IS_MOBILE && playerActionMode === PLAYER.action.inspect ? (
+      {!IS_MOBILE && playerActionMode === PLAYER.action.inspect && (
         <div className="absolute top-1/2 left-1/2">
           <ActionControlPilot />
         </div>
-      ) : (
-        <></>
-        /*
-        <span className="pointer-events-none absolute w-[200px] h-[200px] top-[50vh] left-[50vw] -ml-[100px] -mr-[100px]">
-          <img src={crosshairOuter} alt="crosshair icon" />
-          <span className="absolute w-[100px] h-[100px] top-[50px] left-[50px]">
-            <img src={crosshairInner} alt="crosshair icon" />
-          </span>
-        </span>*/
       )}
       {!IS_MOBILE && (
         <div className="absolute bottom-24 left-1/2">

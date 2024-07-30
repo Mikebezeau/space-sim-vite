@@ -7,7 +7,7 @@ import {
   FREEZING_POINT_OF_WATER,
   KM_EARTH_RADIUS,
   CM_PER_KM,
-} from "./constants";
+} from "../constants";
 import {
   acceleration,
   dayLength,
@@ -35,7 +35,7 @@ import {
   breathable,
   calculate_gases,
 } from "./Astro";
-import { convert } from "./utils";
+import { convert } from "../utils";
 
 export default class Planetismal {
   // DOLE PROPERTIES

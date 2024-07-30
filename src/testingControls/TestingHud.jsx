@@ -1,18 +1,17 @@
-import { useMemo } from "react";
-import useStore from "./stores/store";
-import usePlayerControlsStore from "./stores/playerControlsStore";
-import { IS_MOBILE, PLAYER } from "./constants/constants";
-import { ToggleTestControls } from "./testingControls/ToggleTestControls";
-import { TestingEnemyControls } from "./testingControls/TestingEnemyControls";
-import { TestingPlayerLocationControls } from "./testingControls/TestingPlayerLocationControls";
-import { TestingBoidControls } from "./testingControls/TestingBoidControls";
-import "./css/hud.css";
-import "./css/hudSpaceFlight.css";
-import "./css/toggleControl.css";
+import useStore from "../stores/store";
+import usePlayerControlsStore from "../stores/playerControlsStore";
+import { IS_MOBILE, PLAYER } from "../constants/constants";
+import { ToggleTestControls } from "./ToggleTestControls";
+import { TestingEnemyControls } from "./TestingEnemyControls";
+import { TestingPlayerLocationControls } from "./TestingPlayerLocationControls";
+import { TestingBoidControls } from "./TestingBoidControls";
+import "../css/hud.css";
+import "../css/hudSpaceFlight.css";
+import "../css/toggleControl.css";
 //import DashboardReadout from "./components/cockpitView/DashboardReadout";
 
 //basic HTML/CSS heads up display used to show player info
-export default function Hud() {
+export default function TestingHud() {
   const showTestControls = useStore((state) => state.showTestControls);
   const speed = useStore((state) => state.player.speed);
   const shield = useStore((state) => state.player.shield);
@@ -20,7 +19,6 @@ export default function Hud() {
     (state) => state.player.currentMechBPindex
   );
   const playerMechBP = useStore((state) => state.playerMechBP);
-  const planets = useStore((state) => state.planets);
   const weaponList = playerMechBP[currentMechBPindex].weaponList;
   //const sound = useStore((state) => state.sound);
   //const toggle = useStore((state) => state.actions.toggleSound);
@@ -34,42 +32,6 @@ export default function Hud() {
   const switchScreen = usePlayerControlsStore(
     (state) => state.actions.switchScreen
   );
-
-  const sunScanData = useMemo(() => {
-    planets ? Object.entries(planets[0].data) : null;
-  }, [planets]);
-  //console.log("planets[0].data", planets[0].data);
-
-  const PlanetScanData = () => {
-    //console.log("PlanetScanData rendered");
-    const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
-    const data =
-      focusPlanetIndex !== null
-        ? Object.entries(planets[focusPlanetIndex].data)
-        : null;
-    return (
-      <>
-        {data ? (
-          <>
-            <p>Planet Scan</p>
-            {
-              // causing rereners
-              data.map(([key, value]) => {
-                return (
-                  <span key={key}>
-                    <span className="floatLeft">{key}:</span> {value}
-                    <br />
-                  </span>
-                );
-              })
-            }
-          </>
-        ) : (
-          <></>
-        )}
-      </>
-    );
-  };
 
   return (
     <>
@@ -98,23 +60,6 @@ export default function Hud() {
                   ))}
                 </>
               )}
-
-              {/*playerControlMode === PLAYER.controls.scan && (
-                <>
-                  <p>System</p>
-                  {sunScanData?.map(([key, value]) => {
-                    return (
-                      <span key={key}>
-                        {key}:{" "}
-                        <span className="floatRight">
-                          {Math.floor(value * 1000) / 1000}
-                        </span>
-                        <br />
-                      </span>
-                    );
-                  })}
-                </>
-              )*/}
             </>
           )}
           {showTestControls && (
@@ -146,12 +91,7 @@ export default function Hud() {
 
         <br />
         <div className="hudData -top-12">
-          {showTestControls ? (
-            <TestingBoidControls />
-          ) : (
-            playerControlMode === PLAYER.controls.scan &&
-            playerViewMode === PLAYER.view.thirdPerson && <PlanetScanData />
-          )}
+          {showTestControls && <TestingBoidControls />}
         </div>
       </div>
     </>

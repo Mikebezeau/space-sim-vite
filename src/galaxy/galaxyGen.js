@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
 import { starTypes } from "./galaxyConstants";
 
-export const generateStarType = (starIndex) => {
+export const starTypeGen = (starIndex) => {
   const rng = seedrandom(starIndex);
   let num = rng() * 100.0;
   let cumulativePercentage = 0;
@@ -26,7 +26,7 @@ export const generateStarType = (starIndex) => {
   return star;
 };
 
-const generateGalaxy = (
+const galaxyGen = (
   starsInGalaxy = 1000,
   galaxySize = 40, // not effecting anything
   galaxyScale = 10,
@@ -124,7 +124,7 @@ const generateGalaxy = (
     y = 0,
     z = 0;
   for (let i = 0; i < starsInGalaxy; i++) {
-    const star = generateStarType(i);
+    const star = starTypeGen(i);
     const starColor = star.colorRGB;
     const starSize = star.size;
     // As i increases, distancePlacementFactor will decrease from 1 to 0
@@ -173,4 +173,4 @@ const generateGalaxy = (
   };
 };
 
-export default generateGalaxy;
+export default galaxyGen;

@@ -1,11 +1,13 @@
+import * as THREE from "three";
 import { useRef, useEffect } from "react";
 import useStore from "../../stores/store";
 import { SCALE } from "../../constants/constants";
 
 export default function Particles() {
+  console.log("Particles rendered");
   const instancedMesh = useRef();
-  const { particles, dummy } = useStore((state) => state.mutation);
-
+  const { particles } = useStore((state) => state.mutation);
+  const dummy = new THREE.Object3D();
   useEffect(() => {
     particles.forEach((particle, i) => {
       const { offset, size, scale } = particle;
@@ -33,8 +35,8 @@ export default function Particles() {
       args={[null, null, particles.length]}
       frustumCulled={false}
     >
-      <coneGeometry attach="geometry" args={[1, 1, 3]} />
-      <meshStandardMaterial attach="material" color="#606060" />
+      <coneGeometry attach="geometry" args={[1, 1, 300]} />
+      <meshStandardMaterial attach="material" color="#FFF" />
     </instancedMesh>
   );
 }

@@ -4,16 +4,6 @@ import { guid, initEnemyMechBP, initStationBP } from "./initEquipUtil";
 
 let guidCounter = 1; //global unique ID
 
-//default camera view - used in edit mode
-export const initCamMainMenu = () => {
-  let cam = new THREE.Object3D();
-  cam.position.setX(0);
-  cam.position.setY(0);
-  cam.position.setZ(0);
-  cam.setRotationFromAxisAngle(new THREE.Vector3(), 0);
-  return cam;
-};
-
 export const initPlayer = () => {
   let obj = new THREE.Object3D();
   obj.position.setX(PLAYER_START.x);

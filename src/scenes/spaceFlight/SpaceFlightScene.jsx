@@ -1,20 +1,20 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Scene } from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import Planets from "../3d/spaceFlight/Planets";
-import Stations from "../3d/spaceFlight/Stations";
+import Planets from "../../3d/spaceFlight/Planets";
+import Stations from "../../3d/spaceFlight/Stations";
 //import Particles from "../3d/spaceFlight/Particles";
-import EnemyMechs from "../3d/EnemyMechs";
+import EnemyMechs from "../../3d/EnemyMechs";
 //import Rocks from "../3d/spaceFlight/Rocks";
 //import Explosions from "../3d/Explosions";
-import PlayerMech from "../3d/spaceFlight/PlayerMech";
-import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
-import WeaponFire from "../3d/WeaponFire";
+import PlayerMech from "../../3d/spaceFlight/PlayerMech";
+import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
+import WeaponFire from "../../3d/WeaponFire";
 //import Skybox from "../3d/spaceFlight/Skybox";
-import useStore from "../stores/store";
-import usePlayerControlsStore from "../stores/playerControlsStore";
-import { SCALE } from "../constants/constants";
-import { flipRotation } from "../util/gameUtil";
+import useStore from "../../stores/store";
+import usePlayerControlsStore from "../../stores/playerControlsStore";
+import { SCALE } from "../../constants/constants";
+import { flipRotation } from "../../util/gameUtil";
 
 export default function SpaceFlightScene() {
   console.log("SpaceFlight Scene rendered");

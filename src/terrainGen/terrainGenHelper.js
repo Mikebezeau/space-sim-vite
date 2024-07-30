@@ -1,8 +1,8 @@
 import { default as seedrandom } from "seedrandom";
-import Terrain from "../terrainGen/terrainGen";
-import generateCity from "../terrainGen/cityGen";
+import Terrain from "./terrainGen";
+import generateCity from "./cityGen";
 
-const generateTerrain = (seed, cities) => {
+const cityTerrianGen = (seed, cities) => {
   const rng = seedrandom(seed);
   //cities: {numCity, cities.density, cities.minSize, cities.maxSize}
   //spot must be leveled for city
@@ -25,4 +25,4 @@ const generateTerrain = (seed, cities) => {
   return { terrain: terrain, cities: genCities };
 };
 
-export default generateTerrain;
+export default cityTerrianGen;

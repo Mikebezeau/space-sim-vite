@@ -1,5 +1,5 @@
-import * as C from "./constants";
-import { rand } from "./utils";
+import * as C from "../constants";
+import { rand } from "../utils";
 import DustCloud from "./DustCloud";
 import Planetismal from "./Planetismal";
 

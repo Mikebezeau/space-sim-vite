@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import { generateSystemInfo } from "../solarSystem/generateSystem";
+import { systemInfoGen } from "../solarSystemGen/systemGen";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
 import "../css/buttonCyber.css";
 
@@ -38,8 +38,7 @@ const StarInfoCard = () => {
     const starIndex = showInfoHoveredStarIndex || showInfoTargetStarIndex;
     if (starIndex) {
       setViewStarIndex(starIndex);
-      [starInfoRef.current, systemInfoRef.current] =
-        generateSystemInfo(starIndex);
+      [starInfoRef.current, systemInfoRef.current] = systemInfoGen(starIndex);
     } else {
       setViewStarIndex(null);
     }

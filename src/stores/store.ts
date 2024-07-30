@@ -4,20 +4,13 @@ import { default as seedrandom } from "seedrandom";
 import usePlayerControlsStore from "./playerControlsStore";
 import useEnemyStore from "./enemyStore";
 import useWeaponFireStore from "./weaponFireStore";
+import { initPlayer, randomData, randomStations } from "../util/initGameUtil";
 import {
-  initCamMainMenu,
-  initPlayer,
-  randomData,
-  randomStations,
-} from "../util/initGameUtil";
-import {
-  initPlayerMechBP,
-  //initStationBP,
-  //initEnemyMechBP,
+  initPlayerMechBP /*, initStationBP, initEnemyMechBP*/,
 } from "../util/initEquipUtil";
-import generateGalaxy from "../galaxy/generateGalaxy";
-import generateSystem from "../solarSystem/generateSystem";
-//import generateTerrain from "../planetTerrian/generateTerrain";
+import galaxyGen from "../galaxy/galaxyGen";
+import systemGen from "../solarSystemGen/systemGen";
+import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import { addEffect } from "@react-three/fiber";
 import { loopAI } from "../masterAI";
 import { track } from "../util/track";
@@ -63,7 +56,7 @@ const useStore = create<storeState>()((set, get) => ({
   showInfoHoveredStarIndex: null, // used in galaxy map ui
   showInfoTargetStarIndex: null,
   selectedWarpStar: null,
-  galaxy: generateGalaxy(STARS_IN_GALAXY, GALAXY_SIZE), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+  galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
   // intial player star
   playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
   player: initPlayer(),
@@ -84,17 +77,15 @@ const useStore = create<storeState>()((set, get) => ({
   },
   planets: null, // set in call to setPlayerCurrentStarIndex
   stations: null, // set in call to setPlayerCurrentStarIndex
-  planetTerrain: null /*generateTerrain(PLAYER_START.system, {
-      numCity: 4,
-      minSize: 3,
-      maxSize: 25,
-      density: 0.2,
-    }),*/,
+  planetTerrain: cityTerrianGen(PLAYER_START.system, {
+    numCity: 4,
+    minSize: 3,
+    maxSize: 25,
+    density: 0.2,
+  }),
   //galaxyMapDataOutput: "", // used with mapGalaxyDataToJSON function to collect galaxy map data
 
   mutation: {
-    t: 0,
-    track, //only used for placing random objects, change this later
     particles: randomData(
       3000,
       track,
@@ -121,7 +112,7 @@ const useStore = create<storeState>()((set, get) => ({
         let galaxyMapData = [];
         for (let i = 0; i < STARS_IN_GALAXY; i++) {
           const systemSeed = i;
-          const planets = generateSystemInfo(systemSeed);
+          const planets = systemInfoGen(systemSeed);
           let hasTerrestrial = false;
           planets.forEach((planet) => {
             if (planet.data.type === "Terrestrial") hasTerrestrial = true;
@@ -240,11 +231,6 @@ const useStore = create<storeState>()((set, get) => ({
       const { player, playerMechBP } = get();
       player.currentMechBPindex = playerMechBPindex;
       player.size = playerMechBP[player.currentMechBPindex].size() * SCALE;
-      //const playerObj = player.object3d;
-      //playerObj.position.setZ(-15000 * SCALE - get().planets[0].radius);
-      //console.log(playerObj.position.z, -get().planets[0].radius);
-      //get().actions.setPlayerObject(playerObj);
-
       //set player hitbox size
       const box = new THREE.BoxGeometry(
         player.size * 5000,
@@ -274,15 +260,9 @@ const useStore = create<storeState>()((set, get) => ({
     },
 
     setSelectedTargetIndex() {
-      //TESTING
-      //console.log("player position", get().player.object3d.position);
-
       //make work for enemies as well
       //set new target for current shooter
-
-      //triggered onClick
-      //select target, or cancel selection if clicked again
-      let targetIndex = null;
+      let targetIndex: number | null = null;
       if (get().selectedTargetIndex !== get().focusTargetIndex) {
         targetIndex = get().focusTargetIndex;
       } else {
@@ -301,7 +281,7 @@ const useStore = create<storeState>()((set, get) => ({
         targetIndex === null
           ? null
           : useEnemyStore.getState().enemies[targetIndex],
-        targetIndex === null ? false : true, // true //player autofire
+        false, // auto fire
         false, // auto aim
         true // isPlayer
       );
@@ -314,7 +294,7 @@ const useStore = create<storeState>()((set, get) => ({
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
       set(() => ({ playerCurrentStarIndex }));
       set(() => ({
-        planets: generateSystem(playerCurrentStarIndex),
+        planets: systemGen(playerCurrentStarIndex),
       }));
       const playerObj = get().player.object3d;
       playerObj.position.setX(0);

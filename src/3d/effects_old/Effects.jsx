@@ -1,4 +1,3 @@
-import React from "react";
 import { useRef, useEffect } from "react";
 import { extend, useThree, useFrame } from "@react-three/fiber";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
@@ -7,7 +6,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { FilmPass } from "three/examples/jsm/postprocessing/FilmPass";
 import { GlitchPass } from "./GlitchPass";
-import useStore from "../stores/store";
+import useStore from "../../stores/store";
 
 extend({
   EffectComposer,

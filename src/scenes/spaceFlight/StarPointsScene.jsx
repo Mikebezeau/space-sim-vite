@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Scene } from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import { PLAYER } from "../constants/constants.jsx";
-import StarPoints from "../galaxy/StarPoints.jsx";
+import { PLAYER } from "../../constants/constants";
+import StarPoints from "../../galaxy/StarPoints";
 
 const StarPointsScene = () => {
   console.log("StarPointsScene rendered");

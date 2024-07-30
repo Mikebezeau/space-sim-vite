@@ -1,1 +1,1 @@
-export const DEBUG_RENDERS = false;
+export const DEBUG_RENDERS = true;

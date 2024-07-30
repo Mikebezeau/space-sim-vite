@@ -1,5 +1,7 @@
+import { DEBUG_RENDERS } from "../../constants/debugConstants";
+
 const Buildings = ({ buildings }) => {
-  console.log("Buildings rendered");
+  if (DEBUG_RENDERS) console.log("Buildings rendered");
   return (
     <group>
       {Object.entries(buildings.buildingMeshList).map(([key, mesh]) => (

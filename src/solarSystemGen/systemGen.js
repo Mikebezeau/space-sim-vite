@@ -1,17 +1,15 @@
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
 import { SCALE, SYSTEM_SCALE, PLANET_SCALE } from "../constants/constants";
-import { generateStarType } from "../galaxy/generateGalaxy";
-import StarSystem from "./StarSystem"; //ACCRETE
+import { starTypeGen } from "../galaxy/galaxyGen";
+import StarSystem from "./classes/StarSystem"; //ACCRETE
 
 // used in galaxy map
-export const generateSystemInfo = (starIndex) => {
-  //console.log("generateStarType", starIndex, star);
+export const systemInfoGen = (starIndex) => {
   const rng = seedrandom(starIndex);
   //15% of stars have a system like earths (with gas giants)
   //ACCRETE
-  const star = generateStarType(starIndex); // rng is used in generateStarType
-  //console.log("generateStarType", starIndex, star);
+  const star = starTypeGen(starIndex); // rng is used in starTypeGen
   //Only one in about five hundred thousand stars has more than twenty times the mass of the Sun.
   let solarMass = star.solarMass;
   //15% of stars have a system like earths (with gas giants)
@@ -33,13 +31,13 @@ export const generateSystemInfo = (starIndex) => {
   return [star, newSystem];
 };
 
-const generateSystem = (
+const systemGen = (
   starIndex,
   systemScale = SYSTEM_SCALE, // systemScale and planetScale used for mini system map
   planetScale = PLANET_SCALE
 ) => {
   //const rng = seedrandom(starIndex);
-  const [star, newSystem] = generateSystemInfo(starIndex);
+  const [star, newSystem] = systemInfoGen(starIndex);
   const solarRadius = newSystem.radius * SCALE * planetScale; //star.size * 700000 * SCALE * planetScale;
   //-------
   let temp = [];
@@ -263,4 +261,4 @@ function handleAddAsteroidRing(num) {
 }
 */
 
-export default generateSystem;
+export default systemGen;

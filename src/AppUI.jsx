@@ -7,9 +7,9 @@ import {
   ActionModeControls,
   Cockpit3rdPersonControls,
 } from "./uiCockpit/CockpitControls";
-import Hud from "./Hud";
-import GalaxyMapHud from "./GalaxyMapHud";
-import StationDockHud from "./StationDockHud";
+import TestingHud from "./testingControls/TestingHud";
+import GalaxyMapHud from "./menuComponents/GalaxyMapHud";
+import StationDockHud from "./menuComponents/StationDockHud";
 import EquipmentMenu from "./equipmentDesign/EquipmentMenu";
 //import CustomCursor from "./CustomCursor";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
@@ -52,7 +52,7 @@ const AppUI = () => {
           ) : (
             <SpaceFlightControlsMouseKB />
           )}
-          <Hud />
+          <TestingHud />
         </>
       )}
       {/*<CustomCursor />*/}
