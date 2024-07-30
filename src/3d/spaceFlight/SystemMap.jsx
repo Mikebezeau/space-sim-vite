@@ -3,6 +3,7 @@ import { useRef } from "react"; //useMemo
 import { useThree, useFrame } from "@react-three/fiber";
 import { distance } from "../../util/gameUtil";
 import useStore from "../../stores/store";
+//import useEnemyStore from "../../stores/enemyStore";
 import { SCALE, SYSTEM_SCALE } from "../../constants/constants";
 
 const ringGeometry = new THREE.RingGeometry(1, 1.01, 32);
@@ -133,7 +134,7 @@ function ShipPositions({ mapScale }) {
 //<EnemyPoints mapScale={mapScale} enemies={enemies} />
 /*
 function EnemyPoints({ mapScale }) {
-  const { enemies } = useStore((state) => state);
+  const { enemies } = useEnemyStore((state) => state);
 
   const positions = useMemo(() => {
     let positions = [];

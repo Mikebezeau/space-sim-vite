@@ -1,10 +1,9 @@
-import { memo, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 //import { setCustomData /*, getCustomData*/ } from "r3f-perf";
+import useWeaponFireStore from "../stores/weaponFireStore";
 import PropTypes from "prop-types";
-
-import useStore from "../stores/store";
 
 const red = new THREE.Color("red");
 const purple = new THREE.Color("purple");
@@ -34,9 +33,9 @@ const weaponFireMaterial = {
 const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
-const PreWeaponFire = ({ scale }) => {
+const WeaponFire = ({ scale }) => {
   //export default function WeaponFire() {
-  const weaponFireList = useStore((state) => state.weaponFireList);
+  const weaponFireList = useWeaponFireStore((state) => state.weaponFireList);
   //const removeWeaponFire = useStore((state) => state.actions.removeWeaponFire);
   const weaponFireGroup = useRef();
 
@@ -88,9 +87,8 @@ const PreWeaponFire = ({ scale }) => {
   );
 };
 
-PreWeaponFire.propTypes = {
+WeaponFire.propTypes = {
   scale: PropTypes.number.isRequired,
 };
 
-const WeaponFire = memo(PreWeaponFire);
 export default WeaponFire;

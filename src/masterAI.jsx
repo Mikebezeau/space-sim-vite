@@ -9,6 +9,9 @@ const toTargetQuat = new THREE.Quaternion(),
 
 export function loopAI(player, enemies, enemyBoids, clock, actionShoot) {
   enemies.forEach((enemy, index) => {
+    enemy.object3d.lookAt(player.object3d.position);
+    return;
+
     enemyBoids[index].position.copy(enemy.object3d.position);
     const enemyLeader = enemies.find((e) => e.id === enemy.groupLeaderGuid);
     //if no leader make self leader

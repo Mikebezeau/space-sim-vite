@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
+import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { SCALE } from "../../constants/constants";
 
@@ -73,10 +74,10 @@ const ScannerReadout = () => {
   //const clock = useStore((state) => state.mutation.clock);
   const { camera } = useThree();
   const getPlayer = useStore((state) => state.getPlayer);
-  const getEnemies = useStore((state) => state.getEnemies);
-  const numEnemies = useStore((state) => state.enemies.length);
   const getTargets = useStore((state) => state.getTargets);
   const planets = useStore((state) => state.planets);
+  const getEnemies = useEnemyStore((state) => state.getEnemies);
+  const numEnemies = useEnemyStore((state) => state.enemies.length);
 
   const { setFocusPlanetIndex, setFocusTargetIndex } = useStore(
     (state) => state.actions

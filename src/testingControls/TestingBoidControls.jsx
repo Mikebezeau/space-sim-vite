@@ -1,11 +1,10 @@
-import React from "react";
-import useStore from "../stores/store";
+import useEnemyStore from "../stores/enemyStore";
 import "../css/sliderControl.css";
 import "../css/toggleControl.css";
 
 export function TestingBoidControls() {
   //testing
-  const { testing, boidMod } = useStore((state) => state);
+  const { testing, boidMod } = useEnemyStore((state) => state);
 
   return (
     <>

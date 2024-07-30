@@ -4,16 +4,45 @@ import * as THREE from "three";
 import { flipRotation, lerp } from "../util/gameUtil";
 import { PLAYER, SCALE, SPEED_VALUES } from "../constants/constants";
 
-const usePlayerControlsStore = create((set, get) => {
-  const tempObjectDummy = new THREE.Object3D();
-  const direction = new THREE.Vector3();
-  const rotateQuat = new THREE.Quaternion(),
-    camQuat = new THREE.Quaternion(),
-    curQuat = new THREE.Quaternion(),
-    mouseQuat = new THREE.Quaternion(),
-    endQuat = new THREE.Quaternion();
+interface playerControlStoreState {
+  playerActionMode: number;
+  playerControlMode: number;
+  playerViewMode: number;
+  playerScreen: number;
+  isResetCamera: boolean;
+  getPlayerState: () => {
+    playerActionMode: number;
+    playerControlMode: number;
+    playerViewMode: number;
+    playerScreen: number;
+    isResetCamera: boolean;
+  };
+  playerSpeedSetting: number;
+  getPlayerSpeedSetting: () => number;
+  isPlayerPilotControl: () => boolean;
+  isReverseSideTouchControls: boolean;
+  loadingPlayerScreen: boolean;
+  setPlayerScreenLoaded: (isLoaded: boolean) => void;
+  actions: {
+    actionModeSelect: (playerActionMode: number) => void;
+    controlModeSelect: (playerControlMode: number) => void;
+    viewModeSelect: (playerViewMode: number) => void;
+    switchScreen: (playerScreen: number) => void;
+    setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
+  };
+  updatePlayerFrame: (camera: THREE.Camera, main: any) => void;
+}
 
-  return {
+const tempObjectDummy = new THREE.Object3D();
+const direction = new THREE.Vector3();
+const rotateQuat = new THREE.Quaternion(),
+  camQuat = new THREE.Quaternion(),
+  curQuat = new THREE.Quaternion(),
+  mouseQuat = new THREE.Quaternion(),
+  endQuat = new THREE.Quaternion();
+
+const usePlayerControlsStore = create<playerControlStoreState>()(
+  (set, get) => ({
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
@@ -165,7 +194,7 @@ const usePlayerControlsStore = create((set, get) => {
       );
       camera.updateProjectionMatrix();
     },
-  };
-});
+  })
+);
 
 export default usePlayerControlsStore;

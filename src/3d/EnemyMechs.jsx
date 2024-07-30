@@ -1,21 +1,23 @@
-import { memo, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import useStore from "../stores/store";
+import useEnemyStore from "../stores/enemyStore";
 import BuildMech from "./BuildMech";
 import { SCALE } from "../constants/constants";
 
 export default function EnemyMechs() {
-  const { showLeaders, enemies } = useStore((state) => state);
-  return enemies.map((enemy, i) => (
-    <Enemy key={i} enemy={enemy} showLeaders={showLeaders} />
+  const showLeaders = useEnemyStore((state) => state.showLeaders);
+  const enemies = useEnemyStore((state) => state.enemies);
+  console.log("EnemyMechs rendered", enemies);
+  return enemies.map((enemy) => (
+    <Enemy key={enemy.id} enemy={enemy} showLeaders={showLeaders} />
   ));
 }
 
 const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
-const PreEnemy = ({ enemy, showLeaders }) => {
+const Enemy = ({ enemy, showLeaders }) => {
   const ref = useRef();
 
   useFrame(() => {
@@ -58,7 +60,7 @@ const PreEnemy = ({ enemy, showLeaders }) => {
   });
 
   return (
-    <group ref={ref} scale={SCALE} key={enemy.id}>
+    <group ref={ref} scale={SCALE}>
       <BuildMech
         mechBP={enemy.mechBP}
         servoHitNames={enemy.servoHitNames}
@@ -79,5 +81,3 @@ const PreEnemy = ({ enemy, showLeaders }) => {
     </group>
   );
 };
-
-const Enemy = memo(PreEnemy);

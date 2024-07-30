@@ -3,7 +3,7 @@ import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
 import { useThree } from "@react-three/fiber";
 import starSpriteSrc from "./sprites/sprite120.png";
 import featheredSpriteSrc from "./sprites/feathered60.png";
-import useStore from "../stores/store.jsx";
+import useStore from "../stores/store";
 import { PLAYER } from "../constants/constants.jsx";
 import "./shaders/starPointsShaderMaterial.js";
 

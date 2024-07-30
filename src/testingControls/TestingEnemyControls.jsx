@@ -1,22 +1,23 @@
-import React from "react";
-import useStore from "../stores/store";
+import useEnemyStore from "../stores/enemyStore";
 import "../css/toggleControl.css";
 
 export function TestingEnemyControls() {
   //testing
-  const { testing, showLeaders } = useStore((state) => state);
-
+  const { summonEnemy, toggleShowLeaders } = useEnemyStore(
+    (state) => state.testing
+  );
+  const showLeaders = useEnemyStore((state) => state.showLeaders);
   return (
     <>
-      <button onClick={testing.summonEnemy}>(S)ummon Enemy</button>
+      <button onClick={summonEnemy}>Summon Enemy</button>
       <div className="toggleContainer">
-        <span>Show (L)eaders</span>
+        <span>Show Leaders</span>
         <label className="switch">
           <input
             type="checkbox"
             checked={showLeaders}
             value={1}
-            onChange={testing.showLeaders}
+            onChange={toggleShowLeaders}
           />
           <span className="toggleslider"></span>
         </label>

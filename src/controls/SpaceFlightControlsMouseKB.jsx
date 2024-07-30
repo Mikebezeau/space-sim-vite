@@ -8,14 +8,12 @@ import {
   useMouseWheelClick,
 } from "../hooks/controls/useMouseKBControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
-import { get } from "lodash";
 
 const ControlsMouseKBSpaceFlight = () => {
   console.log("MouseKBControlsSpaceFlight render");
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
-  const payerIsInMech = useStore((state) => state.player.isInMech);
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
@@ -55,9 +53,8 @@ const ControlsMouseKBSpaceFlight = () => {
   //SPEED UP
   function handleArrowUp() {
     if (
-      payerIsInMech &&
-      (playerControlMode === PLAYER.controls.combat ||
-        playerControlMode === PLAYER.controls.scan)
+      playerControlMode === PLAYER.controls.combat ||
+      playerControlMode === PLAYER.controls.scan
     ) {
       if (getPlayerSpeedSetting() < SPEED_VALUES.length - 1) {
         setPlayerSpeedSetting(getPlayerSpeedSetting() + 1);
@@ -69,9 +66,8 @@ const ControlsMouseKBSpaceFlight = () => {
   //SPEED DOWN
   function handleArrowDown() {
     if (
-      payerIsInMech &&
-      (playerControlMode === PLAYER.controls.combat ||
-        playerControlMode === PLAYER.controls.scan)
+      playerControlMode === PLAYER.controls.combat ||
+      playerControlMode === PLAYER.controls.scan
     ) {
       if (getPlayerSpeedSetting() > 0) {
         setPlayerSpeedSetting(getPlayerSpeedSetting() - 1);
@@ -80,22 +76,7 @@ const ControlsMouseKBSpaceFlight = () => {
   }
   useKBControls("ArrowDown", handleArrowDown);
 
-  //changing menus
-  function handleStationDock() {
-    actions.stationDock();
-  }
-  useKBControls("KeyD", handleStationDock);
-
-  function handleSummonEnemy() {
-    testing.summonEnemy();
-  }
-  useKBControls("KeyS", handleSummonEnemy);
-
-  function handleShowLeaders() {
-    testing.showLeaders();
-  }
-  useKBControls("KeyL", handleShowLeaders);
-
+  // example of a custom key binding
   function handleWarpToPlanet() {
     testing.warpToPlanet();
   }

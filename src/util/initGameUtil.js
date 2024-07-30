@@ -1,14 +1,5 @@
 import * as THREE from "three";
-import {
-  SCALE,
-  //SYSTEM_SCALE,
-  //PLANET_SCALE,
-  //STARS_IN_GALAXY,
-  //GALAXY_SIZE,
-  //PLAYER,
-  PLAYER_START,
-  //WEAPON_FIRE_SPEED,
-} from "../constants/constants";
+import { SCALE, PLAYER_START } from "../constants/constants";
 import { guid, initEnemyMechBP, initStationBP } from "./initEquipUtil";
 
 let guidCounter = 1; //global unique ID
@@ -30,21 +21,18 @@ export const initPlayer = () => {
   obj.position.setZ(PLAYER_START.z);
   return {
     id: 0,
-    team: 0,
-    isInMech: true,
     currentMechBPindex: PLAYER_START.mechBPindex,
     locationInfo: {
-      orbitPlanetId: null,
-      landedPlanetId: null,
-      dockedStationId: null,
-      dockedShipId: null,
+      // saving player locations in scenes, used for changing scenes
       saveSpaceObject3d: new THREE.Object3D(),
     },
+    // player mech object coordinates and rotation
     object3d: obj,
     speed: 0,
     shield: { max: 50, damage: 0 }, //will be placed in mechBP once shields are completed
 
-    ray: new THREE.Ray(), // RAY FROM SHIP for weaponFire hit detection
+    // weapon fire
+    ray: new THREE.Ray(), // ray from ship for weaponFire hit detection
     hitBox: new THREE.Box3(),
     hit: new THREE.Vector3(),
     shotsTesting: [],
@@ -53,7 +41,7 @@ export const initPlayer = () => {
   };
 };
 
-//used to create space dedrie and asteroids
+//used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
   return new Array(count).fill().map(() => {
     const t = Math.random();
