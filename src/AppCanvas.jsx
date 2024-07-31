@@ -6,7 +6,7 @@ import SpaceFlightScene from "./scenes/spaceFlight/SpaceFlightScene";
 import StarPointsScene from "./scenes/spaceFlight/StarPointsScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
 import StationDockScene from "./scenes/StationDockScene";
-import EquipmentBlueprint from "./equipmentDesign/EquipmentBlueprint";
+import EquipmentBlueprint from "./equipment/equipmentDesign/EquipmentBlueprint";
 import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER, PLAYER_START } from "./constants/constants";
 

@@ -11,7 +11,6 @@ import {
 } from "../hooks/controls/useTouchControls";
 import { ActionWarpToPlanet } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
-import "../css/hud.css";
 
 const ThrottleControlsDisplay = () => {
   const playerSpeedSetting = usePlayerControlsStore(

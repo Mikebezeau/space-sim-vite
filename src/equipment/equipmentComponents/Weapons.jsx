@@ -1,6 +1,5 @@
-import React from "react";
 import { useState } from "react";
-import useEquipStore from "../stores/equipStore";
+import useEquipStore from "../../stores/equipStore";
 import { equipList } from "../data/equipData";
 import { WeaponBeamList, WeaponBeamCreate } from "./WeaponBeam";
 import { WeaponProjList, WeaponProjCreate } from "./WeaponProj";

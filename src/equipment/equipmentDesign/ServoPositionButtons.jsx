@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import useEquipStore from "../stores/equipStore";
+import { useState } from "react";
+import useEquipStore from "../../stores/equipStore";
 import { geoList } from "../data/shapeGeometry";
 
 import {
   useKBControls,
-  useMouseDown,
-  useMouseMove,
+  //useMouseDown,
+  //useMouseMove,
   //useMouseClick,
-} from "../hooks/controls/useMouseKBControls";
+} from "../../hooks/controls/useMouseKBControls";
 
 const ServoPositionButtons = ({ heading }) => {
   //lust of servos, player clicks one of the buttons to select that servo, and then will be able to edit size/location

@@ -1,5 +1,5 @@
-import React from "react"; //import { weaponList } from "../data/weaponData";
-import useEquipStore from "../stores/equipStore";
+//import { weaponList } from "../data/weaponData";
+import useEquipStore from "../../stores/equipStore";
 
 export const WeaponEMeleeList = () => {
   const { mechBP } = useEquipStore((state) => state);

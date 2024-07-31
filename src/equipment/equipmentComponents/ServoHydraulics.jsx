@@ -1,5 +1,4 @@
-import React from "react";
-import useEquipStore from "../stores/equipStore";
+import useEquipStore from "../../stores/equipStore";
 import { equipList } from "../data/equipData";
 
 //DISPLAY LIST OF SERVOS
@@ -25,7 +24,9 @@ const ServoHydraulics = ({ heading }) => {
                 onChange={handleHydraulics}
               >
                 {equipList.hydraulics.type.map((value, key) => (
-                  <option value={key}>{value}</option>
+                  <option key={key} value={value}>
+                    {value}
+                  </option>
                 ))}
               </select>
             </div>

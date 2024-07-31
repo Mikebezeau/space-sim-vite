@@ -1,6 +1,5 @@
-import React from "react";
 import { useState } from "react";
-import useEquipStore from "../stores/equipStore";
+import useEquipStore from "../../stores/equipStore";
 import { ServoSpaceAssignButtons } from "./Servos";
 //CREW / PILOT
 

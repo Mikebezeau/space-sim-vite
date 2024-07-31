@@ -1,11 +1,10 @@
-import React from "react";
-import useEquipStore from "../stores/equipStore";
+import useEquipStore from "../../stores/equipStore";
 import { weaponList } from "../data/weaponData";
 import WeaponSliderControl from "../equipmentDesign/WeaponSliderControl";
 import WeaponToggleControl from "../equipmentDesign/WeaponToggleControl";
-import "../css/formContainers.css";
-import "../css/sliderControl.css";
-import "../css/toggleControl.css";
+import "../../css/formContainers.css";
+import "../../css/sliderControl.css";
+import "../../css/toggleControl.css";
 
 export const WeaponBeamList = () => {
   const { mechBP } = useEquipStore((state) => state);

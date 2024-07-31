@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { MeshBasicMaterial, Color } from "three";
-import { ServoShapes, WeaponShapes } from "../data/equipShapes";
-import { equipList } from "../data/equipData";
+import { ServoShapes, WeaponShapes } from "../equipment/data/equipShapes";
+import { equipList } from "../equipment/data/equipData";
 
 const blueMaterial = new MeshBasicMaterial({
   color: new Color("lightblue"),

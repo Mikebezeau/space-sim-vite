@@ -2,9 +2,9 @@ import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 //import { useThree, useLoader, useFrame } from "@react-three/fiber";
 //import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import useStore from "../stores/store";
-import useEquipStore from "../stores/equipStore";
-import BuildMech from "../3d/BuildMech";
+import useStore from "../../stores/store";
+import useEquipStore from "../../stores/equipStore";
+import BuildMech from "../../3d/BuildMech";
 import { equipList } from "../data/equipData";
 
 export default function EquipmentBlueprint() {

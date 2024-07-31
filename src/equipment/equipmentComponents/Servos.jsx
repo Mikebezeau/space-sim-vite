@@ -1,5 +1,4 @@
-import React from "react";
-import useEquipStore from "../stores/equipStore";
+import useEquipStore from "../../stores/equipStore";
 import { equipList } from "../data/equipData";
 
 //DISPLAY LIST OF SERVOS

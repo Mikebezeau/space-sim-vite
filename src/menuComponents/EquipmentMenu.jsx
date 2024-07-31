@@ -3,19 +3,25 @@ import { useState } from "react";
 import EquipmentMenuControlsMouseKB from "../controls/EquipmentMenuControlsMouseKB";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
-import mechDesigns from "../data/mechDesigns";
+import mechDesigns from "../equipment/data/mechDesigns";
 
-import Mech from "../equipment/Mech";
-import { Crew, CrewAssignSpaces } from "../equipment/Crew";
-import { Servos } from "../equipment/Servos";
-import ServoPositionButtons from "../equipmentDesign/ServoPositionButtons";
+import Mech from "../equipment/equipmentComponents/Mech";
+import { Crew, CrewAssignSpaces } from "../equipment/equipmentComponents/Crew";
+import { Servos } from "../equipment/equipmentComponents/Servos";
+import ServoPositionButtons from "../equipment/equipmentDesign/ServoPositionButtons";
 //import ServoHydraulics from "./equipment/ServoHydraulics";
-import { Weapons, WeaponsAssignSpaces } from "../equipment/Weapons";
-import { LandingBay, LandingBayAssignSpaces } from "../equipment/LandingBay";
+import {
+  Weapons,
+  WeaponsAssignSpaces,
+} from "../equipment/equipmentComponents/Weapons";
+import {
+  LandingBay,
+  LandingBayAssignSpaces,
+} from "../equipment/equipmentComponents/LandingBay";
 import { PLAYER } from "../constants/constants";
 import "../css/equipmentMenu.css";
 
-export default function EquipmentMenu() {
+const EquipmentMenu = () => {
   console.log("EquipmentMenu rendered");
   //BLUEPRINT SELECTION MENU
   const { playerMechBP, equipActions } = useEquipStore((state) => state);
@@ -275,4 +281,6 @@ export default function EquipmentMenu() {
       </div>
     </>
   );
-}
+};
+
+export default EquipmentMenu;

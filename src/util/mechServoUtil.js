@@ -1,4 +1,4 @@
-import { equipList } from "../data/equipData";
+import { equipList } from "../equipment/data/equipData";
 
 function applyScaledWeightMult(scale, weight) {
   return Math.round(weight * equipList.scale.weightMult[scale] * 10) / 10;

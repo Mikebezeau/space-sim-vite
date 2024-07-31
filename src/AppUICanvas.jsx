@@ -40,14 +40,11 @@ function AppUICanvas() {
 
   return (
     <div
-      className={`pointer-events-none touch-none absolute bottom-1/2 right-2 w-[200px] h-[200px] ${
-        playerControlMode === PLAYER.controls.scan &&
-        "bottom-4 right-1/2 mr-[-100px]"
-      }`}
+      className={`pointer-events-none touch-none absolute bottom-1/2 right-2 w-[200px] h-[200px]`}
+      //${playerControlMode === PLAYER.controls.scan && "bottom-4 right-1/2 mr-[-100px]"}
     >
       <MyCanvas
         onCreated={(state) => {
-          //console.log(state.events)
           state.setEvents(null);
         }}
         camera={{
@@ -65,9 +62,12 @@ function AppUICanvas() {
           playerScreen === PLAYER.screen.flight ? (
             <>
               {playerControlMode === PLAYER.controls.scan ? (
+                <>
+                  {/*}
                 <group scale={0.1} position={[0, 0, -20]}>
                   <PlanetScanReadout />
-                </group>
+                </group>*/}
+                </>
               ) : (
                 <group
                   scale={0.2}

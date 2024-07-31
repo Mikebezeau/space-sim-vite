@@ -1,4 +1,3 @@
-import React from "react";
 import { weaponList } from "../data/weaponData";
 
 const WeaponToggleControl = ({ weaponType, weaponBP, controlData }) => {

@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import { equipList } from "../data/equipData";
-import { weaponList } from "../data/weaponData";
+import { equipList } from "../equipment/data/equipData";
+import { weaponList } from "../equipment/data/weaponData";
 import { applyScaledCPMult, servoUtil, mech, armorUtil } from "./mechServoUtil";
 import { weaponUtil } from "./weaponUtil";
-import mechDesigns from "../data/mechDesigns";
+import mechDesigns from "../equipment/data/mechDesigns";
 
 //CREATING UNIQUE IDS
 const guid = (A) => {

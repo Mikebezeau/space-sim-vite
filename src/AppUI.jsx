@@ -7,10 +7,13 @@ import {
   ActionModeControls,
   Cockpit3rdPersonControls,
 } from "./uiCockpit/CockpitControls";
-import TestingHud from "./testingControls/TestingHud";
-import GalaxyMapHud from "./menuComponents/GalaxyMapHud";
-import StationDockHud from "./menuComponents/StationDockHud";
-import EquipmentMenu from "./equipmentDesign/EquipmentMenu";
+import SpeedReadout from "./uiCockpit/SpeedReadout";
+import ShieldsReadout from "./uiCockpit/ShieldsReadout";
+import WeaponsReadout from "./uiCockpit/WeaponsReadout";
+import TestingMenu from "./testingControls/TestingMenu";
+import GalaxyMapMenu from "./menuComponents/GalaxyMapMenu";
+import StationDockMenu from "./menuComponents/StationDockMenu";
+import EquipmentMenu from "./menuComponents/EquipmentMenu";
 //import CustomCursor from "./CustomCursor";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
 
@@ -36,12 +39,20 @@ const AppUI = () => {
             <>
               <Cockpit3rdPersonControls />
               <ActionModeControls />
+              <div className="absolute top-20 left-10">
+                <SpeedReadout />
+              </div>
             </>
           )}
+          <div className="absolute top-72 right-11">
+            <ShieldsReadout />
+            <WeaponsReadout />
+          </div>
+          <TestingMenu />
         </>
       )}
-      {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapHud />}
-      {playerScreen === PLAYER.screen.dockedStation && <StationDockHud />}
+      {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
+      {playerScreen === PLAYER.screen.dockedStation && <StationDockMenu />}
       {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
 
       {(playerScreen === PLAYER.screen.flight ||
@@ -52,7 +63,6 @@ const AppUI = () => {
           ) : (
             <SpaceFlightControlsMouseKB />
           )}
-          <TestingHud />
         </>
       )}
       {/*<CustomCursor />*/}

@@ -1,5 +1,5 @@
-import { equipList } from "../data/equipData";
-import { weaponList } from "../data/weaponData";
+import { equipList } from "../equipment/data/equipData";
+import { weaponList } from "../equipment/data/weaponData";
 import { applyScaledWeightMult, applyScaledCPMult } from "./mechServoUtil";
 
 const weaponUtil = {

@@ -3,7 +3,7 @@ import "../css/toggleControl.css";
 
 export function TestingPlayerLocationControls() {
   //testing
-  const { testing } = useStore((state) => state);
+  const testing = useStore((state) => state.testing);
 
   return (
     <>
