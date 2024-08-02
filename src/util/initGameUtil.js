@@ -1,35 +1,7 @@
 import * as THREE from "three";
-import { SCALE, PLAYER_START } from "../constants/constants";
-import { guid, initEnemyMechBP, initStationBP } from "./initEquipUtil";
-
-let guidCounter = 1; //global unique ID
-
-export const initPlayer = () => {
-  let obj = new THREE.Object3D();
-  obj.position.setX(PLAYER_START.x);
-  obj.position.setY(PLAYER_START.y);
-  obj.position.setZ(PLAYER_START.z);
-  return {
-    id: 0,
-    currentMechBPindex: PLAYER_START.mechBPindex,
-    locationInfo: {
-      // saving player locations in scenes, used for changing scenes
-      saveSpaceObject3d: new THREE.Object3D(),
-    },
-    // player mech object coordinates and rotation
-    object3d: obj,
-    speed: 0,
-    shield: { max: 50, damage: 0 }, //will be placed in mechBP once shields are completed
-
-    // weapon fire
-    ray: new THREE.Ray(), // ray from ship for weaponFire hit detection
-    hitBox: new THREE.Box3(),
-    hit: new THREE.Vector3(),
-    shotsTesting: [],
-    shotsHit: [],
-    //servoHitNames: [],
-  };
-};
+import { v4 as uuidv4 } from "uuid";
+import EnemyMech from "../classes/EnemyMech";
+import { initStationBP } from "./initEquipUtil";
 
 //used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
@@ -53,7 +25,7 @@ export const randomData = (count, track, radius, size, randomScale) => {
     const object3d = new THREE.Object3D();
     object3d.position.copy(offset);
     return {
-      guid: guidCounter++,
+      guid: uuidv4(),
       scale: typeof randomScale === "function" ? randomScale() : randomScale,
       size,
       offset,
@@ -68,68 +40,10 @@ export const randomData = (count, track, radius, size, randomScale) => {
   });
 };
 
-export const randomEnemies = (numEnemies, track) => {
-  let enemies = randomData(numEnemies, track, 5 * SCALE, 0, 1);
-
-  enemies.forEach((enemy, index) => {
-    //if (index === 0) {
-    //  enemy.object3d.position.set(PLAYER_START.x, PLAYER_START.y, PLAYER_START.z);
-    //}
-    enemy.id = guid(enemies);
-    enemy.team = index < 40 ? 1 : 2;
-
-    enemy.groupLeaderGuid = 0;
-    //enemy.groupLeaderGuid = index < 10 ? enemies[0].id : enemies[10].id;
-
-    enemy.groupId = 0;
-    enemy.tacticOrder = 0; //0 = follow leader, 1 = attack player
-    //enemy.prevAngleToTargetLocation = 0;
-    //enemy.prevAngleToLeaderLocation = 0;
-    enemy.formation = null;
-    enemy.formationPosition = new THREE.Vector3();
-    enemy.speed = 300 + Math.floor(Math.random() * 3);
-    enemy.mechBP = initEnemyMechBP(
-      index === 0
-        ? 1
-        : //index < numEnemies / 20 ? 1 : 0
-          //Math.random() < 0.05 ? 1 : 0
-          0
-    );
-    enemy.size = enemy.mechBP.size() * SCALE;
-    enemy.drawDistanceLevel = 0;
-
-    const box = new THREE.BoxGeometry(
-      enemy.size * 5000,
-      enemy.size * 5000,
-      enemy.size * 5000
-    );
-    const yellow = new THREE.Color("yellow");
-    const green = new THREE.Color("green");
-    const mesh = new THREE.MeshBasicMaterial({
-      color: yellow,
-      //emissive: yellow,
-      //emissiveIntensity: 1,
-      wireframe: true,
-    });
-    enemy.boxHelper = new THREE.Mesh(box, mesh); //visible bounding box, geometry of which is used to calculate hit detection box
-    enemy.boxHelper.geometry.computeBoundingBox();
-    enemy.greenMat = new THREE.MeshBasicMaterial({
-      color: green,
-      //emissive: green,
-      //emissiveIntensity: 1,
-      wireframe: true,
-    });
-
-    enemy.ray = new THREE.Ray(); //USED FOR RAY FROM SHIP to  test friendly fire hit detection
-    enemy.hitBox = new THREE.Box3(); //used with rays for hit detection
-    enemy.hitBox.copy(enemy.boxHelper.geometry.boundingBox);
-    enemy.shotsTesting = []; //registers shots that have hit the bounding hitbox, then tested if hit actual servos
-    enemy.shotsHit = []; //registers shots that have hit the mech, to remove shots from space
-    enemy.servoHitNames = []; //names of servos hit stored and will flash red on 1 frame of animation
-    // in the animation loop, compute the current bounding box with the world matrix
-    //hitBox.applyMatrix4( enemy.boxHelper.matrixWorld );
-  });
-
+export const genEnemies = (numEnemies) => {
+  let enemies = Array(numEnemies)
+    .fill()
+    .map((e, i) => new EnemyMech(i === 0 ? 1 : 0));
   //group enemies into squads
   enemies.forEach((enemy) => {
     let groupCount = 0;
@@ -156,11 +70,11 @@ export const randomEnemies = (numEnemies, track) => {
   return enemies;
 };
 
-export const randomStations = (/*rng, num*/) => {
+export const genStations = () => {
   let stations = [];
   //create station
   stations.push({
-    id: 1, //id(),
+    id: uuidv4(),
     type: "EQUIPMENT",
     name: "X-22",
     ports: [{ x: 0.5, y: 0.5, z: 0.5 }],

@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
@@ -9,11 +9,11 @@ import BuildMech from "../BuildMech";
 import { setVisible } from "../../util/gameUtil";
 import { SCALE, PLAYER } from "../../constants/constants";
 
-const PrePlayerMech = () => {
+const PlayerMech = () => {
   console.log("PlayerMech rendered");
   const { camera } = useThree();
   const getPlayer = useStore((state) => state.getPlayer);
-  const playerMechBP = useStore((state) => state.playerMechBP);
+  const playerMechBP = getPlayer().mechBP;
   const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
   const mutation = useStore((state) => state.mutation);
   const { clock } = mutation;
@@ -25,20 +25,31 @@ const PrePlayerMech = () => {
     (state) => state.updatePlayerFrame
   );
 
-  const main = useRef();
+  const mainGroupRef = useRef();
   const playerMechGroupRef = useRef();
   const weaponFireLight = useRef();
   const exhaust = useRef();
   const engineLight = useRef();
+  const hitBoxRef = useRef(null);
 
   const servoHitNames = [];
 
   // starting position
   useLayoutEffect(() => {
     const player = getPlayer();
-    main.current.position.copy(player.object3d.position);
-    main.current.rotation.copy(player.object3d.rotation);
+    mainGroupRef.current.position.copy(player.object3d.position);
+    mainGroupRef.current.rotation.copy(player.object3d.rotation);
   }, [getPlayer]);
+
+  // set bounding box for player mech once created
+  useEffect(() => {
+    if (playerMechGroupRef.current !== null) {
+      const player = getPlayer();
+      player.setHitBoxFromGroup(playerMechGroupRef.current);
+      hitBoxRef.current = player.hitBox;
+      console.log(player.hitBox);
+    }
+  }, [getPlayer, playerMechGroupRef]);
 
   // mech is invisible in cockpit view
   useEffect(() => {
@@ -51,9 +62,14 @@ const PrePlayerMech = () => {
 
   //moving camera, ship, altering crosshairs, engine and weapon lights (activates only while flying)
   useFrame(() => {
-    if (!main.current) return null;
-    updatePlayerFrame(camera, main);
+    if (!mainGroupRef.current) return null;
+    updatePlayerFrame(camera, mainGroupRef);
     const player = getPlayer();
+    // setHitBoxFromGroup needs to use the same ref as updatePlayerFrame to work
+    // otherwise using the child component ref will be updating 1 frame behind
+    // change structure so that the crosshair and engine lights etc. are in a seperate ref
+    player.setHitBoxFromGroup(mainGroupRef.current);
+    hitBoxRef.current = player.hitBox;
     //engine flicker
     let flickerVal = Math.sin(clock.getElapsedTime() * 500);
     let speedRoof = player.speed > 25 ? 25 : player.speed;
@@ -77,10 +93,13 @@ const PrePlayerMech = () => {
 
   return (
     <>
-      <group ref={main} scale={SCALE}>
+      {hitBoxRef.current !== null ? (
+        <box3Helper box={hitBoxRef.current} color={0xffff00} />
+      ) : null}
+      <group ref={mainGroupRef} scale={SCALE}>
         <BuildMech
           ref={playerMechGroupRef}
-          mechBP={playerMechBP[0]}
+          mechBP={playerMechBP}
           servoHitNames={servoHitNames}
           showAxisLines={false}
         />
@@ -117,10 +136,9 @@ const PrePlayerMech = () => {
           color="lightblue"
         />
       </group>
-      {/*<MeshLineTrail followRef={main} />*/}
+      {/*<MeshLineTrail followRef={mainGroupRef} />*/}
     </>
   );
 };
 
-const PlayerMech = memo(PrePlayerMech);
 export default PlayerMech;

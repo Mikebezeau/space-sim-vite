@@ -1,17 +1,9 @@
 import { Fragment, useState } from "react";
-import useStore from "../stores/store";
+import ShieldsReadout from "./ShieldsReadout";
+import WeaponsReadout from "./WeaponsReadout";
 
 const MonitorReadout = () => {
-  //const [hoveredSection, setHoveredSection] = useState("");
   const [selectedSection, setSelectedSection] = useState("status");
-  //const shield = 0; //useStore((state) => state.player.shield);
-  const currentMechBPindex = useStore(
-    (state) => state.player.currentMechBPindex
-  );
-
-  const playerMechBP = useStore((state) => state.playerMechBP);
-
-  const weaponList = playerMechBP[currentMechBPindex].weaponList;
 
   const handleSectionChange = (section) => {
     setSelectedSection(section);
@@ -54,28 +46,8 @@ const MonitorReadout = () => {
       <div className="pl-2 pt-1">
         {selectedSection === "status" && (
           <>
-            <div>
-              {weaponList.beam.map((weapon, i) => (
-                <p key={i}>{weapon.data.name}</p>
-              ))}
-              {weaponList.proj.map((weapon, i) => (
-                <p key={i}>{weapon.data.name} / AMMO</p>
-              ))}
-              {weaponList.missile.map((weapon, i) => (
-                <p key={i}>{weapon.data.name} / #</p>
-              ))}
-            </div>
-
-            <div
-              className=""
-              style={
-                {
-                  //width: ((shield.max - shield.damage) / shield.max) * 100 + "%",
-                }
-              }
-            >
-              <span>SHIELDS</span>
-            </div>
+            <ShieldsReadout isAlwaysDisplay={true} />
+            <WeaponsReadout isAlwaysDisplay={true} />
           </>
         )}
         {selectedSection === "system" && (

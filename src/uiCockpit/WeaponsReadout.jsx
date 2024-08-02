@@ -1,20 +1,16 @@
 import useStore from "../stores/store";
 import usePlayerControlStore from "../stores/playerControlsStore";
 import { PLAYER } from "../constants/constants";
-import "../css/glitch.css";
 
-const WeaponsReadout = () => {
-  const playerMechBP = useStore((state) => state.playerMechBP);
-  const currentMechBPindex = useStore(
-    (state) => state.player.currentMechBPindex
-  );
-  const weaponList = playerMechBP[currentMechBPindex].weaponList;
+const WeaponsReadout = ({ isAlwaysDisplay = false }) => {
+  const weaponList = useStore((state) => state.player.mechBP.weaponList);
   const playerControlMode = usePlayerControlStore(
     (state) => state.playerControlMode
   );
+
   return (
     <>
-      {playerControlMode === PLAYER.controls.combat && (
+      {(isAlwaysDisplay || playerControlMode === PLAYER.controls.combat) && (
         <div className="text-white">
           {weaponList.beam.map((weapon, i) => (
             <p key={i}>{weapon.data.name}</p>

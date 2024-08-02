@@ -48,7 +48,6 @@ const AppUI = () => {
             <ShieldsReadout />
             <WeaponsReadout />
           </div>
-          <TestingMenu />
         </>
       )}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
@@ -63,6 +62,7 @@ const AppUI = () => {
           ) : (
             <SpaceFlightControlsMouseKB />
           )}
+          <TestingMenu />
         </>
       )}
       {/*<CustomCursor />*/}

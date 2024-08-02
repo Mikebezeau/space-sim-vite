@@ -1,13 +1,11 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
+import PlayerMech from "../classes/PlayerMech";
 import usePlayerControlsStore from "./playerControlsStore";
 import useEnemyStore from "./enemyStore";
 import useWeaponFireStore from "./weaponFireStore";
-import { initPlayer, randomData, randomStations } from "../util/initGameUtil";
-import {
-  initPlayerMechBP /*, initStationBP, initEnemyMechBP*/,
-} from "../util/initEquipUtil";
+import { randomData, genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
 import systemGen from "../solarSystemGen/systemGen";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
@@ -31,9 +29,9 @@ interface storeState {
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
   galaxy: Object;
-  player: Object;
+  // updates to Class in state do not trigger rerenders in components
+  player: PlayerMech;
   getPlayer: () => Object;
-  playerMechBP: Object;
   focusTargetIndex: number | null;
   selectedTargetIndex: number | null;
   focusPlanetIndex: number | null;
@@ -42,9 +40,37 @@ interface storeState {
   planets: Object | null;
   stations: Object | null;
   planetTerrain: Object | null;
-  mutation: Object;
-  testing: Object;
-  actions: Object;
+  actions: {
+    beginSpaceFlightSceneLoop: () => void;
+    setSpeed: (speed: number) => void;
+    setFocusPlanetIndex: (focusPlanetIndex: number) => void;
+    setFocusTargetIndex: (focusTargetIndex: number) => void;
+    setSelectedTargetIndex: () => void;
+    getPlayerCurrentStarIndex: () => number;
+    setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
+    setShowInfoHoveredStarIndex: (showInfoHoveredStarIndex: number) => void;
+    getShowInfoTargetStarIndex: () => number;
+    setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
+    setSelectedWarpStar: (selectedWarpStar: number) => void;
+    setSelectedPanetIndex: (planetIndex: number) => void;
+    toggleSound: (sound?: boolean) => void;
+    updateMouse: (event: MouseEvent) => void;
+    updateTouchMobileMoveShip: (event: TouchEvent) => void;
+  };
+  mutation: {
+    particles: Object;
+    clock: THREE.Clock;
+    mouse: THREE.Vector2;
+    mouseScreen: THREE.Vector2;
+  };
+  testing: {
+    toggleTestControls: () => void;
+    changeLocationSpace: () => void;
+    changeLocationPlanet: () => void;
+    changeLocationCity: () => void;
+    warpToStation: () => void;
+    warpToPlanet: () => void;
+  };
 }
 
 //const useStore = create((set, get) => {
@@ -59,9 +85,9 @@ const useStore = create<storeState>()((set, get) => ({
   galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
   // intial player star
   playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
-  player: initPlayer(),
+  player: new PlayerMech(),
   getPlayer: () => get().player, // getting state to avoid rerenders in components when necessary
-  playerMechBP: initPlayerMechBP(),
+  //playerMechBP: initPlayerMechBP(),
   // targeting
   focusTargetIndex: null,
   selectedTargetIndex: null,
@@ -136,51 +162,42 @@ const useStore = create<storeState>()((set, get) => ({
       */
     changeLocationSpace() {
       //set player location
-      let locationInfo = get().player.locationInfo;
-      set((state) => ({
-        player: {
-          ...state.player,
-          object3d: locationInfo.saveSpaceObject3d,
-        },
-      }));
+      get().player.resetSpaceLocation();
+      console.log(get().player.object3d.position);
       usePlayerControlsStore
         .getState()
         .actions.switchScreen(PLAYER.screen.flight);
     },
     changeLocationPlanet() {
       //set player location
-      let locationInfo = get().player.locationInfo;
-      locationInfo.saveSpaceObject3d = get().player.object3d;
-      set((state) => ({
-        player: { ...state.player, locationInfo: locationInfo },
-      }));
+      get().player.storeSpaceLocation();
+      get().player.object3d.position.set(0, 0, 0);
       usePlayerControlsStore
         .getState()
         .actions.switchScreen(PLAYER.screen.landedPlanet);
     },
     changeLocationCity() {
-      //get().testing.changeLocationPlanet();
-      usePlayerControlsStore
-        .getState()
-        .actions.switchScreen(PLAYER.screen.landedPlanet);
-      let player = get().player;
-      player.object3d.position.setX(
-        get().planetTerrain.terrain.CityPositions[0].position.x
-      );
-      player.object3d.position.setY(0);
-      player.object3d.position.setZ(
-        get().planetTerrain.terrain.CityPositions[0].position.z
-      );
-      set(() => ({ player: player }));
+      if (
+        usePlayerControlsStore.getState().playerScreen ===
+        PLAYER.screen.landedPlanet
+      ) {
+        let player = get().player;
+        player.object3d.position.setX(
+          get().planetTerrain.terrain.CityPositions[0].position.x
+        );
+        player.object3d.position.setY(0);
+        player.object3d.position.setZ(
+          get().planetTerrain.terrain.CityPositions[0].position.z
+        );
+      }
     },
     warpToStation() {
       let player = get().player;
-      if (get().stations[0]) {
+      if (get().stations !== null && get().stations[0]) {
         const targetStation = get().stations[0];
         player.object3d.position.copy(targetStation.object3d.position);
         player.object3d.translateZ(-30000 * SCALE);
         player.object3d.lookAt(targetStation.object3d.position);
-        set(() => ({ player: player }));
       }
     },
     warpToPlanet() {
@@ -189,7 +206,6 @@ const useStore = create<storeState>()((set, get) => ({
         const targetPlanet = get().planets[get().focusPlanetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
         player.object3d.translateZ(-targetPlanet.radius * 5);
-        set(() => ({ player: player }));
       }
     },
   },
@@ -199,8 +215,6 @@ const useStore = create<storeState>()((set, get) => ({
       const { mutation, actions } = get();
       //clock used for enemy ai
       mutation.clock.start();
-      //set player mech info
-      actions.initPlayerMech(PLAYER_START.mechBPindex);
       // set player start position
       get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
 
@@ -227,24 +241,14 @@ const useStore = create<storeState>()((set, get) => ({
       });
     },
 
-    initPlayerMech(playerMechBPindex) {
-      const { player, playerMechBP } = get();
-      player.currentMechBPindex = playerMechBPindex;
-      player.size = playerMechBP[player.currentMechBPindex].size() * SCALE;
-      //set player hitbox size
-      const box = new THREE.BoxGeometry(
-        player.size * 5000,
-        player.size * 5000,
-        player.size * 5000
-      );
-      const yellow = new THREE.Color("yellow");
-      const mesh = new THREE.MeshBasicMaterial({
-        color: yellow,
-        wireframe: true,
-      });
-      player.boxHelper = new THREE.Mesh(box, mesh); //visible bounding box, geometry of which is used to calculate hit detection box
-      player.boxHelper.geometry.computeBoundingBox();
-      player.hitBox.copy(player.boxHelper.geometry.boundingBox);
+    // updating speed of player through state to trigger rerenders in components (i.e SpeedReadout)
+    setSpeed(speedValue) {
+      set((state) => ({
+        player: {
+          ...state.player,
+          speed: speedValue,
+        },
+      }));
     },
 
     setFocusPlanetIndex(focusPlanetIndex) {
@@ -268,7 +272,7 @@ const useStore = create<storeState>()((set, get) => ({
       } else {
         useWeaponFireStore
           .getState()
-          .actions.cancelWeaponFire(get().playerMechBP[0]);
+          .actions.cancelWeaponFire(get().player.mechBP);
       }
       if (targetIndex !== null) {
         set(() => ({
@@ -276,7 +280,7 @@ const useStore = create<storeState>()((set, get) => ({
         }));
       }
       useWeaponFireStore.getState().actions.shoot(
-        get().playerMechBP[0],
+        get().player.mechBP,
         get().player,
         targetIndex === null
           ? null
@@ -296,12 +300,11 @@ const useStore = create<storeState>()((set, get) => ({
       set(() => ({
         planets: systemGen(playerCurrentStarIndex),
       }));
-      const playerObj = get().player.object3d;
-      playerObj.position.setX(0);
-      playerObj.position.setY(0);
-      playerObj.position.setZ(get().planets[0].radius * 5);
-      playerObj.lookAt(0, 0, 0);
-      get().actions.setPlayerObject(playerObj);
+      const player = get().player;
+      player.object3d.position.setX(0);
+      player.object3d.position.setY(0);
+      player.object3d.position.setZ(get().planets[0].radius * 5);
+      player.object3d.lookAt(0, 0, 0);
       //clear variables
       set(() => ({
         focusPlanetIndex: null,
@@ -311,10 +314,9 @@ const useStore = create<storeState>()((set, get) => ({
         showInfoTargetStarIndex: null,
       }));
       // set position of space station near a planet
-      const stations = randomStations(seedrandom(playerCurrentStarIndex), 1);
+      const stations = genStations();
       const stationOrbitPlanet = get().planets[1] || get().planets[0];
       if (stations[0]) {
-        console.log("setting station[0]");
         stations[0].object3d.position.set(
           stationOrbitPlanet.object3d.position.x,
           stationOrbitPlanet.object3d.position.y,
@@ -342,22 +344,6 @@ const useStore = create<storeState>()((set, get) => ({
 
     setSelectedPanetIndex(planetIndex) {
       set(() => ({ selectedPanetIndex: planetIndex }));
-    },
-
-    //player ship update
-    setPlayerObject(obj) {
-      set((state) => ({
-        player: { ...state.player, object3d: obj },
-      }));
-    },
-
-    setSpeed(speedValue) {
-      set((state) => ({
-        player: {
-          ...state.player,
-          speed: speedValue,
-        },
-      }));
     },
 
     toggleSound(sound = !get().sound) {

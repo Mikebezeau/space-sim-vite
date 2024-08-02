@@ -1,8 +1,7 @@
 import { create } from "zustand";
-import { randomEnemies } from "../util/initGameUtil";
+import { genEnemies } from "../util/initGameUtil";
 import { setupFlock } from "../util/boidController";
 import { SCALE, PLAYER_START } from "../constants/constants";
-import { track } from "../util/track";
 import useStore from "./store";
 
 const numEnemies = 9;
@@ -38,7 +37,7 @@ const useEnemyStore = create<enemyStoreState>()((set, get) => ({
     boidCenteringMod: 0,
   },
 
-  enemies: randomEnemies(numEnemies, track),
+  enemies: genEnemies(numEnemies),
   getEnemies: () => get().enemies,
   enemyBoids: setupFlock(numEnemies),
   /*

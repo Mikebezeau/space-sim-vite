@@ -11,7 +11,7 @@ export const IS_MOBILE = /Mobi|Android/i.test(navigator.userAgent);
 
 export const PLAYER_START = {
   system: 31232,
-  mechBPindex: 0,
+  mechBPindex: 1, // spaceship (0 is a tank)
   x: 0, // position set in store.actions.init()
   y: 0,
   z: 0,
