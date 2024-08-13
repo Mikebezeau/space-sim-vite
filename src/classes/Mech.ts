@@ -4,8 +4,8 @@ import { loadBlueprint } from "../util/initEquipUtil";
 import { SCALE } from "../constants/constants";
 
 export interface MechInt {
-  setHitBoxFromGroup(mechGroup: THREE.Group): void;
-  //updateHitBoxMatrix(mechGroup: THREE.Group): void;
+  setHitBox(mechGroup: THREE.Group | undefined): void;
+  //updateHitBoxMatrix(): void;
 }
 
 class Mech implements MechInt {
@@ -17,8 +17,8 @@ class Mech implements MechInt {
   size: number;
   drawDistanceLevel: number;
   // weapon hit testing
-  ray: THREE.Ray;
-  mat4: THREE.Matrix4;
+  ray: THREE.Ray; // object3d contains a raycast method, use this instead
+  //mat4: THREE.Matrix4;
   hitBox: THREE.Box3 | null;
   hit: THREE.Vector3;
   shotsTesting: any[];
@@ -37,7 +37,7 @@ class Mech implements MechInt {
     this.drawDistanceLevel = 0;
     // weapon hit testing
     this.ray = new THREE.Ray(); // ray from ship for weaponFire hit detection
-    this.mat4 = new THREE.Matrix4();
+    //this.mat4 = new THREE.Matrix4();
     this.hitBox = new THREE.Box3();
     this.hit = new THREE.Vector3();
     this.shotsTesting = [];
@@ -46,12 +46,12 @@ class Mech implements MechInt {
   }
 
   // call this once the mech's mesh is loaded in component
-  setHitBoxFromGroup = (mechGroup: THREE.Group) => {
+  setHitBox = (mechGroup = this.object3d) => {
     this.hitBox?.setFromObject(mechGroup);
   };
   /*
-  updateHitBoxMatrix = (mechGroup: THREE.Group) => {
-    this.mat4.extractRotation(mechGroup.matrixWorld);
+  updateHitBoxMatrix = () => {
+    this.mat4.extractRotation(this.object3d.matrixWorld);
     this.hitBox?.applyMatrix4(this.mat4);
   };
   */

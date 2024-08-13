@@ -30,7 +30,7 @@ interface playerControlStoreState {
     switchScreen: (playerScreen: number) => void;
     setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
   };
-  updatePlayerFrame: (camera: THREE.Camera, main: any) => void;
+  updatePlayerMechAndCameraFrame: (camera: THREE.Camera, main: any) => void;
 }
 
 const cameraLerpToObj = new THREE.Object3D();
@@ -49,7 +49,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
-    playerScreen: PLAYER.screen.flight,
+    playerScreen: PLAYER.screen.testEnemies,
     isResetCamera: true,
     getPlayerState: () => {
       return {
@@ -60,7 +60,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         isResetCamera: get().isResetCamera,
       };
     },
-    playerSpeedSetting: 1, // used in throttle control, and updatePlayerFrame below
+    playerSpeedSetting: 1, // used in throttle control, and updatePlayerMechAndCameraFrame below
     getPlayerSpeedSetting: () => get().playerSpeedSetting,
     isPlayerPilotControl: () => {
       return (get().playerControlMode === PLAYER.controls.combat ||
@@ -103,7 +103,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       },
     },
 
-    updatePlayerFrame: (camera, main) => {
+    updatePlayerMechAndCameraFrame: (camera) => {
       const player = useStore.getState().player;
       const setSpeed = useStore.getState().actions.setSpeed;
       const mouse = useStore.getState().mutation.mouse;
@@ -138,6 +138,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
       let resetCameraLerpSpeed: number | null = null;
       if (get().isResetCamera) {
+        // if resetting camera, set lerp speed to 1 for immediate rotation
         resetCameraLerpSpeed = 1;
         set(() => ({ isResetCamera: false }));
       } else if (get().isPlayerPilotControl()) {
@@ -198,10 +199,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           .slerp(finalCameraQuat, resetCameraLerpSpeed || 0.2)
           .normalize()
       );
-
-      // update on screen ship position
-      main.current.position.copy(player.object3d.position);
-      main.current.rotation.copy(player.object3d.rotation);
 
       camera.updateProjectionMatrix();
     },

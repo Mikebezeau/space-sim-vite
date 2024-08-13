@@ -6,11 +6,16 @@ import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { SCALE } from "../../constants/constants";
+import { setCustomData } from "r3f-perf";
 
-const dummyObj = new THREE.Object3D();
+const dummyObj = new THREE.Object3D(),
+  targetDummyObj = new THREE.Object3D(),
+  arrowDummyObj = new THREE.Object3D();
 const targetQuat = new THREE.Quaternion(),
-  //toTargetQuat = new THREE.Quaternion(),
   curQuat = new THREE.Quaternion();
+
+const flipRotation = new THREE.Quaternion();
+flipRotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
 
 const yellow = new THREE.Color("yellow");
 const lightgreen = new THREE.Color("lightgreen");
@@ -23,13 +28,12 @@ const selectedRingGeometry = new THREE.RingGeometry(
 );
 const focusRingGeometry = new THREE.RingGeometry(0.28 * SCALE, 0.34 * SCALE, 4);
 const detectRingGeometry = new THREE.RingGeometry(0.2 * SCALE, 0.22 * SCALE, 4);
+
 const selectedMaterialRing = new THREE.MeshBasicMaterial({
   color: red,
   side: THREE.DoubleSide,
   transparent: 1,
   opacity: 1,
-  //emissive: red,
-  //emissiveIntensity: 1,
 });
 const materialRing = new THREE.MeshBasicMaterial({
   color: lightgreen,
@@ -43,10 +47,9 @@ const materialPlanetRing = new THREE.MeshBasicMaterial({
   transparent: 1,
   opacity: 0.2,
 });
-
 const selectedArrowIndicatorGeometry = new THREE.ConeGeometry(
-  0.15 * SCALE,
-  1.2 * SCALE,
+  0.06 * SCALE,
+  0.5 * SCALE,
   4
 );
 const arrowIndicatorGeometry = new THREE.ConeGeometry(
@@ -55,23 +58,22 @@ const arrowIndicatorGeometry = new THREE.ConeGeometry(
   4
 );
 const materialArrowIndicator = new THREE.MeshBasicMaterial({
-  color: red,
+  color: yellow,
   side: THREE.DoubleSide,
-  transparent: 1,
-  opacity: 0.3,
-  //emissive: red,
-  //emissiveIntensity: 1,
   wireframe: true,
 });
+const selectedMaterialArrowIndicator = new THREE.MeshBasicMaterial({
+  color: yellow,
+  side: THREE.DoubleSide,
+});
+/*
 const materialArrowHidden = new THREE.MeshBasicMaterial({
   visible: false,
 });
+*/
 
-// RERENDERING
 const ScannerReadout = () => {
   console.log("ScannerReadout rendered");
-  //export default function ScannerReadout() {
-  //const clock = useStore((state) => state.mutation.clock);
   const { camera } = useThree();
   const getPlayer = useStore((state) => state.getPlayer);
   const getTargets = useStore((state) => state.getTargets);
@@ -81,23 +83,24 @@ const ScannerReadout = () => {
 
   const { setFocusPlanetIndex, setFocusTargetIndex } = useStore(
     (state) => state.actions
-  ); // setTestVariable
+  );
 
-  const planetScanRef = useRef();
-  const scannerOutputRef = useRef();
+  const planetTargetGroupRef = useRef();
+  const enemyTargetGroupRef = useRef();
+  const enemyArrowGroupRef = useRef();
 
   useFrame(() => {
-    if (!planetScanRef.current) return null;
+    if (!planetTargetGroupRef.current) return null;
     const player = getPlayer();
     const enemies = getEnemies();
-    const { focusPlanetIndex, selectedTargetIndex, focusTargetIndex } =
+    const { focusPlanetIndex, focusTargetIndex, selectedTargetIndex } =
       getTargets();
     let tempFocusPlanetIndex = null;
     let tempFocusTargetIndex = null;
-    let smallestTargetAgle = 10;
-
+    let smallestTargetAngle = 10;
     //temp planet scanning
-    if (planets.length > 0)
+    if (planets?.length > 0) {
+      // selecting the targeted planet
       for (let i = 1; i < planets.length; i++) {
         //planets.forEach((planet, i) => {
         const planet = planets[i];
@@ -117,31 +120,26 @@ const ScannerReadout = () => {
           camera.rotation.z
         );
         dummyObj.getWorldQuaternion(targetQuat);
-        //only fire if within certain angle, missile will always fire straight and then follow target as it flies
-        //const shipRotation = new THREE.Quaternion();
-        //get().player.object3d.getWorldQuaternion(shipRotation);
+        // set a target on the planet if it's within 0.38 radians of the camera direction
         const angleDiff = targetQuat.angleTo(camera.quaternion);
-        if (angleDiff < 0.38 && angleDiff < smallestTargetAgle) {
-          smallestTargetAgle = angleDiff;
+        if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
+          smallestTargetAngle = angleDiff;
           tempFocusPlanetIndex = i;
         }
       }
-    for (let i = 1; i < planets.length; i++) {
-      //if angleDiff < 3 place an arrow pointing towards target on edge of max angle
-      const group = planetScanRef.current.children[i];
-      const mesh = group.children[0];
-      //if (angleDiff < 0.38) {
-      //if (tempFocusPlanetIndex !== i) {
-      dummyObj.position.copy(camera.position);
-      dummyObj.lookAt(planets[i].object3d.position);
-      const highlight = tempFocusPlanetIndex === i;
-      placeTarget(camera, mesh, highlight, 0, i, 1);
-      //}
+      // placing targets over planets
+      for (let i = 1; i < planets.length; i++) {
+        const mesh = planetTargetGroupRef.current.children[i];
+        dummyObj.position.copy(camera.position);
+        dummyObj.lookAt(planets[i].object3d.position);
+        const highlight = tempFocusPlanetIndex === i;
+        placeTarget(dummyObj, camera, mesh, highlight, 0, i, 1);
+      }
+      setFocusPlanetIndex(tempFocusPlanetIndex);
     }
-    setFocusPlanetIndex(tempFocusPlanetIndex);
-
     //save enemy nearest to direction player is facing
-    //placing targets on enemies, or arrows toward their location if not infront of ship
+    //placing targets on enemies, and arrows toward their location on scanner readout
+    smallestTargetAngle = 10;
     enemies.forEach((enemy, i) => {
       const distanceNormalized =
         1 -
@@ -153,15 +151,36 @@ const ScannerReadout = () => {
         ) /
           10;
       enemy.distanceNormalized = distanceNormalized;
-
+      // place target
       dummyObj.position.copy(camera.position);
       dummyObj.lookAt(enemy.object3d.position);
-      const flipRotation = new THREE.Quaternion();
       dummyObj.getWorldQuaternion(targetQuat);
-      //flip the opposite direction
-      flipRotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+      //flip the opposite direction to match camera direction
       targetQuat.multiplyQuaternions(targetQuat, flipRotation);
-      //
+
+      // find target enemy closest to direction player mech is pointing
+      const angleDiff = targetQuat.angleTo(camera.quaternion);
+      if (i === 0) setCustomData(angleDiff);
+      if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
+        smallestTargetAngle = angleDiff;
+        tempFocusTargetIndex = i;
+      }
+      enemy.angleDiff = angleDiff;
+      // need to clear target if not within angle
+      //if (angleDiff < 0.38) {
+      const targetMesh = enemyTargetGroupRef.current.children[i];
+      placeTarget(
+        dummyObj,
+        camera,
+        targetMesh,
+        false,
+        selectedTargetIndex,
+        i,
+        distanceNormalized
+      );
+      //}
+
+      //place arrow
       dummyObj.rotation.setFromQuaternion(targetQuat);
       //optional setting z angle to match roll of ship
       dummyObj.rotation.set(
@@ -169,56 +188,28 @@ const ScannerReadout = () => {
         dummyObj.rotation.y,
         camera.rotation.z
       );
-      dummyObj.getWorldQuaternion(targetQuat);
-      //only fire if within certain angle, missile will always fire straight and then follow target as it flies
-      //const shipRotation = new THREE.Quaternion();
-      //get().player.object3d.getWorldQuaternion(shipRotation);
-      const angleDiff = targetQuat.angleTo(camera.quaternion);
-      if (angleDiff < 0.38 && angleDiff < smallestTargetAgle) {
-        smallestTargetAgle = angleDiff;
-        tempFocusTargetIndex = i;
-      }
-      //if angleDiff < 3 place an arrow pointing towards target on edge of max angle
-      const group = scannerOutputRef.current.children[i];
-      const mesh = group.children[0];
-      enemy.angleDiff = angleDiff;
-      if (angleDiff < 0.38) {
-        dummyObj.position.copy(camera.position);
-        dummyObj.lookAt(enemies[i].object3d.position);
-        placeTarget(
-          camera,
-          mesh,
-          false,
-          selectedTargetIndex,
-          i,
-          distanceNormalized
-        );
-      } else {
-        placeArrow(camera, enemy, mesh, selectedTargetIndex, i);
-      }
+      const arrowMesh = enemyArrowGroupRef.current.children[i];
+      // place arrow pointing to enemy on scanner readout
+      placeArrow(dummyObj, camera, enemy, arrowMesh, selectedTargetIndex, i);
     });
-    //setTestVariable("scanner: " + );
     setFocusTargetIndex(tempFocusTargetIndex);
 
     //TEMP
     //set special rectical around the planet
-    //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
-    if (planetScanRef.current && focusPlanetIndex !== null) {
-      const group = planetScanRef.current.children[focusPlanetIndex];
-      const mesh = group.children[0];
+    if (planetTargetGroupRef.current && focusPlanetIndex !== null) {
+      const mesh = planetTargetGroupRef.current.children[focusPlanetIndex];
       dummyObj.position.copy(camera.position);
       dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
-      placeTarget(camera, mesh, true, -1, focusPlanetIndex, 1, true);
+      placeTarget(dummyObj, camera, mesh, true, -1, focusPlanetIndex, 1, true);
     }
 
-    //set special rectical around the target
-    //if (focusTargetIndex !== null && enemies[focusTargetIndex].angleDiff < 3) {
-    if (scannerOutputRef.current && focusTargetIndex !== null) {
-      const group = scannerOutputRef.current.children[focusTargetIndex];
-      const mesh = group.children[0];
+    //set special rectical around the target enemy
+    if (enemyTargetGroupRef.current && focusTargetIndex !== null) {
+      const mesh = enemyTargetGroupRef.current.children[focusTargetIndex];
       dummyObj.position.copy(camera.position);
       dummyObj.lookAt(enemies[focusTargetIndex].object3d.position);
       placeTarget(
+        dummyObj,
         camera,
         mesh,
         true,
@@ -228,22 +219,22 @@ const ScannerReadout = () => {
       );
     }
   });
-  //console.log(focusTargetIndex);
 
   return (
     <>
-      <group ref={planetScanRef}>
-        {planets?.map((planet, i) => (
-          <group key={"p" + i}>
-            <mesh index={i} />
-          </group>
+      <group ref={planetTargetGroupRef}>
+        {planets?.map((_, i) => (
+          <mesh key={"pt" + i} index={i} />
         ))}
       </group>
-      <group ref={scannerOutputRef}>
-        {[...Array(numEnemies)].map((e, i) => (
-          <group key={"e" + i}>
-            <mesh index={i} />
-          </group>
+      <group ref={enemyTargetGroupRef}>
+        {[...Array(numEnemies)].map((_, i) => (
+          <mesh key={"et" + i} />
+        ))}
+      </group>
+      <group ref={enemyArrowGroupRef}>
+        {[...Array(numEnemies)].map((_, i) => (
+          <mesh key={"ea" + i} />
         ))}
       </group>
     </>
@@ -253,6 +244,7 @@ const ScannerReadout = () => {
 export default ScannerReadout;
 
 function placeTarget(
+  dummyObj,
   camera,
   mesh,
   highlight,
@@ -261,8 +253,9 @@ function placeTarget(
   distanceNormalized,
   isPlanet
 ) {
-  dummyObj.translateZ(6 * (1 / distanceNormalized) * SCALE);
-  mesh.position.copy(dummyObj.position);
+  targetDummyObj.copy(dummyObj);
+  targetDummyObj.translateZ(6 * (1 / distanceNormalized) * SCALE);
+  mesh.position.copy(targetDummyObj.position);
   mesh.rotation.copy(camera.rotation);
   if (selectedTargetIndex !== null && selectedTargetIndex === enemyIndex) {
     mesh.geometry = selectedRingGeometry;
@@ -273,26 +266,39 @@ function placeTarget(
   }
 }
 
-function placeArrow(camera, enemy, mesh, selectedTargetIndex, enemyIndex) {
-  if (enemy.distanceNormalized >= 0.95 || selectedTargetIndex === enemyIndex) {
-    //if (1) {
-    dummyObj.rotation.copy(camera.rotation);
-    dummyObj.translateY(3.5 * SCALE);
-    dummyObj.translateZ(-10 * SCALE);
-    dummyObj.lookAt(enemy.object3d.position);
-    dummyObj.translateZ(1 * (1 / enemy.distanceNormalized) * SCALE);
-    //flip arrow so it's pointing right way
-    dummyObj.getWorldQuaternion(curQuat);
-    targetQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-    curQuat.multiplyQuaternions(curQuat, targetQuat);
-    dummyObj.rotation.setFromQuaternion(curQuat);
-    //dummyObj.rotation;
+function placeArrow(
+  dummyObj,
+  camera,
+  enemy,
+  mesh,
+  selectedTargetIndex,
+  enemyIndex
+) {
+  // not hiding arrows for far away enemies atm
+  //if (enemy.distanceNormalized >= 0.95 || selectedTargetIndex === enemyIndex) {
+  // position base arrow pointer location on screen
+  arrowDummyObj.copy(dummyObj);
+  arrowDummyObj.rotation.copy(camera.rotation);
+  arrowDummyObj.translateY(2 * SCALE);
+  arrowDummyObj.translateZ(-10 * SCALE);
+  // position arrow to point to emeny and show relative distance
+  arrowDummyObj.lookAt(enemy.object3d.position);
+  arrowDummyObj.translateZ(1 * (1 / enemy.distanceNormalized) * SCALE);
+  //flip arrow so it's pointing right way
+  arrowDummyObj.getWorldQuaternion(curQuat);
+  targetQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+  curQuat.multiplyQuaternions(curQuat, targetQuat);
+  arrowDummyObj.rotation.setFromQuaternion(curQuat);
 
-    mesh.position.copy(dummyObj.position);
-    mesh.rotation.copy(dummyObj.rotation);
-    if (selectedTargetIndex !== null && selectedTargetIndex === enemyIndex)
-      mesh.geometry = selectedArrowIndicatorGeometry;
-    else mesh.geometry = arrowIndicatorGeometry;
+  mesh.position.copy(arrowDummyObj.position);
+  mesh.rotation.copy(arrowDummyObj.rotation);
+  if (selectedTargetIndex !== null && selectedTargetIndex === enemyIndex) {
+    mesh.geometry = selectedArrowIndicatorGeometry;
+    mesh.material = selectedMaterialArrowIndicator;
+  } else {
+    mesh.geometry = arrowIndicatorGeometry;
     mesh.material = materialArrowIndicator;
-  } else mesh.material = materialArrowHidden;
+  }
+  // to hide arrow if enemy far away
+  // } else mesh.material = materialArrowHidden;
 }

@@ -102,6 +102,7 @@ const useStore = create<storeState>()((set, get) => ({
     };
   },
   planets: null, // set in call to setPlayerCurrentStarIndex
+  asteroidBands: null, // set in call to setPlayerCurrentStarIndex
   stations: null, // set in call to setPlayerCurrentStarIndex
   planetTerrain: cityTerrianGen(PLAYER_START.system, {
     numCity: 4,
@@ -230,13 +231,19 @@ const useStore = create<storeState>()((set, get) => ({
         )
           return;
 
-        const { player, mutation, actions } = get();
+        const { player, mutation } = get();
         const { enemies, enemyBoids } = useEnemyStore.getState();
 
         //run enemy AI routine
         //TODO: find enemies in area of player
         const localEnemies = enemies;
-        loopAI(player, localEnemies, enemyBoids, mutation.clock, actions.shoot);
+        loopAI(
+          player,
+          localEnemies,
+          enemyBoids,
+          mutation.clock,
+          useWeaponFireStore.getState().actions.shoot
+        );
         useWeaponFireStore.getState().weaponFireUpdateFrame();
       });
     },
@@ -300,6 +307,7 @@ const useStore = create<storeState>()((set, get) => ({
       set(() => ({
         planets: systemGen(playerCurrentStarIndex),
       }));
+      //console.log(get().planets);
       const player = get().player;
       player.object3d.position.setX(0);
       player.object3d.position.setY(0);

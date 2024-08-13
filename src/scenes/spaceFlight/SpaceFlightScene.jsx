@@ -46,7 +46,7 @@ export default function SpaceFlightScene() {
   return createPortal(
     <>
       {/* sun light */}
-      <pointLight castShadow intensity={5} decay={0} />
+      <pointLight castShadow intensity={10} decay={0} />
       <ambientLight intensity={0.6} />
       {/*<Explosions />*/}
       {/*<Particles />*/}

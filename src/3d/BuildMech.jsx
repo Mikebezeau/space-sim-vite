@@ -5,20 +5,14 @@ import { equipList } from "../equipment/data/equipData";
 
 const blueMaterial = new MeshBasicMaterial({
   color: new Color("lightblue"),
-  //emissive: new Color("lightblue"),
-  //emissiveIntensity: 0.5,
 });
 
 const directionPointerLeaderMaterial = new MeshBasicMaterial({
   color: new Color("green"),
-  //emissive: new Color("green"),
-  //emissiveIntensity: 0.5,
 });
 
 const directionPointerFollowerMaterial = new MeshBasicMaterial({
   color: new Color("red"),
-  //emissive: new Color("red"),
-  //emissiveIntensity: 0.5,
 });
 
 const BuildMech = forwardRef(function BuildMech(
@@ -33,6 +27,7 @@ const BuildMech = forwardRef(function BuildMech(
     showAxisLines = false,
     isWireFrame = false,
     isLeader = false,
+    handleClick = () => {},
   },
   buildMechForwardRef
 ) {
@@ -52,6 +47,7 @@ const BuildMech = forwardRef(function BuildMech(
   return (
     <group
       ref={buildMechForwardRef}
+      onClick={handleClick}
       scale={editMode ? 2 / equipList.scale.weightMult[mechBP.scale] : 1}
     >
       {mechBP.servoList.map((servo, index) => (

@@ -1,9 +1,10 @@
 import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-//import { setCustomData /*, getCustomData*/ } from "r3f-perf";
 import useWeaponFireStore from "../stores/weaponFireStore";
 import PropTypes from "prop-types";
+
+// import { setCustomData, getCustomData } from "r3f-perf";
 
 const red = new THREE.Color("red");
 const purple = new THREE.Color("purple");
@@ -19,14 +20,15 @@ const weaponFireGeometry = {
 const weaponFireMaterial = {
   beam: new THREE.MeshBasicMaterial({
     color: purple,
-    //emissive: purple,
-    //emissiveIntensity: 100,
+    side: THREE.DoubleSide,
   }),
   proj: new THREE.MeshBasicMaterial({
     color: red,
+    side: THREE.DoubleSide,
   }),
   missile: new THREE.MeshBasicMaterial({
     color: lightgrey,
+    side: THREE.DoubleSide,
   }),
 };
 
@@ -34,21 +36,14 @@ const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
 const WeaponFire = ({ scale }) => {
-  //export default function WeaponFire() {
   const weaponFireList = useWeaponFireStore((state) => state.weaponFireList);
-  //const removeWeaponFire = useStore((state) => state.actions.removeWeaponFire);
-  const weaponFireGroup = useRef();
-
-  //const { clock } = useStore((state) => state.mutation);
+  const weaponFireGroupRef = useRef();
 
   useFrame(() => {
-    //setCustomData(weaponFireList.length); // will update the panel with the current information
-
-    if (!weaponFireGroup.current) return null;
+    if (!weaponFireGroupRef.current) return null;
     //weaponFire movement update
-
     weaponFireList.forEach((weaponFire, i) => {
-      const bullet = weaponFireGroup.current.children[i];
+      const bullet = weaponFireGroupRef.current.children[i];
       if (weaponFire.firstFrameSpeed !== false) {
         //show the weapons firing out of the guns before moving the bullets the first time
         //move them up to where the ship is now
@@ -68,12 +63,14 @@ const WeaponFire = ({ scale }) => {
 
       weaponFire.hitBox.min.copy(position);
       weaponFire.hitBox.max.copy(position);
-      weaponFire.hitBox.expandByScalar(scale); // * sceneScale);
+      weaponFire.hitBox.expandByScalar(scale);
     });
+    // perf data
+    //setCustomData(weaponFireList.length);
   });
   return (
     <>
-      <group ref={weaponFireGroup}>
+      <group ref={weaponFireGroupRef}>
         {weaponFireList.map((weaponFire) => (
           <mesh
             key={weaponFire.id}

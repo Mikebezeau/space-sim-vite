@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import * as THREE from "three";
+import { v4 as uuidv4 } from "uuid";
 import useStore from "./store";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
@@ -13,7 +14,6 @@ import {
   WEAPON_FIRE_SPEED,
 } from "../constants/constants";
 
-let explosionGuidCounter = 1; //global unique ID
 const box = new THREE.Box3();
 
 interface weaponFireStoreState {
@@ -40,6 +40,7 @@ interface weaponFireStoreState {
     friendlyFireTest: (shooter: any) => boolean;
     testBox: (target: any, shot: any) => boolean;
   };
+  weaponFireUpdateFrame: () => void;
 }
 
 const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
@@ -63,13 +64,13 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       isPlayer = false
     ) {
       if (
-        !isPlayer ||
-        (get().selectedTargetIndex === null && autoFire && autoAim)
+        isPlayer &&
+        useStore.getState().selectedTargetIndex === null &&
+        autoFire
       ) {
         return null;
       }
 
-      console.log("shooting");
       //for each weapon on the ship, find location and create a weaponFire to be shot from there
       Object.values(mechBP.weaponList).forEach((weapons) => {
         weapons.forEach((weapon) => {
@@ -105,12 +106,11 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       target,
       autoFire,
       weapon,
-      //,
+      team,
       autoAim,
       isPlayer,
     }) {
       //PREPARE FOR FIRING
-      return null;
       //weapon loaded
       weapon.ready = 1;
 
@@ -144,7 +144,8 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
 
       //FIRE WEAPON IF APPROPRIATE
       //test for friendly fire of team mates
-      if (get().actions.friendlyFireTest(shooter)) return null;
+      // *********************
+      //if (get().actions.friendlyFireTest(shooter)) return null;
 
       //autofire angle of tolerance for shots to be fired
       let angleDiff = 0; //angleDiff set to 0 if not using
@@ -162,8 +163,8 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       ).offset;
       const currentScale =
         usePlayerControlsStore.getState().playerScreen === PLAYER.screen.flight
-          ? SCALE_PLANET_WALK
-          : SCALE;
+          ? SCALE
+          : SCALE_PLANET_WALK;
       weaponFireObj.translateX(
         (weapon.offset.x + weapon.servoOffset.x) * currentScale
       );
@@ -178,7 +179,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       if (weapon.data.weaponType === "missile" || autoAim === false) {
         weaponFireObj.rotation.copy(shooter.object3d.rotation);
       }
-      //by default other weapon type fire out of front of ship toward enemies
+      //by default other weapon type fire out of front of ship
       else {
         weaponFireObj.lookAt(target.object3d.position);
       }
@@ -186,7 +187,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       weaponFireObj.translateZ(weaponFireOffsetZ * currentScale);
 
       //autofire target provided, if not a missile, only fire if within certain angle in front of ship
-      //if (autoFire && weapon.data.weaponType !== "missile") {
       if (weapon.data.weaponType !== "missile" || autoAim === true) {
         const weaponRotation = new THREE.Quaternion();
         weaponFireObj.getWorldQuaternion(weaponRotation);
@@ -194,7 +194,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         weaponFireObj.rotation.set(
           weaponFireObj.rotation.x,
           weaponFireObj.rotation.y,
-          get().player.object3d.rotation.z
+          useStore.getState().player.object3d.rotation.z
         );
         weaponFireObj.getWorldQuaternion(weaponRotation);
         angleDiff = weaponRotation.angleTo(shooter.object3d.quaternion);
@@ -221,8 +221,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
 
       //ADD BULLET TO BULLET LIST
       let weaponFire = {
-        //id: guid(weaponFireUpdate),
-        id: guid(get().weaponFireList),
+        id: uuidv4(),
         shooterId: shooter.id,
         weapon: weapon,
         object3d: weaponFireObj,
@@ -230,8 +229,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         //targetIndex: get().selectedTargetIndex,
         time: Date.now(),
         firstFrameSpeed: isPlayer
-          ? //? JSON.parse(JSON.stringify(get().player.speed))
-            get().player.speed
+          ? useStore.getState().player.speed
           : JSON.parse(JSON.stringify(shooter.speed)),
         //offset: { x: 0, y: 0, z: 0 },
         fireSpeed: fireSpeed,
@@ -244,12 +242,12 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         0.1 * currentScale,
         200 * currentScale
       );
+
       const mesh = new THREE.MeshBasicMaterial({
         color: new THREE.Color("yellow"),
-        //emissive: new THREE.Color("yellow"),
-        //emissiveIntensity: 1,
         wireframe: true,
       });
+
       const boxHelper = new THREE.Mesh(box, mesh); //visible bounding box, geometry of which is used to calculate hit detection box
       boxHelper.geometry.computeBoundingBox();
       weaponFire.hitBox.copy(boxHelper.geometry.boundingBox);
@@ -259,14 +257,15 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         weaponFireLightTimer: Date.now(),
       }));
     },
+
     cancelWeaponFire(mechBP) {
-      Object.values(mechBP.weaponList).forEach((weapons) => {
-        weapons.forEach((weapon) => {
+      Object.values(mechBP.weaponList).forEach((weaponType) => {
+        weaponType.forEach((weapon) => {
           weapon.active = false;
         });
       });
     },
-    //
+
     removeWeaponFire() {
       //this was not working in a normal way
       //would remove most elements and I don't know why
@@ -288,7 +287,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       box.expandByScalar(data.size * 3);
       //data.hit.set(1000, 1000, 10000);
       const result = useStore.getState().player.ray.intersectBox(box, data.hit);
-      //data.distance = get().player.ray.origin.distanceTo(data.hit);
+      //data.distance = useStore.getState().player.ray.origin.distanceTo(data.hit);
       return result;
     },
 
@@ -331,7 +330,8 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       return;
 
     const { weaponFireList, mutation, actions } = get();
-    const { player, playerMechBP, selectedTargetIndex } = useStore.getState();
+    const { player, selectedTargetIndex } = useStore.getState();
+    const playerMechBP = player.mechBP;
     const { enemies } = useEnemyStore.getState();
     const timeNow = Date.now();
 
@@ -365,7 +365,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
           enemy.shotsHit.map((data) => ({
             ...data,
             time: timeNow,
-            id: explosionGuidCounter++,
+            id: uuidv4(),
           }))
         );
         //remove shots that hit target
@@ -386,7 +386,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         player.shotsHit.map((data) => ({
           ...data,
           time: timeNow,
-          id: explosionGuidCounter++,
+          id: uuidv4(),
         }))
       );
       //remove shots that hit target
@@ -407,7 +407,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         //const hitLocation = shotHit.servoHitName.split("_");
         //const hitServoOrWeapon = hitLocation[1];
         //if(hitServoOrWeapon==='servo')
-        const servoHit = playerMechBP[player.currentMechBPindex].getServoById(
+        const servoHit = playerMechBP.getServoById(
           parseInt(shotHit.servoHitName)
         );
         if (!servoHit) {
@@ -447,11 +447,10 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     set(() => ({
       explosions: explosionUpdate,
     }));
-    if (explosionUpdate.length === 0) explosionGuidCounter = 0;
     //remove old timed out weaponfire
     actions.removeWeaponFire();
     // test if player is pointing at targets (used for changing the crosshairs)
-    mutation.playerHits = enemies.filter(actions.test).length;
+    mutation.playerHits = enemies.filter(actions.test).length ? true : false;
   },
 }));
 

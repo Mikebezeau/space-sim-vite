@@ -14,9 +14,7 @@ const SpaceFlightHud = () => {
       <ScannerReadout />
       {playerControlMode === PLAYER.controls.scan ? (
         <SystemMap showPlayer={true} />
-      ) : (
-        <></>
-      )}
+      ) : null}
     </>
   );
 };

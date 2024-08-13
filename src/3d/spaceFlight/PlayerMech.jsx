@@ -1,11 +1,10 @@
-import { useEffect, useLayoutEffect } from "react";
-import { useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import PlayerCrosshair from "./PlayerCrosshair";
 import BuildMech from "../BuildMech";
-//import MeshLineTrail from "./MeshLineTrail";
+import { MeshLineTrail } from "../Trail";
 import { setVisible } from "../../util/gameUtil";
 import { SCALE, PLAYER } from "../../constants/constants";
 
@@ -15,21 +14,19 @@ const PlayerMech = () => {
   const getPlayer = useStore((state) => state.getPlayer);
   const playerMechBP = getPlayer().mechBP;
   const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
-  const mutation = useStore((state) => state.mutation);
-  const { clock } = mutation;
+  //const clock = useStore((state) => state.mutation.clock);
 
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
-  const updatePlayerFrame = usePlayerControlsStore(
-    (state) => state.updatePlayerFrame
+  const updatePlayerMechAndCameraFrame = usePlayerControlsStore(
+    (state) => state.updatePlayerMechAndCameraFrame
   );
 
-  const mainGroupRef = useRef();
-  const playerMechGroupRef = useRef();
-  const weaponFireLight = useRef();
-  const exhaust = useRef();
-  const engineLight = useRef();
+  const playerMechGroupRef = useRef(null);
+  const secondaryGroupRef = useRef(null);
+  const weaponFireLight = useRef(null);
+  const trailPositionRef = useRef(null);
   const hitBoxRef = useRef(null);
 
   const servoHitNames = [];
@@ -37,21 +34,26 @@ const PlayerMech = () => {
   // starting position
   useLayoutEffect(() => {
     const player = getPlayer();
-    mainGroupRef.current.position.copy(player.object3d.position);
-    mainGroupRef.current.rotation.copy(player.object3d.rotation);
+    playerMechGroupRef.current.position.copy(player.object3d.position);
+    playerMechGroupRef.current.rotation.copy(player.object3d.rotation);
   }, [getPlayer]);
 
   // set bounding box for player mech once created
   useEffect(() => {
+    const player = getPlayer();
     if (playerMechGroupRef.current !== null) {
-      const player = getPlayer();
-      player.setHitBoxFromGroup(playerMechGroupRef.current);
+      // set player.object3d to playerMechGroupRef.current to store full mech group object data
+      // updating player.object3d position and rotation will update the player mech group position and rotation
+      player.object3d = playerMechGroupRef.current;
+      // set hitbox for player mech
+      player.setHitBox();
+      // set hitBoxRef to show hitbox on screen
       hitBoxRef.current = player.hitBox;
-      console.log(player.hitBox);
+      console.log("hitBoxRef player", hitBoxRef.current);
     }
   }, [getPlayer, playerMechGroupRef]);
 
-  // mech is invisible in cockpit view
+  // set mech to invisible in cockpit view
   useEffect(() => {
     if (playerViewMode === PLAYER.view.firstPerson) {
       setVisible(playerMechGroupRef.current, false);
@@ -60,27 +62,19 @@ const PlayerMech = () => {
     }
   }, [playerViewMode]);
 
-  //moving camera, ship, altering crosshairs, engine and weapon lights (activates only while flying)
+  //moving camera, ship, altering crosshairs, weapon lights (activates only while flying)
   useFrame(() => {
-    if (!mainGroupRef.current) return null;
-    updatePlayerFrame(camera, mainGroupRef);
+    if (!playerMechGroupRef.current) return null;
+    updatePlayerMechAndCameraFrame(camera);
     const player = getPlayer();
-    // setHitBoxFromGroup needs to use the same ref as updatePlayerFrame to work
-    // otherwise using the child component ref will be updating 1 frame behind
-    // change structure so that the crosshair and engine lights etc. are in a seperate ref
-    player.setHitBoxFromGroup(mainGroupRef.current);
-    hitBoxRef.current = player.hitBox;
-    //engine flicker
-    let flickerVal = Math.sin(clock.getElapsedTime() * 500);
-    let speedRoof = player.speed > 25 ? 25 : player.speed;
-    exhaust.current.position.z = speedRoof / -8;
-    exhaust.current.scale.x = speedRoof / 10 + flickerVal * 5;
-    exhaust.current.scale.y = speedRoof / 10 + flickerVal * 5;
-    exhaust.current.scale.z = speedRoof + 1.5 + flickerVal * 5;
-    player.speed > 2
-      ? (exhaust.current.material.visible = 1)
-      : (exhaust.current.material.visible = 0);
-    engineLight.current.intensity = player.speed > 0 ? player.speed * 0.05 : 0;
+    // update trail position (trail is relative to player mech)
+    trailPositionRef.current.position.copy(player.object3d.position);
+    // update secondary group (crosshair, weapon light)
+    secondaryGroupRef.current.position.copy(player.object3d.position);
+    secondaryGroupRef.current.rotation.copy(player.object3d.rotation);
+    // looking for way to update the hitbox without recreating it every frame
+    // OBB hit detection and raycasting check: https://threejs.org/examples/#webgl_math_obb
+    player.setHitBox();
 
     //weapon firing light blast
     weaponFireLight.current.intensity +=
@@ -96,19 +90,19 @@ const PlayerMech = () => {
       {hitBoxRef.current !== null ? (
         <box3Helper box={hitBoxRef.current} color={0xffff00} />
       ) : null}
-      <group ref={mainGroupRef} scale={SCALE}>
+      <group ref={playerMechGroupRef} scale={SCALE}>
         <BuildMech
-          ref={playerMechGroupRef}
           mechBP={playerMechBP}
           servoHitNames={servoHitNames}
           showAxisLines={false}
         />
-        {/*player.boxHelper && (
-          <mesh
-            geometry={player.boxHelper.geometry}
-            material={player.boxHelper.material}
-          ></mesh>
-        )*/}
+      </group>
+
+      <group ref={trailPositionRef} scale={SCALE}>
+        <MeshLineTrail followRef={playerMechGroupRef} />
+      </group>
+
+      <group ref={secondaryGroupRef} scale={SCALE}>
         <PlayerCrosshair />
         <pointLight
           ref={weaponFireLight}
@@ -117,26 +111,7 @@ const PlayerMech = () => {
           intensity={0}
           color="lightgreen"
         />
-        <mesh ref={exhaust} position={[0, 0.2, 0]}>
-          <dodecahedronGeometry attach="geometry" args={[0.05, 0]} />
-          <meshLambertMaterial
-            attach="material"
-            color="lightblue"
-            transparent
-            opacity={0.3}
-            emissive="lightblue"
-            emissiveIntensity="0.3"
-          />
-        </mesh>
-        <pointLight
-          ref={engineLight}
-          position={[0, 0.2, -0.75]}
-          distance={3 * SCALE}
-          intensity={0}
-          color="lightblue"
-        />
       </group>
-      {/*<MeshLineTrail followRef={mainGroupRef} />*/}
     </>
   );
 };

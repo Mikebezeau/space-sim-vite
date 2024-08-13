@@ -26,10 +26,7 @@ function MyCanvas(props) {
 
 function AppUICanvas() {
   console.log("AppUICanvas rendered");
-  const currentMechBPindex = useStore(
-    (state) => state.player.currentMechBPindex
-  );
-  const playerMechBP = useStore((state) => state.playerMechBP);
+  const playerMechBP = useStore((state) => state.player.mechBP);
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
   /*const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
@@ -74,16 +71,11 @@ function AppUICanvas() {
                   position={[0, 0, -20]}
                   rotation={[-Math.PI / 2, 0, 0]}
                 >
-                  <BuildMech
-                    mechBP={playerMechBP[currentMechBPindex]}
-                    damageReadoutMode={true}
-                  />
+                  <BuildMech mechBP={playerMechBP} damageReadoutMode={true} />
                 </group>
               )}
             </>
-          ) : (
-            <></>
-          )
+          ) : null
         }
       </MyCanvas>
     </div>

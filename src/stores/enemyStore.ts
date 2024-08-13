@@ -4,7 +4,7 @@ import { setupFlock } from "../util/boidController";
 import { SCALE, PLAYER_START } from "../constants/constants";
 import useStore from "./store";
 
-const numEnemies = 9;
+const numEnemies = 300;
 
 interface enemyStoreState {
   showLeaders: boolean;
@@ -40,25 +40,18 @@ const useEnemyStore = create<enemyStoreState>()((set, get) => ({
   enemies: genEnemies(numEnemies),
   getEnemies: () => get().enemies,
   enemyBoids: setupFlock(numEnemies),
-  /*
-  setEnemyBP(index, mechBP) {
-    let enemies = get().enemies;
-    enemies[index].mechBP = mechBP;
-    set(() => ({
-      enemies: enemies,
-    }));
-  },
-  */
   testing: {
     summonEnemy() {
       const playerPosition = useStore.getState().player.object3d.position;
       const updateEnemies = get().enemies;
       updateEnemies.map((enemy) => {
         enemy.object3d.position.copy(playerPosition);
-        enemy.object3d.translateZ(-500 * SCALE);
+        enemy.object3d.translateX((Math.random() * 500 - 250) * SCALE);
+        enemy.object3d.translateY((Math.random() * 500 - 250) * SCALE);
+        enemy.object3d.translateZ(-1000 * SCALE);
       });
       set(() => ({ enemies: updateEnemies }));
-      console.log("summonEnemy", PLAYER_START, updateEnemies);
+      console.log("summonEnemy"); //, PLAYER_START, updateEnemies);
     },
     toggleShowLeaders() {
       set((state) => ({

@@ -1,83 +1,99 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../stores/enemyStore";
 import BuildMech from "./BuildMech";
+import { MeshLineTrail } from "./Trail";
 import { SCALE } from "../constants/constants";
 
 export default function EnemyMechs() {
+  console.log("EnemyMechs rendered");
   const showLeaders = useEnemyStore((state) => state.showLeaders);
   const enemies = useEnemyStore((state) => state.enemies);
-  console.log("EnemyMechs rendered", enemies);
-  return enemies.map((enemy) => (
-    <Enemy key={enemy.id} enemy={enemy} showLeaders={showLeaders} />
+  return enemies.map((enemyMech, index) => (
+    <Enemy
+      key={enemyMech.id}
+      enemyMechIndex={index}
+      showLeaders={showLeaders}
+    />
   ));
 }
 
 const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
-const Enemy = ({ enemy, showLeaders }) => {
-  const ref = useRef();
+const Enemy = ({ enemyMechIndex, showLeaders }) => {
+  const enemyMechGroupRef = useRef(null);
+  const trailPositionRef = useRef(null);
+  const hitBoxRef = useRef(null);
+
+  const enemyMech = useEnemyStore.getState().enemies[enemyMechIndex];
+
+  useEffect(() => {
+    if (enemyMechGroupRef.current !== null) {
+      // set enemyMech.object3d to enemyMechGroupRef.current to store full mech group object data
+      // updating enemyMech.object3d position and rotation will update the enemy mech group position and rotation
+      enemyMech.object3d = enemyMechGroupRef.current;
+      // set hitbox for player mech
+      enemyMech.setHitBox();
+      // set hitBoxRef to show hitbox on screen
+      hitBoxRef.current = enemyMech.hitBox;
+      //console.log("hitBoxRef enemy", hitBoxRef.current);
+    }
+  }, [enemyMechGroupRef.current]);
 
   useFrame(() => {
-    if (ref.current) {
-      //place enemy in correct position
-      ref.current.position.copy(enemy.object3d.position);
-      ref.current.rotation.copy(enemy.object3d.rotation);
+    if (enemyMechGroupRef.current !== null) {
+      //place enemyMech in correct position
+      enemyMechGroupRef.current.position.copy(enemyMech.object3d.position);
+      enemyMechGroupRef.current.rotation.copy(enemyMech.object3d.rotation);
 
-      ref.current.getWorldPosition(position);
-      ref.current.getWorldDirection(direction);
-      enemy.ray.origin.copy(position);
-      enemy.ray.direction.copy(direction);
-      /*
-      enemy.hitBox
-        .copy(enemy.boxHelper.geometry.boundingBox)
-        .applyMatrix4(enemy.boxHelper.matrixWorld);
-        */
-      enemy.hitBox.min.copy(position);
-      enemy.hitBox.max.copy(position);
-      enemy.hitBox.expandByScalar(enemy.size * 3);
+      trailPositionRef.current.position.copy(enemyMech.object3d.position);
+      enemyMech.setHitBox(enemyMechGroupRef.current);
+      hitBoxRef.current = enemyMech.hitBox;
 
-      enemy.servoHitNames = [];
-      enemy.shotsTesting.forEach((shot) => {
-        //detect if shot is hitting any servo peices (or weapons on weapon mounts)
+      enemyMech.object3d.getWorldPosition(position);
+      enemyMech.object3d.getWorldDirection(direction);
+      enemyMech.ray.origin.copy(position);
+      enemyMech.ray.direction.copy(direction);
+
+      enemyMech.servoHitNames = [];
+      enemyMech.shotsTesting.forEach((shot) => {
+        //detect if shot would hit any servo peices on the enemy mech (or weapons on weapon mounts)
         const raycast = new THREE.Raycaster(
           shot.ray.origin,
           shot.ray.direction
         );
 
-        const mesh = ref.current.children[0];
+        const mesh = enemyMechGroupRef.current.children[0];
         const intersection = raycast.intersectObject(mesh, true);
         if (intersection.length > 0) {
-          //console.log(intersection[0]);
           shot.object3d.position.copy(intersection[0].point);
-          enemy.servoHitNames.push(intersection[0].object.name);
-          enemy.shotsHit.push(shot);
+          enemyMech.servoHitNames.push(intersection[0].object.name);
+          enemyMech.shotsHit.push(shot);
         }
       });
     }
   });
 
   return (
-    <group ref={ref} scale={SCALE}>
-      <BuildMech
-        mechBP={enemy.mechBP}
-        servoHitNames={enemy.servoHitNames}
-        drawDistanceLevel={enemy.drawDistanceLevel}
-        showAxisLines={0}
-        isLeader={enemy.id === enemy.groupLeaderGuid}
-      />
-      {showLeaders && enemy.id === enemy.groupLeaderGuid && (
-        <mesh
-          geometry={enemy.boxHelper.geometry}
-          material={
-            enemy.id === enemy.groupLeaderGuid
-              ? enemy.greenMat
-              : enemy.boxHelper.material
-          }
-        ></mesh>
-      )}
-    </group>
+    <>
+      {hitBoxRef.current !== null ? (
+        <box3Helper box={hitBoxRef.current} color={0xffff00} />
+      ) : null}
+      <group ref={enemyMechGroupRef} scale={SCALE}>
+        <BuildMech
+          mechBP={enemyMech.mechBP}
+          servoHitNames={enemyMech.servoHitNames}
+          drawDistanceLevel={enemyMech.drawDistanceLevel}
+          showAxisLines={0}
+          isLeader={enemyMech.id === enemyMech.groupLeaderGuid}
+        />
+      </group>
+
+      <group ref={trailPositionRef} scale={SCALE}>
+        <MeshLineTrail followRef={enemyMechGroupRef} />
+      </group>
+    </>
   );
 };

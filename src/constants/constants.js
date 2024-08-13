@@ -1,4 +1,4 @@
-export const SCALE = 0.001; //=0.001
+export const SCALE = 1; //=0.001
 // SCALE todo: stationDockScene buildMech is not scaled
 export const SCALE_PLANET_WALK = 2;
 export const SYSTEM_SCALE = 1000;
@@ -24,6 +24,7 @@ export const PLAYER = {
     galaxyMap: 3,
     dockedStation: 4,
     equipmentBuild: 5,
+    testEnemies: 6,
   },
   action: { inspect: 1, manualControl: 2, autoControl: 3 },
   view: {
@@ -37,7 +38,7 @@ export const PLAYER = {
   },
 };
 
-export const SPEED_VALUES = [-10, 0, 10, 100, 500, 1000];
+export const SPEED_VALUES = [-50, 0, 5, 50, 100, 500];
 
 export const WEAPON_FIRE_SPEED = {
   beam: 100,

@@ -7,8 +7,9 @@ import StarPointsScene from "./scenes/spaceFlight/StarPointsScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
 import StationDockScene from "./scenes/StationDockScene";
 import EquipmentBlueprint from "./equipment/equipmentDesign/EquipmentBlueprint";
+import EnemyTestScene from "./scenes/EnemyTestScene";
 import GalaxyMap from "./galaxy/GalaxyMap";
-import { PLAYER, PLAYER_START } from "./constants/constants";
+import { PLAYER, PLAYER_START, SCALE } from "./constants/constants";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
@@ -26,7 +27,7 @@ const AppCanvas = () => {
         // giving rotation to camera to match player ship
         rotation: [0, -Math.PI, 0],
         near: 0.001,
-        far: 120000000,
+        far: 1200000000 * SCALE,
         fov: 40,
       }}
       gl={{ logarithmicDepthBuffer: true }}
@@ -43,6 +44,7 @@ const AppCanvas = () => {
       }
     >
       <Perf
+        logsPerSecond={5}
         customData={{
           value: 0, // initial value,
           name: "Custom", // name to show
@@ -56,25 +58,18 @@ const AppCanvas = () => {
           <StarPointsScene />
           <SpaceFlightScene />
         </>
-      ) : (
-        <></>
-      )}
+      ) : null}
       {playerScreen === PLAYER.screen.landedPlanet ? (
         <PlanetExploreScene />
-      ) : (
-        <></>
-      )}
+      ) : null}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMap />}
-      {playerScreen === PLAYER.screen.equipmentBuild ? (
-        <EquipmentBlueprint />
-      ) : (
-        <></>
-      )}
       {playerScreen === PLAYER.screen.dockedStation ? (
         <StationDockScene />
-      ) : (
-        <></>
-      )}
+      ) : null}
+      {playerScreen === PLAYER.screen.equipmentBuild ? (
+        <EquipmentBlueprint />
+      ) : null}
+      {playerScreen === PLAYER.screen.testEnemies ? <EnemyTestScene /> : null}
       {/*<Effects />*/}
     </Canvas>
   );
