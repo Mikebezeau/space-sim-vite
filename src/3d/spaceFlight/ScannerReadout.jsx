@@ -160,7 +160,7 @@ const ScannerReadout = () => {
 
       // find target enemy closest to direction player mech is pointing
       const angleDiff = targetQuat.angleTo(camera.quaternion);
-      if (i === 0) setCustomData(angleDiff);
+      //if (i === 0) setCustomData(angleDiff);
       if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
         smallestTargetAngle = angleDiff;
         tempFocusTargetIndex = i;

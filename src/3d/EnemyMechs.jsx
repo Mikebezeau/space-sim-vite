@@ -87,13 +87,14 @@ const Enemy = ({ enemyMechIndex, showLeaders }) => {
           servoHitNames={enemyMech.servoHitNames}
           drawDistanceLevel={enemyMech.drawDistanceLevel}
           showAxisLines={0}
-          isLeader={enemyMech.id === enemyMech.groupLeaderGuid}
+          isLeader={enemyMech.id === enemyMech.groupLeaderId}
         />
       </group>
 
-      <group ref={trailPositionRef} scale={SCALE}>
-        <MeshLineTrail followRef={enemyMechGroupRef} />
-      </group>
+      <MeshLineTrail
+        ref={trailPositionRef}
+        followObject3d={enemyMechGroupRef.current}
+      />
     </>
   );
 };

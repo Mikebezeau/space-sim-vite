@@ -66,7 +66,7 @@ export default function EquipmentBlueprint() {
         <mesh
           geometry={enemy.boxHelper.geometry}
           material={
-            enemy.guid === enemy.groupLeaderGuid
+            enemy.guid === enemy.groupLeaderId
               ? enemy.greenMat
               : enemy.boxHelper.material
           }

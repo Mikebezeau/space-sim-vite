@@ -2,27 +2,32 @@ import * as THREE from "three";
 import Mech from "./Mech";
 import mechDesigns from "../equipment/data/mechDesigns";
 
-class EnemyMech extends Mech {
+export interface EnemyMechInt {
+  getIsLeader(): void;
+}
+
+class EnemyMech extends Mech implements EnemyMechInt {
   team: number;
-  groupLeaderGuid: number;
-  groupId: number;
+  groupLeaderId: string | null;
+  groupId: string | null;
   tacticOrder: number;
-  formation: any;
+  formation: number;
   formationPosition: THREE.Vector3;
 
   constructor(enemyMechBPindex: number = 0) {
-    super(mechDesigns.enemy[enemyMechBPindex]);
+    super(
+      mechDesigns.enemy[enemyMechBPindex],
+      enemyMechBPindex === 0 ? true : false // testing instanced mesh with small enemies
+    );
     this.team = 0;
-    this.groupLeaderGuid = 0;
-    this.groupId = 0;
+    this.groupLeaderId = null;
+    this.groupId = null;
     this.tacticOrder = 0; //0 = follow leader, 1 = attack player
-    this.formation = null;
+    this.formation = 0;
     this.formationPosition = new THREE.Vector3();
   }
 
-  greet() {
-    return "Hello, " + this.id;
-  }
+  getIsLeader = () => this.id === this.groupLeaderId;
 }
 
 export default EnemyMech;

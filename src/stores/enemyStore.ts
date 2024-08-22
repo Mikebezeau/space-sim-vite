@@ -1,10 +1,11 @@
 import { create } from "zustand";
+import EnemyMech from "../classes/EnemyMech";
 import { genEnemies } from "../util/initGameUtil";
-import { setupFlock } from "../util/boidController";
-import { SCALE, PLAYER_START } from "../constants/constants";
+//import BoidController from "../classes/BoidController";
+import { SCALE } from "../constants/constants";
 import useStore from "./store";
 
-const numEnemies = 300;
+const numEnemies = 250;
 
 interface enemyStoreState {
   showLeaders: boolean;
@@ -16,9 +17,9 @@ interface enemyStoreState {
     boidCohesionMod: number;
     boidCenteringMod: number;
   };
-  enemies: any[];
-  getEnemies: () => any[];
-  enemyBoids: any[];
+  enemies: EnemyMech[];
+  getEnemies: () => EnemyMech[];
+  boidController: Object | null;
   testing: {
     summonEnemy: () => void;
     toggleShowLeaders: () => void;
@@ -39,7 +40,7 @@ const useEnemyStore = create<enemyStoreState>()((set, get) => ({
 
   enemies: genEnemies(numEnemies),
   getEnemies: () => get().enemies,
-  enemyBoids: setupFlock(numEnemies),
+  boidController: null, // todo: new BoidController(get().enemies)
   testing: {
     summonEnemy() {
       const playerPosition = useStore.getState().player.object3d.position;

@@ -20,9 +20,10 @@ interface weaponFireStoreState {
   weaponFireLightTimer: number;
   weaponFireList: any[];
   explosions: any[];
+  addExplosion: (object3d: THREE.Object3D) => void;
   mutation: {
     playerHits: boolean;
-    dummy: THREE.Object3D;
+    dummyObject3d: THREE.Object3D;
   };
   actions: {
     shoot: (
@@ -47,10 +48,21 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
   weaponFireLightTimer: 0,
   weaponFireList: [],
   explosions: [],
+  addExplosion: (object3d) => {
+    const newExplosions = get().explosions.concat({
+      object3d: object3d,
+      time: Date.now(),
+      id: uuidv4(),
+    });
+    set(() => ({
+      explosions: newExplosions,
+    }));
+  },
+
   mutation: {
     playerHits: false,
     // Re-usable objects
-    dummy: new THREE.Object3D(),
+    dummyObject3d: new THREE.Object3D(),
   },
 
   actions: {
@@ -326,9 +338,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
   },
 
   weaponFireUpdateFrame: () => {
-    if (usePlayerControlsStore.getState().playerScreen !== PLAYER.screen.flight)
-      return;
-
     const { weaponFireList, mutation, actions } = get();
     const { player, selectedTargetIndex } = useStore.getState();
     const playerMechBP = player.mechBP;
@@ -442,11 +451,16 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     let explosionRemaining = get().explosions.filter(
       (explosion) => timeNow - explosion.time < 500
     );
-    let explosionUpdate = explosionRemaining.concat(newExplosions);
-    //update explosions
-    set(() => ({
-      explosions: explosionUpdate,
-    }));
+    if (
+      newExplosions.length > 0 ||
+      get().explosions.length !== explosionRemaining.length
+    ) {
+      let explosionUpdate = explosionRemaining.concat(newExplosions);
+      //update explosions
+      set(() => ({
+        explosions: explosionUpdate,
+      }));
+    }
     //remove old timed out weaponfire
     actions.removeWeaponFire();
     // test if player is pointing at targets (used for changing the crosshairs)

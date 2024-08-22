@@ -1,17 +1,16 @@
 import * as THREE from "three";
-//import React, { useRef, useMemo, useEffect } from "react";
 import { memo, useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import useStore from "../stores/store";
+import useWeaponFireStore from "../stores/weaponFireStore";
 //import useStore, { audio, playAudio } from "../store";
 import { SCALE } from "../constants/constants";
 
+//import { setCustomData } from "r3f-perf";
+
 function make(color, speed) {
   return {
-    //ref: React.createRef(),
     color,
-    //data: new Array(20)
-    data: new Array(10)
+    data: new Array(5)
       .fill()
       .map(() => [
         new THREE.Vector3(),
@@ -27,39 +26,43 @@ function make(color, speed) {
 }
 
 const PreExplosion = ({ position, scale }) => {
-  //function Explosion({ position, scale }) {
   const group = useRef();
-  const { dummy } = useStore((state) => state.mutation);
+  const dummyObject3d = useWeaponFireStore(
+    (state) => state.mutation.dummyObject3d
+  );
   const particles = useMemo(
-    () => [make("white", 800 * SCALE), make("white", 600 * SCALE)], //make("orange", 0.6)],
+    () => [make("white", 0.4), make("white", 0.3), make("orange", 0.2)],
     []
   );
 
   //useEffect(() => void playAudio(new Audio(audio.mp3.explosion), 0.5), []);
 
   useFrame(() => {
-    particles.forEach(({ data }, type) => {
+    particles.forEach(({ data }, index) => {
       try {
-        const mesh = group.current.children[type];
+        const mesh = group.current.children[index];
         data.forEach(([vec, normal], i) => {
           vec.add(normal);
-          dummy.position.copy(vec);
-          dummy.updateMatrix();
-          mesh.setMatrixAt(i, dummy.matrix);
+          dummyObject3d.position.copy(vec);
+          dummyObject3d.updateMatrix();
+          mesh.setMatrixAt(i, dummyObject3d.matrix);
         });
         mesh.material.opacity -= 0.1;
         mesh.instanceMatrix.needsUpdate = true;
       } catch (e) {
-        //console.log(e, particles);
+        console.log(e, particles);
       }
     });
   });
-  /*instancedMesh frustumCulled={false}*/
   return (
-    <group ref={group} position={position} scale={SCALE}>
+    <group ref={group} position={position} scale={scale}>
       {particles.map(({ color, data }, index) => (
-        <instancedMesh key={index} args={[null, null, data.length]}>
-          <dodecahedronGeometry attach="geometry" args={[100 * SCALE, 0]} />
+        <instancedMesh
+          key={index}
+          frustumCulled={false}
+          args={[null, null, data.length]}
+        >
+          <dodecahedronGeometry attach="geometry" args={[1, 0]} />
           <meshBasicMaterial
             attach="material"
             color={color}
@@ -77,9 +80,14 @@ const PreExplosion = ({ position, scale }) => {
 
 const Explosion = memo(PreExplosion);
 
-export default function Explosions() {
-  const explosions = useStore((state) => state.explosions);
+const Explosions = ({ scale = SCALE }) => {
+  //console.log("Explosions rendered");
+  const explosions = useWeaponFireStore((state) => state.explosions);
+  //setCustomData(explosions.length);
+
   return explosions.map(({ id, object3d }) => (
-    <Explosion key={id} position={object3d.position} />
+    <Explosion key={id} position={object3d.position} scale={scale} />
   ));
-}
+};
+
+export default Explosions;

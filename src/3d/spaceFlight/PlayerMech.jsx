@@ -98,9 +98,10 @@ const PlayerMech = () => {
         />
       </group>
 
-      <group ref={trailPositionRef} scale={SCALE}>
-        <MeshLineTrail followRef={playerMechGroupRef} />
-      </group>
+      <MeshLineTrail
+        ref={trailPositionRef}
+        followObject3d={playerMechGroupRef.current}
+      />
 
       <group ref={secondaryGroupRef} scale={SCALE}>
         <PlayerCrosshair />

@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import * as THREE from "three";
-import { default as seedrandom } from "seedrandom";
 import PlayerMech from "../classes/PlayerMech";
 import usePlayerControlsStore from "./playerControlsStore";
 import useEnemyStore from "./enemyStore";
@@ -219,21 +218,20 @@ const useStore = create<storeState>()((set, get) => ({
       // set player start position
       get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
 
-      // ENEMIES FOR TESTING
-      useEnemyStore.getState().testing.summonEnemy();
-
       //addEffect will add the following code to what gets run per frame
       //removes exploded emenies and rocks from store data, removes explosions once they have timed out
       addEffect(() => {
         if (
           usePlayerControlsStore.getState().playerScreen !==
-          PLAYER.screen.flight
+            PLAYER.screen.flight &&
+          usePlayerControlsStore.getState().playerScreen !==
+            PLAYER.screen.testEnemies
         )
           return;
 
+        /*
         const { player, mutation } = get();
         const { enemies, enemyBoids } = useEnemyStore.getState();
-
         //run enemy AI routine
         //TODO: find enemies in area of player
         const localEnemies = enemies;
@@ -244,6 +242,7 @@ const useStore = create<storeState>()((set, get) => ({
           mutation.clock,
           useWeaponFireStore.getState().actions.shoot
         );
+        */
         useWeaponFireStore.getState().weaponFireUpdateFrame();
       });
     },
@@ -254,6 +253,18 @@ const useStore = create<storeState>()((set, get) => ({
         player: {
           ...state.player,
           speed: speedValue,
+        },
+      }));
+    },
+
+    setPlayerPosition(positionVec3) {
+      set((state) => ({
+        player: {
+          ...state.player,
+          object3d: {
+            ...state.player.object3d,
+            position: state.player.object3d.position.copy(positionVec3),
+          },
         },
       }));
     },

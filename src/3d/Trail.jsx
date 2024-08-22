@@ -1,5 +1,11 @@
-import { useEffect, useRef } from "react";
-import { BufferAttribute, Color, DoubleSide, DynamicDrawUsage } from "three";
+import { forwardRef, useEffect, useRef } from "react";
+import {
+  BufferAttribute,
+  Color,
+  DoubleSide,
+  DynamicDrawUsage,
+  Vector3,
+} from "three";
 import { extend, useFrame } from "@react-three/fiber";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import { useTrailVector3 } from "../hooks/useTrailVector3";
@@ -39,27 +45,29 @@ export const LineTrail = ({ followRef }) => {
   );
 };
 
-//function WithMeshLine({ n, lerp, minDist, ...props }) {
-export const MeshLineTrail = ({ followRef }) => {
+export const MeshLineTrail = forwardRef(function MeshLineTrail(
+  { followObject3d },
+  trailForwardRef
+) {
   const lineRef = useRef();
-  //const ref = useRef();
-
-  const trailPositions = useTrailVector3(followRef);
+  const trailPositions = useTrailVector3(followObject3d);
 
   useFrame(() => {
     lineRef.current.setPoints(trailPositions, (i) => {
-      return 1 - i; // i = 1 to 0 depending how far along the line the point is
+      return 8 - i * 8; // i = 1 to 0 depending how far along the line the point is
     });
   });
 
   return (
-    <mesh>
-      <meshLineGeometry ref={lineRef} />
-      <meshLineMaterial
-        lineWidth={1}
-        color={new Color("red")}
-        side={DoubleSide}
-      />
-    </mesh>
+    <group ref={trailForwardRef}>
+      <mesh>
+        <meshLineGeometry ref={lineRef} />
+        <meshLineMaterial
+          lineWidth={1}
+          color={new Color("red")}
+          side={DoubleSide}
+        />
+      </mesh>
+    </group>
   );
-};
+});

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
 import EnemyMech from "../classes/EnemyMech";
 import { initStationBP } from "./initEquipUtil";
+import { SCALE } from "../constants/constants";
 
 //used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
@@ -44,26 +45,25 @@ export const genEnemies = (numEnemies) => {
   let enemies = Array(numEnemies)
     .fill()
     .map((e, i) => new EnemyMech(i === 0 ? 1 : 0));
+  return enemies;
+};
+
+export const groupEnemies = (enemies) => {
   //group enemies into squads
   enemies.forEach((enemy) => {
-    let groupCount = 0;
     //enemy with no group: make group leader and select all nearby enemies to join group
-    if (!enemy.groupLeaderGuid) {
+    if (!enemy.groupLeaderId) {
       enemies
         .filter(
           (e) =>
-            !e.groupLeaderGuid &&
-            //distance(enemy.object3d.position, e.object3d.position) <
-            //  20000 * SCALE &&
-            enemy.mechBP.scale >= e.mechBP.scale
+            !e.groupLeaderId &&
+            enemy.object3d.position.distanceTo(e.object3d.position) <
+              100 * SCALE
+          // && enemy.mechBP.scale >= e.mechBP.scale
         )
-        .forEach((eGroup) => {
+        .forEach((e) => {
           //this will apply to leader as well as all those nearby
-          if (groupCount <= enemy.mechBP.scale * enemy.mechBP.scale) {
-            eGroup.groupLeaderGuid = enemy.id;
-            //console.log(eGroup.groupLeaderGuid);
-          }
-          groupCount++;
+          e.groupLeaderId = enemy.id;
         });
     }
   });

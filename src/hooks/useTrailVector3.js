@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Vector3 } from "three";
 import { useFrame } from "@react-three/fiber";
 //import { setCustomData, getCustomData } from "r3f-perf";
@@ -31,37 +31,43 @@ const shiftRightAndUpdatePositions = (vector3Arr, offsetRelativePosition) => {
   );
 };
 
-export function useTrailVector3(followObject3dRef) {
+export function useTrailVector3(followObject3d) {
   const numTrailPoints = 10;
-  const [vector3Arr] = useState(() =>
-    Array.from({ length: numTrailPoints }, () => new Vector3())
+  const vector3Arr = Array.from(
+    { length: numTrailPoints },
+    () => new Vector3()
   );
-  // initialize currentFollowPosition
   const currentFollowPosition = new Vector3();
   const offsetRelativePosition = new Vector3();
 
   useEffect(() => {
-    if (followObject3dRef.current) {
+    if (followObject3d) {
+      // initialize currentFollowPosition
       currentFollowPosition.set(
-        followObject3dRef.current.position.x,
-        followObject3dRef.current.position.y,
-        followObject3dRef.current.position.z
+        followObject3d.position.x,
+        followObject3d.position.y,
+        followObject3d.position.z
       );
     }
-
     // do not include currentFollowPosition in the dependency array
     // to avoid triggering useEffect on changing currentFollowPosition
-  }, [followObject3dRef]);
+  }, [followObject3d]);
+
+  const updateTrailPoints = () => {
+    offsetRelativePosition.set(
+      currentFollowPosition.x - followObject3d.position.x,
+      currentFollowPosition.y - followObject3d.position.y,
+      currentFollowPosition.z - followObject3d.position.z
+    );
+    currentFollowPosition.copy(followObject3d.position);
+    shiftRightAndUpdatePositions(vector3Arr, offsetRelativePosition);
+  };
 
   useFrame(() => {
-    if (followObject3dRef.current) {
-      offsetRelativePosition.set(
-        currentFollowPosition.x - followObject3dRef.current.position.x,
-        currentFollowPosition.y - followObject3dRef.current.position.y,
-        currentFollowPosition.z - followObject3dRef.current.position.z
-      );
-      currentFollowPosition.copy(followObject3dRef.current.position);
-      shiftRightAndUpdatePositions(vector3Arr, offsetRelativePosition);
+    if (followObject3d) {
+      updateTrailPoints();
+      // origin point at mech position
+      vector3Arr[0].set(0, 0, 0);
     }
     // perf data
     //setCustomData(vector3Arr[1].x);
