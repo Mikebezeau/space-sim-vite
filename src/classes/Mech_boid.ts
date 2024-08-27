@@ -4,13 +4,15 @@ import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 import { loadBlueprint } from "../util/initEquipUtil";
 import { SCALE } from "../constants/constants";
-//import { setCustomData } from "r3f-perf";
+import { setCustomData } from "r3f-perf";
 
 export interface MechInt {
   initObject3d(object3d: THREE.Object3D): void;
   updateObb(): void;
   setObject3dCenterOffset(): void;
   setMergedBufferGeom(): void;
+  applyForce(fVec3: THREE.Vector3): void;
+  update(): void;
 }
 
 class Mech implements MechInt {
@@ -34,6 +36,11 @@ class Mech implements MechInt {
   shotsTesting: any[];
   shotsHit: any[];
   servoHitNames: string[];
+  velocity: THREE.Vector3;
+  lerpVelocity: THREE.Vector3;
+  acceleration: THREE.Vector3;
+  maxSpeed: number;
+  heading: THREE.Vector3;
 
   constructor(mechDesign: any, useInstancedMesh: boolean) {
     this.id = uuidv4();
@@ -57,6 +64,12 @@ class Mech implements MechInt {
     this.shotsTesting = [];
     this.shotsHit = [];
     this.servoHitNames = [];
+    // for Boid
+    this.velocity = new THREE.Vector3();
+    this.lerpVelocity = new THREE.Vector3();
+    this.acceleration = new THREE.Vector3();
+    this.maxSpeed = 1;
+    this.heading = new THREE.Vector3();
   }
 
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
@@ -139,6 +152,33 @@ class Mech implements MechInt {
     merged.userData.materials = meshes.map((m) => m.material);
     this.bufferGeom = merged;
   };
+
+  // Boid apply force
+  applyForce(fVec3: THREE.Vector3) {
+    this.acceleration.add(fVec3.clone());
+  }
+  // update Boid movement
+  update() {
+    const maxSpeed = this.maxSpeed;
+    // update velocity
+    this.velocity.add(this.acceleration);
+
+    // limit velocity
+    if (this.velocity.length() > maxSpeed) {
+      this.velocity.clampLength(0, maxSpeed);
+    }
+    // using lerp
+    this.lerpVelocity.lerp(this.velocity, 0.05);
+    // update position
+    this.object3d.position.add(this.lerpVelocity);
+    // reset acc
+    this.acceleration.multiplyScalar(0);
+    // heading
+    this.heading.copy(this.lerpVelocity);
+    this.heading.multiplyScalar(10);
+    this.heading.add(this.object3d.position);
+    this.object3d.lookAt(this.heading);
+  }
 }
 
 export default Mech;

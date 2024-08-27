@@ -39,7 +39,7 @@ export default function EnemyTestScene() {
   const instancedMeshRef = useRef(null);
   const instancedMechObject3d = useRef(null);
   const boidControllerRef = useRef(null);
-  const trailPositionRef = useRef([]);
+  //const trailPositionRef = useRef([]);
 
   const resestControlsCameraPosition = useCallback(() => {
     cameraControlsRef.current.reset(); // reset camera controls
@@ -72,8 +72,9 @@ export default function EnemyTestScene() {
     playerMechRef.current.position.set(0, 0, -600);
 
     // set boid controller for flocking enemies
+    // must use all enemies (for checking groupLeaderId)
     boidControllerRef.current = new BoidController(
-      enemies.filter((enemy) => enemy.useInstancedMesh)
+      enemies //.filter((enemy) => enemy.useInstancedMesh)
     );
   }, [enemies, playerMechRef, resestControlsCameraPosition, setPlayerPosition]);
 

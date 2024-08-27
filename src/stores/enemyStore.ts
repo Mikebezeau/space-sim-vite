@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import EnemyMech from "../classes/EnemyMech";
-import { genEnemies } from "../util/initGameUtil";
+import EnemyMechBoid from "../classes/EnemyMechBoid";
+import { genBoidEnemies } from "../util/initGameUtil";
 //import BoidController from "../classes/BoidController";
 import { SCALE } from "../constants/constants";
 import useStore from "./store";
@@ -17,8 +17,8 @@ interface enemyStoreState {
     boidCohesionMod: number;
     boidCenteringMod: number;
   };
-  enemies: EnemyMech[];
-  getEnemies: () => EnemyMech[];
+  enemies: EnemyMechBoid[];
+  getEnemies: () => EnemyMechBoid[];
   boidController: Object | null;
   testing: {
     summonEnemy: () => void;
@@ -38,7 +38,7 @@ const useEnemyStore = create<enemyStoreState>()((set, get) => ({
     boidCenteringMod: 0,
   },
 
-  enemies: genEnemies(numEnemies),
+  enemies: genBoidEnemies(numEnemies),
   getEnemies: () => get().enemies,
   boidController: null, // todo: new BoidController(get().enemies)
   testing: {

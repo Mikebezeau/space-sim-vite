@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
-import EnemyMech from "../classes/EnemyMech";
+import EnemyMechBoid from "../classes/EnemyMechBoid";
 import { initStationBP } from "./initEquipUtil";
 import { SCALE } from "../constants/constants";
 
@@ -41,10 +41,11 @@ export const randomData = (count, track, radius, size, randomScale) => {
   });
 };
 
-export const genEnemies = (numEnemies) => {
+export const genBoidEnemies = (numEnemies) => {
   let enemies = Array(numEnemies)
     .fill()
-    .map((e, i) => new EnemyMech(i === 0 ? 1 : 0));
+    // EnemyMechBoid(bpIndex, isBossMech)
+    .map((e, i) => new EnemyMechBoid(i === 0 ? 1 : 0, i === 0 ? true : false));
   return enemies;
 };
 
@@ -67,6 +68,18 @@ export const groupEnemies = (enemies) => {
         });
     }
   });
+  // for each enemy leader with no followers, set as following bossMech
+  enemies.forEach((enemy) => {
+    const bossMechId = enemies.find((e) => e.isBossMech)?.id;
+    if (
+      bossMechId &&
+      enemy.getIsLeader() &&
+      !enemies.find((e) => e.id !== enemy.id && e.groupLeaderId === enemy.id)
+    ) {
+      enemy.groupLeaderId = bossMechId;
+    }
+  });
+
   return enemies;
 };
 
