@@ -15,12 +15,11 @@ import { TrackballControls } from "@react-three/drei";
 import useStore from "../stores/store";
 import useEnemyStore from "../stores/enemyStore";
 import useWeaponFireStore from "../stores/weaponFireStore";
-import { groupEnemies } from "../util/initGameUtil";
 import BuildMech from "../3d/BuildMech";
 import Explosions from "../3d/Explosions";
 import BoidController from "../classes/BoidController";
 //import { MeshLineTrail } from "../3d/Trail";
-
+import useDevStore from "../stores/devStore";
 //import { setCustomData } from "r3f-perf";
 
 export default function EnemyTestScene() {
@@ -31,7 +30,9 @@ export default function EnemyTestScene() {
     (state) => state.actions.setPlayerPosition
   );
   const enemies = useEnemyStore((state) => state.enemies);
+  const showObbBox = useDevStore((state) => state.showObbBox);
   const addExplosion = useWeaponFireStore((state) => state.addExplosion);
+
   const cameraControlsRef = useRef(null);
   const playerMechRef = useRef(null);
   const enemyMechRefs = useRef([]);
@@ -46,22 +47,6 @@ export default function EnemyTestScene() {
     camera.position.set(0, 0, -750);
     camera.lookAt(0, 0, 0);
   }, [camera]);
-
-  useLayoutEffect(() => {
-    console.log("EnemyTestScene useLayoutEffect");
-    // set enemy positions
-    enemies.forEach((enemy) => {
-      enemy.object3d.position.set(
-        Math.random() * 500 - 250,
-        Math.random() * 500 - 250,
-        Math.random() * 500 - 250
-      );
-    });
-    // boss mech position
-    enemies[0].object3d.position.set(0, 0, 0);
-    // group enemies into squads
-    groupEnemies(enemies);
-  }, [enemies]);
 
   useEffect(() => {
     console.log("EnemyTestScene useEffect");
@@ -91,9 +76,18 @@ export default function EnemyTestScene() {
     });
   }, [enemies, instancedMechObject3d]);
 
-  useFrame(() => {
+  // show hide obb boxes
+  useEffect(() => {
+    obbBoxRefs.current.forEach((obbBox) => {
+      if (showObbBox) obbBox.visible = true;
+      else obbBox.visible = false;
+    });
+  }, [showObbBox]); // showBoidVectors
+
+  useFrame((_, delta) => {
+    delta = Math.min(delta, 0.5); // cap delta to 500ms
     // boid flocking movement
-    boidControllerRef.current.update();
+    boidControllerRef.current.update(delta);
     // update enemy object3d and obb test boxes
     enemies.forEach((enemy, i) => {
       enemy.updateObb();
@@ -152,52 +146,56 @@ export default function EnemyTestScene() {
         }}
         mechBP={getPlayer().mechBP}
       />
-      {enemies.map((enemyMech, index) => (
-        <Fragment key={enemyMech.id}>
-          <mesh
-            ref={(obbBoxRef) => (obbBoxRefs.current[index] = obbBoxRef)}
-            geometry={enemyMech.obbGeoHelper}
-            material={
-              new THREE.MeshBasicMaterial({
-                color: 0x00ff00,
-                wireframe: true,
-              })
-            }
-          />
-          {/*}
-          <MeshLineTrail
-            ref={(trailRef) => {
-              trailPositionRef.current[index] = trailRef;
-            }}
-            followObject3d={enemyMech.object3d}
-          />*/}
-          {!enemyMech.useInstancedMesh ? (
-            <BuildEnemyMech
-              ref={(mechRef) => {
-                enemyMechRefs.current[index] = mechRef;
-                enemyMech.initObject3d(mechRef);
-              }}
-              mechBP={enemyMech.mechBP}
-            />
-          ) : null}
-        </Fragment>
-      ))}
+      {enemies.length > 0 && (
+        <>
+          {enemies.map((enemyMech, index) => (
+            <Fragment key={enemyMech.id}>
+              <mesh
+                ref={(obbBoxRef) => (obbBoxRefs.current[index] = obbBoxRef)}
+                geometry={enemyMech.obbGeoHelper}
+                material={
+                  new THREE.MeshBasicMaterial({
+                    color: 0x00ff00,
+                    wireframe: true,
+                  })
+                }
+              />
+              {/*}
+              <MeshLineTrail
+                ref={(trailRef) => {
+                  trailPositionRef.current[index] = trailRef;
+                }}
+                followObject3d={enemyMech.object3d}
+              />*/}
+              {!enemyMech.useInstancedMesh ? (
+                <BuildEnemyMech
+                  ref={(mechRef) => {
+                    enemyMechRefs.current[index] = mechRef;
+                    enemyMech.initObject3d(mechRef);
+                  }}
+                  mechBP={enemyMech.mechBP}
+                />
+              ) : null}
+            </Fragment>
+          ))}
 
-      {
-        // building mech to set enemy instancedMechObject3d
-        instancedMechObject3d.current === null ? (
-          <BuildMech
-            ref={(buildMechRef) => {
-              if (buildMechRef === null) return;
-              instancedMechObject3d.current = new THREE.Object3D();
-              instancedMechObject3d.current.copy(buildMechRef);
-            }}
-            mechBP={enemies[1].mechBP}
-          />
-        ) : (
-          <InstancedMechs ref={instancedMeshRef} enemies={enemies} />
-        )
-      }
+          {
+            // building mech to set enemy instancedMechObject3d
+            instancedMechObject3d.current === null ? (
+              <BuildMech
+                ref={(buildMechRef) => {
+                  if (buildMechRef === null) return;
+                  instancedMechObject3d.current = new THREE.Object3D();
+                  instancedMechObject3d.current.copy(buildMechRef);
+                }}
+                mechBP={enemies[1].mechBP}
+              />
+            ) : (
+              <InstancedMechs ref={instancedMeshRef} enemies={enemies} />
+            )
+          }
+        </>
+      )}
       <Explosions />
     </>
   );
@@ -242,7 +240,7 @@ const InstancedMechs = forwardRef(function Enemy(
       ref={instancedMeshForwardRef}
       args={[instancedEnemies[0].bufferGeom, null, instancedEnemies.length]}
     >
-      <meshNormalMaterial />
+      <meshBasicMaterial />
     </instancedMesh>
   );
 });

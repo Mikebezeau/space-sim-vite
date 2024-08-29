@@ -4,7 +4,6 @@ import { PLAYER } from "../constants/constants";
 import { ToggleTestControls } from "./ToggleTestControls";
 import { TestingEnemyControls } from "./TestingEnemyControls";
 import { TestingPlayerLocationControls } from "./TestingPlayerLocationControls";
-import { TestingBoidControls } from "./TestingBoidControls";
 import "../css/toggleControl.css";
 
 const TestingMenu = () => {
@@ -23,7 +22,6 @@ const TestingMenu = () => {
           </button>
           <TestingEnemyControls />
           <TestingPlayerLocationControls />
-          <TestingBoidControls />
         </>
       )}
     </div>

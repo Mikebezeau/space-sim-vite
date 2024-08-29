@@ -26,6 +26,8 @@ class Mech implements MechInt {
   obbPositioned: OBB;
   obbGeoHelper: THREE.BoxGeometry;
   obbRotationHelper: THREE.Matrix4;
+  maxHalfWidth: number;
+  // old stuff
   speed: number;
   size: number;
   drawDistanceLevel: number;
@@ -91,6 +93,7 @@ class Mech implements MechInt {
         boxSize.y,
         boxSize.z
       );
+      this.maxHalfWidth = Math.max(boxSize.x, boxSize.y, boxSize.z) / 2;
     }
   };
 

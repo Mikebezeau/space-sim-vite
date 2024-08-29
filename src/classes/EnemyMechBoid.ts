@@ -1,13 +1,16 @@
 import * as THREE from "three";
 import EnemyMech from "./EnemyMech";
+import { FPS } from "../constants/constants";
+import { setCustomData } from "r3f-perf";
 
 export interface EnemyMechBoidInt {
   applyForce(fVec3: THREE.Vector3): void;
-  update(): void;
+  update(delta: number): void;
 }
 
 class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
   velocity: THREE.Vector3;
+  adjustedVelocityDeltaFPS: THREE.Vector3;
   lerpVelocity: THREE.Vector3;
   acceleration: THREE.Vector3;
   maxSpeed: number;
@@ -29,6 +32,7 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
     super(enemyMechBPindex, isBossMech);
 
     this.velocity = new THREE.Vector3();
+    this.adjustedVelocityDeltaFPS = new THREE.Vector3();
     this.lerpVelocity = new THREE.Vector3();
     this.acceleration = new THREE.Vector3();
     this.maxSpeed = 1;
@@ -63,10 +67,13 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
 
   // Boid apply force
   applyForce(fVec3: THREE.Vector3) {
-    this.acceleration.add(fVec3.clone());
+    if (!this.isBossMech) this.acceleration.add(fVec3.clone());
   }
+
   // update Boid movement
-  update() {
+  update(delta: number) {
+    const deltaFPS = delta * FPS;
+    setCustomData(deltaFPS);
     const maxSpeed = this.maxSpeed;
     // update velocity
     this.velocity.add(this.acceleration);
@@ -75,8 +82,10 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
     if (this.velocity.length() > maxSpeed) {
       this.velocity.clampLength(0, maxSpeed);
     }
+    // adjust for delta FPS
+    this.adjustedVelocityDeltaFPS.copy(this.velocity).multiplyScalar(deltaFPS);
     // using lerp
-    this.lerpVelocity.lerp(this.velocity, 0.05);
+    this.lerpVelocity.lerp(this.adjustedVelocityDeltaFPS, 0.05);
     // update position
     this.object3d.position.add(this.lerpVelocity);
     // reset acc

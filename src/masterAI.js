@@ -7,9 +7,8 @@ const dummyObj = new THREE.Object3D();
 const toTargetQuat = new THREE.Quaternion(),
   curQuat = new THREE.Quaternion();
 
-export function loopAI(player, enemies, enemyBoids, clock, actionShoot) {
+export function loopAI(player, enemies, actionShoot) {
   enemies.forEach((enemy, index) => {
-    enemyBoids[index].position.copy(enemy.object3d.position);
     const enemyLeader = enemies.find((e) => e.id === enemy.groupLeaderId);
     //if no leader make self leader
     if (!enemyLeader) enemy.groupLeaderId = enemy.id;
@@ -153,45 +152,6 @@ function leaderDestinationPosition(playerObj) {
   return destinationPosition;
 }
 
-function groupFollowPosition(enemy, enemyLeader, enemies) {
-  let destinationObject = new Object3D();
-
-  destinationObject.position.copy(enemyLeader.object3d.position);
-  destinationObject.rotation.copy(enemyLeader.object3d.rotation);
-
-  //find position to follow leader in formation
-  //if no group formation selected chose one
-  if (!enemy.formation) {
-    enemy.formation = 1;
-    //select positions for all ships in this group
-    const group = enemies.filter(
-      (e) => enemy.groupLeaderId === e.groupLeaderId
-    );
-    group.forEach((eGroup, i) => {
-      //assign a position to each group member
-      eGroup.formationPosition.x =
-        (group.length * 50 - i * 50) *
-        Math.pow(enemy.mechBP.scale + enemyLeader.mechBP.scale, 1.5) *
-        SCALE;
-      eGroup.formationPosition.y = 0;
-      eGroup.formationPosition.z =
-        -50 *
-        Math.pow(enemy.mechBP.scale + enemyLeader.mechBP.scale, 1.5) *
-        SCALE;
-    });
-  }
-  /*
-  if (enemy.id === 150 && clock.getElapsedTime() % 1 < 0.05)
-    console.log(enemy.formationPosition);
-    */
-  //destination location is the leaders position offset by this ships formation coordinates position/offset values
-  destinationObject.translateX(enemy.formationPosition.x);
-  destinationObject.translateY(enemy.formationPosition.y);
-  destinationObject.translateZ(enemy.formationPosition.z);
-
-  return destinationObject.position;
-}
-
 /*
 fleet / ship groups
     group large ships together based on distance to form fleets
@@ -201,8 +161,7 @@ fleet / ship groups
 
 enemy ship properties:
     id // ship id
-    groupLeaderId //global ship id of who is the group leader (or this ships own id if it is the group leader)
-    groupId // id of group this ship is assigned to
+    groupLeaderId //ship id of who is the group leader (or this ships own id if it is the group leader)
 
 methods:
     detect targets (scanning)

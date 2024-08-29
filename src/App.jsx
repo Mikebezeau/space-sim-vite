@@ -1,6 +1,7 @@
 import AppUI from "./AppUI";
 import AppCanvas from "./AppCanvas";
 import AppUICanvas from "./AppUICanvas";
+import LilGui from "./dev/LilGui";
 
 function App() {
   console.log("app render");
@@ -10,6 +11,7 @@ function App() {
       <AppCanvas />
       <AppUI />
       <AppUICanvas />
+      <LilGui />
     </>
   );
 }

@@ -8,21 +8,16 @@ import { SCALE } from "../constants/constants";
 
 export default function EnemyMechs() {
   console.log("EnemyMechs rendered");
-  const showLeaders = useEnemyStore((state) => state.showLeaders);
   const enemies = useEnemyStore((state) => state.enemies);
   return enemies.map((enemyMech, index) => (
-    <Enemy
-      key={enemyMech.id}
-      enemyMechIndex={index}
-      showLeaders={showLeaders}
-    />
+    <Enemy key={enemyMech.id} enemyMechIndex={index} />
   ));
 }
 
 const position = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
-const Enemy = ({ enemyMechIndex, showLeaders }) => {
+const Enemy = ({ enemyMechIndex }) => {
   const enemyMechGroupRef = useRef(null);
   const trailPositionRef = useRef(null);
   const hitBoxRef = useRef(null);

@@ -38,7 +38,7 @@ class BoidController {
     this.home = new THREE.Vector3(0, 0, 0);
   }
 
-  update() {
+  update(delta) {
     this.mechs.forEach((mech) => {
       mech.resetVectors();
     });
@@ -72,8 +72,7 @@ class BoidController {
       mech1.applyForce(this.alignWithBossMech(mech1));
       mech1.applyForce(this.centerOnBossMech(mech1, 400));
 
-      if (!mech1.isBossMech) mech1.update();
-      else mech1.object3d.translateZ(0.25);
+      mech1.update(delta);
     }
 
     /*
@@ -142,7 +141,8 @@ class BoidController {
   addSeparateVector(mech1, mech2) {
     const effectiveRange = this.params.separate.effectiveRange;
     const dist = mech1.object3d.position.distanceTo(mech2.object3d.position);
-    if (dist > 0 && dist < effectiveRange) {
+    const sumHalfWidth = mech1.maxHalfWidth + mech2.maxHalfWidth;
+    if (dist > 0 && (dist < effectiveRange || dist < sumHalfWidth)) {
       // mech1
       this.toMeVector.set(0, 0, 0);
       this.toMeVector.subVectors(
@@ -150,7 +150,7 @@ class BoidController {
         mech2.object3d.position
       );
       this.toMeVector.normalize();
-      this.toMeVector.divideScalar(dist);
+      this.toMeVector.divideScalar(dist / sumHalfWidth);
       mech1.separateSumVector.add(this.toMeVector);
       mech1.separateCount++;
       // mech2

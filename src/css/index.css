@@ -40,6 +40,10 @@ body {
   cursor: move !important;
 }
 
+.lil-gui {
+  left: 0px;
+}
+
 input,
 button,
 .toggleContainer,
