@@ -90,7 +90,7 @@ export default function EnemyTestScene() {
     boidControllerRef.current.update(delta);
     // update enemy object3d and obb test boxes
     enemies.forEach((enemy, i) => {
-      enemy.updateObb();
+      enemy.obbNeedsUpdate = true;
       // update trail position
       //trailPositionRef.current[i].position.copy(enemy.object3d.position);
       // for testing obb placement and intersection
@@ -108,9 +108,18 @@ export default function EnemyTestScene() {
 
     // check for intersection between obb test boxes
     for (let i = 0, il = enemies.length; i < il; i++) {
-      const obb = enemies[i].obbPositioned;
       // only check each object once
       for (let j = i + 1, jl = enemies.length; j < jl; j++) {
+        // check distance first to determine if full intersection test is needed
+        const distance = enemies[i].object3d.position.distanceTo(
+          enemies[j].object3d.position
+        );
+        const minCheckDistance =
+          enemies[i].maxHalfWidth + enemies[j].maxHalfWidth;
+        if (distance > minCheckDistance) continue;
+        if (enemies[i].obbNeedsUpdate) enemies[i].updateObb();
+        const obb = enemies[i].obbPositioned;
+        if (enemies[j].obbNeedsUpdate) enemies[j].updateObb();
         const obbToTest = enemies[j].obbPositioned;
         // now perform intersection test
         if (obb.intersectsOBB(obbToTest) === true) {
@@ -127,6 +136,8 @@ export default function EnemyTestScene() {
           }
         }
       }
+      // reset obbNeedsUpdate for next frame
+      enemies[i].obbNeedsUpdate = true;
     }
   });
 

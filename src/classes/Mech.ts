@@ -22,6 +22,7 @@ class Mech implements MechInt {
   bufferGeom: THREE.BufferGeometry;
   mechCenter: THREE.Vector3;
   object3dCenterOffset: THREE.Object3D;
+  obbNeedsUpdate: boolean;
   obb: OBB;
   obbPositioned: OBB;
   obbGeoHelper: THREE.BoxGeometry;
@@ -46,6 +47,7 @@ class Mech implements MechInt {
     this.bufferGeom = new THREE.BufferGeometry(); // merged geometry for instanced mesh
     this.mechCenter = new THREE.Vector3();
     this.object3dCenterOffset = new THREE.Object3D(); // for proper obb positioning
+    this.obbNeedsUpdate = true; // used to determine if obb needs to be updated beore checking collision within loop
     this.obb = new OBB(); // oriented bounding box
     this.obbPositioned = new OBB(); // obb to assign object3dCenterOffset.position and apply object3dCenterOffset.matrixWorld (assigns rotation)
     this.obbGeoHelper = new THREE.BoxGeometry(); // helpers only for testing obb to view box
@@ -98,6 +100,7 @@ class Mech implements MechInt {
   };
 
   updateObb = () => {
+    this.obbNeedsUpdate = false;
     this.setObject3dCenterOffset();
     //this.object3dCenterOffset.updateMatrix(); // Updates the local transform, not needed yet
     this.object3dCenterOffset.updateMatrixWorld();
@@ -107,7 +110,7 @@ class Mech implements MechInt {
     this.obbPositioned.applyMatrix4(this.object3dCenterOffset.matrixWorld);
     // set position (applyMatrix4 not setting position correctly, this is why object3dCenterOffset is needed)
     this.obbPositioned.center.copy(this.object3dCenterOffset.position);
-    // rotation helper for testing obb to view box
+    // rotation helper for testing obb: to view box in correct orientation
     this.obbRotationHelper.setFromMatrix3(this.obbPositioned.rotation);
   };
 
