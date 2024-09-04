@@ -3,7 +3,6 @@ import {
   Fragment,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -17,6 +16,7 @@ import useEnemyStore from "../stores/enemyStore";
 import useWeaponFireStore from "../stores/weaponFireStore";
 import BuildMech from "../3d/BuildMech";
 import Explosions from "../3d/Explosions";
+import Particles from "../3d/Particles";
 import BoidController from "../classes/BoidController";
 //import { MeshLineTrail } from "../3d/Trail";
 import useDevStore from "../stores/devStore";
@@ -44,7 +44,7 @@ export default function EnemyTestScene() {
 
   const resestControlsCameraPosition = useCallback(() => {
     cameraControlsRef.current.reset(); // reset camera controls
-    camera.position.set(0, 0, -750);
+    camera.position.set(0, 0, -620);
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
@@ -53,8 +53,8 @@ export default function EnemyTestScene() {
     if (playerMechRef.current === null) return;
     resestControlsCameraPosition();
     // set player position
-    setPlayerPosition(new THREE.Vector3(0, 0, -600));
-    playerMechRef.current.position.set(0, 0, -600);
+    setPlayerPosition(new THREE.Vector3(0, 0, -550));
+    playerMechRef.current.position.set(0, 0, -550);
 
     // set boid controller for flocking enemies
     // must use all enemies (for checking groupLeaderId)
@@ -150,6 +150,7 @@ export default function EnemyTestScene() {
         rotateSpeed={3}
         panSpeed={0.5}
       />
+      <Particles />
       <BuildMech
         ref={(mechRef) => {
           playerMechRef.current = mechRef;

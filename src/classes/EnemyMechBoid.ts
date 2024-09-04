@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import EnemyMech from "./EnemyMech";
 import { FPS } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
+//import { setCustomData } from "r3f-perf";
 
 export interface EnemyMechBoidInt {
   applyForce(fVec3: THREE.Vector3): void;
@@ -73,7 +73,7 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
   // update Boid movement
   update(delta: number) {
     const deltaFPS = delta * FPS;
-    setCustomData(deltaFPS);
+    //(deltaFPS);
     const maxSpeed = this.maxSpeed;
     // update velocity
     this.velocity.add(this.acceleration);

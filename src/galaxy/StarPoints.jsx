@@ -1,8 +1,8 @@
 import { forwardRef, useRef, useLayoutEffect } from "react";
 import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
 import { useThree } from "@react-three/fiber";
-import starSpriteSrc from "./sprites/sprite120.png";
-import featheredSpriteSrc from "./sprites/feathered60.png";
+import starSpriteSrc from "../sprites/sprite120.png";
+import featheredSpriteSrc from "../sprites/feathered60.png";
 import useStore from "../stores/store";
 import { PLAYER } from "../constants/constants";
 import "./shaders/starPointsShaderMaterial";
