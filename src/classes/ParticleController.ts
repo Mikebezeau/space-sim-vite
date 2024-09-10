@@ -4,78 +4,82 @@ import { setCustomData } from "r3f-perf";
 
 const GPUParticleShader = {
   vertexShader: `
-              uniform float uTime;
-              uniform float uScale;
-              uniform bool reverseTime;
-              uniform float fadeIn;
-              uniform float fadeOut;
-  
-              attribute vec3 positionStart;
-              attribute float startTime;
-              attribute vec3 velocity;
-              attribute vec3 acceleration;
-              attribute vec3 color;
-              attribute vec3 endColor;
-              attribute float size;
-              attribute float lifeTime;
-  
-              varying vec4 vColor;
-              varying vec4 vEndColor;
-              varying float lifeLeft;
-              varying float alpha;
-  
-              void main() {
-                  vColor = vec4( color, 1.0 );
-                  vEndColor = vec4( endColor, 1.0);
-                  vec3 newPosition;
-                  float timeElapsed = uTime - startTime;
-                  if(reverseTime) timeElapsed = lifeTime - timeElapsed;
-                  if(timeElapsed < fadeIn) {
-                      alpha = timeElapsed/fadeIn;
-                  }
-                  if(timeElapsed >= fadeIn && timeElapsed <= (lifeTime - fadeOut)) {
-                      alpha = 1.0;
-                  }
-                  if(timeElapsed > (lifeTime - fadeOut)) {
-                      alpha = 1.0 - (timeElapsed - (lifeTime-fadeOut))/fadeOut;
-                  }
-                  
-                  lifeLeft = 1.0 - ( timeElapsed / lifeTime );
-                  gl_PointSize = ( uScale * size );// * lifeLeft;
-                  newPosition = positionStart 
-                      + (velocity * timeElapsed)
-                      + (acceleration * 0.5 * timeElapsed * timeElapsed)
-                      ;
-                  if (lifeLeft < 0.0) { 
-                      lifeLeft = 0.0; 
-                      gl_PointSize = 0.;
-                  }
-                  //while active use the new position
-                  if( timeElapsed > 0.0 ) {
-                      gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
-                  } else {
-                      //if dead use the initial position and set point size to 0
-                      gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-                      lifeLeft = 0.0;
-                      gl_PointSize = 0.;
-                  }
-              }
-              `,
+    uniform float uTime;
+    uniform float uScale;
+    uniform bool reverseTime;
+    uniform float fadeIn;
+    uniform float fadeOut;
+
+    attribute vec3 positionStart;
+    attribute float startTime;
+    attribute vec3 velocity;
+    attribute vec3 acceleration;
+    attribute vec3 color;
+    attribute vec3 endColor;
+    attribute float size;
+    attribute float lifeTime;
+
+    varying vec4 vColor;
+    varying vec4 vEndColor;
+    varying float lifeLeft;
+    varying float alpha;
+
+    void main() {
+        vColor = vec4( color, 1.0 );
+        vEndColor = vec4( endColor, 1.0);
+        vec3 newPosition;
+        float timeElapsed = uTime - startTime;
+        if(reverseTime) timeElapsed = lifeTime - timeElapsed;
+        if(timeElapsed < fadeIn) {
+            alpha = timeElapsed/fadeIn;
+        }
+        if(timeElapsed >= fadeIn && timeElapsed <= (lifeTime - fadeOut)) {
+            alpha = 1.0;
+        }
+        if(timeElapsed > (lifeTime - fadeOut)) {
+            alpha = 1.0 - (timeElapsed - (lifeTime-fadeOut))/fadeOut;
+        }
+        
+        lifeLeft = 1.0 - ( timeElapsed / lifeTime );
+        
+        newPosition = positionStart 
+            + (velocity * timeElapsed)
+            + (acceleration * 0.5 * timeElapsed * timeElapsed)
+            ;
+        
+        vec4 mvPosition = modelViewMatrix * vec4( newPosition, 1.0 );
+        gl_PointSize = ( uScale * size / -mvPosition.z );// * lifeLeft;
+
+        if (lifeLeft < 0.0) { 
+            lifeLeft = 0.0; 
+            gl_PointSize = 0.;
+        }
+        //while active use the new position
+        if( timeElapsed > 0.0 ) {
+            gl_Position = projectionMatrix * mvPosition;
+        } else {
+            //if dead use the initial position and set point size to 0
+            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+            lifeLeft = 0.0;
+            gl_PointSize = 0.;
+        }
+    }
+    `,
   fragmentShader: `
-              varying vec4 vColor;
-              varying vec4 vEndColor;
-              varying float lifeLeft;
-              varying float alpha;
-              uniform sampler2D tSprite;
-              void main() {
-                  // color based on particle texture and the lifeLeft. 
-                  // if lifeLeft is 0 then make invisible
-                  vec4 tex = texture2D( tSprite, gl_PointCoord );
-                  vec4 color = mix(vColor, vEndColor, 1.0-lifeLeft);
-                  gl_FragColor = vec4( color.rgb*tex.rgb, alpha * tex.a);
-              }
-  
-          `,
+      varying vec4 vColor;
+      varying vec4 vEndColor;
+      varying float lifeLeft;
+      varying float alpha;
+      uniform sampler2D tSprite;
+      void main() {
+          // color based on particle texture and the lifeLeft. 
+          // if lifeLeft is 0 then make invisible
+          vec4 tex = texture2D( tSprite, gl_PointCoord );
+          vec4 color = mix(vColor, vEndColor, 1.0-lifeLeft);
+          gl_FragColor = vec4( color.rgb*tex.rgb, alpha * tex.a);
+      }
+
+  `,
 };
 
 const UPDATEABLE_ATTRIBUTES = [
@@ -120,7 +124,7 @@ class ParticleController implements ParticleControllerInt {
   constructor(options: any) {
     options = options || {};
     this.blending = options.blending ? options.blending : THREE.NormalBlending;
-    this.PARTICLE_COUNT = options.maxParticles || 1000000;
+    this.PARTICLE_COUNT = options.maxParticles || 100000;
     this.PARTICLE_CURSOR = 0;
     this.time = 0;
     this.offset = 0;
@@ -354,7 +358,7 @@ class ParticleController implements ParticleControllerInt {
         : endColor.copy(color);
 
     const lifetime = options.lifetime !== undefined ? options.lifetime : 5;
-    let size = options.size !== undefined ? options.size : 100;
+    let size = options.size !== undefined ? options.size : 500;
     const sizeRandomness =
       options.sizeRandomness !== undefined ? options.sizeRandomness : 0;
 

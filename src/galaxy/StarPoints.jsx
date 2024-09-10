@@ -1,19 +1,15 @@
 import { forwardRef, useRef, useLayoutEffect } from "react";
 import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
-import { useThree } from "@react-three/fiber";
 import starSpriteSrc from "../sprites/sprite120.png";
 import featheredSpriteSrc from "../sprites/feathered60.png";
 import useStore from "../stores/store";
-import { PLAYER } from "../constants/constants";
 import "./shaders/starPointsShaderMaterial";
 
 const StarPoints = forwardRef(function StarPoints(
-  { view },
+  { viewAsBackground = false },
   starPointsForwardRef
 ) {
-  const { camera } = useThree();
-  const displayAsBackground = view === PLAYER.screen.flight;
-  console.log("StarPoints rendered, displayAsBackground:", displayAsBackground);
+  console.log("StarPoints rendered");
   const starPointsBufferGeoRef = useRef();
   const starSprite = new TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new TextureLoader().load(featheredSpriteSrc);
@@ -25,9 +21,8 @@ const StarPoints = forwardRef(function StarPoints(
   } = useStore((state) => state.galaxy);
 
   useLayoutEffect(() => {
-    if (displayAsBackground) {
-      const cameraFar = camera.far;
-      const normalizedCoordsArray = [];
+    if (viewAsBackground) {
+      const pushedAwayCoordsArray = [];
       const nebulaSelectedArray = [];
       //let errorShown = false;
       for (let i = 0; i < starCoordsBuffer.array.length / 3; i += 1) {
@@ -37,14 +32,14 @@ const StarPoints = forwardRef(function StarPoints(
         const distance = Math.sqrt(x * x + y * y + z * z);
         // to show the nebula sprite particles instead of star
         nebulaSelectedArray.push(distance > 40 ? 1 : 0);
-        const scaleFactor = (100 / distance) * (cameraFar - 1000); // close to max distance visible
+        const scaleFactor = 100000 / distance;
         const newX = x * scaleFactor;
         const newY = y * scaleFactor;
         const newZ = z * scaleFactor;
-        normalizedCoordsArray.push(newX, newY, newZ);
+        pushedAwayCoordsArray.push(newX, newY, newZ);
       }
       const usingStarCoordsBuffer = new BufferAttribute(
-        new Float32Array(normalizedCoordsArray),
+        new Float32Array(pushedAwayCoordsArray),
         3 // x, y, z values
       );
       starPointsBufferGeoRef.current.setAttribute(
@@ -62,10 +57,10 @@ const StarPoints = forwardRef(function StarPoints(
       // needsUpdate not needed due to useLayoutEffect timing
       //starPointsBufferGeoRef.current.attributes.position.needsUpdate = true;
     }
-  }, [camera.far, displayAsBackground, starCoordsBuffer.array]);
+  }, [viewAsBackground, starCoordsBuffer.array]);
 
   return (
-    <points ref={starPointsForwardRef}>
+    <points ref={starPointsForwardRef} frustumCulled={viewAsBackground}>
       <bufferGeometry ref={starPointsBufferGeoRef}>
         <bufferAttribute attach={"attributes-position"} {...starCoordsBuffer} />
         <bufferAttribute attach={"attributes-aColor"} {...starColorBuffer} />
@@ -75,11 +70,6 @@ const StarPoints = forwardRef(function StarPoints(
           {...starSelectedBuffer}
         />
       </bufferGeometry>
-      {/*
-      depthTest={true} so sprites are not visible through objects 
-        changed to false, now rendered as background scene
-      depthWrite={false} fix sprite particle transparency issue 
-      */}
       <starPointsShaderMaterial
         transparent
         blending={AdditiveBlending}
@@ -88,7 +78,7 @@ const StarPoints = forwardRef(function StarPoints(
         vertexColors
         uTexture={starSprite}
         uTextureNebula={nebulaSprite}
-        uBackground={displayAsBackground ? 1 : 0}
+        uBackground={viewAsBackground ? 1 : 0}
       />
     </points>
   );

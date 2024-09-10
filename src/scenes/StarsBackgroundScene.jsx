@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Scene } from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import { PLAYER } from "../../constants/constants";
-import StarPoints from "../../galaxy/StarPoints";
+import StarPoints from "../galaxy/StarPoints";
 
-const StarPointsScene = () => {
-  console.log("StarPointsScene rendered");
+const StarsBackgroundScene = () => {
+  console.log("StarsBackgroundScene rendered");
   const [scene] = useState(() => new Scene());
   const { camera } = useThree();
   //const { gl, size, camera } = useThree();
@@ -21,10 +20,10 @@ const StarPointsScene = () => {
 
   return createPortal(
     <group position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-      <StarPoints view={PLAYER.screen.flight} />
+      <StarPoints viewAsBackground={true} />
     </group>,
     scene
   );
 };
 
-export default StarPointsScene;
+export default StarsBackgroundScene;

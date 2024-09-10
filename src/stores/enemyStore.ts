@@ -17,7 +17,7 @@ const generateEnemies = (numEnemies: number) => {
     );
   });
   // boss mech position
-  enemies[0].object3d.position.set(0, 0, 0);
+  enemies[0].object3d.position.set(200, 200, 200);
   // group enemies into squads
   groupEnemies(enemies);
   return enemies;

@@ -8,7 +8,7 @@ import {
 } from "react";
 import PropTypes from "prop-types";
 import * as THREE from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 //import EnemyMech from "../classes/EnemyMech"; // todo: use in PropTypes
 import useStore from "../stores/store";
@@ -16,7 +16,7 @@ import useEnemyStore from "../stores/enemyStore";
 import useWeaponFireStore from "../stores/weaponFireStore";
 import BuildMech from "../3d/BuildMech";
 import Explosions from "../3d/Explosions";
-import Particles from "../3d/Particles";
+import ParticleTest from "../3d/ParticleTest";
 import BoidController from "../classes/BoidController";
 //import { MeshLineTrail } from "../3d/Trail";
 import useDevStore from "../stores/devStore";
@@ -24,6 +24,7 @@ import useDevStore from "../stores/devStore";
 
 export default function EnemyTestScene() {
   console.log("EnemyTest Scene rendered");
+  const [scene] = useState(() => new THREE.Scene());
   const { camera } = useThree();
   const getPlayer = useStore((state) => state.getPlayer);
   const setPlayerPosition = useStore(
@@ -74,6 +75,8 @@ export default function EnemyTestScene() {
         enemy.object3d.position.copy(keepPosition);
       }
     });
+    enemies[0].object3d.position.set(200, 200, 200);
+    console.log("enemies pos", enemies[0].object3d.position);
   }, [enemies, instancedMechObject3d]);
 
   // show hide obb boxes
@@ -141,7 +144,14 @@ export default function EnemyTestScene() {
     }
   });
 
-  return (
+  // render scene overtop of star points scene
+  useFrame(
+    ({ gl }) =>
+      void ((gl.autoClear = false), gl.clearDepth(), gl.render(scene, camera)),
+    1
+  );
+
+  return createPortal(
     <>
       <ambientLight intensity={1} />
       <fog attach="fog" args={["#2A3C47", 100, 1500]} />
@@ -150,7 +160,7 @@ export default function EnemyTestScene() {
         rotateSpeed={3}
         panSpeed={0.5}
       />
-      <Particles />
+      <ParticleTest scene={scene} />
       <BuildMech
         ref={(mechRef) => {
           playerMechRef.current = mechRef;
@@ -209,7 +219,8 @@ export default function EnemyTestScene() {
         </>
       )}
       <Explosions />
-    </>
+    </>,
+    scene
   );
 }
 
