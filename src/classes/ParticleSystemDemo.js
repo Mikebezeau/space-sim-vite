@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import CustomShaderMaterial from "three-custom-shader-material/vanilla";
-import fireSrc from "../sprites/particles/pngTrans/fire_01.png";
+import smokeTextureSrc from "../sprites/particles/pngTrans/smoke_11.png";
 
+// shader code is indent sensitive due to CustomShaderMaterial use
 const _VS = `
 uniform float pointMultiplier;
 
@@ -16,7 +16,6 @@ void main() {
   vec4 myMvPosition = modelViewMatrix * vec4(position, 1.0);
 
   gl_Position = projectionMatrix * myMvPosition;
-  //gl_PointSize = aSize * pointMultiplier / gl_Position.w;
   csm_PointSize = aSize * pointMultiplier / gl_Position.w;
 
   vAngle = vec2(cos(angle), sin(angle));
@@ -32,17 +31,6 @@ void main() {
   vec2 coords = (gl_PointCoord - 0.5) * mat2(vAngle.x, vAngle.y, -vAngle.y, vAngle.x) + 0.5;
   csm_FragColor = texture2D(diffuseTexture, coords) * vColour;
 }`;
-
-//uniform sampler2D diffuseTexture;
-
-//varying vec4 vColour;
-//varying vec2 vAngle;
-
-//void main() {
-//vec2 coords = (gl_PointCoord - 0.5) * mat2(vAngle.x, vAngle.y, -vAngle.y, vAngle.x) + 0.5;
-//gl_FragColor = texture2D(diffuseTexture, coords) * vColour;
-//csm_FragColor = texture2D(diffuseTexture, coords) * vColour;
-//}`;
 
 class LinearSpline {
   constructor(lerp) {
@@ -89,20 +77,23 @@ class ParticleSystemDemo {
           window.innerHeight / (2.0 * Math.tan((0.5 * 60.0 * Math.PI) / 180.0)),
       },
     };
-    this._material = new CustomShaderMaterial({
-      baseMaterial: THREE.PointsMaterial,
-      uniforms: uniforms,
-      vertexShader: _VS,
-      fragmentShader: _FS,
-      //silent: true, // Disables the default warning if true
-      flatShading: true,
+    this._material = new THREE.PointsMaterial({
+      map: new THREE.TextureLoader().load(smokeTextureSrc),
       blending: THREE.NormalBlending,
-      map: new THREE.TextureLoader().load(fireSrc),
       depthTest: true,
       depthWrite: false,
       transparent: true,
       vertexColors: true,
+      size: 20,
+      fog: false,
+      onBeforeCompile: (shader) => {
+        console.log("shader", shader.fragmentShader);
+        shader.uniforms.pointMultiplier = uniforms.pointMultiplier;
+      },
     });
+
+    // flatShading: true, // what does this do?
+
     /*
     this._material = new THREE.ShaderMaterial({
       uniforms: uniforms,

@@ -1,22 +1,16 @@
 import { useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import useParticleStore from "../stores/particleStore";
-import { SCALE } from "../constants/constants";
-
 //import { setCustomData } from "r3f-perf";
 
-const Particles = ({ scale = SCALE }) => {
-  //console.log("Particles rendered");
-  //setCustomData(0);
+const Particles = () => {
+  console.log("Particles rendered");
   const initControllers = useParticleStore((state) => state.initControllers);
   const particleController = useParticleStore(
     (state) => state.particleController
   );
-  const depthParticleController = useParticleStore(
-    (state) => state.depthParticleController
-  );
   const colors = useParticleStore((state) => state.colors);
-  const { gl, camera, scene } = useThree();
+  const { scene } = useThree();
 
   useEffect(() => {
     initControllers();
@@ -32,28 +26,15 @@ const Particles = ({ scale = SCALE }) => {
     };
   }, [particleController, scene]);
 
-  useEffect(() => {
-    console.log("Depth Particles added to scene");
-    if (depthParticleController) {
-      depthParticleController.initParticles(camera);
-      scene.add(depthParticleController.smokeParticles);
-    }
-
-    return () => {
-      console.log("Depth Particles cleanup");
-      if (depthParticleController) depthParticleController.dispose();
-    };
-  }, [depthParticleController, scene]);
-
   useFrame(({ clock }) => {
-    if (Math.random() < 0.8) {
+    if (Math.random() < 0.1) {
       if (particleController) {
         particleController.spawnParticle({
-          position: { x: 0, y: 0, z: -600 },
+          position: { x: 0, y: 0, z: 0 },
           velocity: {
-            x: Math.random(),
-            y: Math.random(),
-            z: Math.random(),
+            x: Math.random() - 0.5,
+            y: Math.random() - 0.5,
+            z: Math.random() - 0.5,
           },
           color: colors.yellow,
           endColor: colors.red,
@@ -61,8 +42,6 @@ const Particles = ({ scale = SCALE }) => {
       }
     }
     if (particleController) particleController.update(clock.getElapsedTime());
-    if (depthParticleController)
-      depthParticleController.animate(gl, scene, camera);
   });
 
   return null;

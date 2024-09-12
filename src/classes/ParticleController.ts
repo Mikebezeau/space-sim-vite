@@ -1,6 +1,5 @@
 import * as THREE from "three";
-//import { SCALE } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
+//import { setCustomData } from "r3f-perf";
 
 const GPUParticleShader = {
   vertexShader: `
@@ -16,13 +15,17 @@ const GPUParticleShader = {
     attribute vec3 acceleration;
     attribute vec3 color;
     attribute vec3 endColor;
-    attribute float size;
+    attribute float aSize;
     attribute float lifeTime;
 
     varying vec4 vColor;
     varying vec4 vEndColor;
     varying float lifeLeft;
     varying float alpha;
+
+    #include <common>
+    #include <logdepthbuf_pars_vertex>
+    #include <clipping_planes_pars_vertex>
 
     void main() {
         vColor = vec4( color, 1.0 );
@@ -48,7 +51,7 @@ const GPUParticleShader = {
             ;
         
         vec4 mvPosition = modelViewMatrix * vec4( newPosition, 1.0 );
-        gl_PointSize = ( uScale * size / -mvPosition.z );// * lifeLeft;
+        gl_PointSize = ( uScale * aSize / -mvPosition.z );// * lifeLeft;
 
         if (lifeLeft < 0.0) { 
             lifeLeft = 0.0; 
@@ -58,11 +61,14 @@ const GPUParticleShader = {
         if( timeElapsed > 0.0 ) {
             gl_Position = projectionMatrix * mvPosition;
         } else {
-            //if dead use the initial position and set point size to 0
+            //if dead use the initial position and set point aSize to 0
             gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
             lifeLeft = 0.0;
             gl_PointSize = 0.;
         }
+
+        #include <logdepthbuf_vertex>
+        #include <clipping_planes_vertex>
     }
     `,
   fragmentShader: `
@@ -71,12 +77,20 @@ const GPUParticleShader = {
       varying float lifeLeft;
       varying float alpha;
       uniform sampler2D tSprite;
+            
+      #include <common>
+      #include <logdepthbuf_pars_fragment>
+      #include <clipping_planes_pars_fragment>
+
       void main() {
           // color based on particle texture and the lifeLeft. 
           // if lifeLeft is 0 then make invisible
           vec4 tex = texture2D( tSprite, gl_PointCoord );
           vec4 color = mix(vColor, vEndColor, 1.0-lifeLeft);
           gl_FragColor = vec4( color.rgb*tex.rgb, alpha * tex.a);
+          
+          #include <clipping_planes_fragment>
+          #include <logdepthbuf_fragment>
       }
 
   `,
@@ -89,7 +103,7 @@ const UPDATEABLE_ATTRIBUTES = [
   "acceleration",
   "color",
   "endColor",
-  "size",
+  "aSize",
   "lifeTime",
 ];
 
@@ -110,6 +124,7 @@ class ParticleController implements ParticleControllerInt {
   count: number;
   DPR: number;
   particleUpdate: boolean;
+  particleNeedClearUpdateRanges: boolean;
   onTick: any;
   reverseTime: boolean;
   fadeIn: number;
@@ -131,6 +146,7 @@ class ParticleController implements ParticleControllerInt {
     this.count = 0;
     this.DPR = window.devicePixelRatio;
     this.particleUpdate = false;
+    this.particleNeedClearUpdateRanges = false;
     this.onTick = options.onTick;
 
     this.reverseTime = options.reverseTime;
@@ -150,7 +166,6 @@ class ParticleController implements ParticleControllerInt {
     //setup the texture
     this.sprite = options.particleSpriteTex || null;
     if (!this.sprite) throw new Error("No particle sprite texture specified");
-    this.sprite.wrapS = this.sprite.wrapT = THREE.RepeatWrapping;
 
     //setup the shader material
     this.material = new THREE.ShaderMaterial({
@@ -181,12 +196,6 @@ class ParticleController implements ParticleControllerInt {
       vertexShader: GPUParticleShader.vertexShader,
       fragmentShader: GPUParticleShader.fragmentShader,
     });
-
-    // define defaults for all values
-    this.material.defaultAttributeValues.particlePositionsStartTime = [
-      0, 0, 0, 0,
-    ];
-    this.material.defaultAttributeValues.particleVelColSizeLife = [0, 0, 0, 0];
 
     // geometry
     this.geometry = new THREE.BufferGeometry();
@@ -244,7 +253,7 @@ class ParticleController implements ParticleControllerInt {
       ).setUsage(THREE.DynamicDrawUsage)
     );
     this.geometry.setAttribute(
-      "size",
+      "aSize",
       new THREE.BufferAttribute(
         new Float32Array(this.PARTICLE_COUNT),
         1
@@ -270,21 +279,31 @@ class ParticleController implements ParticleControllerInt {
   geometryUpdate() {
     if (this.particleUpdate === true) {
       this.particleUpdate = false;
+      this.particleNeedClearUpdateRanges = true;
       UPDATEABLE_ATTRIBUTES.forEach((name) => {
-        const attr = this.geometry.getAttribute(name);
         if (this.offset + this.count < this.PARTICLE_COUNT) {
-          // updateRange depreciated - use addUpdateRange / clearUpdateRanges
-          attr.updateRange.offset = this.offset * attr.itemSize;
-          attr.updateRange.count = this.count * attr.itemSize;
-        } else {
-          attr.updateRange.offset = 0;
-          attr.updateRange.count = -1; // default to not use update ranges
+          const attr = this.geometry.getAttribute(name);
+          attr.addUpdateRange(
+            this.offset * attr.itemSize,
+            this.count * attr.itemSize
+          );
+          attr.needsUpdate = true;
         }
-        attr.needsUpdate = true;
       });
       this.offset = 0;
       this.count = 0;
+    } else if (this.particleNeedClearUpdateRanges) {
+      this.particleNeedClearUpdateRanges = false;
+      UPDATEABLE_ATTRIBUTES.forEach((name) => {
+        const attr = this.geometry.getAttribute(name);
+        attr.clearUpdateRanges();
+      });
     }
+    /*
+    setCustomData(
+      this.geometry.getAttribute("positionStart").updateRanges.length
+    );
+    */
   }
 
   //use one of the random numbers
@@ -329,7 +348,7 @@ class ParticleController implements ParticleControllerInt {
     const accelerationAttribute = this.geometry.getAttribute("acceleration");
     const colorAttribute = this.geometry.getAttribute("color");
     const endcolorAttribute = this.geometry.getAttribute("endColor");
-    const sizeAttribute = this.geometry.getAttribute("size");
+    const sizeAttribute = this.geometry.getAttribute("aSize");
     const lifeTimeAttribute = this.geometry.getAttribute("lifeTime");
 
     options = options || {};
@@ -358,11 +377,11 @@ class ParticleController implements ParticleControllerInt {
         : endColor.copy(color);
 
     const lifetime = options.lifetime !== undefined ? options.lifetime : 5;
-    let size = options.size !== undefined ? options.size : 500;
+    let aSize = options.aSize !== undefined ? options.aSize : 500;
     const sizeRandomness =
       options.sizeRandomness !== undefined ? options.sizeRandomness : 0;
 
-    if (this.DPR !== undefined) size *= this.DPR;
+    if (this.DPR !== undefined) aSize *= this.DPR;
 
     const i = this.PARTICLE_CURSOR;
 
@@ -387,10 +406,10 @@ class ParticleController implements ParticleControllerInt {
     endcolorAttribute.array[i * 3 + 1] = endColor.g;
     endcolorAttribute.array[i * 3 + 2] = endColor.b;
 
-    //size, lifetime and starttime
-    sizeAttribute.array[i] = size + this.random() * sizeRandomness;
+    //aSize, lifetime and starttime
+    sizeAttribute.array[i] = aSize + this.random() * sizeRandomness;
     lifeTimeAttribute.array[i] = lifetime;
-    startTimeAttribute.array[i] = this.time; // + this.random() * 2e-2;
+    startTimeAttribute.array[i] = this.time;
     // offset
     if (this.offset === 0) this.offset = this.PARTICLE_CURSOR;
     // counter and cursor
