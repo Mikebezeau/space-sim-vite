@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import usePlayerControlsStore from "./stores/playerControlsStore";
+import useDevStore from "./stores/devStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
 import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
 import Cockpit from "./uiCockpit/Cockpit";
@@ -24,6 +25,8 @@ const AppUI = () => {
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
+  const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
+
   const transitionFadeDiv = useRef(null);
 
   useEffect(() => {
@@ -32,7 +35,7 @@ const AppUI = () => {
 
   return (
     <div className="pointer-events-none touch-none">
-      {playerScreen === PLAYER.screen.flight && (
+      {(playerScreen === PLAYER.screen.flight || devPlayerPilotMech) && (
         <>
           {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
           {playerViewMode === PLAYER.view.thirdPerson && (
@@ -55,7 +58,8 @@ const AppUI = () => {
       {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
 
       {(playerScreen === PLAYER.screen.flight ||
-        playerScreen === PLAYER.screen.landedPlanet) && (
+        playerScreen === PLAYER.screen.landedPlanet ||
+        devPlayerPilotMech) && (
         <>
           {IS_MOBILE ? (
             <SpaceFlightControlsTouch />

@@ -10,59 +10,56 @@ import PropTypes from "prop-types";
 import * as THREE from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-//import EnemyMech from "../classes/EnemyMech"; // todo: use in PropTypes
 import useStore from "../stores/store";
 import useEnemyStore from "../stores/enemyStore";
-import useWeaponFireStore from "../stores/weaponFireStore";
+import useParticleStore from "../stores/particleStore";
+import useDevStore from "../stores/devStore";
+import PlayerMech from "../3d/spaceFlight/PlayerMechNew";
+//import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
 import BuildMech from "../3d/BuildMech";
-import Explosions from "../3d/Explosions";
 import Particles from "../3d/Particles";
 import BoidController from "../classes/BoidController";
-//import { MeshLineTrail } from "../3d/Trail";
-import useDevStore from "../stores/devStore";
 //import { setCustomData } from "r3f-perf";
 
 export default function EnemyTestScene() {
   console.log("EnemyTest Scene rendered");
   const [scene] = useState(() => new THREE.Scene());
   const { camera } = useThree();
-  const getPlayer = useStore((state) => state.getPlayer);
   const setPlayerPosition = useStore(
     (state) => state.actions.setPlayerPosition
   );
   const enemies = useEnemyStore((state) => state.enemies);
+  const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
   const showObbBox = useDevStore((state) => state.showObbBox);
-  const addExplosion = useWeaponFireStore((state) => state.addExplosion);
+  const addExplosion = useParticleStore((state) => state.addExplosion);
 
   const cameraControlsRef = useRef(null);
-  const playerMechRef = useRef(null);
   const enemyMechRefs = useRef([]);
   const obbBoxRefs = useRef([]);
   const instancedMeshRef = useRef(null);
   const instancedMechObject3d = useRef(null);
   const boidControllerRef = useRef(null);
-  //const trailPositionRef = useRef([]);
 
   const resestControlsCameraPosition = useCallback(() => {
+    if (!cameraControlsRef.current || devPlayerPilotMech) return;
+    console.log("resestControlsCameraPosition");
     cameraControlsRef.current.reset(); // reset camera controls
-    camera.position.set(0, 0, -20);
+    camera.position.set(0, 0, -600);
     camera.lookAt(0, 0, 0);
-  }, [camera]);
+  }, [camera, devPlayerPilotMech]);
 
   useEffect(() => {
-    console.log("EnemyTestScene useEffect");
-    if (playerMechRef.current === null) return;
-    resestControlsCameraPosition();
-    // set player position
-    setPlayerPosition(new THREE.Vector3(0, 0, 10));
-    playerMechRef.current.position.set(0, 0, 10);
+    console.log("setPlayerPosition");
+    if (devPlayerPilotMech) setPlayerPosition(new THREE.Vector3(0, 0, -600));
+  }, [devPlayerPilotMech, setPlayerPosition]);
 
+  useEffect(() => {
     // set boid controller for flocking enemies
     // must use all enemies (for checking groupLeaderId)
     boidControllerRef.current = new BoidController(
       enemies //.filter((enemy) => enemy.useInstancedMesh)
     );
-  }, [enemies, playerMechRef, resestControlsCameraPosition, setPlayerPosition]);
+  }, [enemies]);
 
   // set loaded BuildMech object3d for instancedMesh
   useEffect(() => {
@@ -76,7 +73,9 @@ export default function EnemyTestScene() {
       }
     });
     enemies[0].object3d.position.set(200, 200, 200);
-    console.log("enemies pos", enemies[0].object3d.position);
+    enemies[0].object3d.rotation.setFromVector3(
+      new THREE.Vector3(0, 0, Math.PI / 2)
+    );
   }, [enemies, instancedMechObject3d]);
 
   // show hide obb boxes
@@ -85,30 +84,33 @@ export default function EnemyTestScene() {
       if (showObbBox) obbBox.visible = true;
       else obbBox.visible = false;
     });
-  }, [showObbBox]); // showBoidVectors
+  }, [showObbBox]);
+
+  useFrame(() => {
+    if (showObbBox) {
+      // update obb test boxes
+      enemies.forEach((enemy, i) => {
+        enemy.updateObb();
+        // for testing obb placement and intersection
+        obbBoxRefs.current[i].position.copy(enemy.obbPositioned.center);
+        obbBoxRefs.current[i].setRotationFromMatrix(enemy.obbRotationHelper);
+        // show leaders in red and followers in green, no group in blue
+        obbBoxRefs.current[i].material.color.setHex(
+          enemy.getIsLeader()
+            ? 0xff0000
+            : enemy.groupLeaderId
+            ? 0x00ff00
+            : 0x0000ff
+        );
+      });
+    }
+  });
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.5); // cap delta to 500ms
     // boid flocking movement
-    boidControllerRef.current.update(delta);
-    // update enemy object3d and obb test boxes
-    enemies.forEach((enemy, i) => {
-      enemy.obbNeedsUpdate = true;
-      // update trail position
-      //trailPositionRef.current[i].position.copy(enemy.object3d.position);
-      // for testing obb placement and intersection
-      obbBoxRefs.current[i].position.copy(enemy.obbPositioned.center);
-      obbBoxRefs.current[i].setRotationFromMatrix(enemy.obbRotationHelper);
-      // show leaders in red and followers in green, no group in blue
-      obbBoxRefs.current[i].material.color.setHex(
-        enemy.getIsLeader()
-          ? 0xff0000
-          : enemy.groupLeaderId
-          ? 0x00ff00
-          : 0x0000ff
-      );
-    });
-
+    boidControllerRef.current?.update(delta);
+    // non-instanced mechs are updated when their object3d is updated
     // check for intersection between obb test boxes
     for (let i = 0, il = enemies.length; i < il; i++) {
       // only check each object once
@@ -131,11 +133,11 @@ export default function EnemyTestScene() {
           obbBoxRefs.current[j].material.color.setHex(0xffff00);
 
           // add test explosions
-          if (Math.random() < 0.05) {
-            addExplosion(enemies[i].object3d);
+          if (Math.random() < 0.5) {
+            if (i !== 0) addExplosion(enemies[i].object3d.position);
           }
-          if (Math.random() < 0.05) {
-            addExplosion(enemies[j].object3d);
+          if (Math.random() < 0.5) {
+            if (i !== 0) addExplosion(enemies[j].object3d.position);
           }
         }
       }
@@ -154,19 +156,19 @@ export default function EnemyTestScene() {
     <>
       <ambientLight intensity={1} />
       <fog attach="fog" args={["#2A3C47", 100, 1500]} />
-      <TrackballControls
-        ref={cameraControlsRef}
-        rotateSpeed={3}
-        panSpeed={0.5}
-      />
+      <PlayerMech />
+      {/*<SpaceFlightHud />*/}
+      {!devPlayerPilotMech && (
+        <TrackballControls
+          ref={(controlsRef) => {
+            cameraControlsRef.current = controlsRef;
+            resestControlsCameraPosition();
+          }}
+          rotateSpeed={3}
+          panSpeed={0.5}
+        />
+      )}
       <Particles />
-      <BuildMech
-        ref={(mechRef) => {
-          playerMechRef.current = mechRef;
-          getPlayer().initObject3d(mechRef);
-        }}
-        mechBP={getPlayer().mechBP}
-      />
       {enemies.length > 0 && (
         <>
           {enemies.map((enemyMech, index) => (
@@ -181,13 +183,6 @@ export default function EnemyTestScene() {
                   })
                 }
               />
-              {/*}
-              <MeshLineTrail
-                ref={(trailRef) => {
-                  trailPositionRef.current[index] = trailRef;
-                }}
-                followObject3d={enemyMech.object3d}
-              />*/}
               {!enemyMech.useInstancedMesh ? (
                 <BuildEnemyMech
                   ref={(mechRef) => {
@@ -217,7 +212,6 @@ export default function EnemyTestScene() {
           }
         </>
       )}
-      <Explosions />
     </>,
     scene
   );
@@ -233,7 +227,7 @@ const BuildEnemyMech = forwardRef(function Enemy(props, buildMechForwardRef) {
       {...props}
       isWireFrame={clicked}
       ref={buildMechForwardRef}
-      handleClick={() => click(!clicked)}
+      //handleClick={() => click(!clicked)}
       //onPointerOver={() => hover(true)}
       //onPointerOut={() => hover(false)}
     />
@@ -247,6 +241,29 @@ const InstancedMechs = forwardRef(function Enemy(
 ) {
   console.log("InstancedMechs rendered");
   const instancedEnemies = enemies.filter((enemy) => enemy.useInstancedMesh);
+
+  useEffect(() => {
+    if (instancedMeshForwardRef.current === null) return;
+    const red = new THREE.Color(0xff0000);
+    instancedEnemies.forEach((enemy, i) => {
+      if (enemy.getIsLeader())
+        instancedMeshForwardRef.current.setColorAt(i, red);
+    });
+    /*
+    const enemyColors = [];
+    instancedEnemies.forEach((enemy) => {
+      const colorRgb = enemy.getIsLeader() ? [1.0, 1.0, 1.0] : [1.0, 0.2, 0.2];
+      enemyColors.push(...colorRgb);
+    });
+
+    instancedMeshForwardRef.current.geometry.setAttribute(
+      "aColor",
+      new THREE.BufferAttribute(new Float32Array(enemyColors), 3).setUsage(
+        THREE.DynamicDrawUsage
+      )
+    );
+    */
+  }, [instancedEnemies, instancedMeshForwardRef]);
 
   useFrame(() => {
     instancedEnemies.forEach((enemy, i) => {
@@ -262,7 +279,28 @@ const InstancedMechs = forwardRef(function Enemy(
       ref={instancedMeshForwardRef}
       args={[instancedEnemies[0].bufferGeom, null, instancedEnemies.length]}
     >
-      <meshBasicMaterial />
+      <meshBasicMaterial
+      /*
+        onBeforeCompile={(shader) => {
+          console.log(shader.vertexShader);
+          console.log(shader.fragmentShader);
+          shader.vertexShader =
+            `attribute vec3 aColor;\nvarying vec4 vColor;\n` +
+            shader.vertexShader;
+
+          shader.fragmentShader =
+            `varying vec4 vColor;\n` + shader.fragmentShader;
+
+          shader.fragmentShader = shader.fragmentShader.replace(
+            `#include <dithering_fragment>`,
+            [
+              `#include <dithering_fragment>`,
+              `gl_FragColor = vec4( 1, 0, 1, 1);`,
+            ].join("\n")
+          );
+        }}
+        */
+      />
     </instancedMesh>
   );
 });

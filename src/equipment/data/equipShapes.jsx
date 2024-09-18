@@ -154,8 +154,9 @@ const wireFrameMaterial = new THREE.MeshBasicMaterial({
   wireframe: true,
 });
 
-const PreServoShapes = ({
+export const ServoShapes = ({
   name,
+  flatShading = false,
   damageReadoutMode = false,
   isWireFrame = false,
   isHit,
@@ -194,6 +195,7 @@ const PreServoShapes = ({
     ? selectMaterial
     : constructionMaterial; //servo.material;
 
+  useMaterial.flatShading = flatShading;
   /*
   const visibilityMaterial = new THREE.MeshLambertMaterial({
     color: new THREE.Color("#669"),
@@ -279,6 +281,7 @@ const PreServoShapes = ({
 
 export const WeaponShapes = function ({
   name,
+  flatShading = false,
   damageReadoutMode = false,
   isWireFrame = false,
   isHit,
@@ -315,6 +318,8 @@ export const WeaponShapes = function ({
     ? selectMaterial
     : constructionMaterial; //weapon.material;
 
+  useMaterial.flatShading = flatShading;
+
   return (
     <group scale={[size, size, size]}>
       <mesh
@@ -328,5 +333,3 @@ export const WeaponShapes = function ({
     </group>
   );
 };
-
-export const ServoShapes = memo(PreServoShapes);

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { SPRITE_DESIGN } from "../constants/particleConstants";
 //import { setCustomData } from "r3f-perf";
 
 const GPUParticleShader = {
@@ -9,6 +10,7 @@ const GPUParticleShader = {
     uniform float fadeIn;
     uniform float fadeOut;
 
+    attribute float aSpriteDesign;
     attribute vec3 positionStart;
     attribute float startTime;
     attribute vec3 velocity;
@@ -18,6 +20,7 @@ const GPUParticleShader = {
     attribute float aSize;
     attribute float lifeTime;
 
+    varying float vSpriteDesign;
     varying vec4 vColor;
     varying vec4 vEndColor;
     varying float lifeLeft;
@@ -28,6 +31,7 @@ const GPUParticleShader = {
     #include <clipping_planes_pars_vertex>
 
     void main() {
+        vSpriteDesign = aSpriteDesign;
         vColor = vec4( color, 1.0 );
         vEndColor = vec4( endColor, 1.0);
         vec3 newPosition;
@@ -72,20 +76,26 @@ const GPUParticleShader = {
     }
     `,
   fragmentShader: `
+      uniform sampler2D tSprite;
+      uniform sampler2D uSprite1;
+
+      varying float vSpriteDesign;
       varying vec4 vColor;
       varying vec4 vEndColor;
       varying float lifeLeft;
       varying float alpha;
-      uniform sampler2D tSprite;
             
       #include <common>
       #include <logdepthbuf_pars_fragment>
       #include <clipping_planes_pars_fragment>
 
       void main() {
+          // set sprite or design type
+          vec4 tex;
+          if( vSpriteDesign == 0.0 ) tex = texture2D( tSprite, gl_PointCoord );
+          if( vSpriteDesign == 1.0 ) tex = texture2D( uSprite1, gl_PointCoord );
           // color based on particle texture and the lifeLeft. 
           // if lifeLeft is 0 then make invisible
-          vec4 tex = texture2D( tSprite, gl_PointCoord );
           vec4 color = mix(vColor, vEndColor, 1.0-lifeLeft);
           gl_FragColor = vec4( color.rgb*tex.rgb, alpha * tex.a);
           
@@ -105,6 +115,7 @@ const UPDATEABLE_ATTRIBUTES = [
   "endColor",
   "aSize",
   "lifeTime",
+  "aSpriteDesign",
 ];
 
 export interface ParticleControllerInt {
@@ -132,14 +143,22 @@ class ParticleController implements ParticleControllerInt {
   rand: number[];
   i: number;
   sprite: THREE.Texture;
+  sprite1: THREE.Texture;
   material: THREE.ShaderMaterial;
   geometry: THREE.BufferGeometry;
   particleSystem: THREE.Points;
+  newParticle: {
+    position: THREE.Vector3;
+    velocity: THREE.Vector3;
+    acceleration: THREE.Vector3;
+    color: THREE.Color;
+    endColor: THREE.Color;
+  };
 
   constructor(options: any) {
     options = options || {};
     this.blending = options.blending ? options.blending : THREE.NormalBlending;
-    this.PARTICLE_COUNT = options.maxParticles || 100000;
+    this.PARTICLE_COUNT = options.maxParticles || 300000;
     this.PARTICLE_CURSOR = 0;
     this.time = 0;
     this.offset = 0;
@@ -165,6 +184,7 @@ class ParticleController implements ParticleControllerInt {
 
     //setup the texture
     this.sprite = options.particleSpriteTex || null;
+    this.sprite1 = options.particleSpriteTex1 || null;
     if (!this.sprite) throw new Error("No particle sprite texture specified");
 
     //setup the shader material
@@ -181,6 +201,9 @@ class ParticleController implements ParticleControllerInt {
         },
         tSprite: {
           value: this.sprite,
+        },
+        uSprite1: {
+          value: this.sprite1,
         },
         reverseTime: {
           value: this.reverseTime,
@@ -266,9 +289,25 @@ class ParticleController implements ParticleControllerInt {
         1
       ).setUsage(THREE.DynamicDrawUsage)
     );
+    // what sprite or design to use
+    this.geometry.setAttribute(
+      "aSpriteDesign",
+      new THREE.BufferAttribute(
+        new Float32Array(this.PARTICLE_COUNT),
+        1
+      ).setUsage(THREE.DynamicDrawUsage)
+    );
 
     this.particleSystem = new THREE.Points(this.geometry, this.material);
     this.particleSystem.frustumCulled = false;
+
+    this.newParticle = {
+      position: new THREE.Vector3(),
+      velocity: new THREE.Vector3(),
+      acceleration: new THREE.Vector3(),
+      color: new THREE.Color(),
+      endColor: new THREE.Color(),
+    };
   }
 
   /*
@@ -299,11 +338,6 @@ class ParticleController implements ParticleControllerInt {
         attr.clearUpdateRanges();
       });
     }
-    /*
-    setCustomData(
-      this.geometry.getAttribute("positionStart").updateRanges.length
-    );
-    */
   }
 
   //use one of the random numbers
@@ -336,12 +370,6 @@ class ParticleController implements ParticleControllerInt {
     then count will be 3 and the cursor will have moved by three.
      */
   spawnParticle(options) {
-    let position = new THREE.Vector3();
-    let velocity = new THREE.Vector3();
-    let acceleration = new THREE.Vector3();
-    let color = new THREE.Color();
-    let endColor = new THREE.Color();
-
     const positionStartAttribute = this.geometry.getAttribute("positionStart");
     const startTimeAttribute = this.geometry.getAttribute("startTime");
     const velocityAttribute = this.geometry.getAttribute("velocity");
@@ -350,66 +378,67 @@ class ParticleController implements ParticleControllerInt {
     const endcolorAttribute = this.geometry.getAttribute("endColor");
     const sizeAttribute = this.geometry.getAttribute("aSize");
     const lifeTimeAttribute = this.geometry.getAttribute("lifeTime");
+    const spriteDesignAttribute = this.geometry.getAttribute("aSpriteDesign");
 
     options = options || {};
 
-    // setup reasonable default values for all arguments
-
-    position =
+    this.newParticle.position =
       options.position !== undefined
-        ? position.copy(options.position)
-        : position.set(0, 0, 0);
-    velocity =
+        ? this.newParticle.position.copy(options.position)
+        : this.newParticle.position.set(0, 0, 0);
+    this.newParticle.velocity =
       options.velocity !== undefined
-        ? velocity.copy(options.velocity)
-        : velocity.set(0, 0, 0);
-    acceleration =
+        ? this.newParticle.velocity.copy(options.velocity)
+        : this.newParticle.velocity.set(0, 0, 0);
+    this.newParticle.acceleration =
       options.acceleration !== undefined
-        ? acceleration.copy(options.acceleration)
-        : acceleration.set(0, 0, 0);
-    color =
+        ? this.newParticle.acceleration.copy(options.acceleration)
+        : this.newParticle.acceleration.set(0, 0, 0);
+    this.newParticle.color =
       options.color !== undefined
-        ? color.copy(options.color)
-        : color.set(0xffffff);
-    endColor =
+        ? this.newParticle.color.copy(options.color)
+        : this.newParticle.color.set(0xffffff);
+    this.newParticle.endColor =
       options.endColor !== undefined
-        ? endColor.copy(options.endColor)
-        : endColor.copy(color);
+        ? this.newParticle.endColor.copy(options.endColor)
+        : this.newParticle.endColor.copy(this.newParticle.color);
 
     const lifetime = options.lifetime !== undefined ? options.lifetime : 5;
-    let aSize = options.aSize !== undefined ? options.aSize : 500;
+    let aSize = options.size !== undefined ? options.size : 500;
     const sizeRandomness =
       options.sizeRandomness !== undefined ? options.sizeRandomness : 0;
-
     if (this.DPR !== undefined) aSize *= this.DPR;
 
     const i = this.PARTICLE_CURSOR;
 
-    // position
-    positionStartAttribute.array[i * 3 + 0] = position.x;
-    positionStartAttribute.array[i * 3 + 1] = position.y;
-    positionStartAttribute.array[i * 3 + 2] = position.z;
+    positionStartAttribute.array[i * 3 + 0] = this.newParticle.position.x;
+    positionStartAttribute.array[i * 3 + 1] = this.newParticle.position.y;
+    positionStartAttribute.array[i * 3 + 2] = this.newParticle.position.z;
 
-    velocityAttribute.array[i * 3 + 0] = velocity.x;
-    velocityAttribute.array[i * 3 + 1] = velocity.y;
-    velocityAttribute.array[i * 3 + 2] = velocity.z;
+    velocityAttribute.array[i * 3 + 0] = this.newParticle.velocity.x;
+    velocityAttribute.array[i * 3 + 1] = this.newParticle.velocity.y;
+    velocityAttribute.array[i * 3 + 2] = this.newParticle.velocity.z;
 
-    accelerationAttribute.array[i * 3 + 0] = acceleration.x;
-    accelerationAttribute.array[i * 3 + 1] = acceleration.y;
-    accelerationAttribute.array[i * 3 + 2] = acceleration.z;
+    accelerationAttribute.array[i * 3 + 0] = this.newParticle.acceleration.x;
+    accelerationAttribute.array[i * 3 + 1] = this.newParticle.acceleration.y;
+    accelerationAttribute.array[i * 3 + 2] = this.newParticle.acceleration.z;
 
-    colorAttribute.array[i * 3 + 0] = color.r;
-    colorAttribute.array[i * 3 + 1] = color.g;
-    colorAttribute.array[i * 3 + 2] = color.b;
+    colorAttribute.array[i * 3 + 0] = this.newParticle.color.r;
+    colorAttribute.array[i * 3 + 1] = this.newParticle.color.g;
+    colorAttribute.array[i * 3 + 2] = this.newParticle.color.b;
 
-    endcolorAttribute.array[i * 3 + 0] = endColor.r;
-    endcolorAttribute.array[i * 3 + 1] = endColor.g;
-    endcolorAttribute.array[i * 3 + 2] = endColor.b;
+    endcolorAttribute.array[i * 3 + 0] = this.newParticle.endColor.r;
+    endcolorAttribute.array[i * 3 + 1] = this.newParticle.endColor.g;
+    endcolorAttribute.array[i * 3 + 2] = this.newParticle.endColor.b;
 
     //aSize, lifetime and starttime
     sizeAttribute.array[i] = aSize + this.random() * sizeRandomness;
     lifeTimeAttribute.array[i] = lifetime;
     startTimeAttribute.array[i] = this.time;
+    // what sprite or 'shader drawn' design to use
+    spriteDesignAttribute.array[i] =
+      options.spriteDesign || SPRITE_DESIGN.starSprite;
+
     // offset
     if (this.offset === 0) this.offset = this.PARTICLE_CURSOR;
     // counter and cursor

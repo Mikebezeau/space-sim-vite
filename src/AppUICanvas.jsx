@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createRoot } from "@react-three/fiber";
 import usePlayerControlsStore from "./stores/playerControlsStore";
+import useDevStore from "./stores/devStore";
 import BuildMech from "./3d/BuildMech";
 import PlanetScanReadout from "./3d/spaceFlight/PlanetScanReadout";
 import useStore from "./stores/store";
@@ -34,6 +35,7 @@ function AppUICanvas() {
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
+  const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
   return (
     <div
@@ -56,7 +58,7 @@ function AppUICanvas() {
       >
         {
           // playerControlMode === PLAYER.controls.combat &&
-          playerScreen === PLAYER.screen.flight ? (
+          playerScreen === PLAYER.screen.flight || devPlayerPilotMech ? (
             <>
               {playerControlMode === PLAYER.controls.scan ? (
                 <>

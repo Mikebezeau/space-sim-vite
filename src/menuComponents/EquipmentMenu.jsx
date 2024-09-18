@@ -98,11 +98,11 @@ const EquipmentMenu = () => {
       hydraulics: {
         buttonLable: "Servo Hydraulics",
         component: <ServoHydraulics heading="Servo Hydraulics Power Rating" />,
-      },
-    propulsion: { buttonLable: "Propulsion" },
-    tech: { buttonLable: "Tech" },
-    parts: { buttonLable: "Parts" },
-    */
+        },
+      propulsion: { buttonLable: "Propulsion" },
+      tech: { buttonLable: "Tech" },
+      parts: { buttonLable: "Parts" },
+      */
       weapons: {
         buttonLable: "Weapons / Shields",
         component: <Weapons heading={"View Weapon List, add weaponry"} />,

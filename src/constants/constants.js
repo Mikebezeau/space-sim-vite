@@ -42,9 +42,9 @@ export const PLAYER = {
 export const SPEED_VALUES = [-50, 0, 5, 50, 100, 500];
 
 export const WEAPON_FIRE_SPEED = {
-  beam: 100,
-  proj: 40,
-  missile: 20,
+  beam: 500,
+  proj: 200,
+  missile: 100,
   eMelee: 0,
   melee: 0,
 };

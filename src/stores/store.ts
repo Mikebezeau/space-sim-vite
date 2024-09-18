@@ -243,7 +243,7 @@ const useStore = create<storeState>()((set, get) => ({
           useWeaponFireStore.getState().actions.shoot
         );
         */
-        useWeaponFireStore.getState().weaponFireUpdateFrame();
+        //useWeaponFireStore.getState().weaponFireUpdateFrame();
       });
     },
 
@@ -258,15 +258,7 @@ const useStore = create<storeState>()((set, get) => ({
     },
 
     setPlayerPosition(positionVec3) {
-      set((state) => ({
-        player: {
-          ...state.player,
-          object3d: {
-            ...state.player.object3d,
-            position: state.player.object3d.position.copy(positionVec3),
-          },
-        },
-      }));
+      get().player.object3d.position.copy(positionVec3);
     },
 
     setFocusPlanetIndex(focusPlanetIndex) {
@@ -282,21 +274,22 @@ const useStore = create<storeState>()((set, get) => ({
     },
 
     setSelectedTargetIndex() {
+      get().player.fireWeapon();
       //make work for enemies as well
       //set new target for current shooter
       let targetIndex: number | null = null;
       if (get().selectedTargetIndex !== get().focusTargetIndex) {
         targetIndex = get().focusTargetIndex;
-      } else {
+      } /* else {
         useWeaponFireStore
           .getState()
           .actions.cancelWeaponFire(get().player.mechBP);
-      }
+      }*/
       if (targetIndex !== null) {
         set(() => ({
           selectedTargetIndex: targetIndex,
         }));
-      }
+      } /*
       useWeaponFireStore.getState().actions.shoot(
         get().player.mechBP,
         get().player,
@@ -306,7 +299,7 @@ const useStore = create<storeState>()((set, get) => ({
         false, // auto fire
         false, // auto aim
         true // isPlayer
-      );
+      );*/
     },
 
     // intial star position selection in galaxy map

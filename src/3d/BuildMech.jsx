@@ -18,7 +18,8 @@ const directionPointerFollowerMaterial = new MeshBasicMaterial({
 const BuildMech = forwardRef(function BuildMech(
   {
     mechBP,
-    damageReadoutMode,
+    flatShading = true,
+    damageReadoutMode = false,
     servoHitNames = [],
     drawDistanceLevel = 0,
     servoEditId = null,
@@ -57,6 +58,7 @@ const BuildMech = forwardRef(function BuildMech(
         >
           <ServoShapes
             name={servo.id + "_servo"}
+            flatShading={flatShading}
             damageReadoutMode={damageReadoutMode}
             isWireFrame={isWireFrame}
             isHit={servoHitNames.find((name) => name === servo.id + "_servo")}
@@ -74,6 +76,7 @@ const BuildMech = forwardRef(function BuildMech(
             >
               <WeaponShapes
                 name={weapon.id + "_weapon"}
+                flatShading={flatShading}
                 damageReadoutMode={damageReadoutMode}
                 isWireFrame={isWireFrame}
                 isHit={servoHitNames.find(

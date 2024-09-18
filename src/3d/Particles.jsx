@@ -9,7 +9,6 @@ const Particles = () => {
   const particleController = useParticleStore(
     (state) => state.particleController
   );
-  const colors = useParticleStore((state) => state.colors);
   const { scene } = useThree();
 
   useEffect(() => {
@@ -27,20 +26,6 @@ const Particles = () => {
   }, [particleController, scene]);
 
   useFrame(({ clock }) => {
-    if (Math.random() < 0.1) {
-      if (particleController) {
-        particleController.spawnParticle({
-          position: { x: 0, y: 0, z: 0 },
-          velocity: {
-            x: Math.random() - 0.5,
-            y: Math.random() - 0.5,
-            z: Math.random() - 0.5,
-          },
-          color: colors.yellow,
-          endColor: colors.red,
-        });
-      }
-    }
     if (particleController) particleController.update(clock.getElapsedTime());
   });
 

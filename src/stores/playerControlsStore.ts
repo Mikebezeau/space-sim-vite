@@ -162,6 +162,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       finalShipQuat.multiplyQuaternions(currentShipQuat, rotateShipQuat);
       player.object3d.rotation.setFromQuaternion(finalShipQuat.normalize());
       //move ship forward
+
       player.object3d.translateZ(player.speed * SCALE);
 
       //CAMERA

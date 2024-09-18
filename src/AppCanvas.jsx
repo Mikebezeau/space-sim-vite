@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
+import useDevStore from "./stores/devStore";
 import SpaceFlightScene from "./scenes/SpaceFlightScene";
 import StarsBackgroundScene from "./scenes/StarsBackgroundScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
@@ -18,6 +19,7 @@ const AppCanvas = () => {
     (state) => state.actions.beginSpaceFlightSceneLoop
   );
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
+  const devEnemyTest = useDevStore((state) => state.devEnemyTest);
 
   return (
     <Canvas
@@ -69,7 +71,7 @@ const AppCanvas = () => {
       {playerScreen === PLAYER.screen.equipmentBuild ? (
         <EquipmentBlueprint />
       ) : null}
-      {playerScreen === PLAYER.screen.testEnemies ? (
+      {playerScreen !== PLAYER.screen.equipmentBuild && devEnemyTest ? (
         <>
           <StarsBackgroundScene />
           <EnemyTestScene />

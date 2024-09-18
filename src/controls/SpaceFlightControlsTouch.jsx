@@ -92,6 +92,7 @@ const SpaceFlightControlsTouch = () => {
 
   //SHOOT LASERS
   function handleShoot() {
+    console.log("mobile shoot");
     actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
   }
   useTouchStartControls("btn-shoot", handleShoot);
@@ -186,10 +187,17 @@ const SpaceFlightControlsTouch = () => {
       <div className="absolute w-[200px] h-[100px] bottom-5 right-28 flex justify-end">
         <div
           id="btn-shoot"
-          className="ml-1 w-24 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
+          className="pointer-events-auto ml-1 w-24 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
         >
           <div className="relative scale-x-[-1] right-2 top-2">
-            <ActionWarpToPlanet />
+            {
+              // - remove pointer-events-auto above
+              //playerActionMode !== PLAYER.action.manualControl ? (
+              //<ActionShoot />
+              //) : (
+              <ActionWarpToPlanet />
+              //
+            }
           </div>
         </div>
         {/*<span id="btn-sys">sys</span>*/}

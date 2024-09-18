@@ -4,6 +4,8 @@ import useEnemyStore from "./enemyStore";
 import { SCALE } from "../constants/constants";
 
 interface devStoreState {
+  devEnemyTest: boolean;
+  devPlayerPilotMech: boolean;
   showLeaders: boolean;
   showBoidVectors: boolean;
   boidAlignmentMod: number;
@@ -14,6 +16,8 @@ interface devStoreState {
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
+  devEnemyTest: true,
+  devPlayerPilotMech: false,
   showLeaders: false,
   showObbBox: false,
   showBoidVectors: false,

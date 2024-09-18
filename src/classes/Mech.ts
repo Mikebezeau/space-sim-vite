@@ -2,7 +2,9 @@ import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
+import useParticleStore from "../stores/particleStore";
 import { loadBlueprint } from "../util/initEquipUtil";
+import { servoUtil } from "../util/mechServoUtil";
 import { SCALE } from "../constants/constants";
 //import { setCustomData } from "r3f-perf";
 
@@ -11,6 +13,7 @@ export interface MechInt {
   updateObb(): void;
   setObject3dCenterOffset(): void;
   setMergedBufferGeom(): void;
+  fireWeapon(isPlayer: boolean): void;
 }
 
 class Mech implements MechInt {
@@ -38,7 +41,7 @@ class Mech implements MechInt {
   shotsHit: any[];
   servoHitNames: string[];
 
-  constructor(mechDesign: any, useInstancedMesh: boolean) {
+  constructor(mechDesign: any, useInstancedMesh: boolean = false) {
     this.id = uuidv4();
     this.useInstancedMesh = useInstancedMesh;
     this.mechBP = loadBlueprint(JSON.stringify(mechDesign)); // mech blue print
@@ -64,7 +67,7 @@ class Mech implements MechInt {
   }
 
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
-  initObject3d = (object3d: THREE.Object3D) => {
+  initObject3d = (object3d: THREE.Object3D, isPlayer: boolean = false) => {
     if (object3d) {
       if (this.useInstancedMesh) {
         // deep copy temp object3d to set this.object3d for computations
@@ -73,7 +76,7 @@ class Mech implements MechInt {
       } else {
         // directly assigning object3d allows changes to this.object3d to
         // update the object on screen
-        this.object3d = object3d;
+        this.object3d.copy(object3d, true); // adding true
       }
       // BoidController requires this for cacluations
       this.setMergedBufferGeom();
@@ -99,7 +102,7 @@ class Mech implements MechInt {
     }
   };
 
-  updateObb = () => {
+  updateObb() {
     this.obbNeedsUpdate = false;
     this.setObject3dCenterOffset();
     //this.object3dCenterOffset.updateMatrix(); // Updates the local transform, not needed yet
@@ -112,7 +115,7 @@ class Mech implements MechInt {
     this.obbPositioned.center.copy(this.object3dCenterOffset.position);
     // rotation helper for testing obb: to view box in correct orientation
     this.obbRotationHelper.setFromMatrix3(this.obbPositioned.rotation);
-  };
+  }
 
   // set the position of object3d so that the geometry is centered at the position
   setObject3dCenterOffset() {
@@ -125,7 +128,7 @@ class Mech implements MechInt {
   }
 
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
-  setMergedBufferGeom = () => {
+  setMergedBufferGeom() {
     const geoms: Array<THREE.BufferGeometry> = [];
     const meshes: Array<THREE.Mesh> = [];
     this.object3d.updateWorldMatrix(true, true);
@@ -144,7 +147,47 @@ class Mech implements MechInt {
     merged.applyMatrix4(this.object3d.matrix.clone().invert());
     merged.userData.materials = meshes.map((m) => m.material);
     this.bufferGeom = merged;
-  };
+  }
+
+  fireWeapon(isPlayer = false) {
+    if (this.mechBP?.weaponList) {
+      const mechRefObj = new THREE.Group();
+      const weaponObj = new THREE.Group();
+      const weaponWorldPositionVec = new THREE.Vector3();
+      mechRefObj.position.copy(this.object3d.position);
+      mechRefObj.rotation.copy(this.object3d.rotation);
+      mechRefObj.add(weaponObj);
+      // for each weapon type array
+      for (const [weaponType, weaponList] of Object.entries(
+        this.mechBP.weaponList
+      )) {
+        weaponList.forEach((weapon) => {
+          weapon.servoOffset = servoUtil.servoLocation(
+            weapon.locationServoId,
+            this.mechBP.servoList
+          ).offset;
+          weaponObj.position.set(0, 0, 0);
+          weaponObj.translateX(weapon.offset.x + weapon.servoOffset.x);
+          weaponObj.translateY(weapon.offset.y + weapon.servoOffset.y);
+          weaponObj.translateZ(weapon.offset.z + weapon.servoOffset.z);
+          weaponObj.getWorldPosition(weaponWorldPositionVec);
+          if (weaponType === "beam") {
+            useParticleStore
+              .getState()
+              .addLaser(weaponWorldPositionVec, mechRefObj.rotation);
+          } else if (weaponType === "proj") {
+            useParticleStore
+              .getState()
+              .addBullet(weaponWorldPositionVec, mechRefObj.rotation);
+          } else if (weaponType === "missile") {
+            useParticleStore
+              .getState()
+              .addMissile(weaponWorldPositionVec, mechRefObj.rotation);
+          }
+        });
+      }
+    }
+  }
 }
 
 export default Mech;
