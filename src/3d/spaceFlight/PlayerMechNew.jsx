@@ -27,13 +27,6 @@ const PlayerMech = () => {
   const secondaryGroupRef = useRef(null);
   const weaponFireLight = useRef(null);
 
-  // starting position
-  useLayoutEffect(() => {
-    const player = getPlayer();
-    playerMechRef.current.position.copy(player.object3d.position);
-    playerMechRef.current.rotation.copy(player.object3d.rotation);
-  }, [getPlayer]);
-
   // set mech to invisible in cockpit view
   useEffect(() => {
     if (!playerMechRef.current) return null;
@@ -52,8 +45,7 @@ const PlayerMech = () => {
       if (!devEnemyTest || devPlayerPilotMech) {
         updatePlayerMechAndCameraFrame(camera);
       }
-      playerMechRef.current.position.copy(player.object3d.position);
-      playerMechRef.current.rotation.copy(player.object3d.rotation);
+      // player mech object3d directly linked to Buildmech ref: playerMechRef.current
       // update secondary group (crosshair, weapon light)
       secondaryGroupRef.current.position.copy(player.object3d.position);
       secondaryGroupRef.current.rotation.copy(player.object3d.rotation);

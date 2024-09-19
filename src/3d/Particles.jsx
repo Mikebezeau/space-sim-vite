@@ -21,7 +21,11 @@ const Particles = () => {
 
     return () => {
       console.log("Particles cleanup");
-      if (particleController) particleController.dispose();
+      if (particleController) {
+        if (particleController.particleSystem)
+          scene.remove(particleController.particleSystem);
+        particleController.dispose();
+      }
     };
   }, [particleController, scene]);
 

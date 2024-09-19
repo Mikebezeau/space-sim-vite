@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import PropTypes from "prop-types";
+//import PropTypes from "prop-types";
 import * as THREE from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
@@ -17,6 +17,7 @@ import useDevStore from "../stores/devStore";
 import PlayerMech from "../3d/spaceFlight/PlayerMechNew";
 //import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
 import BuildMech from "../3d/BuildMech";
+import InstancedMechs from "../3d/InstancedMechs";
 import Particles from "../3d/Particles";
 import BoidController from "../classes/BoidController";
 //import { setCustomData } from "r3f-perf";
@@ -25,6 +26,7 @@ export default function EnemyTestScene() {
   console.log("EnemyTest Scene rendered");
   const [scene] = useState(() => new THREE.Scene());
   const { camera } = useThree();
+  const getPlayer = useStore((state) => state.getPlayer);
   const setPlayerPosition = useStore(
     (state) => state.actions.setPlayerPosition
   );
@@ -37,7 +39,6 @@ export default function EnemyTestScene() {
   const enemyMechRefs = useRef([]);
   const obbBoxRefs = useRef([]);
   const instancedMeshRef = useRef(null);
-  const instancedMechObject3d = useRef(null);
   const boidControllerRef = useRef(null);
 
   const resestControlsCameraPosition = useCallback(() => {
@@ -49,9 +50,14 @@ export default function EnemyTestScene() {
   }, [camera, devPlayerPilotMech]);
 
   useEffect(() => {
-    console.log("setPlayerPosition");
-    if (devPlayerPilotMech) setPlayerPosition(new THREE.Vector3(0, 0, -600));
-  }, [devPlayerPilotMech, setPlayerPosition]);
+    console.log("setPositions");
+    if (devPlayerPilotMech) {
+      setPlayerPosition(new THREE.Vector3(0, 0, -600));
+      getPlayer().object3d.lookAt(0, 0, 0);
+    }
+    enemies[0].object3d.position.set(50, 50, 0);
+    enemies[0].object3d.rotation.set(0, -2, 0);
+  }, [devPlayerPilotMech, enemies, getPlayer, setPlayerPosition]);
 
   useEffect(() => {
     // set boid controller for flocking enemies
@@ -60,23 +66,6 @@ export default function EnemyTestScene() {
       enemies //.filter((enemy) => enemy.useInstancedMesh)
     );
   }, [enemies]);
-
-  // set loaded BuildMech object3d for instancedMesh
-  useEffect(() => {
-    if (instancedMechObject3d.current === null) return;
-    const keepPosition = new THREE.Vector3();
-    enemies.forEach((enemy) => {
-      if (enemy.useInstancedMesh) {
-        keepPosition.copy(enemy.object3d.position);
-        enemy.initObject3d(instancedMechObject3d.current);
-        enemy.object3d.position.copy(keepPosition);
-      }
-    });
-    enemies[0].object3d.position.set(200, 200, 200);
-    enemies[0].object3d.rotation.setFromVector3(
-      new THREE.Vector3(0, 0, Math.PI / 2)
-    );
-  }, [enemies, instancedMechObject3d]);
 
   // show hide obb boxes
   useEffect(() => {
@@ -194,22 +183,7 @@ export default function EnemyTestScene() {
               ) : null}
             </Fragment>
           ))}
-
-          {
-            // building mech to set enemy instancedMechObject3d
-            instancedMechObject3d.current === null ? (
-              <BuildMech
-                ref={(buildMechRef) => {
-                  if (buildMechRef === null) return;
-                  instancedMechObject3d.current = new THREE.Object3D();
-                  instancedMechObject3d.current.copy(buildMechRef);
-                }}
-                mechBP={enemies[1].mechBP}
-              />
-            ) : (
-              <InstancedMechs ref={instancedMeshRef} enemies={enemies} />
-            )
-          }
+          <InstancedMechs ref={instancedMeshRef} />
         </>
       )}
     </>,
@@ -233,78 +207,3 @@ const BuildEnemyMech = forwardRef(function Enemy(props, buildMechForwardRef) {
     />
   );
 });
-
-// not using the forwarded ref for anything atm
-const InstancedMechs = forwardRef(function Enemy(
-  { enemies },
-  instancedMeshForwardRef
-) {
-  console.log("InstancedMechs rendered");
-  const instancedEnemies = enemies.filter((enemy) => enemy.useInstancedMesh);
-
-  useEffect(() => {
-    if (instancedMeshForwardRef.current === null) return;
-    const red = new THREE.Color(0xff0000);
-    instancedEnemies.forEach((enemy, i) => {
-      if (enemy.getIsLeader())
-        instancedMeshForwardRef.current.setColorAt(i, red);
-    });
-    /*
-    const enemyColors = [];
-    instancedEnemies.forEach((enemy) => {
-      const colorRgb = enemy.getIsLeader() ? [1.0, 1.0, 1.0] : [1.0, 0.2, 0.2];
-      enemyColors.push(...colorRgb);
-    });
-
-    instancedMeshForwardRef.current.geometry.setAttribute(
-      "aColor",
-      new THREE.BufferAttribute(new Float32Array(enemyColors), 3).setUsage(
-        THREE.DynamicDrawUsage
-      )
-    );
-    */
-  }, [instancedEnemies, instancedMeshForwardRef]);
-
-  useFrame(() => {
-    instancedEnemies.forEach((enemy, i) => {
-      enemy.object3d.updateMatrix();
-      instancedMeshForwardRef.current.setMatrixAt(i, enemy.object3d.matrix);
-    });
-    instancedMeshForwardRef.current.instanceMatrix.needsUpdate = true;
-  });
-
-  return (
-    <instancedMesh
-      frustumCulled={false}
-      ref={instancedMeshForwardRef}
-      args={[instancedEnemies[0].bufferGeom, null, instancedEnemies.length]}
-    >
-      <meshBasicMaterial
-      /*
-        onBeforeCompile={(shader) => {
-          console.log(shader.vertexShader);
-          console.log(shader.fragmentShader);
-          shader.vertexShader =
-            `attribute vec3 aColor;\nvarying vec4 vColor;\n` +
-            shader.vertexShader;
-
-          shader.fragmentShader =
-            `varying vec4 vColor;\n` + shader.fragmentShader;
-
-          shader.fragmentShader = shader.fragmentShader.replace(
-            `#include <dithering_fragment>`,
-            [
-              `#include <dithering_fragment>`,
-              `gl_FragColor = vec4( 1, 0, 1, 1);`,
-            ].join("\n")
-          );
-        }}
-        */
-      />
-    </instancedMesh>
-  );
-});
-
-InstancedMechs.propTypes = {
-  enemies: PropTypes.arrayOf(Object),
-};

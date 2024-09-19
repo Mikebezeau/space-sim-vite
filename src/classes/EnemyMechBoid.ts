@@ -72,29 +72,33 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
 
   // update Boid movement
   update(delta: number) {
-    const deltaFPS = delta * FPS;
-    //(deltaFPS);
-    const maxSpeed = this.maxSpeed;
-    // update velocity
-    this.velocity.add(this.acceleration);
+    if (!this.isBossMech) {
+      const deltaFPS = delta * FPS;
+      //(deltaFPS);
+      const maxSpeed = this.maxSpeed;
+      // update velocity
+      this.velocity.add(this.acceleration);
 
-    // limit velocity
-    if (this.velocity.length() > maxSpeed) {
-      this.velocity.clampLength(0, maxSpeed);
+      // limit velocity
+      if (this.velocity.length() > maxSpeed) {
+        this.velocity.clampLength(0, maxSpeed);
+      }
+      // adjust for delta FPS
+      this.adjustedVelocityDeltaFPS
+        .copy(this.velocity)
+        .multiplyScalar(deltaFPS);
+      // using lerp
+      this.lerpVelocity.lerp(this.adjustedVelocityDeltaFPS, 0.05);
+      // update position
+      this.object3d.position.add(this.lerpVelocity);
+      // reset acc
+      this.acceleration.multiplyScalar(0);
+      // heading
+      this.heading.copy(this.lerpVelocity);
+      this.heading.multiplyScalar(10);
+      this.heading.add(this.object3d.position);
+      this.object3d.lookAt(this.heading);
     }
-    // adjust for delta FPS
-    this.adjustedVelocityDeltaFPS.copy(this.velocity).multiplyScalar(deltaFPS);
-    // using lerp
-    this.lerpVelocity.lerp(this.adjustedVelocityDeltaFPS, 0.05);
-    // update position
-    this.object3d.position.add(this.lerpVelocity);
-    // reset acc
-    this.acceleration.multiplyScalar(0);
-    // heading
-    this.heading.copy(this.lerpVelocity);
-    this.heading.multiplyScalar(10);
-    this.heading.add(this.object3d.position);
-    this.object3d.lookAt(this.heading);
   }
 }
 

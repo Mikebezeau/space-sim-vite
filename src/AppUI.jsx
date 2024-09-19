@@ -25,6 +25,7 @@ const AppUI = () => {
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
+  const devEnemyTest = useDevStore((state) => state.devEnemyTest);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
   const transitionFadeDiv = useRef(null);
@@ -35,40 +36,41 @@ const AppUI = () => {
 
   return (
     <div className="pointer-events-none touch-none">
-      {(playerScreen === PLAYER.screen.flight || devPlayerPilotMech) && (
-        <>
-          {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
-          {playerViewMode === PLAYER.view.thirdPerson && (
-            <>
-              <Cockpit3rdPersonControls />
-              <ActionModeControls />
-              <div className="absolute top-20 left-10">
-                <SpeedReadout />
-              </div>
-            </>
-          )}
-          <div className="absolute top-72 right-11">
-            <ShieldsReadout />
-            <WeaponsReadout />
-          </div>
-        </>
-      )}
+      {playerScreen === PLAYER.screen.flight &&
+        (devEnemyTest ? devPlayerPilotMech : true) && (
+          <>
+            {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
+            {playerViewMode === PLAYER.view.thirdPerson && (
+              <>
+                <Cockpit3rdPersonControls />
+                <ActionModeControls />
+                <div className="absolute top-20 left-10">
+                  <SpeedReadout />
+                </div>
+              </>
+            )}
+            <div className="absolute top-72 right-11">
+              <ShieldsReadout />
+              <WeaponsReadout />
+            </div>
+          </>
+        )}
       {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
       {playerScreen === PLAYER.screen.dockedStation && <StationDockMenu />}
       {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
 
       {(playerScreen === PLAYER.screen.flight ||
-        playerScreen === PLAYER.screen.landedPlanet ||
-        devPlayerPilotMech) && (
-        <>
-          {IS_MOBILE ? (
-            <SpaceFlightControlsTouch />
-          ) : (
-            <SpaceFlightControlsMouseKB />
-          )}
-          <TestingMenu />
-        </>
-      )}
+        playerScreen === PLAYER.screen.landedPlanet) &&
+        (devEnemyTest ? devPlayerPilotMech : true) && (
+          <>
+            {IS_MOBILE ? (
+              <SpaceFlightControlsTouch />
+            ) : (
+              <SpaceFlightControlsMouseKB />
+            )}
+            <TestingMenu />
+          </>
+        )}
       {/*<CustomCursor />*/}
       <div
         ref={transitionFadeDiv}

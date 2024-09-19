@@ -22,7 +22,7 @@ class Mech implements MechInt {
   mechBP: any;
   shield: { max: number; damage: number };
   object3d: THREE.Object3D;
-  bufferGeom: THREE.BufferGeometry;
+  bufferGeom: THREE.BufferGeometry | null;
   mechCenter: THREE.Vector3;
   object3dCenterOffset: THREE.Object3D;
   obbNeedsUpdate: boolean;
@@ -47,7 +47,7 @@ class Mech implements MechInt {
     this.mechBP = loadBlueprint(JSON.stringify(mechDesign)); // mech blue print
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
     this.object3d = new THREE.Object3D(); // set from BuildMech ref, updating this will update the object on screen
-    this.bufferGeom = new THREE.BufferGeometry(); // merged geometry for instanced mesh
+    this.bufferGeom = null; // merged geometry for instanced mesh
     this.mechCenter = new THREE.Vector3();
     this.object3dCenterOffset = new THREE.Object3D(); // for proper obb positioning
     this.obbNeedsUpdate = true; // used to determine if obb needs to be updated beore checking collision within loop
@@ -76,7 +76,7 @@ class Mech implements MechInt {
       } else {
         // directly assigning object3d allows changes to this.object3d to
         // update the object on screen
-        this.object3d.copy(object3d, true); // adding true
+        this.object3d = object3d;
       }
       // BoidController requires this for cacluations
       this.setMergedBufferGeom();

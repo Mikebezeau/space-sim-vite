@@ -25,7 +25,6 @@ export const PLAYER = {
     galaxyMap: 3,
     dockedStation: 4,
     equipmentBuild: 5,
-    testEnemies: 6,
   },
   action: { inspect: 1, manualControl: 2, autoControl: 3 },
   view: {

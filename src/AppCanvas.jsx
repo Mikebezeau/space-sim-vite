@@ -58,7 +58,7 @@ const AppCanvas = () => {
       {playerScreen === PLAYER.screen.flight ? (
         <>
           <StarsBackgroundScene />
-          <SpaceFlightScene />
+          {devEnemyTest ? <EnemyTestScene /> : <SpaceFlightScene />}
         </>
       ) : null}
       {playerScreen === PLAYER.screen.landedPlanet ? (
@@ -70,12 +70,6 @@ const AppCanvas = () => {
       ) : null}
       {playerScreen === PLAYER.screen.equipmentBuild ? (
         <EquipmentBlueprint />
-      ) : null}
-      {playerScreen !== PLAYER.screen.equipmentBuild && devEnemyTest ? (
-        <>
-          <StarsBackgroundScene />
-          <EnemyTestScene />
-        </>
       ) : null}
       {/*<Effects />*/}
     </Canvas>

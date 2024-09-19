@@ -2,8 +2,7 @@ import { create } from "zustand";
 import * as THREE from "three";
 import PlayerMech from "../classes/PlayerMech";
 import usePlayerControlsStore from "./playerControlsStore";
-import useEnemyStore from "./enemyStore";
-import useWeaponFireStore from "./weaponFireStore";
+import useDevStore from "./devStore";
 import { randomData, genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
 import systemGen from "../solarSystemGen/systemGen";
@@ -223,9 +222,7 @@ const useStore = create<storeState>()((set, get) => ({
       addEffect(() => {
         if (
           usePlayerControlsStore.getState().playerScreen !==
-            PLAYER.screen.flight &&
-          usePlayerControlsStore.getState().playerScreen !==
-            PLAYER.screen.testEnemies
+          PLAYER.screen.flight
         )
           return;
 
