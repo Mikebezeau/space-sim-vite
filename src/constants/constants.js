@@ -43,7 +43,7 @@ export const SPEED_VALUES = [-50, 0, 5, 50, 100, 500];
 export const WEAPON_FIRE_SPEED = {
   beam: 500,
   proj: 200,
-  missile: 100,
+  missile: 50,
   eMelee: 0,
   melee: 0,
 };

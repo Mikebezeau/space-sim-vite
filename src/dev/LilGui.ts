@@ -7,6 +7,9 @@ const LilGui = () => {
 
   useEffect(() => {
     const gui = new GUI();
+    gui.add(devStoreState, "devEnemyTest").onChange((value) => {
+      devStoreState.setProp("devEnemyTest", value);
+    });
     gui.add(devStoreState, "devPlayerPilotMech").onChange((value) => {
       devStoreState.setProp("devPlayerPilotMech", value);
     });

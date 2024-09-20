@@ -5,7 +5,8 @@ import starSpriteSrc from "../sprites/sprite120.png";
 import featheredSpriteSrc from "../sprites/feathered60.png";
 import smokeTextureSrc from "../sprites/particles/pngTrans/smoke_11.png";
 import { WEAPON_FIRE_SPEED } from "../constants/constants";
-import { SPRITE_DESIGN } from "../constants/particleConstants";
+import { SPRITE_TYPE, DESIGN_TYPE } from "../constants/particleConstants";
+import { acceleration } from "../solarSystemGen/classes/Astro";
 
 interface particleStoreState {
   starSpriteSrc: Texture;
@@ -16,16 +17,26 @@ interface particleStoreState {
   vectorTemp: Vector3;
   initControllers: () => void;
   addExplosion: (
-    position: Vector3,
+    position: Vector3 | { x: number; y: number; z: number },
     numParticles: number,
     size: number,
     spread: number,
     lifeTime: number,
-    color: Color
+    color: Color,
+    endColor?: Color
   ) => void;
-  addBullet: (position: Vector3, direction: Euler) => void;
-  addLaser: (position: Vector3, direction: Euler) => void;
-  addMissile: (position: Vector3, direction: Euler) => void;
+  addBullet: (
+    position: Vector3 | { x: number; y: number; z: number },
+    direction: Euler
+  ) => void;
+  addLaser: (
+    position: Vector3 | { x: number; y: number; z: number },
+    direction: Euler
+  ) => void;
+  addMissile: (
+    position: Vector3 | { x: number; y: number; z: number },
+    direction: Euler
+  ) => void;
 }
 
 const useParticleStore = create<particleStoreState>()((set, get) => ({
@@ -56,23 +67,22 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
     size = 1,
     spread = 1,
     lifetime = 1,
-    color = get().colors.red
+    color = get().colors.red,
+    endColor
   ) => {
     if (get().particleController) {
       for (let i = 0; i < numParticles; i++) {
         get().particleController.spawnParticle({
-          spriteDesign: SPRITE_DESIGN.starSprite,
-          //spriteDesign: SPRITE_DESIGN.smokeSprite,
-          position: position
-            ? { x: position.x, y: position.y, z: position.z }
-            : { x: 0, y: 0, z: 0 },
+          //sprite: SPRITE_DESIGN.star,
+          sprite: SPRITE_TYPE.smoke,
+          position: position,
           velocity: {
             x: (Math.random() - 0.5) * 5 * spread,
             y: (Math.random() - 0.5) * 5 * spread,
             z: (Math.random() - 0.5) * 5 * spread,
           },
           color: color,
-          endColor: get().colors.grey,
+          endColor: endColor ? endColor : get().colors.grey,
           lifetime: lifetime,
           size: 800 * size,
         });
@@ -88,11 +98,12 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         get()
           .vectorTemp.set(0, 0, 1)
           .applyEuler(direction)
-          .multiplyScalar(particleSpeed * (i / numParticles));
+          .multiplyScalar(
+            particleSpeed * 0.6 + (particleSpeed * 0.4 * i) / numParticles
+          );
         get().particleController.spawnParticle({
-          position: position
-            ? { x: position.x, y: position.y, z: position.z }
-            : { x: 0, y: 0, z: 0 },
+          design: DESIGN_TYPE.circle,
+          position: position,
           velocity: {
             x: get().vectorTemp.x,
             y: get().vectorTemp.y,
@@ -100,7 +111,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
           },
           color: get().colors.yellow,
           endColor: get().colors.red,
-          lifetime: 2 * (i / numParticles),
+          lifetime: 2,
           size: 800 * (i / numParticles),
         });
       }
@@ -115,11 +126,12 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         get()
           .vectorTemp.set(0, 0, 1)
           .applyEuler(direction)
-          .multiplyScalar(particleSpeed * (i / numParticles));
+          .multiplyScalar(
+            particleSpeed * 0.6 + (particleSpeed * 0.4 * i) / numParticles
+          );
         get().particleController.spawnParticle({
-          position: position
-            ? { x: position.x, y: position.y, z: position.z }
-            : { x: 0, y: 0, z: 0 },
+          design: DESIGN_TYPE.circle,
+          position: position,
           velocity: {
             x: get().vectorTemp.x,
             y: get().vectorTemp.y,
@@ -127,8 +139,8 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
           },
           color: get().colors.blue,
           //endColor: get().colors.red,
-          lifetime: 2 * (i / numParticles),
-          size: 500 * (i / numParticles),
+          lifetime: 2,
+          size: 400 * (i / numParticles),
         });
       }
     }
@@ -137,28 +149,27 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
   addMissile: (position, direction) => {
     if (get().particleController) {
       const particleSpeed = WEAPON_FIRE_SPEED.missile;
-      const lifeTime = 2;
+      const lifeTime = 5;
       get()
         .vectorTemp.set(0, 0, 1)
         .applyEuler(direction)
         .multiplyScalar(particleSpeed);
       get().particleController.spawnParticle({
-        position: position
-          ? { x: position.x, y: position.y, z: position.z }
-          : { x: 0, y: 0, z: 0 },
-        velocity: {
+        design: DESIGN_TYPE.star,
+        position: position,
+        acceleration: {
           x: get().vectorTemp.x,
           y: get().vectorTemp.y,
           z: get().vectorTemp.z,
         },
-        color: get().colors.green,
+        color: get().colors.grey,
         //endColor: get().colors.red,
         lifetime: lifeTime,
         size: 1200,
       });
 
-      const addMissileSmoke = (
-        position: Vector3,
+      const addMissileTrail = (
+        position: { x: number; y: number; z: number },
         direction: Euler,
         time: number
       ) => {
@@ -166,23 +177,33 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         get()
           .vectorTemp.set(0, 0, 1)
           .applyEuler(direction)
-          .multiplyScalar(WEAPON_FIRE_SPEED.missile * timeInterval)
+          .multiplyScalar(
+            WEAPON_FIRE_SPEED.missile * timeInterval * timeInterval
+          )
           .add(position);
-        requestAnimationFrame(() =>
-          get().addExplosion(get().vectorTemp, 1, 2, 3, 0.5, get().colors.grey)
+        get().addExplosion(
+          get().vectorTemp,
+          1,
+          1,
+          0.5,
+          0.5,
+          get().colors.yellow,
+          get().colors.red
         );
+        get().addExplosion(get().vectorTemp, 1, 2, 1.5, 0.5, get().colors.grey);
       };
 
-      const addSmokeIntervalID = setInterval(
-        addMissileSmoke,
-        100,
-        { x: position.x, y: position.y, z: position.z }, // this way the position is not a reference
+      const missilePosition = { x: position.x, y: position.y, z: position.z };
+      const addTrailIntervalID = setInterval(
+        addMissileTrail,
+        50,
+        missilePosition,
         direction,
         Date.now()
       );
 
       setTimeout(() => {
-        clearInterval(addSmokeIntervalID);
+        clearInterval(addTrailIntervalID);
       }, lifeTime * 1000 - 100);
     }
   },

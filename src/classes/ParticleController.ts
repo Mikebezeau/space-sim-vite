@@ -1,112 +1,14 @@
 import * as THREE from "three";
-import { SPRITE_DESIGN } from "../constants/particleConstants";
+import {
+  GPU_PARTICLE_SHADER,
+  SPRITE_TYPE,
+  DESIGN_TYPE,
+} from "../constants/particleConstants";
 //import { setCustomData } from "r3f-perf";
 
-const GPUParticleShader = {
-  vertexShader: `
-    uniform float uTime;
-    uniform float uScale;
-    uniform bool reverseTime;
-    uniform float fadeIn;
-    uniform float fadeOut;
-
-    attribute float aSpriteDesign;
-    attribute vec3 positionStart;
-    attribute float startTime;
-    attribute vec3 velocity;
-    attribute vec3 acceleration;
-    attribute vec3 color;
-    attribute vec3 endColor;
-    attribute float aSize;
-    attribute float lifeTime;
-
-    varying float vSpriteDesign;
-    varying vec4 vColor;
-    varying vec4 vEndColor;
-    varying float lifeLeft;
-    varying float alpha;
-
-    #include <common>
-    #include <logdepthbuf_pars_vertex>
-    #include <clipping_planes_pars_vertex>
-
-    void main() {
-        vSpriteDesign = aSpriteDesign;
-        vColor = vec4( color, 1.0 );
-        vEndColor = vec4( endColor, 1.0);
-        vec3 newPosition;
-        float timeElapsed = uTime - startTime;
-        if(reverseTime) timeElapsed = lifeTime - timeElapsed;
-        if(timeElapsed < fadeIn) {
-            alpha = timeElapsed/fadeIn;
-        }
-        if(timeElapsed >= fadeIn && timeElapsed <= (lifeTime - fadeOut)) {
-            alpha = 1.0;
-        }
-        if(timeElapsed > (lifeTime - fadeOut)) {
-            alpha = 1.0 - (timeElapsed - (lifeTime-fadeOut))/fadeOut;
-        }
-        
-        lifeLeft = 1.0 - ( timeElapsed / lifeTime );
-        
-        newPosition = positionStart 
-            + (velocity * timeElapsed)
-            + (acceleration * 0.5 * timeElapsed * timeElapsed)
-            ;
-        
-        vec4 mvPosition = modelViewMatrix * vec4( newPosition, 1.0 );
-        gl_PointSize = ( uScale * aSize / -mvPosition.z );// * lifeLeft;
-
-        if (lifeLeft < 0.0) { 
-            lifeLeft = 0.0; 
-            gl_PointSize = 0.;
-        }
-        //while active use the new position
-        if( timeElapsed > 0.0 ) {
-            gl_Position = projectionMatrix * mvPosition;
-        } else {
-            //if dead use the initial position and set point aSize to 0
-            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-            lifeLeft = 0.0;
-            gl_PointSize = 0.;
-        }
-
-        #include <logdepthbuf_vertex>
-        #include <clipping_planes_vertex>
-    }
-    `,
-  fragmentShader: `
-      uniform sampler2D tSprite;
-      uniform sampler2D uSprite1;
-
-      varying float vSpriteDesign;
-      varying vec4 vColor;
-      varying vec4 vEndColor;
-      varying float lifeLeft;
-      varying float alpha;
-            
-      #include <common>
-      #include <logdepthbuf_pars_fragment>
-      #include <clipping_planes_pars_fragment>
-
-      void main() {
-          // set sprite or design type
-          vec4 tex;
-          if( vSpriteDesign == 0.0 ) tex = texture2D( tSprite, gl_PointCoord );
-          if( vSpriteDesign == 1.0 ) tex = texture2D( uSprite1, gl_PointCoord );
-          // color based on particle texture and the lifeLeft. 
-          // if lifeLeft is 0 then make invisible
-          vec4 color = mix(vColor, vEndColor, 1.0-lifeLeft);
-          gl_FragColor = vec4( color.rgb*tex.rgb, alpha * tex.a);
-          
-          #include <clipping_planes_fragment>
-          #include <logdepthbuf_fragment>
-      }
-
-  `,
-};
-
 const UPDATEABLE_ATTRIBUTES = [
+  "aSprite",
+  "aDesign",
   "positionStart",
   "startTime",
   "velocity",
@@ -115,7 +17,6 @@ const UPDATEABLE_ATTRIBUTES = [
   "endColor",
   "aSize",
   "lifeTime",
-  "aSpriteDesign",
 ];
 
 export interface ParticleControllerInt {
@@ -123,7 +24,7 @@ export interface ParticleControllerInt {
   random(): void;
   spawnParticle(options: any): void;
   update(ttime: number): void;
-  dispose(): void;
+  dispose(scene: THREE.Scene): void;
 }
 
 class ParticleController implements ParticleControllerInt {
@@ -216,13 +117,29 @@ class ParticleController implements ParticleControllerInt {
         },
       },
       blending: this.blending,
-      vertexShader: GPUParticleShader.vertexShader,
-      fragmentShader: GPUParticleShader.fragmentShader,
+      vertexShader: GPU_PARTICLE_SHADER.vertexShader,
+      fragmentShader: GPU_PARTICLE_SHADER.fragmentShader,
     });
 
     // geometry
     this.geometry = new THREE.BufferGeometry();
 
+    // attributes
+    // what sprite or design to use
+    this.geometry.setAttribute(
+      "aSprite",
+      new THREE.BufferAttribute(
+        new Float32Array(this.PARTICLE_COUNT),
+        1
+      ).setUsage(THREE.DynamicDrawUsage)
+    );
+    this.geometry.setAttribute(
+      "aDesign",
+      new THREE.BufferAttribute(
+        new Float32Array(this.PARTICLE_COUNT),
+        1
+      ).setUsage(THREE.DynamicDrawUsage)
+    );
     //vec3 attributes
     this.geometry.setAttribute(
       "position",
@@ -289,18 +206,11 @@ class ParticleController implements ParticleControllerInt {
         1
       ).setUsage(THREE.DynamicDrawUsage)
     );
-    // what sprite or design to use
-    this.geometry.setAttribute(
-      "aSpriteDesign",
-      new THREE.BufferAttribute(
-        new Float32Array(this.PARTICLE_COUNT),
-        1
-      ).setUsage(THREE.DynamicDrawUsage)
-    );
 
     this.particleSystem = new THREE.Points(this.geometry, this.material);
     this.particleSystem.frustumCulled = false;
 
+    // reusable vectors and colors for adding new particles
     this.newParticle = {
       position: new THREE.Vector3(),
       velocity: new THREE.Vector3(),
@@ -354,7 +264,8 @@ class ParticleController implements ParticleControllerInt {
     this.geometryUpdate();
   }
 
-  dispose() {
+  dispose(scene) {
+    if (this.particleSystem) scene.remove(this.particleSystem);
     this.material.dispose();
     this.sprite.dispose();
     this.geometry.dispose();
@@ -370,6 +281,8 @@ class ParticleController implements ParticleControllerInt {
     then count will be 3 and the cursor will have moved by three.
      */
   spawnParticle(options) {
+    const spriteAttribute = this.geometry.getAttribute("aSprite");
+    const designAttribute = this.geometry.getAttribute("aDesign");
     const positionStartAttribute = this.geometry.getAttribute("positionStart");
     const startTimeAttribute = this.geometry.getAttribute("startTime");
     const velocityAttribute = this.geometry.getAttribute("velocity");
@@ -378,7 +291,6 @@ class ParticleController implements ParticleControllerInt {
     const endcolorAttribute = this.geometry.getAttribute("endColor");
     const sizeAttribute = this.geometry.getAttribute("aSize");
     const lifeTimeAttribute = this.geometry.getAttribute("lifeTime");
-    const spriteDesignAttribute = this.geometry.getAttribute("aSpriteDesign");
 
     options = options || {};
 
@@ -408,8 +320,11 @@ class ParticleController implements ParticleControllerInt {
     const sizeRandomness =
       options.sizeRandomness !== undefined ? options.sizeRandomness : 0;
     if (this.DPR !== undefined) aSize *= this.DPR;
-
     const i = this.PARTICLE_CURSOR;
+
+    // what sprite or 'shader drawn' design to use
+    spriteAttribute.array[i] = options.sprite || 0;
+    designAttribute.array[i] = options.design || 0;
 
     positionStartAttribute.array[i * 3 + 0] = this.newParticle.position.x;
     positionStartAttribute.array[i * 3 + 1] = this.newParticle.position.y;
@@ -435,10 +350,6 @@ class ParticleController implements ParticleControllerInt {
     sizeAttribute.array[i] = aSize + this.random() * sizeRandomness;
     lifeTimeAttribute.array[i] = lifetime;
     startTimeAttribute.array[i] = this.time;
-    // what sprite or 'shader drawn' design to use
-    spriteDesignAttribute.array[i] =
-      options.spriteDesign || SPRITE_DESIGN.starSprite;
-
     // offset
     if (this.offset === 0) this.offset = this.PARTICLE_CURSOR;
     // counter and cursor

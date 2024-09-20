@@ -52,7 +52,7 @@ export default function EnemyTestScene() {
   useEffect(() => {
     console.log("setPositions");
     if (devPlayerPilotMech) {
-      setPlayerPosition(new THREE.Vector3(0, 0, -600));
+      setPlayerPosition(new THREE.Vector3(0, 0, -50));
       getPlayer().object3d.lookAt(0, 0, 0);
     }
     enemies[0].object3d.position.set(50, 50, 0);

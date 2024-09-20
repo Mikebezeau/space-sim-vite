@@ -139,84 +139,95 @@ const ScannerReadout = () => {
     }
     //save enemy nearest to direction player is facing
     //placing targets on enemies, and arrows toward their location on scanner readout
-    smallestTargetAngle = 10;
-    enemies.forEach((enemy, i) => {
-      const distanceNormalized =
-        1 -
-        Math.floor(
-          (distance(enemy.object3d.position, player.object3d.position) /
-            1000000 /
-            SCALE) *
-            10
-        ) /
-          10;
-      enemy.distanceNormalized = distanceNormalized;
-      // place target
-      dummyObj.position.copy(camera.position);
-      dummyObj.lookAt(enemy.object3d.position);
-      dummyObj.getWorldQuaternion(targetQuat);
-      //flip the opposite direction to match camera direction
-      targetQuat.multiplyQuaternions(targetQuat, flipRotation);
+    if (enemyTargetGroupRef.current && enemyArrowGroupRef.current) {
+      smallestTargetAngle = 10;
+      enemies.forEach((enemy, i) => {
+        const distanceNormalized =
+          1 -
+          Math.floor(
+            (distance(enemy.object3d.position, player.object3d.position) /
+              1000000 /
+              SCALE) *
+              10
+          ) /
+            10;
+        enemy.distanceNormalized = distanceNormalized;
+        // place target
+        dummyObj.position.copy(camera.position);
+        dummyObj.lookAt(enemy.object3d.position);
+        dummyObj.getWorldQuaternion(targetQuat);
+        //flip the opposite direction to match camera direction
+        targetQuat.multiplyQuaternions(targetQuat, flipRotation);
 
-      // find target enemy closest to direction player mech is pointing
-      const angleDiff = targetQuat.angleTo(camera.quaternion);
-      //if (i === 0) setCustomData(angleDiff);
-      if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
-        smallestTargetAngle = angleDiff;
-        tempFocusTargetIndex = i;
+        // find target enemy closest to direction player mech is pointing
+        const angleDiff = targetQuat.angleTo(camera.quaternion);
+        //if (i === 0) setCustomData(angleDiff);
+        if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
+          smallestTargetAngle = angleDiff;
+          tempFocusTargetIndex = i;
+        }
+        enemy.angleDiff = angleDiff;
+        // need to clear target if not within angle
+        //if (angleDiff < 0.38) {
+        const targetMesh = enemyTargetGroupRef.current.children[i];
+        placeTarget(
+          dummyObj,
+          camera,
+          targetMesh,
+          false,
+          selectedTargetIndex,
+          i,
+          distanceNormalized
+        );
+        //}
+
+        //place arrow
+        dummyObj.rotation.setFromQuaternion(targetQuat);
+        //optional setting z angle to match roll of ship
+        dummyObj.rotation.set(
+          dummyObj.rotation.x,
+          dummyObj.rotation.y,
+          camera.rotation.z
+        );
+        const arrowMesh = enemyArrowGroupRef.current.children[i];
+        // place arrow pointing to enemy on scanner readout
+        placeArrow(dummyObj, camera, enemy, arrowMesh, selectedTargetIndex, i);
+      });
+      setFocusTargetIndex(tempFocusTargetIndex);
+
+      //TEMP
+      //set special rectical around the planet
+      if (planetTargetGroupRef.current && focusPlanetIndex !== null) {
+        const mesh = planetTargetGroupRef.current.children[focusPlanetIndex];
+        dummyObj.position.copy(camera.position);
+        dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
+        placeTarget(
+          dummyObj,
+          camera,
+          mesh,
+          true,
+          -1,
+          focusPlanetIndex,
+          1,
+          true
+        );
       }
-      enemy.angleDiff = angleDiff;
-      // need to clear target if not within angle
-      //if (angleDiff < 0.38) {
-      const targetMesh = enemyTargetGroupRef.current.children[i];
-      placeTarget(
-        dummyObj,
-        camera,
-        targetMesh,
-        false,
-        selectedTargetIndex,
-        i,
-        distanceNormalized
-      );
-      //}
 
-      //place arrow
-      dummyObj.rotation.setFromQuaternion(targetQuat);
-      //optional setting z angle to match roll of ship
-      dummyObj.rotation.set(
-        dummyObj.rotation.x,
-        dummyObj.rotation.y,
-        camera.rotation.z
-      );
-      const arrowMesh = enemyArrowGroupRef.current.children[i];
-      // place arrow pointing to enemy on scanner readout
-      placeArrow(dummyObj, camera, enemy, arrowMesh, selectedTargetIndex, i);
-    });
-    setFocusTargetIndex(tempFocusTargetIndex);
-
-    //TEMP
-    //set special rectical around the planet
-    if (planetTargetGroupRef.current && focusPlanetIndex !== null) {
-      const mesh = planetTargetGroupRef.current.children[focusPlanetIndex];
-      dummyObj.position.copy(camera.position);
-      dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
-      placeTarget(dummyObj, camera, mesh, true, -1, focusPlanetIndex, 1, true);
-    }
-
-    //set special rectical around the target enemy
-    if (enemyTargetGroupRef.current && focusTargetIndex !== null) {
-      const mesh = enemyTargetGroupRef.current.children[focusTargetIndex];
-      dummyObj.position.copy(camera.position);
-      dummyObj.lookAt(enemies[focusTargetIndex].object3d.position);
-      placeTarget(
-        dummyObj,
-        camera,
-        mesh,
-        true,
-        selectedTargetIndex,
-        focusTargetIndex,
-        enemies[focusTargetIndex].distanceNormalized
-      );
+      //set special rectical around the target enemy
+      if (focusTargetIndex !== null) {
+        const mesh = enemyTargetGroupRef.current.children[focusTargetIndex];
+        dummyObj.position.copy(camera.position);
+        dummyObj.lookAt(enemies[focusTargetIndex].object3d.position);
+        placeTarget(
+          dummyObj,
+          camera,
+          mesh,
+          true,
+          selectedTargetIndex,
+          focusTargetIndex,
+          enemies[focusTargetIndex].distanceNormalized
+        );
+      }
     }
   });
 
@@ -227,6 +238,7 @@ const ScannerReadout = () => {
           <mesh key={"pt" + i} index={i} />
         ))}
       </group>
+      {/*}
       <group ref={enemyTargetGroupRef}>
         {[...Array(numEnemies)].map((_, i) => (
           <mesh key={"et" + i} />
@@ -236,7 +248,7 @@ const ScannerReadout = () => {
         {[...Array(numEnemies)].map((_, i) => (
           <mesh key={"ea" + i} />
         ))}
-      </group>
+      </group>*/}
     </>
   );
 };
