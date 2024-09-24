@@ -13,6 +13,7 @@ const UPDATEABLE_ATTRIBUTES = [
   "startTime",
   "velocity",
   "acceleration",
+  "aAngle",
   "color",
   "endColor",
   "aSize",
@@ -186,6 +187,13 @@ class ParticleController implements ParticleControllerInt {
 
     //scalar attributes
     this.geometry.setAttribute(
+      "aAngle",
+      new THREE.BufferAttribute(
+        new Float32Array(this.PARTICLE_COUNT),
+        1
+      ).setUsage(THREE.DynamicDrawUsage)
+    );
+    this.geometry.setAttribute(
       "startTime",
       new THREE.BufferAttribute(
         new Float32Array(this.PARTICLE_COUNT),
@@ -287,6 +295,7 @@ class ParticleController implements ParticleControllerInt {
     const startTimeAttribute = this.geometry.getAttribute("startTime");
     const velocityAttribute = this.geometry.getAttribute("velocity");
     const accelerationAttribute = this.geometry.getAttribute("acceleration");
+    const angleAttribute = this.geometry.getAttribute("aAngle");
     const colorAttribute = this.geometry.getAttribute("color");
     const endcolorAttribute = this.geometry.getAttribute("endColor");
     const sizeAttribute = this.geometry.getAttribute("aSize");
@@ -345,6 +354,8 @@ class ParticleController implements ParticleControllerInt {
     endcolorAttribute.array[i * 3 + 0] = this.newParticle.endColor.r;
     endcolorAttribute.array[i * 3 + 1] = this.newParticle.endColor.g;
     endcolorAttribute.array[i * 3 + 2] = this.newParticle.endColor.b;
+
+    angleAttribute.array[i] = options.angle !== undefined ? options.angle : 0;
 
     //aSize, lifetime and starttime
     sizeAttribute.array[i] = aSize + this.random() * sizeRandomness;

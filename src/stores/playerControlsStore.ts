@@ -49,7 +49,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
-    playerScreen: PLAYER.screen.flight,
+    playerScreen: PLAYER.screen.equipmentBuild,
     isResetCamera: true,
     getPlayerState: () => {
       return {

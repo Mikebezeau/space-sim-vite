@@ -1,6 +1,5 @@
 //import React, { useMemo, useRef, useEffect } from "react";
 import { useState } from "react";
-import EquipmentMenuControlsMouseKB from "../controls/EquipmentMenuControlsMouseKB";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
 import mechDesigns from "../equipment/data/mechDesigns";
@@ -33,13 +32,11 @@ const EquipmentMenu = () => {
     equipActions.blueprintMenu.newBlueprint();
     setSelectedBPid(0);
     setSubSelection(null);
-    equipActions.basicMenu.editShipZoom(0);
   };
   const handleSelectBlueprint = (id) => {
     equipActions.blueprintMenu.selectBlueprint(id);
     setSelectedBPid(id);
     setSubSelection(null);
-    equipActions.basicMenu.editShipZoom(0);
   };
   const handleSaveBlueprint = () => {
     const id = equipActions.blueprintMenu.saveBlueprint(selectedBPid); //returns id of saved Blueprint
@@ -55,19 +52,16 @@ const EquipmentMenu = () => {
   };
   const handleImportBP = () => {
     setImportExportText("");
-    equipActions.basicMenu.editShipZoom(0);
   };
   const handleSelectBP = (i) => {
     equipActions.blueprintMenu.importBlueprint(
       JSON.stringify(mechDesigns.enemy[i])
     );
-    equipActions.basicMenu.editShipZoom(0);
   };
   const handleSelectStationBP = (i) => {
     equipActions.blueprintMenu.importBlueprint(
       JSON.stringify(mechDesigns.station[i])
     );
-    equipActions.basicMenu.editShipZoom(0);
   };
   const handleExportBP = () => {
     setImportExportText(equipActions.blueprintMenu.exportBlueprint());
@@ -162,7 +156,6 @@ const EquipmentMenu = () => {
 
   return (
     <>
-      <EquipmentMenuControlsMouseKB />
       <div id="equipmentMenu">
         <div>
           <button onClick={() => switchScreen(PLAYER.screen.flight)}>

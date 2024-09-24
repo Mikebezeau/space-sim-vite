@@ -6,7 +6,6 @@ import featheredSpriteSrc from "../sprites/feathered60.png";
 import smokeTextureSrc from "../sprites/particles/pngTrans/smoke_11.png";
 import { WEAPON_FIRE_SPEED } from "../constants/constants";
 import { SPRITE_TYPE, DESIGN_TYPE } from "../constants/particleConstants";
-import { acceleration } from "../solarSystemGen/classes/Astro";
 
 interface particleStoreState {
   starSpriteSrc: Texture;
@@ -162,10 +161,11 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
           y: get().vectorTemp.y,
           z: get().vectorTemp.z,
         },
+        angle: 20,
         color: get().colors.grey,
         //endColor: get().colors.red,
         lifetime: lifeTime,
-        size: 1200,
+        size: 400,
       });
 
       const addMissileTrail = (

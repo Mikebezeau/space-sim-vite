@@ -3,16 +3,14 @@ import * as THREE from "three";
 import Briefcase from "./Briefcase";
 import Grid from "./Grid";
 import useMainUIStore from "./useMainUIStore";
+import smallCrossSrc from "../sprites/smallCross.png";
+import largeCrossSrc from "../sprites/largeCross.png";
 
 const textureLoader = new THREE.TextureLoader();
-const smallCrossTexture = textureLoader.load(
-  "./textures/particles/smallCross.png"
-);
-const largeCrossTexture = textureLoader.load(
-  "./textures/particles/largeCross.png"
-);
+const smallCrossTexture = textureLoader.load(smallCrossSrc);
+const largeCrossTexture = textureLoader.load(largeCrossSrc);
 
-const LINES_NUMBER = 6;
+const LINES_NUMBER = 3;
 export const LINE_SPACING = 0.5;
 
 const POINTS_COUNT = 500;
@@ -72,6 +70,8 @@ const GridsContainer = ({ briefcases }) => {
         positionsBriefcases.push(briefcase);
       });
 
+      console.log(positionsSmallCross);
+
       positionsBigCross = positionsBigCross.filter((value, index) => {
         // Filtering odd points on X and Y
         return index % 6 <= 2 && index % 120 <= 59;
@@ -97,7 +97,7 @@ const GridsContainer = ({ briefcases }) => {
     }, []);
 
   return (
-    <group position={[0, -1, 0]}>
+    <group position={[-1, -1, 5]}>
       {/*
       <Suspense fallback="loading...">
         {briefcases.map((item, index) => {

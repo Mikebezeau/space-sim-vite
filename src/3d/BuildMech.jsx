@@ -15,6 +15,57 @@ const directionPointerFollowerMaterial = new MeshBasicMaterial({
   color: new Color("red"),
 });
 
+const BuildServo = ({
+  mechBP,
+  servo,
+  flatShading = true,
+  servoHitNames = [],
+  damageReadoutMode = false,
+  servoEditId = null,
+  isWireFrame = false,
+}) => {
+  //console.log(servo);
+  return (
+    <>
+      {servo.shape !== 0 && (
+        <ServoShapes
+          name={servo.id + "_servo"}
+          flatShading={flatShading}
+          damageReadoutMode={damageReadoutMode}
+          isWireFrame={isWireFrame}
+          isHit={servoHitNames.find((name) => name === servo.id + "_servo")}
+          servo={servo}
+          drawDistanceLevel={0}
+          landingBay={mechBP.landingBay}
+          landingBayServoLocationId={mechBP.landingBayServoLocationId}
+          landingBayPosition={mechBP.landingBayPosition}
+          servoEditId={servoEditId}
+        />
+      )}
+      {servo.servoShapes.length !== 0 && (
+        <group>
+          {servo.servoShapes.map((servoShape) => (
+            <ServoShapes
+              key={servoShape.id}
+              name={servo.id + "_servo"}
+              flatShading={flatShading}
+              damageReadoutMode={damageReadoutMode}
+              isWireFrame={isWireFrame}
+              isHit={servoHitNames.find((name) => name === servo.id + "_servo")}
+              servo={servoShape}
+              drawDistanceLevel={0}
+              landingBay={mechBP.landingBay}
+              landingBayServoLocationId={mechBP.landingBayServoLocationId}
+              landingBayPosition={mechBP.landingBayPosition}
+              servoEditId={servoEditId}
+            />
+          ))}
+        </group>
+      )}
+    </>
+  );
+};
+
 const BuildMech = forwardRef(function BuildMech(
   {
     mechBP,
@@ -56,6 +107,16 @@ const BuildMech = forwardRef(function BuildMech(
           key={index}
           position={[servo.offset.x, servo.offset.y, servo.offset.z]}
         >
+          <BuildServo
+            mechBP={mechBP}
+            servo={servo}
+            flatShading={flatShading}
+            servoHitNames={servoHitNames}
+            damageReadoutMode={damageReadoutMode}
+            servoEditId={servoEditId}
+            isWireFrame={isWireFrame}
+          />
+          {/*
           <ServoShapes
             name={servo.id + "_servo"}
             flatShading={flatShading}
@@ -68,7 +129,7 @@ const BuildMech = forwardRef(function BuildMech(
             landingBayServoLocationId={mechBP.landingBayServoLocationId}
             landingBayPosition={mechBP.landingBayPosition}
             servoEditId={servoEditId}
-          />
+          />*/}
           {mechBP.servoWeaponList(servo.id).map((weapon, j) => (
             <group
               key={j}

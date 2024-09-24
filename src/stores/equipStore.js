@@ -65,7 +65,7 @@ const useEquipStore = create((set, get) => {
           }));
         },
         importBlueprint(importBP) {
-          set((state) => ({ mechBP: loadBlueprint(importBP) }));
+          set(() => ({ mechBP: loadBlueprint(importBP) }));
         },
         exportBlueprint() {
           function replacer(key, value) {
@@ -80,7 +80,7 @@ const useEquipStore = create((set, get) => {
       //                MENU SELECTIONS
       changeMainMenuSelection(val) {
         //when "Edit Blueprint" selected, switches to 3d design mode
-        set((state) => ({ mainMenuSelection: val }));
+        set(() => ({ mainMenuSelection: val }));
       },
 
       //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -116,52 +116,6 @@ const useEquipStore = create((set, get) => {
         setProp(prop, val) {
           set((state) => ({
             mechBP: { ...state.mechBP, [prop]: val },
-          }));
-        },
-        editSetMouseDown(buttonState, e = 0) {
-          set((state) => ({
-            editMouseDown: buttonState,
-          }));
-          if (e)
-            set((state) => ({
-              editMouseDownPosition: {
-                x: (e.clientX - window.innerWidth / 2) / window.innerWidth,
-                y: (e.clientY - window.innerHeight / 2) / window.innerHeight,
-              },
-            }));
-        },
-        editShipMouseRotation({ clientX: x, clientY: y }) {
-          if (get().editMouseDown) {
-            const mouseX =
-              (x - window.innerWidth / 2) / window.innerWidth -
-              get().editMouseDownPosition.x;
-            const mouseY =
-              (y - window.innerHeight / 2) / window.innerHeight -
-              get().editMouseDownPosition.y;
-
-            let rotation = get().editShipRotationVal;
-            rotation.x = rotation.x + mouseX / 10;
-            rotation.y = rotation.y + mouseY / 10;
-            set((state) => ({
-              editShipRotationValVal: { rotation },
-            }));
-          }
-        },
-        editShipRotation(axis, direction) {
-          let rotation = get().editShipRotationVal;
-          if (axis === "reset") rotation = { x: 0, y: 0, z: 0 };
-          else {
-            //rotate a fraction of a radian and use mod (%) to reset to 0 when full 360 reached
-            rotation[axis] =
-              (rotation[axis] + (direction * Math.PI) / 8) % (Math.PI * 2);
-          }
-          set((state) => ({
-            editShipRotationVal: rotation,
-          }));
-        },
-        editShipZoom(direction) {
-          set((state) => ({
-            editShipZoom: direction === 0 ? 0 : state.editShipZoom + direction,
           }));
         },
       },
@@ -209,10 +163,10 @@ const useEquipStore = create((set, get) => {
           //remove from weapons
         },
         selectServoID(id) {
-          set((state) => ({ editServoId: id }));
+          set(() => ({ editServoId: id }));
         },
         selectLandingBayID(id) {
-          set((state) => ({ editLandingBayId: id }));
+          set(() => ({ editLandingBayId: id }));
         },
         adjustServoOffset(x, y, z) {
           const servo = get().mechBP.servoList.find(
@@ -439,9 +393,6 @@ const useEquipStore = create((set, get) => {
     editServoId: null, //used for any selection of servoId in menus
     editWeaponId: null, //used for any selection of weaponId in menus
     editLandingBayId: null,
-    editShipRotationVal: { x: Math.PI / 4, y: 0, z: 0 }, //used for any selection of weaponId in menus
-    editMouseDown: false,
-    editMouseDownPosition: { x: 0, y: 0 },
     editShipZoom: 0,
     //MECH blueprint TEMPLATE
     mechBP: initMechBP(0),

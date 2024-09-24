@@ -2,6 +2,12 @@ hr {
   width: 100%;
 }
 
+select,
+option {
+  color: black !important;
+  background-color: white;
+}
+
 #equipmentMenu {
   position: absolute;
   overflow-y: scroll;

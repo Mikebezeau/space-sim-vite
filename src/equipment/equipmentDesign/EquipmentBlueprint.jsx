@@ -1,84 +1,45 @@
-import { useRef } from "react";
-import { useThree, useFrame } from "@react-three/fiber";
-//import { useThree, useLoader, useFrame } from "@react-three/fiber";
-//import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import useStore from "../../stores/store";
+import { useCallback, useRef } from "react";
+import { useThree } from "@react-three/fiber";
+import { TrackballControls } from "@react-three/drei";
 import useEquipStore from "../../stores/equipStore";
 import BuildMech from "../../3d/BuildMech";
-import { equipList } from "../data/equipData";
+//import { useThree, useLoader, useFrame } from "@react-three/fiber";
+//import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 export default function EquipmentBlueprint() {
-  const {
-    mainMenuSelection,
-    editServoId,
-    editWeaponId,
-    editShipRotationVal,
-    editShipZoom,
-    mechBP,
-  } = useEquipStore((state) => state);
+  const editServoId = useEquipStore((state) => state.editServoId);
+  const editWeaponId = useEquipStore((state) => state.editWeaponId);
+  const mechBP = useEquipStore((state) => state.mechBP);
   const { camera } = useThree();
-  const { clock } = useStore((state) => state.mutation);
   const ref = useRef();
+  const cameraControlsRef = useRef(null);
 
-  useFrame(() => {
-    //move camera away to look at larger mech
-    camera.position.set(
-      0,
-      0,
-      (mechBP.size() * 4) / equipList.scale.weightMult[mechBP.scale] +
-        editShipZoom
-    ); // design build is at smaller size (not scaled), so as able to display largest mech size without flicker
+  const resestControlsCameraPosition = useCallback(() => {
+    if (!cameraControlsRef.current) return;
+    console.log("resestControlsCameraPosition");
+    cameraControlsRef.current.reset(); // reset camera controls
+    camera.position.set(0, 0, -10);
     camera.lookAt(0, 0, 0);
-    //set light position at camera
-    //light.current.position.copy(camera.position);
-
-    //ship rotating in menu while not being modified
-    if (ref.current) {
-      if (mainMenuSelection !== 2) {
-        //change to mainMenuSelection !== SOME_CONST
-
-        const r = clock.getElapsedTime() / 2;
-        ref.current.rotation.set(Math.PI / 4, r, 0);
-      } else {
-        //point ship in certain direction for editing of part location
-        //modify by player selected rotation
-
-        const rotation = {
-          x:
-            Math.sign(editShipRotationVal.y) *
-            (Math.PI / 1 + Math.abs(editShipRotationVal.y)),
-          y:
-            Math.sign(editShipRotationVal.x) *
-            (Math.PI / 1 + Math.abs(editShipRotationVal.x)),
-          z: 0,
-        };
-
-        ref.current.rotation.set(rotation.x, rotation.y, rotation.z);
-      }
-    }
-
-    /*
-    enemy.hitBox.min.copy(position);
-    enemy.hitBox.max.copy(position);
-    enemy.hitBox.expandByScalar(mechBP.size() * 3000 * SCALE);
-
-
-        <mesh
-          geometry={enemy.boxHelper.geometry}
-          material={
-            enemy.guid === enemy.groupLeaderId
-              ? enemy.greenMat
-              : enemy.boxHelper.material
-          }
-        ></mesh>
-*/
-  });
+  }, [camera]);
 
   return (
     <>
-      <ambientLight intensity={1} />
-      <pointLight intensity={1} decay={0} position={[0, -10000, 0]} />
-      <group ref={ref} position={[0, 0, -10]} rotation={[Math.PI / 4, 0, 0]}>
+      <ambientLight intensity={0.3} />
+      <pointLight intensity={0.5} decay={0} position={[-10000, 10000, 0]} />
+      <pointLight intensity={0.5} decay={0} position={[10000, -10000, 0]} />
+      <TrackballControls
+        ref={(controlsRef) => {
+          cameraControlsRef.current = controlsRef;
+          resestControlsCameraPosition();
+        }}
+        rotateSpeed={3}
+        panSpeed={0.5}
+      />
+      <group
+        ref={ref}
+        position={[0, 0, 0]}
+        rotation={[-Math.PI * 0.25, Math.PI * 1.25, 0]}
+      >
         <BuildMech
           mechBP={mechBP}
           servoEditId={editServoId}

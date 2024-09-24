@@ -12,11 +12,12 @@ const UiMain = () => (
   >
     {/*<SoundManager />*/}
     <Header />
+    {/*}
     <div className="flex flex-col md:flex-row h-4/6 overflow-y-scroll no-scrollbar focus:outline-none">
       <Inventory />
       <ItemDescription />
     </div>
-    <Footer />
+    <Footer />*/}
     {/*<Loader />*/}
   </div>
 );

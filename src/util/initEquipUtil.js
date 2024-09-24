@@ -67,7 +67,17 @@ const loadBlueprint = function (importBP) {
 
   parsedBP.servoList.forEach((parsedServo) => {
     const servoBP = initMechServo(0);
-    mergBP.servoList.push(transferProperties(servoBP, parsedServo));
+    const mergeServoBP = transferProperties(servoBP, parsedServo);
+    // add servoShapes
+    parsedServo.servoShapes?.forEach((parsedServoShape) => {
+      const servoShapeBP = initMechServoShape(0);
+      const mergeServoShapeBP = transferProperties(
+        servoShapeBP,
+        parsedServoShape
+      );
+      mergeServoBP.servoShapes.push(mergeServoShapeBP);
+    });
+    mergBP.servoList.push(mergeServoBP);
   });
 
   //parsedBP.weaponList.forEach((list, key) => {
@@ -252,6 +262,20 @@ const initMechBP = function (guid) {
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                all MECH SERVO PROPERTIES and METHODS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+const initMechServoShape = function (guid) {
+  return {
+    id: guid,
+    offset: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scaleAdjust: { x: 0, y: 0, z: 0 },
+    shape: 0,
+
+    material: new THREE.MeshLambertMaterial({
+      color: new THREE.Color("#999"),
+    }),
+  };
+};
+
 const initMechServo = function (guid, scale, classIndex = 0, type = "Torso") {
   return {
     id: guid,
@@ -262,6 +286,7 @@ const initMechServo = function (guid, scale, classIndex = 0, type = "Torso") {
     class: classIndex,
     scale: scale,
     shape: 0,
+    servoShapes: [],
     SPMod: 0,
     wEff: 0,
     armor: { class: 0, rating: 1 }, //rating 1 = standard armor
