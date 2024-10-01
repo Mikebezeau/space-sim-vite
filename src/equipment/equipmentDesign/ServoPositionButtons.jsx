@@ -9,22 +9,18 @@ import {
   //useMouseClick,
 } from "../../hooks/controls/useMouseKBControls";
 
-const ServoPositionButtons = ({ heading }) => {
+const ServoPositionButtons = ({
+  editServoIndex = null,
+  editServoShapeIndex = null,
+  editWeaponId,
+  editLandingBayId,
+}) => {
   //lust of servos, player clicks one of the buttons to select that servo, and then will be able to edit size/location
-  const { mechBP, equipActions, editServoId, editWeaponId, editLandingBayId } =
-    useEquipStore((state) => state);
+  const { mechBP, equipActions } = useEquipStore((state) => state);
 
   const partMoveOffsetVal = mechBP.size() / 20;
 
   const [moveAmount, setMoveAmount] = useState(1);
-
-  const handleRotateShipView = (axis, direction) => {
-    equipActions.basicMenu.editShipRotation(axis, direction);
-  };
-
-  const handleZoomShipView = (direction) => {
-    equipActions.basicMenu.editShipZoom(direction * 5);
-  };
 
   //position up arow
   function handleMovePartUp() {
@@ -38,6 +34,8 @@ const ServoPositionButtons = ({ heading }) => {
       equipActions.basicMenu.setProp("landingBayPosition", bayPosition);
     }
     equipActions.servoMenu.adjustServoOffset(
+      editServoIndex,
+      editServoShapeIndex,
       0,
       moveAmount * partMoveOffsetVal,
       0
@@ -62,6 +60,8 @@ const ServoPositionButtons = ({ heading }) => {
       equipActions.basicMenu.setProp("landingBayPosition", bayPosition);
     }
     equipActions.servoMenu.adjustServoOffset(
+      editServoIndex,
+      editServoShapeIndex,
       0,
       -moveAmount * partMoveOffsetVal,
       0
@@ -86,6 +86,8 @@ const ServoPositionButtons = ({ heading }) => {
       equipActions.basicMenu.setProp("landingBayPosition", bayPosition);
     }
     equipActions.servoMenu.adjustServoOffset(
+      editServoIndex,
+      editServoShapeIndex,
       0,
       0,
       moveAmount * partMoveOffsetVal
@@ -110,6 +112,8 @@ const ServoPositionButtons = ({ heading }) => {
       equipActions.basicMenu.setProp("landingBayPosition", bayPosition);
     }
     equipActions.servoMenu.adjustServoOffset(
+      editServoIndex,
+      editServoShapeIndex,
       0,
       0,
       -moveAmount * partMoveOffsetVal
@@ -134,6 +138,8 @@ const ServoPositionButtons = ({ heading }) => {
       equipActions.basicMenu.setProp("landingBayPosition", bayPosition);
     }
     equipActions.servoMenu.adjustServoOffset(
+      editServoIndex,
+      editServoShapeIndex,
       -moveAmount * partMoveOffsetVal,
       0,
       0
@@ -158,6 +164,8 @@ const ServoPositionButtons = ({ heading }) => {
       equipActions.basicMenu.setProp("landingBayPosition", bayPosition);
     }
     equipActions.servoMenu.adjustServoOffset(
+      editServoIndex,
+      editServoShapeIndex,
       moveAmount * partMoveOffsetVal,
       0,
       0
@@ -169,28 +177,6 @@ const ServoPositionButtons = ({ heading }) => {
     );
   }
   useKBControls("ArrowRight", handleMovePartRight);
-
-  const handleSelecteditServoId = (id) => {
-    equipActions.servoMenu.selectServoID(id);
-    equipActions.weaponMenu.selectWeaponID(null);
-    equipActions.servoMenu.selectLandingBayID(null);
-  };
-
-  const handleSelectEditWeaponId = (id) => {
-    equipActions.servoMenu.selectServoID(null);
-    equipActions.weaponMenu.selectWeaponID(id);
-    equipActions.servoMenu.selectLandingBayID(null);
-  };
-
-  const handleSelectEditLandingBay = () => {
-    equipActions.servoMenu.selectServoID(null);
-    equipActions.weaponMenu.selectWeaponID(null);
-    equipActions.servoMenu.selectLandingBayID(1);
-  };
-
-  const handleChangeServoShape = (index, shapeIndex) => {
-    equipActions.servoMenu.selectServoShape(index, Number(shapeIndex));
-  };
 
   const handleRotateServoShape = (axis, direction) => {
     equipActions.servoMenu.adjustServoRotation(axis, direction);
@@ -204,81 +190,9 @@ const ServoPositionButtons = ({ heading }) => {
     setMoveAmount(val);
   };
 
-  /*
-    console.log(mechBP.servoList[0].type);
-    Object.keys(geoList).forEach((key) => {
-      console.log("shape", key);
-    });
-  */
   return (
     <>
-      <h3>
-        Rotate Ship View:{" "}
-        <button onClick={() => handleRotateShipView("y", -1)}>+</button>
-        <button onClick={() => handleRotateShipView("y", 1)}>-</button>
-      </h3>
-      <h3>
-        Zoom Level: <button onClick={() => handleZoomShipView(-1)}>+</button>
-        <button onClick={() => handleZoomShipView(1)}>-</button>
-      </h3>
-      <h2>Select Servo to Position</h2>
-      {mechBP.servoList.map((servo, index) => (
-        <span
-          key={index}
-          className={
-            (editServoId === servo.id ? "selectedItem" : "nonSelectedItem") +
-            " servoPositionSelect"
-          }
-          style={{ display: "block", clear: "both" }}
-        >
-          <span>
-            <button onClick={() => handleSelecteditServoId(servo.id)}>
-              {servo.type}
-            </button>
-          </span>
-          <select
-            value={servo.shape}
-            onChange={(e) => handleChangeServoShape(index, e.target.value)}
-          >
-            {Object.keys(geoList).map((key, shapeIndex) => (
-              <option key={"shape" + index + key} value={shapeIndex}>
-                {key}
-              </option>
-            ))}
-          </select>
-          <div>
-            {mechBP.servoWeaponList(servo.id).map((weapon) => (
-              <span
-                key={weapon.id + "weapon"}
-                className={
-                  editWeaponId === weapon.id
-                    ? "selectedItem"
-                    : "nonSelectedItem"
-                }
-              >
-                <button onClick={() => handleSelectEditWeaponId(weapon.id)}>
-                  {weapon.data.name}
-                </button>
-              </span>
-            ))}
-          </div>
-          <div>
-            {mechBP.landingBayServoLocationId === servo.id && (
-              <span
-                key={"bay"} // + index}
-                className={
-                  editLandingBayId ? "selectedItem" : "nonSelectedItem"
-                }
-              >
-                <button onClick={() => handleSelectEditLandingBay()}>
-                  Landing Bay
-                </button>
-              </span>
-            )}
-          </div>
-        </span>
-      ))}
-      <div>Position: Arrow Keys, "Q", "A"</div>
+      <div>Position: Arrow Keys, `&ldquo;`Q`&ldquo;`, `&ldquo;`A`&ldquo;`</div>
       <div>
         Scale:{" "}
         <button onClick={() => handleScaleServoShape("x", -1)}>X-</button>

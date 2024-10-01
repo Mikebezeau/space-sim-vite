@@ -1,4 +1,3 @@
-import { memo } from "react";
 import * as THREE from "three";
 import { CSG } from "three-csg-ts";
 import { geoList } from "./shapeGeometry";
@@ -163,6 +162,7 @@ export const ServoShapes = ({
   servo,
   drawDistanceLevel,
   servoEditId,
+  servoShapeEditId,
   //landingBay,
   landingBayServoLocationId,
   landingBayPosition,
@@ -171,10 +171,12 @@ export const ServoShapes = ({
   //constructionMaterial.bumpMap = bmap;
   //constructionMaterial.bumpScale = 0.3;
   //if (isHit !== undefined) console.log("hit");
-  const editing = servo.id === servoEditId ? true : false;
+  const editing =
+    servo.id === servoEditId && servoShapeEditId === null ? true : false;
   const size = servo.size();
   let readoutMaterial;
   if (damageReadoutMode) {
+    // just change the color, not material
     const servoPercent =
       ((servo.structure() - servo.structureDamage) / servo.structure()) * 100;
     if (servoPercent < 0) {
@@ -204,13 +206,6 @@ export const ServoShapes = ({
   });
   const useMaterial = visibilityMaterial;
   */
-  const scaleX =
-    servo.scaleAdjust.x + servoShapeData[servo.type][servo.shape].scale[0]; //scale[0] is the scale of x axis
-  const scaleY =
-    servo.scaleAdjust.y + servoShapeData[servo.type][servo.shape].scale[1];
-  const scaleZ =
-    servo.scaleAdjust.z + servoShapeData[servo.type][servo.shape].scale[2];
-
   //if there is a simpler version of this shape created to be shown at further distance brackets, show that version instead of detailed version
   let servoGeometry = servoShapeData[servo.type][servo.shape].geometry[0]; /*
   servoGeometry = servoGeometry[drawDistanceLevel]
@@ -220,6 +215,7 @@ export const ServoShapes = ({
   let ServoMesh = new THREE.Mesh(servoGeometry, useMaterial);
 
   //only draw landing bay if within a certain distance
+  // get a buffered mesh of servo shapes and then apply a cutout shape to it
   if (
     drawDistanceLevel === 0 &&
     !damageReadoutMode &&
@@ -233,11 +229,9 @@ export const ServoShapes = ({
       landingBayPosition.y,
       landingBayPosition.z
     );
-
     // Make sure the .matrix of each mesh is current
     ServoMesh.updateMatrix();
     landingBayHole.updateMatrix();
-
     // Subtract landingBayHole from ServoMesh
     ServoMesh = CSG.subtract(ServoMesh, landingBayHole);
 
@@ -261,8 +255,7 @@ export const ServoShapes = ({
 
   return (
     <group scale={size}>
-      <mesh
-        name={name}
+      <group
         rotation={[
           Math.sign(servo.rotation.x) *
             (Math.PI / 1 + Math.abs(servo.rotation.x)),
@@ -271,10 +264,38 @@ export const ServoShapes = ({
           Math.sign(servo.rotation.z) *
             (Math.PI / 1 + Math.abs(servo.rotation.z)),
         ]}
-        scale={[scaleX, scaleY, scaleZ]}
-        geometry={ServoMesh.geometry}
-        material={ServoMesh.material}
-      ></mesh>
+        scale={[
+          1 + servo.scaleAdjust.x,
+          1 + servo.scaleAdjust.y,
+          1 + servo.scaleAdjust.z,
+        ]}
+      >
+        {servo.servoShapes.map((servoShape) => (
+          <mesh
+            key={servoShape.id}
+            position={[
+              servoShape.offset.x,
+              servoShape.offset.y,
+              servoShape.offset.z,
+            ]}
+            rotation={[
+              Math.sign(servoShape.rotation.x) *
+                (Math.PI / 1 + Math.abs(servoShape.rotation.x)),
+              Math.sign(servoShape.rotation.y) *
+                (Math.PI / 1 + Math.abs(servoShape.rotation.y)),
+              Math.sign(servoShape.rotation.z) *
+                (Math.PI / 1 + Math.abs(servoShape.rotation.z)),
+            ]}
+            scale={[
+              1 + servoShape.scaleAdjust.x,
+              1 + servoShape.scaleAdjust.y,
+              1 + servoShape.scaleAdjust.z,
+            ]}
+            geometry={servoShapeData[servo.type][servoShape.shape].geometry[0]}
+            material={useMaterial}
+          />
+        ))}
+      </group>
     </group>
   );
 };

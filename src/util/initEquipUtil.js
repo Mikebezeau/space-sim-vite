@@ -1,11 +1,36 @@
 import * as THREE from "three";
+import { v4 as guid } from "uuid";
 import { equipList } from "../equipment/data/equipData";
 import { weaponList } from "../equipment/data/weaponData";
 import { applyScaledCPMult, servoUtil, mech, armorUtil } from "./mechServoUtil";
 import { weaponUtil } from "./weaponUtil";
 import mechDesigns from "../equipment/data/mechDesigns";
+import MechServo from "../classes/MechServo";
+
+function transferProperties(mergBP, parsedBP) {
+  // transfering select properties from parsedBP to mergBP
+  Object.keys(parsedBP).forEach((key) => {
+    if (typeof parsedBP[key] !== "object") {
+      // non object props: name and type are strings, all others are numbers
+      mergBP[key] =
+        key === "id" || key === "name" || key === "type"
+          ? parsedBP[key]
+          : Number(parsedBP[key]);
+    } else if (
+      key === "armor" ||
+      key === "offset" ||
+      key === "rotation" ||
+      key === "scaleAdjust"
+    ) {
+      // recursivly transfering object properties: offset, rotation, scaleAdjust => {x,y,z}
+      mergBP[key] = transferProperties(mergBP[key], parsedBP[key]);
+    }
+  });
+  return mergBP;
+}
 
 //CREATING UNIQUE IDS
+/*
 const guid = (A) => {
   //global unique ID
   //return lowest number possible from array.guid
@@ -30,29 +55,11 @@ const guid = (A) => {
   }
   return n + 1;
 };
-
+*/
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                all MECH PROPERTIES and METHODS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 const loadBlueprint = function (importBP) {
-  function transferProperties(mergBP, parsedBP) {
-    Object.keys(parsedBP).forEach((key) => {
-      if (typeof parsedBP[key] !== "object") {
-        mergBP[key] =
-          key === "name" || key === "type"
-            ? parsedBP[key]
-            : Number(parsedBP[key]);
-      } else if (
-        key === "offset" ||
-        key === "rotation" ||
-        key === "scaleAdjust"
-      ) {
-        mergBP[key] = transferProperties(mergBP[key], parsedBP[key]);
-      }
-    });
-    return mergBP;
-  }
-
   const parsedBP = JSON.parse(importBP);
   let mergBP = initMechBP();
   mergBP = transferProperties(mergBP, parsedBP);
@@ -66,6 +73,7 @@ const loadBlueprint = function (importBP) {
     */
 
   parsedBP.servoList.forEach((parsedServo) => {
+    /*
     const servoBP = initMechServo(0);
     const mergeServoBP = transferProperties(servoBP, parsedServo);
     // add servoShapes
@@ -78,6 +86,10 @@ const loadBlueprint = function (importBP) {
       mergeServoBP.servoShapes.push(mergeServoShapeBP);
     });
     mergBP.servoList.push(mergeServoBP);
+    */
+    const newServo = new MechServo(parsedServo);
+    console.log("newServo", newServo);
+    mergBP.servoList.push(newServo);
   });
 
   //parsedBP.weaponList.forEach((list, key) => {
@@ -90,7 +102,7 @@ const loadBlueprint = function (importBP) {
   });
 
   //console.log(mergBP.weaponList);
-  //console.log(mergBP.servoList);
+  //console.log(mergBP);
   return mergBP;
 };
 
@@ -281,7 +293,7 @@ const initMechServo = function (guid, scale, classIndex = 0, type = "Torso") {
     id: guid,
     offset: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
-    scaleAdjust: { x: 0, y: 0, z: 0 },
+    scaleAdjust: { x: 1, y: 1, z: 1 },
     type: type,
     class: classIndex,
     scale: scale,
@@ -553,6 +565,7 @@ const initWeaponBP = function (guid, weaponType, scale) {
 
 export {
   guid,
+  transferProperties,
   loadBlueprint,
   initPlayerMechBP,
   initStationBP,

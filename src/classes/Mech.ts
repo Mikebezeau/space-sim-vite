@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 import useParticleStore from "../stores/particleStore";
 import { loadBlueprint } from "../util/initEquipUtil";
 import { servoUtil } from "../util/mechServoUtil";
 import { SCALE } from "../constants/constants";
+import { getMergedBufferGeom } from "../util/gameUtil";
 //import { setCustomData } from "r3f-perf";
 
 export interface MechInt {
@@ -129,24 +129,7 @@ class Mech implements MechInt {
 
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
   setMergedBufferGeom() {
-    const geoms: Array<THREE.BufferGeometry> = [];
-    const meshes: Array<THREE.Mesh> = [];
-    this.object3d.updateWorldMatrix(true, true);
-    this.object3d.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        meshes.push(child);
-        geoms.push(
-          child.geometry.index
-            ? child.geometry.toNonIndexed()
-            : child.geometry.clone()
-        );
-      }
-    });
-    geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
-    const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
-    merged.applyMatrix4(this.object3d.matrix.clone().invert());
-    merged.userData.materials = meshes.map((m) => m.material);
-    this.bufferGeom = merged;
+    this.bufferGeom = getMergedBufferGeom(this.object3d);
   }
 
   fireWeapon(isPlayer = false) {

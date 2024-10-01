@@ -59,6 +59,14 @@ option {
   background-color: lightskyblue;
   border-radius: 4px;
   margin: 4px 6px;
+  padding: 4px;
+}
+#equipmentMenu .selectedItem.servoPositionSelect {
+  background-color: black;
+  border-width: 4px;
+  border-color: lightskyblue;
+  border-radius: 4px;
+  margin: 4px 6px;
 }
 #equipmentMenu .nonSelectedItem {
   background-color: black;

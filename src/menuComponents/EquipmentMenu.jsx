@@ -7,7 +7,7 @@ import mechDesigns from "../equipment/data/mechDesigns";
 import Mech from "../equipment/equipmentComponents/Mech";
 import { Crew, CrewAssignSpaces } from "../equipment/equipmentComponents/Crew";
 import { Servos } from "../equipment/equipmentComponents/Servos";
-import ServoPositionButtons from "../equipment/equipmentDesign/ServoPositionButtons";
+import PositionPartsList from "../equipment/equipmentDesign/PositionPartsList";
 //import ServoHydraulics from "./equipment/ServoHydraulics";
 import {
   Weapons,
@@ -33,6 +33,7 @@ const EquipmentMenu = () => {
     setSelectedBPid(0);
     setSubSelection(null);
   };
+  /*
   const handleSelectBlueprint = (id) => {
     equipActions.blueprintMenu.selectBlueprint(id);
     setSelectedBPid(id);
@@ -47,21 +48,30 @@ const EquipmentMenu = () => {
     handleNewBP();
     setSubSelection(null);
   };
+  */
   const handleImportChange = (e) => {
     setImportExportText(e.target.value);
   };
   const handleImportBP = () => {
     setImportExportText("");
   };
-  const handleSelectBP = (i) => {
-    equipActions.blueprintMenu.importBlueprint(
-      JSON.stringify(mechDesigns.enemy[i])
-    );
+  const handleSelectPlayerBP = (i) => {
+    if (mechDesigns.player[i])
+      equipActions.blueprintMenu.importBlueprint(
+        JSON.stringify(mechDesigns.player[i])
+      );
+  };
+  const handleSelectEnemyBP = (i) => {
+    if (mechDesigns.enemy[i])
+      equipActions.blueprintMenu.importBlueprint(
+        JSON.stringify(mechDesigns.enemy[i])
+      );
   };
   const handleSelectStationBP = (i) => {
-    equipActions.blueprintMenu.importBlueprint(
-      JSON.stringify(mechDesigns.station[i])
-    );
+    if (mechDesigns.station[i])
+      equipActions.blueprintMenu.importBlueprint(
+        JSON.stringify(mechDesigns.station[i])
+      );
   };
   const handleExportBP = () => {
     setImportExportText(equipActions.blueprintMenu.exportBlueprint());
@@ -166,7 +176,7 @@ const EquipmentMenu = () => {
           >
             <button onClick={handleNewBP}>New BP</button>
           </span>
-          {playerMechBP.map((value, index) => (
+          {/*playerMechBP.map((value, index) => (
             <span
               key={"mechbp" + index}
               className={
@@ -186,9 +196,9 @@ const EquipmentMenu = () => {
                 X
               </button>
             </span>
-          ))}
+          ))
           <button onClick={handleSaveBlueprint}>Save Blueprint</button>
-
+          */}
           <span style={{ float: "right" }}>
             <input
               style={{ textTransform: "none" }}
@@ -198,7 +208,19 @@ const EquipmentMenu = () => {
             />
             <select
               onChange={(e) => {
-                handleSelectBP(e.target.value);
+                handleSelectPlayerBP(e.target.value);
+              }}
+            >
+              <option>Select Player BP</option>
+              {mechDesigns.player.map((bp, i) => (
+                <option key={i} value={i}>
+                  {bp.name}
+                </option>
+              ))}
+            </select>
+            <select
+              onChange={(e) => {
+                handleSelectEnemyBP(e.target.value);
               }}
             >
               <option>Select Enemy BP</option>
@@ -244,7 +266,7 @@ const EquipmentMenu = () => {
           ))}
           <hr />
           {mainMenuSelection === 2 ? (
-            <ServoPositionButtons />
+            <PositionPartsList />
           ) : (
             //edit servo/weapon graphical locations
             //will also load the blueprint design 3d interface

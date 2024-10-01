@@ -9,7 +9,7 @@ export interface MechWeaponInt {
 class MechWeapon implements MechWeaponInt {
   id: string;
 
-  constructor(weaponDesign: any) {
+  constructor(id: string = uuidv4(), weaponData: any) {
     this.id = uuidv4();
   }
 

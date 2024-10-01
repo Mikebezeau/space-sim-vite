@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import MechServoShape from "../classes/MechServoShape";
 import {
   guid,
   loadBlueprint,
@@ -30,6 +31,23 @@ function castWeaponDataInt(mergBP, parsedBP) {
 const useEquipStore = create((set, get) => {
   //globally available letiables
   return {
+    //3d ship editor global variables
+    mainMenuSelection: 0,
+    editServoId: null, //used for any selection of servoId in menus
+    editServoShapeId: null, //used for any selection of servoShapeId in menus
+    editWeaponId: null, //used for any selection of weaponId in menus
+    editLandingBayId: null,
+    editShipZoom: 0,
+    //MECH blueprint TEMPLATE
+    mechBP: initMechBP(0),
+    //weapon blueprints template
+    beamBP: initWeaponBP(0, "beam"),
+    projBP: initWeaponBP(0, "proj"),
+    missileBP: initWeaponBP(0, "missile"),
+    eMeleeBP: initWeaponBP(0, "eMelee"),
+    meleeBP: initWeaponBP(0, "melee"),
+    //PLAYER MECH BLUEPRINT list
+    playerMechBP: initPlayerMechBP(), //returns array of players mech blueprints
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     //                MECH DESIGN MENU ACTIONS
     equipActions: {
@@ -37,10 +55,11 @@ const useEquipStore = create((set, get) => {
       //                MECH BLUEPRINT: SELECTION, SAVING, DELETION
       blueprintMenu: {
         newBlueprint() {
-          set((state) => ({
+          set(() => ({
             mechBP: initMechBP(0),
           }));
         },
+        /*
         selectBlueprint(id) {
           set((state) => ({
             mechBP: state.playerMechBP.find((bp) => bp.id === id),
@@ -52,11 +71,9 @@ const useEquipStore = create((set, get) => {
           } else {
             get().equipActions.blueprintMenu.deleteBlueprint(id);
           }
-
           set((state) => ({
             playerMechBP: [...state.playerMechBP, { ...state.mechBP, id: id }],
           }));
-
           return id;
         },
         deleteBlueprint(id) {
@@ -64,12 +81,21 @@ const useEquipStore = create((set, get) => {
             playerMechBP: state.playerMechBP.filter((bp) => bp.id !== id),
           }));
         },
+        */
         importBlueprint(importBP) {
-          set(() => ({ mechBP: loadBlueprint(importBP) }));
+          const loadBP = loadBlueprint(importBP);
+          set(() => ({ mechBP: loadBP }));
+          console.log("loadBP", loadBP);
+          console.log("mechBP", get().mechBP);
         },
         exportBlueprint() {
           function replacer(key, value) {
-            if (key === "metadata" || key === "material") return undefined;
+            if (
+              key === "metadata" ||
+              key === "threeColor" ||
+              key === "material"
+            )
+              return undefined;
             else return value;
           }
           return JSON.stringify(get().mechBP, replacer);
@@ -160,54 +186,54 @@ const useEquipStore = create((set, get) => {
             },
           }));
           //remove equipment from this location
-          //remove from weapons
+          //remove weapons
         },
-        selectServoID(id) {
-          set(() => ({ editServoId: id }));
+        selectServoID(servoId) {
+          set(() => ({ editServoId: servoId }));
+          set(() => ({ editServoShapeId: null }));
+          get().equipActions.weaponMenu.selectWeaponID(null);
+          get().equipActions.servoMenu.selectLandingBayID(null);
         },
         selectLandingBayID(id) {
           set(() => ({ editLandingBayId: id }));
         },
-        adjustServoOffset(x, y, z) {
-          const servo = get().mechBP.servoList.find(
-            (s) => s.id === get().editServoId
+        // if provided seroShapeIndex, then it will move the specific shape not whole servo
+        adjustServoOffset(servoIndex, servoShapeIndex, x, y, z) {
+          console.log(
+            "adjustServoOffset",
+            servoIndex,
+            servoShapeIndex,
+            x,
+            y,
+            z
           );
-          if (servo) {
-            let offset = servo.offset;
-            offset.x += x;
-            offset.y += y;
-            offset.z += z;
-            set((state) => ({
-              mechBP: {
-                ...state.mechBP,
-                servoList: state.mechBP.servoList.map((s) =>
-                  s.id === get().editServoId ? { ...s, offset: offset } : s
-                ),
-              },
-            }));
+          const servoList = get().mechBP.servoList;
+          if (servoShapeIndex !== null) {
+            servoList[servoIndex].servoShapes[servoShapeIndex].movePart(
+              x,
+              y,
+              z
+            );
+          } else {
+            console.log(servoList[servoIndex]);
+            servoList[servoIndex].movePart(x, y, z);
           }
+          set((state) => ({
+            mechBP: {
+              ...state.mechBP,
+              servoList: servoList,
+            },
+          }));
         },
-        adjustServoRotation(axis, direction) {
-          const servo = get().mechBP.servoList.find(
-            (s) => s.id === get().editServoId
-          );
-          //return;
-          if (servo) {
-            let rotation = servo.rotation;
-            if (axis === "reset") rotation = { x: 0, y: 0, z: 0 };
-            else {
-              rotation[axis] =
-                (rotation[axis] + (direction * Math.PI) / 8) % (Math.PI * 2);
-            }
-            set((state) => ({
-              mechBP: {
-                ...state.mechBP,
-                servoList: state.mechBP.servoList.map((s) =>
-                  s.id === get().editServoId ? { ...s, rotation: rotation } : s
-                ),
-              },
-            }));
-          }
+        adjustServoRotation(servoIndex, axis, direction) {
+          const servoList = get().mechBP.servoList;
+          servoList[servoIndex].rotateServo(axis, direction);
+          set((state) => ({
+            mechBP: {
+              ...state.mechBP,
+              servoList: servoList,
+            },
+          }));
         },
         adjustServoScale(axis, val) {
           const servo = get().mechBP.servoList.find(
@@ -223,28 +249,11 @@ const useEquipStore = create((set, get) => {
 
               //alter scale
             } else {
-              //make scale in other axis smaller to keep general size correct
-              /*
-              scaleAdjust.x = servo.scaleAdjust.x - val * 0.1;
-              scaleAdjust.y = servo.scaleAdjust.y - val * 0.1;
-              scaleAdjust.z = servo.scaleAdjust.z - val * 0.1;
-              scaleAdjust[axis] = scaleAdjust[axis] + val * 0.1 + val * 0.3;
-              */
               scaleAdjust.x = servo.scaleAdjust.x;
               scaleAdjust.y = servo.scaleAdjust.y;
               scaleAdjust.z = servo.scaleAdjust.z;
               scaleAdjust[axis] = scaleAdjust[axis] + val;
             }
-            //if not getting to small in any axis
-            /*
-            if (
-              scaleAdjust.x - val * 0.1 < -0.8 ||
-              scaleAdjust.y - val * 0.1 < -0.8 ||
-              scaleAdjust.z - val * 0.1 < -0.8
-            ) {
-              return;
-            }
-            */
             set((state) => ({
               mechBP: {
                 ...state.mechBP,
@@ -257,14 +266,29 @@ const useEquipStore = create((set, get) => {
             }));
           }
         },
-        selectServoShape(index, shapeIndex) {
+      },
+
+      //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //       NEW - CREATION OF SERVOS WITH MULTIPLE SHAPES
+      servoShapeMenu: {
+        selectServoShapeID(servoId, servoShapeId) {
+          get().equipActions.servoMenu.selectServoID(servoId);
+          set(() => ({ editServoShapeId: servoShapeId }));
+        },
+        addServoShape(servoIndex) {
+          const servoList = get().mechBP.servoList;
+          servoList[servoIndex].servoShapes.push(new MechServoShape());
           set((state) => ({
-            mechBP: {
-              ...state.mechBP,
-              servoList: state.mechBP.servoList.map((s, i) =>
-                i === index ? { ...s, shape: shapeIndex } : s
-              ),
-            },
+            mechBP: { ...state.mechBP, servoList: servoList },
+          }));
+        },
+        changeServoShape(servoIndex, servoShapeIndex, shapeIndex) {
+          // TODO: shapeIndex should be typed as number
+          shapeIndex = Number(shapeIndex);
+          const servoList = get().mechBP.servoList;
+          servoList[servoIndex].servoShapes[servoShapeIndex].shape = shapeIndex;
+          set((state) => ({
+            mechBP: { ...state.mechBP, servoList: servoList },
           }));
         },
       },
@@ -273,7 +297,7 @@ const useEquipStore = create((set, get) => {
       //                WEAPON MENU: NAME, ADD
       weaponMenu: {
         selectWeaponID(id) {
-          set((state) => ({ editWeaponId: id }));
+          set(() => ({ editWeaponId: id }));
         },
 
         adjustWeaponOffset(x, y, z) {
@@ -309,7 +333,7 @@ const useEquipStore = create((set, get) => {
               }));
             } else {
               //editing a new weapon design
-              set((state) => ({ [weaponType + "BP"]: weapon }));
+              set(() => ({ [weaponType + "BP"]: weapon }));
             }
           }
         },
@@ -388,22 +412,6 @@ const useEquipStore = create((set, get) => {
         },
       },
     },
-    //these for the 3d ship editor, because they are in the 3d canvas instead of the HTML EquipmentMenu (need global)
-    mainMenuSelection: 0,
-    editServoId: null, //used for any selection of servoId in menus
-    editWeaponId: null, //used for any selection of weaponId in menus
-    editLandingBayId: null,
-    editShipZoom: 0,
-    //MECH blueprint TEMPLATE
-    mechBP: initMechBP(0),
-    //weapon blueprints template
-    beamBP: initWeaponBP(0, "beam"),
-    projBP: initWeaponBP(0, "proj"),
-    missileBP: initWeaponBP(0, "missile"),
-    eMeleeBP: initWeaponBP(0, "eMelee"),
-    meleeBP: initWeaponBP(0, "melee"),
-    //PLAYER MECH BLUEPRINT list
-    playerMechBP: initPlayerMechBP(), //returns array of players mech blueprints
   };
 });
 
