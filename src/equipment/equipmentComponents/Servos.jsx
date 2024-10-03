@@ -9,15 +9,6 @@ const ServoList = () => {
     equipActions.servoMenu.deleteServo(id);
   };
 
-  const handleChangeType = (index, { target }) => {
-    equipActions.servoMenu.changeProp(index, "type", target.value);
-  };
-
-  const handleChangeClass = (index, { target }) => {
-    equipActions.servoMenu.changeProp(index, "class", target.value);
-  };
-  //console.log(mechBP, mechBP.servoList);
-
   return (
     <>
       {mechBP.servoList.map((servo, index) => (
@@ -27,14 +18,23 @@ const ServoList = () => {
             editServoId === servo.id ? "selectedItem" : "nonSelectedItem"
           }
         >
+          <input
+            type="text"
+            value={servo.name}
+            onChange={(e) =>
+              equipActions.servoMenu.changeProp(index, "name", e.target.value)
+            }
+          />
           <select
             name="servoType"
             value={servo.type}
             index={index}
-            onChange={(e) => handleChangeType(index, e)}
+            onChange={(e) => {
+              equipActions.servoMenu.changeProp(index, "type", e.target.value);
+            }}
           >
-            {equipList.servo.type.map((value, key) => (
-              <option key={"type" + index + key} value={value}>
+            {Object.entries(equipList.servoType).map(([value, key]) => (
+              <option key={"type" + key} value={key}>
                 {value}
               </option>
             ))}
@@ -42,7 +42,9 @@ const ServoList = () => {
           <select
             name="servoClassType"
             value={servo.class}
-            onChange={(e) => handleChangeClass(index, e)}
+            onChange={(e) => {
+              equipActions.servoMenu.changeProp(index, "class", e.target.value);
+            }}
           >
             {equipList.class.type.map((value, key) => (
               <option key={"class" + index + key} value={key}>
@@ -89,15 +91,11 @@ export const ServoSpaceAssignButtons = ({
 export const Servos = ({ heading }) => {
   const { equipActions } = useEquipStore((state) => state);
 
-  const handleAddServo = () => {
-    equipActions.servoMenu.addServo();
-  };
-
   return (
     <>
       <h2>{heading}</h2>
       <ServoList />
-      <button onClick={handleAddServo}>ADD SERVO</button>
+      <button onClick={equipActions.servoMenu.addServo}>ADD SERVO</button>
     </>
   );
 };

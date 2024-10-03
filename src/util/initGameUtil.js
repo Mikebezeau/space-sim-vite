@@ -45,8 +45,7 @@ export const genBoidEnemies = (numEnemies) => {
   let enemies = Array(numEnemies)
     .fill()
     // EnemyMechBoid(bpIndex, isBossMech)
-    .map((_, i) => new EnemyMechBoid(i === 0 ? 1 : 0, i === 0 ? true : false));
-  console.log(enemies[0]);
+    .map((_, i) => new EnemyMechBoid(i === 0 ? 0 : 0, i === 0 ? true : false));
   return enemies;
 };
 

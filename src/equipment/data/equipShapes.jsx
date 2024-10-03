@@ -1,79 +1,22 @@
 import * as THREE from "three";
 import { CSG } from "three-csg-ts";
 import { geoList } from "./shapeGeometry";
+import { equipList } from "./equipData";
 
-export const servoShapeData = {
-  Pod: [
-    { scale: [2, 1, 2], geometry: geoList.box },
-    { scale: [2, 1, 2], geometry: geoList.extrudeBox },
-    { scale: [2, 1, 2], geometry: geoList.circle },
-    { scale: [2, 1, 2], geometry: geoList.cone },
-    { scale: [2, 1, 2], geometry: geoList.cylinder },
-    { scale: [2, 1, 2], geometry: geoList.dodecahedron },
-    { scale: [2, 1, 2], geometry: geoList.icosahedron },
-    { scale: [2, 1, 2], geometry: geoList.octahedron },
-    { scale: [4, 1, 1], geometry: geoList.plane },
-    { scale: [2, 1, 2], geometry: geoList.sphere },
-    { scale: [2, 1, 2], geometry: geoList.tetrahedron },
-    { scale: [1, 1, 4], geometry: geoList.torus },
-  ],
-  Wing: [
-    { scale: [3, 1, 1], geometry: geoList.box },
-    { scale: [3, 1, 1], geometry: geoList.extrudeBox },
-    { scale: [3, 1, 1], geometry: geoList.circle },
-    { scale: [3, 1, 1], geometry: geoList.cone },
-    { scale: [3, 1, 1], geometry: geoList.cylinder },
-    { scale: [3, 1, 1], geometry: geoList.dodecahedron },
-    { scale: [3, 1, 1], geometry: geoList.icosahedron },
-    { scale: [3, 1, 1], geometry: geoList.octahedron },
-    { scale: [4, 1, 1], geometry: geoList.plane },
-    { scale: [3, 1, 1], geometry: geoList.sphere },
-    { scale: [3, 1, 1], geometry: geoList.tetrahedron },
-    { scale: [1, 1, 4], geometry: geoList.torus },
-  ],
-  Arm: [
-    { scale: [1, 3, 1], geometry: geoList.box },
-    { scale: [1, 3, 1], geometry: geoList.extrudeBox },
-    { scale: [1, 3, 1], geometry: geoList.circle },
-    { scale: [1, 3, 1], geometry: geoList.cone },
-    { scale: [1, 3, 1], geometry: geoList.cylinder },
-    { scale: [1, 3, 1], geometry: geoList.dodecahedron },
-    { scale: [1, 3, 1], geometry: geoList.icosahedron },
-    { scale: [1, 3, 1], geometry: geoList.octahedron },
-    { scale: [4, 1, 1], geometry: geoList.plane },
-    { scale: [1, 3, 1], geometry: geoList.sphere },
-    { scale: [1, 3, 1], geometry: geoList.tetrahedron },
-    { scale: [1, 1, 4], geometry: geoList.torus },
-  ],
-  Leg: [
-    { scale: [1, 3, 1], geometry: geoList.box },
-    { scale: [1, 3, 1], geometry: geoList.extrudeBox },
-    { scale: [1, 3, 1], geometry: geoList.circle },
-    { scale: [1, 3, 1], geometry: geoList.cone },
-    { scale: [1, 3, 1], geometry: geoList.cylinder },
-    { scale: [1, 3, 1], geometry: geoList.dodecahedron },
-    { scale: [1, 3, 1], geometry: geoList.icosahedron },
-    { scale: [1, 3, 1], geometry: geoList.octahedron },
-    { scale: [4, 1, 1], geometry: geoList.plane },
-    { scale: [1, 3, 1], geometry: geoList.sphere },
-    { scale: [1, 3, 1], geometry: geoList.tetrahedron },
-    { scale: [1, 1, 4], geometry: geoList.torus },
-  ],
-  Torso: [
-    { scale: [1, 1, 3], geometry: geoList.box },
-    { scale: [0.6, 0.6, 4], geometry: geoList.extrudeBox },
-    { scale: [1, 1, 3], geometry: geoList.circle },
-    { scale: [1, 1, 3], geometry: geoList.cone },
-    { scale: [1, 1, 3], geometry: geoList.cylinder },
-    { scale: [1, 1, 3], geometry: geoList.dodecahedron },
-    { scale: [1, 1, 3], geometry: geoList.icosahedron },
-    { scale: [1, 1, 3], geometry: geoList.octahedron },
-    { scale: [2, 8, 2], geometry: geoList.plane },
-    { scale: [1, 1, 3], geometry: geoList.sphere },
-    { scale: [1, 1, 3], geometry: geoList.tetrahedron },
-    { scale: [0.8, 0.8, 2], geometry: geoList.torus },
-  ],
-};
+export const servoShapeData = [
+  { geometry: geoList.box },
+  { geometry: geoList.extrudeBox },
+  { geometry: geoList.circle },
+  { geometry: geoList.cone },
+  { geometry: geoList.cylinder },
+  { geometry: geoList.dodecahedron },
+  { geometry: geoList.icosahedron },
+  { geometry: geoList.octahedron },
+  { geometry: geoList.plane },
+  { geometry: geoList.sphere },
+  { geometry: geoList.tetrahedron },
+  { geometry: geoList.torus },
+];
 
 export const weaponShapeData = {
   beam: [
@@ -207,10 +150,11 @@ export const ServoShapes = ({
   const useMaterial = visibilityMaterial;
   */
   //if there is a simpler version of this shape created to be shown at further distance brackets, show that version instead of detailed version
-  let servoGeometry = servoShapeData[servo.type][servo.shape].geometry[0]; /*
+  /*
+  let servoGeometry = servoShapeData[servo.type][servo.shape].geometry[0];
   servoGeometry = servoGeometry[drawDistanceLevel]
     ? servoGeometry[drawDistanceLevel]
-    : servoGeometry[0];*/
+    : servoGeometry[0];
 
   let ServoMesh = new THREE.Mesh(servoGeometry, useMaterial);
 
@@ -234,9 +178,9 @@ export const ServoShapes = ({
     landingBayHole.updateMatrix();
     // Subtract landingBayHole from ServoMesh
     ServoMesh = CSG.subtract(ServoMesh, landingBayHole);
-
-    //add a translucent forcefield type shape on hole
-    /*
+*/
+  //add a translucent forcefield type shape on hole
+  /*
     const landingBayGlowMaterial = new THREE.MeshLambertMaterial({
       color: new THREE.Color("#669"),
       emissive: new THREE.Color("#669"),
@@ -248,14 +192,15 @@ export const ServoShapes = ({
       landingBayHole.geometry,
       landingBayGlowMaterial
     );
-*/
+
     // Add landingBayHoleForceField to ServoMesh
     //ServoMesh = CSG.union(ServoMesh, landingBayHoleForceField);
   }
-
+  */
   return (
     <group scale={size}>
       <group
+        position={[servo.offset.x, servo.offset.y, servo.offset.z]}
         rotation={[
           Math.sign(servo.rotation.x) *
             (Math.PI / 1 + Math.abs(servo.rotation.x)),
@@ -291,7 +236,7 @@ export const ServoShapes = ({
               1 + servoShape.scaleAdjust.y,
               1 + servoShape.scaleAdjust.z,
             ]}
-            geometry={servoShapeData[servo.type][servoShape.shape].geometry[0]}
+            geometry={servoShapeData[servoShape.shape].geometry[0]}
             material={useMaterial}
           />
         ))}

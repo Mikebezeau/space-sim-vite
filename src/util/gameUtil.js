@@ -78,7 +78,7 @@ export const getMergedBufferGeom = (object3d) => {
   });
   geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
   const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
-  merged.applyMatrix4(this.object3d.matrix.clone().invert());
+  merged.applyMatrix4(object3d.matrix.clone().invert());
   merged.userData.materials = meshes.map((m) => m.material);
   return merged;
 };

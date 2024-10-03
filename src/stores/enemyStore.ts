@@ -4,7 +4,7 @@ import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
 //import BoidController from "../classes/BoidController";
 
-const numEnemies = 2;
+const numEnemies = 500;
 
 const generateEnemies = (numEnemies: number) => {
   // set enemy positions
@@ -17,7 +17,7 @@ const generateEnemies = (numEnemies: number) => {
     );
   });
   // boss mech position
-  enemies[0].object3d.position.set(200, 200, 200);
+  enemies[0]?.object3d.position.set(200, 200, 200);
   // group enemies into squads
   groupEnemies(enemies);
   return enemies;

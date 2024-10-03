@@ -2,10 +2,10 @@ import * as THREE from "three";
 import { v4 as guid } from "uuid";
 import { equipList } from "../equipment/data/equipData";
 import { weaponList } from "../equipment/data/weaponData";
-import { applyScaledCPMult, servoUtil, mech, armorUtil } from "./mechServoUtil";
+import { applyScaledCPMult, servoUtil, mech } from "./mechServoUtil";
 import { weaponUtil } from "./weaponUtil";
 import mechDesigns from "../equipment/data/mechDesigns";
-import MechServo from "../classes/MechServo";
+import MechServo from "../classes/mechBP/MechServo";
 
 function transferProperties(mergBP, parsedBP) {
   // transfering select properties from parsedBP to mergBP
@@ -29,49 +29,20 @@ function transferProperties(mergBP, parsedBP) {
   return mergBP;
 }
 
-//CREATING UNIQUE IDS
-/*
-const guid = (A) => {
-  //global unique ID
-  //return lowest number possible from array.guid
-  let n = A.length;
-  // To mark the occurrence of elements
-  let present = new Array(n + 1);
-
-  for (let i = 0; i < n + 1; i++) {
-    present[i] = false;
-  }
-  // Mark the occurrences
-  for (let i = 0; i < n; i++) {
-    if (A[i].id > 0 && A[i].id <= n) {
-      present[A[i].id] = true;
-    }
-  }
-  // Find the first element which didn't appear in the original array
-  for (let i = 1; i <= n; i++) {
-    if (!present[i]) {
-      return i;
-    }
-  }
-  return n + 1;
-};
-*/
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                all MECH PROPERTIES and METHODS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-const loadBlueprint = function (importBP) {
-  const parsedBP = JSON.parse(importBP);
+const loadBlueprint = function (importJsonBP) {
+  const parsedBP = JSON.parse(importJsonBP);
   let mergBP = initMechBP();
   mergBP = transferProperties(mergBP, parsedBP);
-
   /*
-    crewLocationServoId: [],
-    passengersLocationServoId: [],
-    propulsionList: [],
-    partList: [],
-    multSystemList: [],
-    */
-
+  crewLocationServoId: [],
+  passengersLocationServoId: [],
+  propulsionList: [],
+  partList: [],
+  multSystemList: [],
+  */
   parsedBP.servoList.forEach((parsedServo) => {
     /*
     const servoBP = initMechServo(0);
@@ -87,11 +58,8 @@ const loadBlueprint = function (importBP) {
     });
     mergBP.servoList.push(mergeServoBP);
     */
-    const newServo = new MechServo(parsedServo);
-    console.log("newServo", newServo);
-    mergBP.servoList.push(newServo);
+    mergBP.servoList.push(new MechServo(parsedServo));
   });
-
   //parsedBP.weaponList.forEach((list, key) => {
   Object.keys(parsedBP.weaponList).forEach((key) => {
     parsedBP.weaponList[key].forEach((parsedWeapon) => {
@@ -100,14 +68,11 @@ const loadBlueprint = function (importBP) {
       mergBP.weaponList[key].push(transferProperties(weaponBP, parsedWeapon));
     });
   });
-
-  //console.log(mergBP.weaponList);
-  //console.log(mergBP);
   return mergBP;
 };
 
 const initPlayerMechBP = function () {
-  let playerMechBP = loadBlueprint(JSON.stringify(mechDesigns.player[1]));
+  let playerMechBP = loadBlueprint(JSON.stringify(mechDesigns.player[0]));
   playerMechBP.id = 1;
   return [playerMechBP];
 };
@@ -274,20 +239,7 @@ const initMechBP = function (guid) {
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                all MECH SERVO PROPERTIES and METHODS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-const initMechServoShape = function (guid) {
-  return {
-    id: guid,
-    offset: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
-    scaleAdjust: { x: 0, y: 0, z: 0 },
-    shape: 0,
-
-    material: new THREE.MeshLambertMaterial({
-      color: new THREE.Color("#999"),
-    }),
-  };
-};
-
+/*
 const initMechServo = function (guid, scale, classIndex = 0, type = "Torso") {
   return {
     id: guid,
@@ -363,14 +315,12 @@ const initMechServo = function (guid, scale, classIndex = 0, type = "Torso") {
     weight: function () {
       return servoUtil.weight(this.classValue(), this.wEff, this.armor);
     },
-    /*
-      cmdArmor = new cmdArmor();
-      getPosX = function(){return posX(this.posX)};//position label, right/left
-      getPosY = function(){return posY(this.posY)};//position label, front/back
-  */
+    //cmdArmor = new cmdArmor();
+    //getPosX = function(){return posX(this.posX)};//position label, right/left
+    //getPosY = function(){return posY(this.posY)};//position label, front/back
   };
 };
-
+*/
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                BASE WEAPON METHODS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -571,6 +521,6 @@ export {
   initStationBP,
   initEnemyMechBP,
   initMechBP,
-  initMechServo,
+  //initMechServo,
   initWeaponBP,
 };

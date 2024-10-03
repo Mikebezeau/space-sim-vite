@@ -1,15 +1,15 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
-import { MechServoShapeInt } from "./MechServoShape";
 import MechServoShape from "./MechServoShape";
-import { getMergedBufferGeom, getVolume } from "../util/gameUtil";
-import { transferProperties } from "../util/initEquipUtil";
-import { servoUtil, armorUtil } from "../util/mechServoUtil";
-import { equipList } from "../equipment/data/equipData";
+import { getMergedBufferGeom, getVolume } from "../../util/gameUtil";
+import { transferProperties } from "../../util/initEquipUtil";
+import { servoUtil, armorUtil } from "../../util/mechServoUtil";
+import { equipList } from "../../equipment/data/equipData";
 
 class MechServo extends MechServoShape {
   id: string;
-  type: string;
+  name: string;
+  type: number;
   class: number;
   scale: number;
   servoShapes: MechServoShape[];
@@ -34,21 +34,16 @@ class MechServo extends MechServoShape {
   armorCP: () => number;
   weight: () => number;
 
-  constructor(
-    servoData: any,
-    id: string = uuidv4(),
-    scale: number = 0,
-    classIndex: number = 0,
-    type: string = "Torso"
-  ) {
-    // set the properties and methods for altering this parent servo size/scale/rotation
-    // effects all children servoShapes
+  constructor(servoData: any) {
+    // super: set the properties and methods for altering this parent servo size/scale/rotation
+    // these settings effect all children servoShapes
     super();
 
-    this.id = id;
-    this.type = type;
-    this.class = classIndex;
-    this.scale = scale;
+    this.id = uuidv4();
+    this.name = "Servo name";
+    this.type = equipList.servoType.torso;
+    this.class = 0;
+    this.scale = 0;
     this.servoShapes = [];
     this.SPMod = 0;
     this.wEff = 0;

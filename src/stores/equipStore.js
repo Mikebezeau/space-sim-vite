@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import MechServoShape from "../classes/MechServoShape";
+import MechServo from "../classes/mechBP/MechServo";
+import MechServoShape from "../classes/mechBP/MechServoShape";
 import {
   guid,
   loadBlueprint,
   initPlayerMechBP,
   initMechBP,
-  initMechServo,
   initWeaponBP,
 } from "../util/initEquipUtil";
 
@@ -37,7 +37,6 @@ const useEquipStore = create((set, get) => {
     editServoShapeId: null, //used for any selection of servoShapeId in menus
     editWeaponId: null, //used for any selection of weaponId in menus
     editLandingBayId: null,
-    editShipZoom: 0,
     //MECH blueprint TEMPLATE
     mechBP: initMechBP(0),
     //weapon blueprints template
@@ -55,8 +54,9 @@ const useEquipStore = create((set, get) => {
       //                MECH BLUEPRINT: SELECTION, SAVING, DELETION
       blueprintMenu: {
         newBlueprint() {
+          const newMechBP = initMechBP(0);
           set(() => ({
-            mechBP: initMechBP(0),
+            mechBP: newMechBP,
           }));
         },
         /*
@@ -85,8 +85,7 @@ const useEquipStore = create((set, get) => {
         importBlueprint(importBP) {
           const loadBP = loadBlueprint(importBP);
           set(() => ({ mechBP: loadBP }));
-          console.log("loadBP", loadBP);
-          console.log("mechBP", get().mechBP);
+          //console.log("mechBP", get().mechBP);
         },
         exportBlueprint() {
           function replacer(key, value) {
@@ -96,9 +95,13 @@ const useEquipStore = create((set, get) => {
               key === "material"
             )
               return undefined;
-            else return value;
+            else {
+              return value;
+            }
           }
-          return JSON.stringify(get().mechBP, replacer);
+          const JSONBP = JSON.stringify(get().mechBP, replacer);
+          console.log(JSONBP);
+          return JSONBP;
         },
       },
 
@@ -140,6 +143,7 @@ const useEquipStore = create((set, get) => {
       //                BASIC MECH: NAME, SCALE, CREW, PASSENGERS, HYDRAULICS
       basicMenu: {
         setProp(prop, val) {
+          val = prop === "id" || prop === "name" ? val : Number(val);
           set((state) => ({
             mechBP: { ...state.mechBP, [prop]: val },
           }));
@@ -150,39 +154,31 @@ const useEquipStore = create((set, get) => {
       //                MECH SERVOS: SELECTION, DELETION, EDITING
       servoMenu: {
         changeProp(index, prop, val) {
+          val = prop === "id" || prop === "name" ? val : Number(val);
+          const updateServoList = get().mechBP.servoList;
+          updateServoList[index][prop] = val;
           set((state) => ({
             mechBP: {
               ...state.mechBP,
-              servoList: state.mechBP.servoList.map((s, i) =>
-                i === index ? { ...s, [prop]: val } : s
-              ),
-            },
-          }));
-        },
-        changeType(index, typeVal) {
-          set((state) => ({
-            mechBP: {
-              ...state.mechBP,
-              servoList: state.mechBP.servoList.map((s, i) =>
-                i === index ? { ...s, type: typeVal } : s
-              ),
+              servoList: updateServoList,
             },
           }));
         },
         addServo() {
           let servos = get().mechBP.servoList;
-          servos.push(
-            initMechServo(guid(get().mechBP.servoList), get().mechBP.scale)
-          );
+          const newServo = new MechServo();
+          newServo.scale = get().mechBP.scale;
+          newServo.servoShapes.push(new MechServoShape());
+          servos.push(newServo);
           set((state) => ({
             mechBP: { ...state.mechBP, servoList: servos },
           }));
         },
-        deleteServo(id) {
+        deleteServo(servoId) {
           set((state) => ({
             mechBP: {
               ...state.mechBP,
-              servoList: state.mechBP.servoList.filter((s) => s.id !== id),
+              servoList: state.mechBP.servoList.filter((s) => s.id !== servoId),
             },
           }));
           //remove equipment from this location
@@ -199,24 +195,15 @@ const useEquipStore = create((set, get) => {
         },
         // if provided seroShapeIndex, then it will move the specific shape not whole servo
         adjustServoOffset(servoIndex, servoShapeIndex, x, y, z) {
-          console.log(
-            "adjustServoOffset",
-            servoIndex,
-            servoShapeIndex,
-            x,
-            y,
-            z
-          );
           const servoList = get().mechBP.servoList;
-          if (servoShapeIndex !== null) {
+          if (servoShapeIndex === null) {
+            servoList[servoIndex].movePart(x, y, z);
+          } else {
             servoList[servoIndex].servoShapes[servoShapeIndex].movePart(
               x,
               y,
               z
             );
-          } else {
-            console.log(servoList[servoIndex]);
-            servoList[servoIndex].movePart(x, y, z);
           }
           set((state) => ({
             mechBP: {
@@ -225,9 +212,13 @@ const useEquipStore = create((set, get) => {
             },
           }));
         },
-        adjustServoRotation(servoIndex, axis, direction) {
+        resetServoPosition(servoIndex, servoShapeIndex) {
           const servoList = get().mechBP.servoList;
-          servoList[servoIndex].rotateServo(axis, direction);
+          if (servoShapeIndex === null) {
+            servoList[servoIndex].resetPosition();
+          } else {
+            servoList[servoIndex].servoShapes[servoShapeIndex].resetPosition();
+          }
           set((state) => ({
             mechBP: {
               ...state.mechBP,
@@ -235,36 +226,60 @@ const useEquipStore = create((set, get) => {
             },
           }));
         },
-        adjustServoScale(axis, val) {
-          const servo = get().mechBP.servoList.find(
-            (s) => s.id === get().editServoId
-          );
-
-          if (servo) {
-            val = 0.1 * val;
-            let scaleAdjust = {};
-            //reset to 0
-            if (axis === "reset") {
-              scaleAdjust = { x: 0, y: 0, z: 0 };
-
-              //alter scale
-            } else {
-              scaleAdjust.x = servo.scaleAdjust.x;
-              scaleAdjust.y = servo.scaleAdjust.y;
-              scaleAdjust.z = servo.scaleAdjust.z;
-              scaleAdjust[axis] = scaleAdjust[axis] + val;
-            }
-            set((state) => ({
-              mechBP: {
-                ...state.mechBP,
-                servoList: state.mechBP.servoList.map((s) =>
-                  s.id === get().editServoId
-                    ? { ...s, scaleAdjust: scaleAdjust }
-                    : s
-                ),
-              },
-            }));
+        adjustServoRotation(servoIndex, servoShapeIndex, axis, direction) {
+          const servoList = get().mechBP.servoList;
+          if (servoShapeIndex === null) {
+            servoList[servoIndex].rotateShape(axis, direction);
+          } else {
+            servoList[servoIndex].servoShapes[servoShapeIndex].rotateShape(
+              axis,
+              direction
+            );
           }
+          set((state) => ({
+            mechBP: {
+              ...state.mechBP,
+              servoList: servoList,
+            },
+          }));
+        },
+        adjustServoScale(servoIndex, servoShapeIndex, axis, val) {
+          let scaleAdjust = { x: 0, y: 0, z: 0 };
+          scaleAdjust[axis] = scaleAdjust[axis] + val;
+
+          const servoList = get().mechBP.servoList;
+          if (servoShapeIndex === null) {
+            if (axis === "reset") {
+              servoList[servoIndex].resetScale();
+            }
+            console.log(
+              servoIndex,
+              servoShapeIndex,
+              axis,
+              val,
+              servoList[servoIndex]
+            );
+            servoList[servoIndex].scaleShape(
+              scaleAdjust.x,
+              scaleAdjust.y,
+              scaleAdjust.z
+            );
+          } else {
+            if (axis === "reset") {
+              servoList[servoIndex].servoShapes[servoShapeIndex].resetScale();
+            }
+            servoList[servoIndex].servoShapes[servoShapeIndex].scaleShape(
+              scaleAdjust.x,
+              scaleAdjust.y,
+              scaleAdjust.z
+            );
+          }
+          set((state) => ({
+            mechBP: {
+              ...state.mechBP,
+              servoList: servoList,
+            },
+          }));
         },
       },
 

@@ -49,16 +49,17 @@ const servoUtil = {
     //class number value
     var servoVal = 0;
     switch (type) {
-      case "Head":
-      case "Pod":
-      case "Wing":
+      case equipList.servoType.turret:
+      case equipList.servoType.pod:
+      case equipList.servoType.head:
+      case equipList.servoType.wing:
         servoVal = equipList.class.headWingVal[classIndex];
         break;
-      case "Arm":
-      case "Leg":
+      case equipList.servoType.arm:
+      case equipList.servoType.leg:
         servoVal = equipList.class.armLegVal[classIndex];
         break;
-      case "Torso":
+      case equipList.servoType.torso:
         servoVal = equipList.class.torsoVal[classIndex];
         break;
       default:

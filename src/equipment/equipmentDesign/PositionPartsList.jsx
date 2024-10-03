@@ -1,7 +1,7 @@
-import { useState } from "react";
 import useEquipStore from "../../stores/equipStore";
 import { geoList } from "../data/shapeGeometry";
 import ServoPositionButtons from "./ServoPositionButtons";
+import { equipList } from "../data/equipData";
 
 const PositionPartsList = ({ heading }) => {
   //lust of servos, player clicks one of the buttons to select that servo, and then will be able to edit size/location
@@ -13,18 +13,6 @@ const PositionPartsList = ({ heading }) => {
     editWeaponId,
     editLandingBayId,
   } = useEquipStore((state) => state);
-
-  const partMoveOffsetVal = mechBP.size() / 20;
-
-  const [moveAmount, setMoveAmount] = useState(1);
-
-  const handleRotateShipView = (axis, direction) => {
-    equipActions.basicMenu.editShipRotation(axis, direction);
-  };
-
-  const handleZoomShipView = (direction) => {
-    equipActions.basicMenu.editShipZoom(direction * 5);
-  };
 
   const handleSelectEditWeaponId = (id) => {
     equipActions.servoMenu.selectServoID(null);
@@ -52,14 +40,21 @@ const PositionPartsList = ({ heading }) => {
         >
           <span
             className={
-              editServoId === servo.id ? "selectedItem" : "nonSelectedItem"
+              editServoId === servo.id && editServoShapeId === null
+                ? "selectedItem"
+                : "nonSelectedItem"
             }
           >
             <button
               onClick={() => equipActions.servoMenu.selectServoID(servo.id)}
             >
-              {servo.type}
+              {
+                Object.entries(equipList.servoType).find(
+                  ([key, value]) => value === servo.type
+                )[0]
+              }
             </button>
+            {servo.name}
           </span>
           <button
             onClick={() =>

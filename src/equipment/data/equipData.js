@@ -16,9 +16,7 @@ export const equipList = {
     costMult: [0.6, 1, 3.5, 6, 12.5, 60, 700, 3500],
   },
 
-  servo: {
-    type: ["Turret", "Wing", "Arm", "Leg", "Torso"],
-  },
+  servoType: { turret: 0, pod: 1, head: 2, wing: 3, arm: 4, leg: 5, torso: 6 },
 
   class: {
     type: [

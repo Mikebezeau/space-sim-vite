@@ -14,13 +14,13 @@ const InstancedMechs = forwardRef(function Enemy(_, instancedMeshForwardRef) {
   // set loaded BuildMech object3d for instancedMesh
   useEffect(() => {
     if (instancedMechObject3d.current === null) return;
-    console.log("InstancedMechs useEffect instancedMechObject3d");
-    const keepPosition = new THREE.Vector3();
+    console.log(
+      "InstancedMechs useEffect instancedMechObject3d",
+      instancedMechObject3d.current
+    );
     enemies.forEach((enemy) => {
       if (enemy.useInstancedMesh) {
-        keepPosition.copy(enemy.object3d.position);
         enemy.initObject3d(instancedMechObject3d.current);
-        enemy.object3d.position.copy(keepPosition);
       }
     });
   }, [enemies, instancedMechObject3d]);
@@ -61,31 +61,33 @@ const InstancedMechs = forwardRef(function Enemy(_, instancedMeshForwardRef) {
 
   return (
     <>
-      {
-        // building mech to set enemy bufferGeom for use in instancedMesh
-        instancedEnemies[0].bufferGeom === null ? (
-          <BuildMech
-            ref={(buildMechRef) => {
-              // buildMechRef === null on removing BuildMech component
-              if (buildMechRef !== null) {
-                instancedMechObject3d.current = new THREE.Object3D();
-                instancedMechObject3d.current.copy(buildMechRef);
-              }
-            }}
-            mechBP={enemies[1].mechBP}
-          />
-        ) : (
-          <instancedMesh
-            frustumCulled={false}
-            ref={instancedMeshForwardRef}
-            args={[
-              instancedEnemies[0].bufferGeom,
-              null,
-              instancedEnemies.length,
-            ]}
-          >
-            <meshBasicMaterial
-            /*
+      {instancedEnemies.length > 0 && (
+        <>
+          {
+            // building mech to set enemy bufferGeom for use in instancedMesh
+            instancedEnemies[0].bufferGeom === null ? (
+              <BuildMech
+                ref={(buildMechRef) => {
+                  // buildMechRef === null on removing BuildMech component
+                  if (buildMechRef !== null) {
+                    instancedMechObject3d.current = new THREE.Object3D();
+                    instancedMechObject3d.current.copy(buildMechRef);
+                  }
+                }}
+                mechBP={instancedEnemies[0].mechBP}
+              />
+            ) : (
+              <instancedMesh
+                frustumCulled={false}
+                ref={instancedMeshForwardRef}
+                args={[
+                  instancedEnemies[0].bufferGeom,
+                  null,
+                  instancedEnemies.length,
+                ]}
+              >
+                <meshBasicMaterial
+                /*
           onBeforeCompile={(shader) => {
             console.log(shader.vertexShader);
             console.log(shader.fragmentShader);
@@ -105,10 +107,12 @@ const InstancedMechs = forwardRef(function Enemy(_, instancedMeshForwardRef) {
             );
           }}
           */
-            />
-          </instancedMesh>
-        )
-      }
+                />
+              </instancedMesh>
+            )
+          }
+        </>
+      )}
     </>
   );
 });

@@ -6,10 +6,21 @@ import BuildMech from "../../3d/BuildMech";
 //import { useThree, useLoader, useFrame } from "@react-three/fiber";
 //import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
-export default function EquipmentBlueprint() {
+const MechDisplay = () => {
+  const mechBP = useEquipStore((state) => state.mechBP);
   const editServoId = useEquipStore((state) => state.editServoId);
   const editWeaponId = useEquipStore((state) => state.editWeaponId);
-  const mechBP = useEquipStore((state) => state.mechBP);
+  return (
+    <BuildMech
+      mechBP={mechBP}
+      servoEditId={editServoId}
+      weaponEditId={editWeaponId}
+      editMode={true}
+    />
+  );
+};
+
+export default function EquipmentBlueprint() {
   const { camera } = useThree();
   const ref = useRef();
   const cameraControlsRef = useRef(null);
@@ -40,12 +51,7 @@ export default function EquipmentBlueprint() {
         position={[0, 0, 0]}
         rotation={[-Math.PI * 0.25, Math.PI * 1.25, 0]}
       >
-        <BuildMech
-          mechBP={mechBP}
-          servoEditId={editServoId}
-          weaponEditId={editWeaponId}
-          editMode={true}
-        />
+        <MechDisplay />
       </group>
     </>
   );

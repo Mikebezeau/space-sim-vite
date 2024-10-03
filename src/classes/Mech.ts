@@ -69,16 +69,14 @@ class Mech implements MechInt {
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
   initObject3d = (object3d: THREE.Object3D, isPlayer: boolean = false) => {
     if (object3d) {
-      if (this.useInstancedMesh) {
-        // deep copy temp object3d to set this.object3d for computations
-        // this mechs position will be assigned to the instanced enemy mesh component
-        this.object3d.copy(object3d, true);
-      } else {
-        // directly assigning object3d allows changes to this.object3d to
-        // update the object on screen
-        this.object3d = object3d;
-      }
+      // deep copy temp object3d to set this.object3d for computations
+      // instanced mechs position will be assigned to the instanced enemy mesh component
       // BoidController requires this for cacluations
+      // changes to this.object3d will update the object on screen
+      const keepPosition = new THREE.Vector3();
+      keepPosition.copy(this.object3d.position);
+      this.object3d.copy(object3d, true);
+      this.object3d.position.copy(keepPosition);
       this.setMergedBufferGeom();
       // mech bounding box
       const hitBox = new THREE.Box3();
@@ -129,7 +127,14 @@ class Mech implements MechInt {
 
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
   setMergedBufferGeom() {
-    this.bufferGeom = getMergedBufferGeom(this.object3d);
+    if (this.object3d) {
+      this.bufferGeom = getMergedBufferGeom(this.object3d);
+    } else {
+      console.log(
+        "Mech.setMergedBufferGeom(): object3d not set",
+        this.object3d
+      );
+    }
   }
 
   fireWeapon(isPlayer = false) {

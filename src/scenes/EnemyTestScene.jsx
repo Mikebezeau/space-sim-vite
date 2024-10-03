@@ -55,8 +55,9 @@ export default function EnemyTestScene() {
       setPlayerPosition(new THREE.Vector3(0, 0, -50));
       getPlayer().object3d.lookAt(0, 0, 0);
     }
-    enemies[0].object3d.position.set(50, 50, 0);
-    enemies[0].object3d.rotation.set(0, -2, 0);
+    enemies[0]?.object3d.position.set(0, 0, 0);
+    enemies[0]?.object3d.rotation.set(0, -2, 0);
+    console.log("PlayerMech position", getPlayer().object3d.position);
   }, [devPlayerPilotMech, enemies, getPlayer, setPlayerPosition]);
 
   useEffect(() => {

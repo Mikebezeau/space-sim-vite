@@ -1,13 +1,7 @@
 import { useState } from "react";
 import useEquipStore from "../../stores/equipStore";
-import { geoList } from "../data/shapeGeometry";
 
-import {
-  useKBControls,
-  //useMouseDown,
-  //useMouseMove,
-  //useMouseClick,
-} from "../../hooks/controls/useMouseKBControls";
+import { useKBControls } from "../../hooks/controls/useMouseKBControls";
 
 const ServoPositionButtons = ({
   editServoIndex = null,
@@ -18,7 +12,7 @@ const ServoPositionButtons = ({
   //lust of servos, player clicks one of the buttons to select that servo, and then will be able to edit size/location
   const { mechBP, equipActions } = useEquipStore((state) => state);
 
-  const partMoveOffsetVal = mechBP.size() / 20;
+  const partMoveOffsetVal = 1; //Math.floor(mechBP.size()) / 10;
 
   const [moveAmount, setMoveAmount] = useState(1);
 
@@ -179,11 +173,21 @@ const ServoPositionButtons = ({
   useKBControls("ArrowRight", handleMovePartRight);
 
   const handleRotateServoShape = (axis, direction) => {
-    equipActions.servoMenu.adjustServoRotation(axis, direction);
+    equipActions.servoMenu.adjustServoRotation(
+      editServoIndex,
+      editServoShapeIndex,
+      axis,
+      direction
+    );
   };
 
   const handleScaleServoShape = (axis, val) => {
-    equipActions.servoMenu.adjustServoScale(axis, moveAmount * val);
+    equipActions.servoMenu.adjustServoScale(
+      editServoIndex,
+      editServoShapeIndex,
+      axis,
+      moveAmount * val
+    );
   };
 
   const handleSetMoveAmount = (val) => {
@@ -192,7 +196,19 @@ const ServoPositionButtons = ({
 
   return (
     <>
-      <div>Position: Arrow Keys, `&ldquo;`Q`&ldquo;`, `&ldquo;`A`&ldquo;`</div>
+      <div>
+        Position: Arrow Keys, `&ldquo;`Q`&ldquo;`, `&ldquo;`A`&ldquo;`
+        <button
+          onClick={() =>
+            equipActions.servoMenu.resetServoPosition(
+              editServoIndex,
+              editServoShapeIndex
+            )
+          }
+        >
+          Reset
+        </button>
+      </div>
       <div>
         Scale:{" "}
         <button onClick={() => handleScaleServoShape("x", -1)}>X-</button>

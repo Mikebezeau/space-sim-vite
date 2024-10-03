@@ -21,9 +21,8 @@ import { PLAYER } from "../constants/constants";
 import "../css/equipmentMenu.css";
 
 const EquipmentMenu = () => {
-  console.log("EquipmentMenu rendered");
   //BLUEPRINT SELECTION MENU
-  const { playerMechBP, equipActions } = useEquipStore((state) => state);
+  const { equipActions } = useEquipStore((state) => state);
 
   const [selectedBPid, setSelectedBPid] = useState(0); //top menu
   const [importExportText, setImportExportText] = useState("");
