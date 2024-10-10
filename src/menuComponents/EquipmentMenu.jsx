@@ -84,11 +84,103 @@ const EquipmentMenu = () => {
   const [subSelection, setSubSelection] = useState(null); //current sub menu
 
   const topMenuSelection = [
+    "Mech Menu",
     "Design Parts",
     "Assign Part Locations",
     "Position Servo Shapes",
   ];
   const subCatagories = [
+    {
+      saveLoad: {
+        buttonLable: "Save / Load",
+        component: (
+          <div>
+            <span
+              className={
+                selectedBPid === 0 ? "selectedItem" : "nonSelectedItem"
+              }
+            >
+              <button onClick={handleNewBP}>New BP</button>
+            </span>
+            {/*playerMechBP.map((value, index) => (
+          <span
+            key={"mechbp" + index}
+            className={
+              selectedBPid === value.id ? "selectedItem" : "nonSelectedItem"
+            }
+          >
+            <button
+              key={"select" + index}
+              onClick={() => handleSelectBlueprint(value.id)}
+            >
+              {value.name}
+            </button>
+            <button
+              key={"delete" + index}
+              onClick={() => handleDeleteBlueprint(value.id)}
+            >
+              X
+            </button>
+          </span>
+        ))
+        <button onClick={handleSaveBlueprint}>Save Blueprint</button>
+        */}
+            <select
+              onChange={(e) => {
+                handleSelectPlayerBP(e.target.value);
+              }}
+            >
+              <option>Select Player BP</option>
+              {mechDesigns.player.map((bp, i) => (
+                <option key={i} value={i}>
+                  {bp.name}
+                </option>
+              ))}
+            </select>
+            <select
+              onChange={(e) => {
+                handleSelectEnemyBP(e.target.value);
+              }}
+            >
+              <option>Select Enemy BP</option>
+              {mechDesigns.enemy.map((bp, i) => (
+                <option key={i} value={i}>
+                  {bp.name}
+                </option>
+              ))}
+            </select>
+            <select
+              onChange={(e) => {
+                handleSelectStationBP(e.target.value);
+              }}
+            >
+              <option>Select Station BP</option>
+              {mechDesigns.station.map((bp, i) => (
+                <option key={i} value={i}>
+                  {bp.name}
+                </option>
+              ))}
+            </select>
+            <span>
+              <button onClick={handleImportBP}>Import BP</button>
+            </span>
+            <span>
+              <button onClick={handleExportBP}>Export BP</button>
+            </span>
+            <input
+              style={{ textTransform: "none" }}
+              type="textbox"
+              onChange={(e) => handleImportChange(e)}
+              value={importExportText}
+            />
+          </div>
+        ),
+      },
+      mech: {
+        buttonLable: "Mech",
+        component: <Mech />,
+      },
+    },
     {
       //******************************************** */
       //design parts
@@ -165,92 +257,11 @@ const EquipmentMenu = () => {
 
   return (
     <>
-      <div id="equipmentMenu">
-        <div>
-          <button onClick={() => switchScreen(PLAYER.screen.flight)}>
-            Exit
-          </button>
-          <span
-            className={selectedBPid === 0 ? "selectedItem" : "nonSelectedItem"}
-          >
-            <button onClick={handleNewBP}>New BP</button>
-          </span>
-          {/*playerMechBP.map((value, index) => (
-            <span
-              key={"mechbp" + index}
-              className={
-                selectedBPid === value.id ? "selectedItem" : "nonSelectedItem"
-              }
-            >
-              <button
-                key={"select" + index}
-                onClick={() => handleSelectBlueprint(value.id)}
-              >
-                {value.name}
-              </button>
-              <button
-                key={"delete" + index}
-                onClick={() => handleDeleteBlueprint(value.id)}
-              >
-                X
-              </button>
-            </span>
-          ))
-          <button onClick={handleSaveBlueprint}>Save Blueprint</button>
-          */}
-          <span style={{ float: "right" }}>
-            <input
-              style={{ textTransform: "none" }}
-              type="textbox"
-              onChange={(e) => handleImportChange(e)}
-              value={importExportText}
-            />
-            <select
-              onChange={(e) => {
-                handleSelectPlayerBP(e.target.value);
-              }}
-            >
-              <option>Select Player BP</option>
-              {mechDesigns.player.map((bp, i) => (
-                <option key={i} value={i}>
-                  {bp.name}
-                </option>
-              ))}
-            </select>
-            <select
-              onChange={(e) => {
-                handleSelectEnemyBP(e.target.value);
-              }}
-            >
-              <option>Select Enemy BP</option>
-              {mechDesigns.enemy.map((bp, i) => (
-                <option key={i} value={i}>
-                  {bp.name}
-                </option>
-              ))}
-            </select>
-            <select
-              onChange={(e) => {
-                handleSelectStationBP(e.target.value);
-              }}
-            >
-              <option>Select Station BP</option>
-              {mechDesigns.station.map((bp, i) => (
-                <option key={i} value={i}>
-                  {bp.name}
-                </option>
-              ))}
-            </select>
-            <span>
-              <button onClick={handleImportBP}>Import BP</button>
-            </span>
-            <span>
-              <button onClick={handleExportBP}>Export BP</button>
-            </span>
-          </span>
-        </div>
-        <hr />
-        <Mech />
+      <div
+        id="equipmentMenu"
+        className="absolute top-8 mr-20 w-full lg:w-1/2 h-1/2 lg:h-[90vh]"
+      >
+        <button onClick={() => switchScreen(PLAYER.screen.flight)}>Exit</button>
         <div>
           <hr />
           {topMenuSelection.map((value, key) => (
@@ -264,7 +275,7 @@ const EquipmentMenu = () => {
             </span>
           ))}
           <hr />
-          {mainMenuSelection === 2 ? (
+          {mainMenuSelection === 3 ? (
             <PositionPartsList />
           ) : (
             //edit servo/weapon graphical locations
@@ -289,7 +300,7 @@ const EquipmentMenu = () => {
           )}
         </div>
         <hr style={{ clear: "both" }} />
-        {mainMenuSelection !== 2 &&
+        {mainMenuSelection !== 3 &&
           subCatagories[mainMenuSelection][subSelection] &&
           subCatagories[mainMenuSelection][subSelection].component}
       </div>

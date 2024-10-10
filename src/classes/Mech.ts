@@ -73,11 +73,13 @@ class Mech implements MechInt {
       // instanced mechs position will be assigned to the instanced enemy mesh component
       // BoidController requires this for cacluations
       // changes to this.object3d will update the object on screen
-      const keepPosition = new THREE.Vector3();
-      keepPosition.copy(this.object3d.position);
-      this.object3d.copy(object3d, true);
-      this.object3d.position.copy(keepPosition);
-      this.setMergedBufferGeom();
+      if (this.useInstancedMesh) {
+        const keepPosition = new THREE.Vector3();
+        keepPosition.copy(this.object3d.position);
+        this.object3d.copy(object3d, true);
+        this.object3d.position.copy(keepPosition);
+        this.setMergedBufferGeom();
+      } else this.object3d = object3d;
       // mech bounding box
       const hitBox = new THREE.Box3();
       hitBox.setFromObject(this.object3d);
@@ -97,6 +99,8 @@ class Mech implements MechInt {
         boxSize.z
       );
       this.maxHalfWidth = Math.max(boxSize.x, boxSize.y, boxSize.z) / 2;
+      if (!isPlayer && this.mechBP.id === 0)
+        console.log(this.mechBP.id, this.obb, this.maxHalfWidth);
     }
   };
 
@@ -153,24 +157,28 @@ class Mech implements MechInt {
           weapon.servoOffset = servoUtil.servoLocation(
             weapon.locationServoId,
             this.mechBP.servoList
-          ).offset;
-          weaponObj.position.set(0, 0, 0);
-          weaponObj.translateX(weapon.offset.x + weapon.servoOffset.x);
-          weaponObj.translateY(weapon.offset.y + weapon.servoOffset.y);
-          weaponObj.translateZ(weapon.offset.z + weapon.servoOffset.z);
-          weaponObj.getWorldPosition(weaponWorldPositionVec);
-          if (weaponType === "beam") {
-            useParticleStore
-              .getState()
-              .addLaser(weaponWorldPositionVec, mechRefObj.rotation);
-          } else if (weaponType === "proj") {
-            useParticleStore
-              .getState()
-              .addBullet(weaponWorldPositionVec, mechRefObj.rotation);
-          } else if (weaponType === "missile") {
-            useParticleStore
-              .getState()
-              .addMissile(weaponWorldPositionVec, mechRefObj.rotation);
+          )?.offset;
+          if (weapon.servoOffset) {
+            weaponObj.position.set(0, 0, 0);
+            weaponObj.translateX(weapon.offset.x + weapon.servoOffset.x);
+            weaponObj.translateY(weapon.offset.y + weapon.servoOffset.y);
+            weaponObj.translateZ(weapon.offset.z + weapon.servoOffset.z);
+            weaponObj.getWorldPosition(weaponWorldPositionVec);
+            if (weaponType === "beam") {
+              useParticleStore
+                .getState()
+                .addLaser(weaponWorldPositionVec, mechRefObj.rotation);
+            } else if (weaponType === "proj") {
+              useParticleStore
+                .getState()
+                .addBullet(weaponWorldPositionVec, mechRefObj.rotation);
+            } else if (weaponType === "missile") {
+              useParticleStore
+                .getState()
+                .addMissile(weaponWorldPositionVec, mechRefObj.rotation);
+            }
+          } else {
+            console.log("servoOffset not found for weapon", weapon);
           }
         });
       }

@@ -17,6 +17,7 @@ function castWeaponDataInt(mergBP, parsedBP) {
       key === "weaponType" ||
       key === "title" ||
       key === "name" ||
+      key === "color" ||
       key === "ammoList"
         ? parsedBP[key]
         : Number(parsedBP[key]);
@@ -143,7 +144,10 @@ const useEquipStore = create((set, get) => {
       //                BASIC MECH: NAME, SCALE, CREW, PASSENGERS, HYDRAULICS
       basicMenu: {
         setProp(prop, val) {
-          val = prop === "id" || prop === "name" ? val : Number(val);
+          val =
+            prop === "id" || prop === "name" || prop === "color"
+              ? val
+              : Number(val);
           set((state) => ({
             mechBP: { ...state.mechBP, [prop]: val },
           }));
@@ -153,10 +157,25 @@ const useEquipStore = create((set, get) => {
       //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
       //                MECH SERVOS: SELECTION, DELETION, EDITING
       servoMenu: {
-        changeProp(index, prop, val) {
-          val = prop === "id" || prop === "name" ? val : Number(val);
+        changeProp(servoIndex, servoShapeIndex, prop, val) {
+          val =
+            prop === "id" || prop === "name" || prop === "color"
+              ? val
+              : Number(val);
           const updateServoList = get().mechBP.servoList;
-          updateServoList[index][prop] = val;
+          if (servoShapeIndex === null) {
+            updateServoList[servoIndex][prop] = val;
+          } else {
+            console.log(
+              servoIndex,
+              servoShapeIndex,
+              prop,
+              val,
+              updateServoList
+            );
+            updateServoList[servoIndex].servoShapes[servoShapeIndex][prop] =
+              val;
+          }
           set((state) => ({
             mechBP: {
               ...state.mechBP,
@@ -293,6 +312,15 @@ const useEquipStore = create((set, get) => {
         addServoShape(servoIndex) {
           const servoList = get().mechBP.servoList;
           servoList[servoIndex].servoShapes.push(new MechServoShape());
+          set((state) => ({
+            mechBP: { ...state.mechBP, servoList: servoList },
+          }));
+        },
+        deleteServoShape(servoIndex, servoShapeId) {
+          const servoList = get().mechBP.servoList;
+          servoList[servoIndex].servoShapes = servoList[
+            servoIndex
+          ].servoShapes.filter((servoShape) => servoShape.id !== servoShapeId);
           set((state) => ({
             mechBP: { ...state.mechBP, servoList: servoList },
           }));

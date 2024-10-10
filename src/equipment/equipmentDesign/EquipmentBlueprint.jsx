@@ -9,11 +9,13 @@ import BuildMech from "../../3d/BuildMech";
 const MechDisplay = () => {
   const mechBP = useEquipStore((state) => state.mechBP);
   const editServoId = useEquipStore((state) => state.editServoId);
+  const editServoShapeId = useEquipStore((state) => state.editServoShapeId);
   const editWeaponId = useEquipStore((state) => state.editWeaponId);
   return (
     <BuildMech
       mechBP={mechBP}
-      servoEditId={editServoId}
+      editServoId={editServoId}
+      editServoShapeId={editServoShapeId}
       weaponEditId={editWeaponId}
       editMode={true}
     />

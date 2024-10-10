@@ -4,7 +4,7 @@ import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
 //import BoidController from "../classes/BoidController";
 
-const numEnemies = 500;
+const numEnemies = 400;
 
 const generateEnemies = (numEnemies: number) => {
   // set enemy positions
@@ -16,11 +16,9 @@ const generateEnemies = (numEnemies: number) => {
       Math.random() * 500 - 250
     );
   });
-  // boss mech position
-  enemies[0]?.object3d.position.set(200, 200, 200);
-  // group enemies into squads
-  groupEnemies(enemies);
-  return enemies;
+  // group enemies into squads, sets leaders and upgrades leader ships
+  const groupedEnemies = groupEnemies(enemies);
+  return groupedEnemies;
 };
 
 interface enemyStoreState {

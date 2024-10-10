@@ -1,0 +1,16 @@
+export const geoListKey = {
+  box: 0,
+  extrudeBox: 1,
+  circle: 2,
+  cone: 3,
+  cylinder: 4,
+  dodecahedron: 5,
+  icosahedron: 6,
+  octahedron: 7,
+  plane: 8,
+  sphere: 9,
+  tetrahedron: 10,
+  torus: 11,
+  triangle: 12,
+  triangleRight: 13,
+};

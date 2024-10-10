@@ -1,5 +1,5 @@
 import useEquipStore from "../../stores/equipStore";
-import { geoList } from "../data/shapeGeometry";
+import { geoListKey } from "../../constants/geometryShapes";
 import ServoPositionButtons from "./ServoPositionButtons";
 import { equipList } from "../data/equipData";
 
@@ -54,8 +54,8 @@ const PositionPartsList = ({ heading }) => {
                 )[0]
               }
             </button>
-            {servo.name}
           </span>
+          {servo.name}
           <button
             onClick={() =>
               equipActions.servoShapeMenu.addServoShape(servoIndex)
@@ -67,7 +67,8 @@ const PositionPartsList = ({ heading }) => {
             <ServoPositionButtons editServoIndex={servoIndex} />
           )}
           {servo.servoShapes.map((servoShape, servoShapeIndex) => (
-            <div key={servoShape.id}>
+            <div key={servoShape.id} className="m-1 mt-2">
+              <hr className="mb-2" />
               <span
                 className={
                   editServoShapeId === servoShape.id
@@ -101,15 +102,37 @@ const PositionPartsList = ({ heading }) => {
                   );
                 }}
               >
-                {Object.keys(geoList).map((key, shapeIndex) => (
+                {Object.keys(geoListKey).map((key, geoListKeyVal) => (
                   <option
                     key={"servoShape" + servoIndex + key}
-                    value={shapeIndex}
+                    value={geoListKeyVal}
                   >
                     {key}
                   </option>
                 ))}
               </select>
+              <input
+                type="text"
+                value={servoShape.color}
+                onChange={(e) =>
+                  equipActions.servoMenu.changeProp(
+                    servoIndex,
+                    servoShapeIndex,
+                    "color",
+                    e.target.value
+                  )
+                }
+              />
+              <button
+                onClick={() =>
+                  equipActions.servoShapeMenu.deleteServoShape(
+                    servoIndex,
+                    servoShape.id
+                  )
+                }
+              >
+                X
+              </button>
               {editServoId === servo.id &&
                 editServoShapeId === servoShape.id && (
                   <ServoPositionButtons

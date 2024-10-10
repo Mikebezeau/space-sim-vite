@@ -12,7 +12,7 @@ const ServoPositionButtons = ({
   //lust of servos, player clicks one of the buttons to select that servo, and then will be able to edit size/location
   const { mechBP, equipActions } = useEquipStore((state) => state);
 
-  const partMoveOffsetVal = 1; //Math.floor(mechBP.size()) / 10;
+  const partMoveOffsetVal = 0.1;
 
   const [moveAmount, setMoveAmount] = useState(1);
 
@@ -197,7 +197,26 @@ const ServoPositionButtons = ({
   return (
     <>
       <div>
-        Position: Arrow Keys, `&ldquo;`Q`&ldquo;`, `&ldquo;`A`&ldquo;`
+        {[0.1, 1, 10, 100].map((thisMoveAmount) => (
+          <span
+            key={thisMoveAmount}
+            className={
+              thisMoveAmount === moveAmount ? "selectedItem" : "nonSelectedItem"
+            }
+          >
+            <button onClick={() => handleSetMoveAmount(thisMoveAmount)}>
+              Move {thisMoveAmount}
+            </button>
+          </span>
+        ))}
+      </div>
+      <div>
+        Position: <button onClick={() => handleMovePartLeft()}>X-</button>
+        <button onClick={() => handleMovePartRight()}>X+</button>
+        <button onClick={() => handleMovePartDown()}>Y-</button>
+        <button onClick={() => handleMovePartUp()}>Y+</button>
+        <button onClick={() => handleMovePartBackward()}>Z-</button>
+        <button onClick={() => handleMovePartForward()}>Z+</button>
         <button
           onClick={() =>
             equipActions.servoMenu.resetServoPosition(
@@ -218,12 +237,6 @@ const ServoPositionButtons = ({
         <button onClick={() => handleScaleServoShape("z", -1)}>Z-</button>
         <button onClick={() => handleScaleServoShape("z", 1)}>Z+</button>
         <button onClick={() => handleScaleServoShape("reset")}>Reset</button>
-      </div>
-      <div>
-        <button onClick={() => handleSetMoveAmount(1 / 10)}>Move 1/10</button>
-        <button onClick={() => handleSetMoveAmount(1)}>Move 1</button>
-        <button onClick={() => handleSetMoveAmount(10)}>Move 10</button>
-        <button onClick={() => handleSetMoveAmount(100)}>Move 100</button>
       </div>
       <div>
         Rotate:{" "}

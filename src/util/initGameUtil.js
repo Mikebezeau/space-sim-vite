@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
 import EnemyMechBoid from "../classes/EnemyMechBoid";
+import { loadBlueprint } from "../util/initEquipUtil";
 import { initStationBP } from "./initEquipUtil";
 import { SCALE } from "../constants/constants";
+import mechDesigns from "../equipment/data/mechDesigns";
 
 //used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
@@ -45,7 +47,7 @@ export const genBoidEnemies = (numEnemies) => {
   let enemies = Array(numEnemies)
     .fill()
     // EnemyMechBoid(bpIndex, isBossMech)
-    .map((_, i) => new EnemyMechBoid(i === 0 ? 0 : 0, i === 0 ? true : false));
+    .map((_, i) => new EnemyMechBoid(i === 0 ? 0 : 1, i === 0 ? true : false));
   return enemies;
 };
 
@@ -53,7 +55,12 @@ export const groupEnemies = (enemies) => {
   //group enemies into squads
   enemies.forEach((enemy) => {
     //enemy with no group: make group leader and select all nearby enemies to join group
+    //this is also setting all followers of boss ship to upgrade to special mechBP
     if (!enemy.groupLeaderId) {
+      //upgrade the leader mech to special mechBp
+      if (!enemy.isBossMech)
+        enemy.mechBP = loadBlueprint(JSON.stringify(mechDesigns.enemy[2]));
+
       enemies
         .filter(
           (e) =>

@@ -11,6 +11,14 @@ const ServoList = () => {
 
   return (
     <>
+      Mech Color:
+      <input
+        type="text"
+        value={mechBP.color}
+        onChange={(e) =>
+          equipActions.basicMenu.setProp("color", e.target.value)
+        }
+      />
       {mechBP.servoList.map((servo, index) => (
         <div
           key={"type" + index}
@@ -22,15 +30,55 @@ const ServoList = () => {
             type="text"
             value={servo.name}
             onChange={(e) =>
-              equipActions.servoMenu.changeProp(index, "name", e.target.value)
+              equipActions.servoMenu.changeProp(
+                index,
+                null,
+                "name",
+                e.target.value
+              )
             }
           />
+          <input
+            type="text"
+            value={servo.color}
+            onChange={(e) =>
+              equipActions.servoMenu.changeProp(
+                index,
+                null,
+                "color",
+                e.target.value
+              )
+            }
+          />
+          <select
+            name="servoScale"
+            value={servo.scale}
+            onChange={(e) => {
+              equipActions.servoMenu.changeProp(
+                index,
+                null,
+                "scale",
+                e.target.value
+              );
+            }}
+          >
+            {equipList.scale.type.map((value, key) => (
+              <option key={"scale" + key} value={key}>
+                {value}
+              </option>
+            ))}
+          </select>
           <select
             name="servoType"
             value={servo.type}
             index={index}
             onChange={(e) => {
-              equipActions.servoMenu.changeProp(index, "type", e.target.value);
+              equipActions.servoMenu.changeProp(
+                index,
+                null,
+                "type",
+                e.target.value
+              );
             }}
           >
             {Object.entries(equipList.servoType).map(([value, key]) => (
@@ -43,7 +91,12 @@ const ServoList = () => {
             name="servoClassType"
             value={servo.class}
             onChange={(e) => {
-              equipActions.servoMenu.changeProp(index, "class", e.target.value);
+              equipActions.servoMenu.changeProp(
+                index,
+                null,
+                "class",
+                e.target.value
+              );
             }}
           >
             {equipList.class.type.map((value, key) => (

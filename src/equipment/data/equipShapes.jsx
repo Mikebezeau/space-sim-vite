@@ -1,22 +1,8 @@
 import * as THREE from "three";
-import { CSG } from "three-csg-ts";
+//import { CSG } from "three-csg-ts";
 import { geoList } from "./shapeGeometry";
-import { equipList } from "./equipData";
-
-export const servoShapeData = [
-  { geometry: geoList.box },
-  { geometry: geoList.extrudeBox },
-  { geometry: geoList.circle },
-  { geometry: geoList.cone },
-  { geometry: geoList.cylinder },
-  { geometry: geoList.dodecahedron },
-  { geometry: geoList.icosahedron },
-  { geometry: geoList.octahedron },
-  { geometry: geoList.plane },
-  { geometry: geoList.sphere },
-  { geometry: geoList.tetrahedron },
-  { geometry: geoList.torus },
-];
+//import { equipList } from "./equipData";
+import { geoListKey } from "../../constants/geometryShapes";
 
 export const weaponShapeData = {
   beam: [
@@ -24,7 +10,7 @@ export const weaponShapeData = {
       scale: [0.15, 1, 0.15],
       position: [0, 0, 0.5],
       rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList.cone,
+      geometry: geoList[geoListKey.cone],
     },
   ],
   proj: [
@@ -32,7 +18,7 @@ export const weaponShapeData = {
       scale: [0.15, 0.7, 0.15],
       position: [0, 0, 0.35],
       rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList.cone,
+      geometry: geoList[geoListKey.cone],
     },
   ],
   missile: [
@@ -40,7 +26,7 @@ export const weaponShapeData = {
       scale: [0.15, 0.2, 0.15],
       position: [0, 0, 0.1],
       rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList.cone,
+      geometry: geoList[geoListKey.cone],
     },
   ],
   eMelee: [
@@ -48,7 +34,7 @@ export const weaponShapeData = {
       scale: [0.15, 1, 0.15],
       position: [0, 0, 0.5],
       rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList.cone,
+      geometry: geoList[geoListKey.cone],
     },
   ],
   melee: [
@@ -56,14 +42,15 @@ export const weaponShapeData = {
       scale: [0.15, 1, 0.15],
       position: [0, 0, 0.5],
       rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList.cone,
+      geometry: geoList[geoListKey.cone],
     },
   ],
 };
 
-const constructionMaterial = new THREE.MeshLambertMaterial({
-  color: new THREE.Color("#FFF"),
-});
+const constructionMaterial = (color) =>
+  new THREE.MeshLambertMaterial({
+    color: new THREE.Color(color),
+  });
 
 const hitMaterial = new THREE.MeshLambertMaterial({
   color: new THREE.Color("#006"),
@@ -71,8 +58,7 @@ const hitMaterial = new THREE.MeshLambertMaterial({
 
 const selectMaterial = new THREE.MeshLambertMaterial({
   color: new THREE.Color("#669"),
-  emissive: new THREE.Color("#669"),
-  emissiveIntensity: 0.2,
+  flatShading: true,
 });
 
 const readoutMaterial_0 = new THREE.MeshBasicMaterial({
@@ -98,14 +84,15 @@ const wireFrameMaterial = new THREE.MeshBasicMaterial({
 
 export const ServoShapes = ({
   name,
+  color,
   flatShading = false,
   damageReadoutMode = false,
   isWireFrame = false,
   isHit,
   servo,
   drawDistanceLevel,
-  servoEditId,
-  servoShapeEditId,
+  editServoId,
+  editServoShapeId,
   //landingBay,
   landingBayServoLocationId,
   landingBayPosition,
@@ -115,7 +102,7 @@ export const ServoShapes = ({
   //constructionMaterial.bumpScale = 0.3;
   //if (isHit !== undefined) console.log("hit");
   const editing =
-    servo.id === servoEditId && servoShapeEditId === null ? true : false;
+    servo.id === editServoId && editServoShapeId === null ? true : false;
   const size = servo.size();
   let readoutMaterial;
   if (damageReadoutMode) {
@@ -132,15 +119,40 @@ export const ServoShapes = ({
       readoutMaterial = readoutMaterial_100;
     }
   }
-  const useMaterial = damageReadoutMode
-    ? readoutMaterial
-    : isWireFrame
-    ? wireFrameMaterial
-    : editing
-    ? selectMaterial
-    : constructionMaterial; //servo.material;
 
-  useMaterial.flatShading = flatShading;
+  const getMaterial = (servo, servoShape) => {
+    let material = damageReadoutMode
+      ? readoutMaterial
+      : isWireFrame
+      ? wireFrameMaterial
+      : null;
+
+    if (material) material.flatShading = flatShading;
+    else {
+      material =
+        editServoShapeId === null
+          ? material
+            ? material
+            : constructionMaterial(
+                servoShape.color
+                  ? servoShape.color
+                  : servo.color
+                  ? servo.color
+                  : color
+              )
+          : editServoShapeId === servoShape.id
+          ? constructionMaterial(
+              servoShape.color
+                ? servoShape.color
+                : servo.color
+                ? servo.color
+                : color
+            )
+          : wireFrameMaterial;
+    }
+    return material;
+  };
+
   /*
   const visibilityMaterial = new THREE.MeshLambertMaterial({
     color: new THREE.Color("#669"),
@@ -151,7 +163,7 @@ export const ServoShapes = ({
   */
   //if there is a simpler version of this shape created to be shown at further distance brackets, show that version instead of detailed version
   /*
-  let servoGeometry = servoShapeData[servo.type][servo.shape].geometry[0];
+  let servoGeometry = geoList[servo.shape][0];
   servoGeometry = servoGeometry[drawDistanceLevel]
     ? servoGeometry[drawDistanceLevel]
     : servoGeometry[0];
@@ -236,8 +248,8 @@ export const ServoShapes = ({
               1 + servoShape.scaleAdjust.y,
               1 + servoShape.scaleAdjust.z,
             ]}
-            geometry={servoShapeData[servoShape.shape].geometry[0]}
-            material={useMaterial}
+            geometry={geoList[servoShape.shape][0]}
+            material={getMaterial(servo, servoShape)}
           />
         ))}
       </group>

@@ -13,10 +13,17 @@ function transferProperties(mergBP, parsedBP) {
     if (typeof parsedBP[key] !== "object") {
       // non object props: name and type are strings, all others are numbers
       mergBP[key] =
-        key === "id" || key === "name" || key === "type"
+        key === "id" ||
+        key === "locationServoId" ||
+        key === "landingBayServoLocationId" ||
+        key === "passengersLocationServoId" ||
+        key === "name" ||
+        key === "type" ||
+        key === "color"
           ? parsedBP[key]
           : Number(parsedBP[key]);
     } else if (
+      // objects with properties
       key === "armor" ||
       key === "offset" ||
       key === "rotation" ||
@@ -44,20 +51,6 @@ const loadBlueprint = function (importJsonBP) {
   multSystemList: [],
   */
   parsedBP.servoList.forEach((parsedServo) => {
-    /*
-    const servoBP = initMechServo(0);
-    const mergeServoBP = transferProperties(servoBP, parsedServo);
-    // add servoShapes
-    parsedServo.servoShapes?.forEach((parsedServoShape) => {
-      const servoShapeBP = initMechServoShape(0);
-      const mergeServoShapeBP = transferProperties(
-        servoShapeBP,
-        parsedServoShape
-      );
-      mergeServoBP.servoShapes.push(mergeServoShapeBP);
-    });
-    mergBP.servoList.push(mergeServoBP);
-    */
     mergBP.servoList.push(new MechServo(parsedServo));
   });
   //parsedBP.weaponList.forEach((list, key) => {
@@ -129,13 +122,7 @@ const initMechBP = function (guid) {
       melee: [],
     },
 
-    material: new THREE.MeshLambertMaterial({
-      color: new THREE.Color("#999"),
-      //emissive: new THREE.Color("#999"),
-      //emissiveIntensity: 0.01,
-      //roughness: station.roughness,
-      //metalness: station.metalness,
-    }),
+    color: "#999",
 
     scaleType: function () {
       return equipList.scale.type[this.scale];
@@ -236,91 +223,6 @@ const initMechBP = function (guid) {
   };
 };
 
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-//                all MECH SERVO PROPERTIES and METHODS
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-/*
-const initMechServo = function (guid, scale, classIndex = 0, type = "Torso") {
-  return {
-    id: guid,
-    offset: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
-    scaleAdjust: { x: 1, y: 1, z: 1 },
-    type: type,
-    class: classIndex,
-    scale: scale,
-    shape: 0,
-    servoShapes: [],
-    SPMod: 0,
-    wEff: 0,
-    armor: { class: 0, rating: 1 }, //rating 1 = standard armor
-    armorDamage: 0,
-    structureDamage: 0,
-
-    material: new THREE.MeshLambertMaterial({
-      color: new THREE.Color("#999"),
-      //emissive: new THREE.Color("#999"),
-      //emissiveIntensity: 0.01,
-      //roughness: station.roughness,
-      //metalness: station.metalness,
-    }),
-
-    classType: function () {
-      return equipList.class.type[this.class];
-    }, //class name (i.e. striker)
-
-    classValue: function () {
-      return servoUtil.classValue(this.type, this.class);
-    },
-
-    size: function (scale, classValue) {
-      return servoUtil.size(this.scale, this.classValue());
-    },
-
-    structure: function () {
-      return servoUtil.structure(this.scale, this.classValue(), this.SPMod);
-    },
-
-    SP: function () {
-      //space points
-      return servoUtil.SP(this.scale, this.classValue(), this.SPMod);
-    },
-    usedSP: function (mechBP) {
-      //space points used by equipment in that location
-      return servoUtil.usedSP(this.id, mechBP);
-    },
-
-    CP: function () {
-      //cost points
-      return servoUtil.CP(this.classValue(), this.wEff, this.armor);
-    },
-
-    scaledCP: function () {
-      //scaled cost points
-      return servoUtil.scaledCP(this.scale, this.CP());
-    },
-    armorVal: function () {
-      return armorUtil.value(this.armor);
-    },
-    armorType: function () {
-      return armorUtil.type(this.armor);
-    },
-    armorThreshold: function () {
-      return armorUtil.threshold(this.armor);
-    },
-    armorCP: function () {
-      return armorUtil.CP(this.armor);
-    },
-
-    weight: function () {
-      return servoUtil.weight(this.classValue(), this.wEff, this.armor);
-    },
-    //cmdArmor = new cmdArmor();
-    //getPosX = function(){return posX(this.posX)};//position label, right/left
-    //getPosY = function(){return posY(this.posY)};//position label, front/back
-  };
-};
-*/
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                BASE WEAPON METHODS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

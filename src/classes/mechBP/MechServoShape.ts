@@ -9,14 +9,13 @@ class MechServoShape {
   rotation: { x: number; y: number; z: number };
   scaleAdjust: { x: number; y: number; z: number };
   shape: number | null;
-  color: string;
+  color: string | null;
   threeColor: Color;
   movePart: (x: number, y: number, z: number) => void;
   resetPosition: () => void;
   rotateShape: (axis: string, direction: number) => void;
   scaleShape: (x: number, y: number, z: number) => void;
   resetScale: () => void;
-  changeColor: (color: string) => void;
 
   constructor(servoShapeData: any | null = null) {
     this.id = uuidv4(); // id for new shape
@@ -24,8 +23,7 @@ class MechServoShape {
     this.rotation = { x: 0, y: 0, z: 0 };
     this.scaleAdjust = { x: 0, y: 0, z: 0 };
     this.shape = 0; // default box shape
-    this.color = "#999";
-    this.threeColor = new Color("#999");
+    this.color = null;
     if (servoShapeData) {
       transferProperties(this, servoShapeData);
     }
@@ -36,7 +34,6 @@ class MechServoShape {
         y: this.offset.y + y,
         z: this.offset.z + z,
       };
-      console.log(this.offset);
     };
 
     this.resetPosition = () => {
@@ -61,11 +58,6 @@ class MechServoShape {
 
     this.resetScale = () => {
       this.scaleAdjust = { x: 0, y: 0, z: 0 };
-    };
-
-    this.changeColor = (color: string) => {
-      this.color = color;
-      this.threeColor = new Color(color);
     };
   }
 }

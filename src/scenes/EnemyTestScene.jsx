@@ -17,7 +17,7 @@ import useDevStore from "../stores/devStore";
 import PlayerMech from "../3d/spaceFlight/PlayerMechNew";
 //import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
 import BuildMech from "../3d/BuildMech";
-import InstancedMechs from "../3d/InstancedMechs";
+import InstancedMechGroups from "../3d/InstancedMechs";
 import Particles from "../3d/Particles";
 import BoidController from "../classes/BoidController";
 //import { setCustomData } from "r3f-perf";
@@ -38,7 +38,7 @@ export default function EnemyTestScene() {
   const cameraControlsRef = useRef(null);
   const enemyMechRefs = useRef([]);
   const obbBoxRefs = useRef([]);
-  const instancedMeshRef = useRef(null);
+  //const instancedMeshRef = useRef(null);
   const boidControllerRef = useRef(null);
 
   const resestControlsCameraPosition = useCallback(() => {
@@ -52,15 +52,17 @@ export default function EnemyTestScene() {
   useEffect(() => {
     console.log("setPositions");
     if (devPlayerPilotMech) {
-      setPlayerPosition(new THREE.Vector3(0, 0, -50));
+      setPlayerPosition(new THREE.Vector3(0, 0, -150));
       getPlayer().object3d.lookAt(0, 0, 0);
+      console.log("PlayerMech position", getPlayer().object3d.position);
     }
     enemies[0]?.object3d.position.set(0, 0, 0);
-    enemies[0]?.object3d.rotation.set(0, -2, 0);
-    console.log("PlayerMech position", getPlayer().object3d.position);
+    //enemies[0]?.object3d.lookAt(getPlayer().object3d.position);
+    //console.log("enemies[0] rotation", enemies[0]?.object3d.rotation);
   }, [devPlayerPilotMech, enemies, getPlayer, setPlayerPosition]);
 
   useEffect(() => {
+    console.log("boidController set");
     // set boid controller for flocking enemies
     // must use all enemies (for checking groupLeaderId)
     boidControllerRef.current = new BoidController(
@@ -70,6 +72,7 @@ export default function EnemyTestScene() {
 
   // show hide obb boxes
   useEffect(() => {
+    console.log("obbBoxRefs visibility");
     obbBoxRefs.current.forEach((obbBox) => {
       if (showObbBox) obbBox.visible = true;
       else obbBox.visible = false;
@@ -118,6 +121,7 @@ export default function EnemyTestScene() {
         const obbToTest = enemies[j].obbPositioned;
         // now perform intersection test
         if (obb.intersectsOBB(obbToTest) === true) {
+          //if (i === 0) console.log("obb collision", i, j);
           // change color of obb test boxes if colliding
           obbBoxRefs.current[i].material.color.setHex(0xffff00);
           obbBoxRefs.current[j].material.color.setHex(0xffff00);
@@ -133,6 +137,13 @@ export default function EnemyTestScene() {
       }
       // reset obbNeedsUpdate for next frame
       enemies[i].obbNeedsUpdate = true;
+      /*
+      enemies[0].object3d.position.setX(
+        enemies[0].object3d.position.x + 0.00005
+      );
+      enemies[0].object3d.rotation.y += 0.00001;
+      enemies[0].object3d.rotation.x += 0.00001;
+      */
     }
   });
 
@@ -144,7 +155,8 @@ export default function EnemyTestScene() {
 
   return createPortal(
     <>
-      <ambientLight intensity={1} />
+      <ambientLight intensity={0.2} />
+      <pointLight intensity={1} decay={0} position={[-10000, 10000, 0]} />
       <fog attach="fog" args={["#2A3C47", 100, 1500]} />
       <PlayerMech />
       {/*<SpaceFlightHud />*/}
@@ -174,24 +186,33 @@ export default function EnemyTestScene() {
                 }
               />
               {!enemyMech.useInstancedMesh ? (
-                <BuildEnemyMech
+                <BuildMech
+                  mechBP={enemyMech.mechBP}
                   ref={(mechRef) => {
                     enemyMechRefs.current[index] = mechRef;
                     enemyMech.initObject3d(mechRef);
                   }}
-                  mechBP={enemyMech.mechBP}
                 />
               ) : null}
             </Fragment>
           ))}
-          <InstancedMechs ref={instancedMeshRef} />
+          <InstancedMechGroups />
         </>
       )}
     </>,
     scene
   );
 }
-
+/*
+<BuildEnemyMech
+  ref={(mechRef) => {
+    enemyMechRefs.current[index] = mechRef;
+    console.log("init boss mech");
+    enemyMech.initObject3d(mechRef);
+  }}
+  mechBP={enemyMech.mechBP}
+/>
+*/
 const BuildEnemyMech = forwardRef(function Enemy(props, buildMechForwardRef) {
   // Hold state for hovered and clicked events
   //const [hovered, hover] = useState(false);
@@ -201,7 +222,9 @@ const BuildEnemyMech = forwardRef(function Enemy(props, buildMechForwardRef) {
     <BuildMech
       {...props}
       isWireFrame={clicked}
-      ref={buildMechForwardRef}
+      ref={(ref) => {
+        buildMechForwardRef.current = ref;
+      }}
       //handleClick={() => click(!clicked)}
       //onPointerOver={() => hover(true)}
       //onPointerOut={() => hover(false)}

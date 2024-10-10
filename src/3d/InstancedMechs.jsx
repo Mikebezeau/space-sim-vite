@@ -1,36 +1,39 @@
-import { forwardRef, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../stores/enemyStore";
 import BuildMech from "../3d/BuildMech";
 
 // not using the forwarded ref for anything atm
-const InstancedMechs = forwardRef(function Enemy(_, instancedMeshForwardRef) {
-  console.log("InstancedMechs rendered");
+const InstancedMechs = ({ mechBpId }) => {
+  /*
+    forwardRef(function Enemy(
+    { mechBpId },
+    instancedMeshRef
+    )
+  */
+  console.log("InstancedMechs rendered", mechBpId);
   const enemies = useEnemyStore((state) => state.enemies);
   const instancedMechObject3d = useRef(null);
-  const instancedEnemies = enemies.filter((enemy) => enemy.useInstancedMesh);
+  const instancedEnemies = enemies.filter(
+    (enemy) => enemy.useInstancedMesh && enemy.mechBP.id === mechBpId
+  );
+  console.log("instancedEnemies", instancedEnemies.length);
+  const instancedMeshRef = useRef(null);
 
   // set loaded BuildMech object3d for instancedMesh
   useEffect(() => {
     if (instancedMechObject3d.current === null) return;
-    console.log(
-      "InstancedMechs useEffect instancedMechObject3d",
-      instancedMechObject3d.current
-    );
-    enemies.forEach((enemy) => {
-      if (enemy.useInstancedMesh) {
-        enemy.initObject3d(instancedMechObject3d.current);
-      }
+    instancedEnemies.forEach((enemy) => {
+      enemy.initObject3d(instancedMechObject3d.current);
     });
-  }, [enemies, instancedMechObject3d]);
+  }, [instancedEnemies, instancedMechObject3d]);
 
   useEffect(() => {
-    if (instancedMeshForwardRef.current === null) return;
+    if (instancedMeshRef.current === null) return;
     const red = new THREE.Color(0xff0000);
     instancedEnemies.forEach((enemy, i) => {
-      if (enemy.getIsLeader())
-        instancedMeshForwardRef.current.setColorAt(i, red);
+      if (enemy.getIsLeader()) instancedMeshRef.current.setColorAt(i, red);
     });
     /*
       const enemyColors = [];
@@ -39,24 +42,24 @@ const InstancedMechs = forwardRef(function Enemy(_, instancedMeshForwardRef) {
         enemyColors.push(...colorRgb);
       });
   
-      instancedMeshForwardRef.current.geometry.setAttribute(
+      instancedMeshRef.current.geometry.setAttribute(
         "aColor",
         new THREE.BufferAttribute(new Float32Array(enemyColors), 3).setUsage(
           THREE.DynamicDrawUsage
         )
       );
       // check below line might not be correct
-      instancedMeshForwardRef.current.geometry.attributes.aColor.needsUpdate = true;
+      instancedMeshRef.current.geometry.attributes.aColor.needsUpdate = true;
       */
-  }, [instancedEnemies, instancedMeshForwardRef]);
+  }, [instancedEnemies, instancedMeshRef]);
 
   useFrame(() => {
-    if (instancedMeshForwardRef.current === null) return;
+    if (instancedMeshRef.current === null) return;
     instancedEnemies.forEach((enemy, i) => {
       enemy.object3d.updateMatrix();
-      instancedMeshForwardRef.current.setMatrixAt(i, enemy.object3d.matrix);
+      instancedMeshRef.current.setMatrixAt(i, enemy.object3d.matrix);
     });
-    instancedMeshForwardRef.current.instanceMatrix.needsUpdate = true;
+    instancedMeshRef.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -79,14 +82,14 @@ const InstancedMechs = forwardRef(function Enemy(_, instancedMeshForwardRef) {
             ) : (
               <instancedMesh
                 frustumCulled={false}
-                ref={instancedMeshForwardRef}
+                ref={instancedMeshRef}
                 args={[
                   instancedEnemies[0].bufferGeom,
                   null,
                   instancedEnemies.length,
                 ]}
               >
-                <meshBasicMaterial
+                <meshLambertMaterial
                 /*
           onBeforeCompile={(shader) => {
             console.log(shader.vertexShader);
@@ -115,6 +118,33 @@ const InstancedMechs = forwardRef(function Enemy(_, instancedMeshForwardRef) {
       )}
     </>
   );
-});
+};
+//);
 
-export default InstancedMechs;
+const InstancedMechGroups = () => {
+  console.log("instancedEnemiesBpIdListRef");
+  const enemies = useEnemyStore((state) => state.enemies);
+  // using useRef to store unique instancedEnemies mechBP ids
+  // using spread operator to change into an array of ids
+  const instancedEnemiesBpIdListRef = useRef([
+    ...new Set(
+      enemies.map((enemy) => (enemy.useInstancedMesh ? enemy.mechBP.id : null))
+    ),
+  ]);
+
+  console.log(
+    "instancedEnemiesBpIdListRef",
+    instancedEnemiesBpIdListRef.current
+  );
+  return (
+    <>
+      {instancedEnemiesBpIdListRef.current.map((bpId) => {
+        return bpId !== null ? (
+          <InstancedMechs key={bpId} mechBpId={bpId} />
+        ) : null;
+      })}
+    </>
+  );
+};
+
+export default InstancedMechGroups; // InstancedMechs InstancedMechGroups;
