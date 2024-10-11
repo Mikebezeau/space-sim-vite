@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
 import EnemyMechBoid from "../classes/EnemyMechBoid";
-import { loadBlueprint } from "../util/initEquipUtil";
 import { initStationBP } from "./initEquipUtil";
 import { SCALE } from "../constants/constants";
 import mechDesigns from "../equipment/data/mechDesigns";
@@ -58,8 +57,7 @@ export const groupEnemies = (enemies) => {
     //this is also setting all followers of boss ship to upgrade to special mechBP
     if (!enemy.groupLeaderId) {
       //upgrade the leader mech to special mechBp
-      if (!enemy.isBossMech)
-        enemy.mechBP = loadBlueprint(JSON.stringify(mechDesigns.enemy[2]));
+      if (!enemy.isBossMech) enemy.setMechBP(mechDesigns.enemy[2]);
 
       enemies
         .filter(

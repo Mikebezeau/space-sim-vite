@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
 import MechServoShape from "./MechServoShape";
+import { geoList } from "../../equipment/data/shapeGeometry";
 import { getMergedBufferGeom, getVolume } from "../../util/gameUtil";
 import { transferProperties } from "../../util/initEquipUtil";
 import { servoUtil, armorUtil } from "../../util/mechServoUtil";
@@ -18,7 +19,7 @@ class MechServo extends MechServoShape {
   armor: { class: number; rating: number }; //rating 1 = standard armor
   armorDamage: number;
   structureDamage: number;
-  buildServoShapes: () => THREE.Group;
+  buildServoThreeGroup: (mechColor: string) => THREE.Group;
   getVolume: () => number;
   classType: () => string;
   classValue: () => number;
@@ -35,8 +36,9 @@ class MechServo extends MechServoShape {
   weight: () => number;
 
   constructor(servoData: any) {
-    // super: set the properties and methods for altering this parent servo size/scale/rotation
-    // these settings effect all children servoShapes
+    // super: set the properties and methods for altering this parent servo:
+    //  -> offset, rotation, scaleAdjust, shape, color
+    // these settings cascade to all children servoShapes
     super();
 
     this.id = uuidv4();
@@ -61,35 +63,69 @@ class MechServo extends MechServoShape {
       }
     }
 
-    this.buildServoShapes = () => {
+    this.buildServoThreeGroup = (mechColor: string | null) => {
+      const servoMainGroup = new THREE.Group();
+      const size = this.size();
+      servoMainGroup.scale.set(size, size, size);
+
+      const getThreeRotation = (rotation: number) => {
+        return Math.sign(rotation) * (Math.PI / 1 + Math.abs(rotation));
+      };
+
       const servoShapesGroup = new THREE.Group();
-      this.servoShapes.forEach((shape) => {
+      servoShapesGroup.position.set(
+        this.offset.x,
+        this.offset.y,
+        this.offset.z
+      );
+      servoShapesGroup.rotation.set(
+        getThreeRotation(this.rotation.x),
+        getThreeRotation(this.rotation.y),
+        getThreeRotation(this.rotation.z)
+      );
+      servoShapesGroup.scale.set(
+        1 + this.scaleAdjust.x,
+        1 + this.scaleAdjust.y,
+        1 + this.scaleAdjust.z
+      );
+      this.servoShapes.forEach((servoShape) => {
+        const color = servoShape.color
+          ? servoShape.color
+          : this.color
+          ? this.color
+          : mechColor
+          ? mechColor
+          : "#FFF";
         const servoShapeMesh = new THREE.Mesh();
         servoShapeMesh.position.set(
-          shape.offset.x,
-          shape.offset.y,
-          shape.offset.z
+          servoShape.offset.x,
+          servoShape.offset.y,
+          servoShape.offset.z
         );
         servoShapeMesh.rotation.set(
-          shape.rotation.x,
-          shape.rotation.y,
-          shape.rotation.z
+          getThreeRotation(servoShape.rotation.x),
+          getThreeRotation(servoShape.rotation.y),
+          getThreeRotation(servoShape.rotation.z)
         );
         servoShapeMesh.scale.set(
-          shape.scaleAdjust.x,
-          shape.scaleAdjust.y,
-          shape.scaleAdjust.z
+          1 + servoShape.scaleAdjust.x,
+          1 + servoShape.scaleAdjust.y,
+          1 + servoShape.scaleAdjust.z
         );
-        // TODO: add shape geometry and material
+        servoShapeMesh.geometry = geoList[servoShape.shape][0];
+        servoShapeMesh.material = new THREE.MeshLambertMaterial({
+          color: new THREE.Color(color),
+        });
         servoShapesGroup.add(servoShapeMesh);
       });
-      return servoShapesGroup;
+      servoMainGroup.add(servoShapesGroup);
+      return servoMainGroup;
     };
 
     // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
     this.getVolume = () => {
       // need method to build the object3d with basic THREE comands
-      const bufferGeom = getMergedBufferGeom(this.buildServoShapes());
+      const bufferGeom = getMergedBufferGeom(this.buildServoThreeGroup(null));
       return getVolume(bufferGeom);
     };
 

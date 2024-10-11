@@ -1,18 +1,26 @@
 import * as THREE from "three";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
+import MechServo from "./mechBP/MechServo";
 import useParticleStore from "../stores/particleStore";
 import { loadBlueprint } from "../util/initEquipUtil";
 import { servoUtil } from "../util/mechServoUtil";
 import { SCALE } from "../constants/constants";
-import { getMergedBufferGeom } from "../util/gameUtil";
+import {
+  getGeomColorList,
+  getMergedBufferGeom,
+  getMergedBufferGeomColor,
+} from "../util/gameUtil";
 //import { setCustomData } from "r3f-perf";
 
 export interface MechInt {
+  setMechBP(mechDesign: any): void;
+  buildObject3d(): void;
   initObject3d(object3d: THREE.Object3D): void;
   updateObb(): void;
   setObject3dCenterOffset(): void;
   setMergedBufferGeom(): void;
+  setMergedBufferGeomColorsList(geomColorList: THREE.Color[]): void;
   fireWeapon(isPlayer: boolean): void;
 }
 
@@ -23,6 +31,7 @@ class Mech implements MechInt {
   shield: { max: number; damage: number };
   object3d: THREE.Object3D;
   bufferGeom: THREE.BufferGeometry | null;
+  bufferGeomColorsList: THREE.BufferGeometry[];
   mechCenter: THREE.Vector3;
   object3dCenterOffset: THREE.Object3D;
   obbNeedsUpdate: boolean;
@@ -44,10 +53,12 @@ class Mech implements MechInt {
   constructor(mechDesign: any, useInstancedMesh: boolean = false) {
     this.id = uuidv4();
     this.useInstancedMesh = useInstancedMesh;
-    this.mechBP = loadBlueprint(JSON.stringify(mechDesign)); // mech blue print
+    //this.mechBP
+    this.setMechBP(mechDesign);
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
     this.object3d = new THREE.Object3D(); // set from BuildMech ref, updating this will update the object on screen
     this.bufferGeom = null; // merged geometry for instanced mesh
+    this.bufferGeomColorsList = []; // merged geometry list of different colors for instanced mesh
     this.mechCenter = new THREE.Vector3();
     this.object3dCenterOffset = new THREE.Object3D(); // for proper obb positioning
     this.obbNeedsUpdate = true; // used to determine if obb needs to be updated beore checking collision within loop
@@ -66,6 +77,27 @@ class Mech implements MechInt {
     this.servoHitNames = [];
   }
 
+  setMechBP = (mechDesign: any) => {
+    this.mechBP = loadBlueprint(JSON.stringify(mechDesign)); // mech blue print
+    // build object3d from mechBP for instanced mechs
+    if (this.useInstancedMesh) {
+      this.buildObject3d();
+    }
+  };
+
+  buildObject3d = () => {
+    console.log("buildObject3d");
+    if (this.mechBP) {
+      const object3d = new THREE.Object3D();
+      this.mechBP.servoList.forEach((servo: MechServo) => {
+        const servoGroup = servo.buildServoThreeGroup(this.mechBP.color);
+        object3d.add(servoGroup);
+      });
+      this.object3d = object3d;
+      console.log(this.object3d);
+    }
+  };
+
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
   initObject3d = (object3d: THREE.Object3D, isPlayer: boolean = false) => {
     if (object3d) {
@@ -79,7 +111,13 @@ class Mech implements MechInt {
         this.object3d.copy(object3d, true);
         this.object3d.position.copy(keepPosition);
         this.setMergedBufferGeom();
-      } else this.object3d = object3d;
+        const geomColorList = getGeomColorList(this.object3d);
+        if (geomColorList) {
+          this.setMergedBufferGeomColorsList(geomColorList);
+        }
+      } else {
+        this.object3d = object3d;
+      }
       // mech bounding box
       const hitBox = new THREE.Box3();
       hitBox.setFromObject(this.object3d);
@@ -132,12 +170,26 @@ class Mech implements MechInt {
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
   setMergedBufferGeom() {
     if (this.object3d) {
+      // split object children into meshes of same colors
+      // merge all meshes of same color into one buffer geometry
+
       this.bufferGeom = getMergedBufferGeom(this.object3d);
     } else {
       console.log(
         "Mech.setMergedBufferGeom(): object3d not set",
         this.object3d
       );
+    }
+  }
+
+  setMergedBufferGeomColorsList(geomColorList: THREE.Color[]) {
+    if (this.object3d) {
+      this.bufferGeomColorsList = [];
+      geomColorList.forEach((color) => {
+        this.bufferGeomColorsList.push(
+          getMergedBufferGeomColor(this.object3d, color)
+        );
+      });
     }
   }
 

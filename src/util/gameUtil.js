@@ -60,6 +60,17 @@ export const getObject3dScreenPosition = (obj, camera) => {
   };
 };
 
+export const getGeomColorList = (object3d) => {
+  const colorList = new Set();
+  object3d.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      // color is a THREE.Color instance
+      colorList.add(child.material.color);
+    }
+  });
+  return [...colorList];
+};
+
 export const getMergedBufferGeom = (object3d) => {
   //const geoms: Array<THREE.BufferGeometry> = [];
   //const meshes: Array<THREE.Mesh> = [];
@@ -68,6 +79,29 @@ export const getMergedBufferGeom = (object3d) => {
   object3d.updateWorldMatrix(true, true);
   object3d.traverse((child) => {
     if (child instanceof THREE.Mesh) {
+      meshes.push(child);
+      geoms.push(
+        child.geometry.index
+          ? child.geometry.toNonIndexed()
+          : child.geometry.clone()
+      );
+    }
+  });
+  geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
+  const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
+  merged.applyMatrix4(object3d.matrix.clone().invert());
+  merged.userData.materials = meshes.map((m) => m.material);
+  return merged;
+};
+
+export const getMergedBufferGeomColor = (object3d, color) => {
+  //const geoms: Array<THREE.BufferGeometry> = [];
+  //const meshes: Array<THREE.Mesh> = [];
+  const geoms = [];
+  const meshes = [];
+  object3d.updateWorldMatrix(true, true);
+  object3d.traverse((child) => {
+    if (child instanceof THREE.Mesh && child.material.color.equals(color)) {
       meshes.push(child);
       geoms.push(
         child.geometry.index
