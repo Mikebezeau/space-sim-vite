@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
-import BuildMech from "../BuildMech";
+import BuildMech from "../buildMech/BuildMech";
 import { SCALE } from "../../constants/constants";
 
 const servoHitNames = [];
@@ -33,11 +33,7 @@ const Station = ({ station }) => {
       ]}
       scale={SCALE}
     >
-      <BuildMech
-        mechBP={station.stationBP}
-        servoHitNames={servoHitNames}
-        showAxisLines={0}
-      />
+      <BuildMech mechBP={station.stationBP} servoHitNames={servoHitNames} />
       {/*
       <pointLight
         position={[175, 0, 0]}

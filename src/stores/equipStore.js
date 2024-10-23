@@ -1,6 +1,10 @@
 import { create } from "zustand";
+import { v4 as uuidv4 } from "uuid";
 import MechServo from "../classes/mechBP/MechServo";
-import MechServoShape from "../classes/mechBP/MechServoShape";
+import MechServoShape, {
+  EDIT_PROP_STRING,
+  EDIT_PART_METHOD,
+} from "../classes/mechBP/MechServoShape";
 import {
   guid,
   loadBlueprint,
@@ -8,36 +12,138 @@ import {
   initMechBP,
   initWeaponBP,
 } from "../util/initEquipUtil";
+import { servoShapeDesigns } from "../equipment/data/servoShapeDesigns";
 
-/*
-//for transfering weapon data fields
-function castWeaponDataInt(mergBP, parsedBP) {
-  Object.keys(parsedBP).forEach((key) => {
-    mergBP[key] =
-      key === "weaponType" ||
-      key === "title" ||
-      key === "name" ||
-      key === "color" ||
-      key === "ammoList"
-        ? parsedBP[key]
-        : Number(parsedBP[key]);
+export const EDIT_MENU_SELECT = {
+  none: 0,
+  adjust: 1,
+  edit: 2,
+  mirror: 3,
+  addServoShapeDesign: 4,
+};
+
+// recursively find if group tree has childId
+export const recursiveFindChildId = (arr, childId) => {
+  let idFound = false;
+  arr.forEach((s) => {
+    if (s.id === childId) {
+      idFound = true;
+    } else if (s.servoShapes.length > 0) {
+      idFound = idFound
+        ? idFound
+        : recursiveFindChildId(s.servoShapes, childId);
+    }
   });
-  return mergBP;
-}
-*/
+  return idFound;
+};
 
+// recursively give all new ids
+export const recursiveSetNewIds = (part) => {
+  part.id = uuidv4();
+  part.servoShapes.forEach((s) => {
+    recursiveSetNewIds(s);
+  });
+  return part;
+};
+
+const recursiveUpdateProp = (arr, id, prop, val) => {
+  if (!EDIT_PROP_STRING.includes(prop)) val = Number(val);
+  arr.forEach((s) => {
+    if (s.id === id) {
+      if (!s[prop]) console.log("prop not found", prop);
+      s[prop] = val;
+    } else if (s.servoShapes.length > 0) {
+      recursiveUpdateProp(s.servoShapes, id, prop, val);
+    }
+  });
+  return arr;
+};
+
+// recursive update for servo and servoshapes
+const recursiveCallMethod = (arr, id, method, props) => {
+  arr.forEach((s) => {
+    if (s.id === id) {
+      if (!s[method]) console.log("method not found", method);
+      props ? s[method](props) : s[method]();
+    } else if (s.servoShapes.length > 0) {
+      recursiveCallMethod(s.servoShapes, id, method, props);
+    }
+  });
+  return arr;
+};
+
+// recursive add for servo and servoshapes
+function recursiveAdd(arr, id, newPart) {
+  arr.forEach((s) => {
+    if (s.id === id) {
+      s.servoShapes.push(newPart);
+    } else if (s.servoShapes.length > 0) {
+      recursiveAdd(s.servoShapes, id, newPart);
+    }
+  });
+  return arr;
+}
+
+// recursive delete for servo and servoshapes
+function recursiveDelete(arr, id) {
+  return arr.filter((item) => {
+    if ("servoShapes" in item) {
+      item.servoShapes = recursiveDelete(item.servoShapes, id);
+    }
+    return item.id !== id;
+  });
+}
+
+const getZoom = (scale) => {
+  let cameraZoom = 0;
+  switch (scale) {
+    case 0:
+      cameraZoom = -10;
+      break;
+    case 1:
+      cameraZoom = -10;
+      break;
+    case 2:
+      cameraZoom = -10;
+      break;
+    case 3:
+      cameraZoom = -20;
+      break;
+    case 4:
+      cameraZoom = -100;
+      break;
+    case 5:
+      cameraZoom = -200;
+      break;
+    case 6:
+      cameraZoom = -500;
+      break;
+    case 7:
+      cameraZoom = -1000;
+      break;
+    default:
+      -10;
+  }
+  return cameraZoom;
+};
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                GLOBAL VARIABLES
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 const useEquipStore = create((set, get) => {
   //globally available letiables
   return {
+    isResetCamera: false,
+    resetCamera: (isResetCamera) => set({ isResetCamera }),
+    cameraZoom: 1,
     //3d ship editor global variables
     mainMenuSelection: 0,
-    editServoId: null, //used for any selection of servoId in menus
-    editServoShapeId: null, //used for any selection of servoShapeId in menus
+    editPartId: null,
+    editPartIdPrev: null,
+    editPartMenuSelect: EDIT_MENU_SELECT.none,
+    addServoShapeDesignId: "",
     editWeaponId: null, //used for any selection of weaponId in menus
     editLandingBayId: null,
+    copiedPartJSON: "",
     //MECH blueprint TEMPLATE
     mechBP: initMechBP(0),
     //weapon blueprints template
@@ -51,14 +157,24 @@ const useEquipStore = create((set, get) => {
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     //                MECH DESIGN MENU ACTIONS
     equipActions: {
+      setEditPartId: (id) => {
+        if (id !== get().editPartId) {
+          set({ editPartIdPrev: get().editPartId });
+          set({ editPartId: id });
+        }
+      },
+      setEditPartMenuSelect: (val) => set({ editPartMenuSelect: val }),
+      setAddServoShapeDesignId: (id) => set({ addServoShapeDesignId: id }),
       //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
       //                MECH BLUEPRINT: SELECTION, SAVING, DELETION
       blueprintMenu: {
         newBlueprint() {
-          const newMechBP = initMechBP(0);
+          const newMechBP = initMechBP(uuidv4());
           set(() => ({
             mechBP: newMechBP,
           }));
+          const cameraZoom = getZoom(newMechBP.scale);
+          set(() => ({ cameraZoom }));
         },
         /*
         selectBlueprint(id) {
@@ -86,7 +202,9 @@ const useEquipStore = create((set, get) => {
         importBlueprint(importBP) {
           const loadBP = loadBlueprint(importBP);
           set(() => ({ mechBP: loadBP }));
-          //console.log("mechBP", get().mechBP);
+          const cameraZoom = getZoom(loadBP.scale);
+          set(() => ({ cameraZoom }));
+          console.log("cameraZoom", cameraZoom);
         },
         exportBlueprint() {
           function replacer(key, value) {
@@ -101,7 +219,6 @@ const useEquipStore = create((set, get) => {
             }
           }
           const JSONBP = JSON.stringify(get().mechBP, replacer);
-          console.log(JSONBP);
           return JSONBP;
         },
       },
@@ -151,61 +268,100 @@ const useEquipStore = create((set, get) => {
           set((state) => ({
             mechBP: { ...state.mechBP, [prop]: val },
           }));
+          if (prop === "scale") {
+            const cameraZoom = getZoom(val);
+            set(() => ({ cameraZoom }));
+          }
         },
       },
 
       //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
       //                MECH SERVOS: SELECTION, DELETION, EDITING
       servoMenu: {
-        changeProp(servoIndex, servoShapeIndex, prop, val) {
-          val =
-            prop === "id" || prop === "name" || prop === "color"
-              ? val
-              : Number(val);
-          const updateServoList = get().mechBP.servoList;
-          if (servoShapeIndex === null) {
-            updateServoList[servoIndex][prop] = val;
-          } else {
-            console.log(
-              servoIndex,
-              servoShapeIndex,
-              prop,
-              val,
-              updateServoList
-            );
-            updateServoList[servoIndex].servoShapes[servoShapeIndex][prop] =
-              val;
-          }
+        updateServoList(servoList) {
+          // generaic update of servoList
           set((state) => ({
             mechBP: {
               ...state.mechBP,
-              servoList: updateServoList,
+              servoList: servoList,
             },
           }));
         },
+        updateProp(id, prop, val) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveUpdateProp(servoList, id, prop, val);
+          get().equipActions.servoMenu.updateServoList(servoList);
+        },
         addServo() {
-          let servos = get().mechBP.servoList;
+          let servoList = get().mechBP.servoList;
           const newServo = new MechServo();
           newServo.scale = get().mechBP.scale;
           newServo.servoShapes.push(new MechServoShape());
-          servos.push(newServo);
-          set((state) => ({
-            mechBP: { ...state.mechBP, servoList: servos },
-          }));
+          servoList.push(newServo);
+          get().equipActions.servoMenu.updateServoList(servoList);
         },
-        deleteServo(servoId) {
-          set((state) => ({
-            mechBP: {
-              ...state.mechBP,
-              servoList: state.mechBP.servoList.filter((s) => s.id !== servoId),
-            },
-          }));
-          //remove equipment from this location
-          //remove weapons
+        duplicateServo(part) {
+          const copiedPartJSON = JSON.parse(JSON.stringify(part));
+          const newPart = new MechServo(copiedPartJSON);
+          recursiveSetNewIds(newPart);
+          // add the new part into the servoList
+          let servoList = get().mechBP.servoList;
+          servoList.push(newPart);
+          get().equipActions.servoMenu.updateServoList(servoList);
+        },
+        copyPart(part) {
+          const copiedPartJSON = JSON.parse(JSON.stringify(part));
+          set(() => ({ copiedPartJSON }));
+        },
+        setAddServoShapeDesignId(parentId) {
+          if (get().addServoShapeDesignId !== "") {
+            const part = servoShapeDesigns.find(
+              (d) => d.id === get().addServoShapeDesignId
+            );
+            const copiedPartJSON = JSON.parse(JSON.stringify(part));
+            set(() => ({ copiedPartJSON }));
+            get().equipActions.servoMenu.pastePartIntoGroup(parentId);
+          }
+        },
+        pastePartIntoGroup(parentId) {
+          const copiedPartJSON = get().copiedPartJSON;
+          let newPart;
+          if (copiedPartJSON.isServo) newPart = new MechServo(copiedPartJSON);
+          else newPart = new MechServoShape(copiedPartJSON);
+          recursiveSetNewIds(newPart);
+          // add the new part into the servoList
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveAdd(servoList, parentId, newPart);
+          get().equipActions.servoMenu.updateServoList(servoList);
+        },
+        mirrorPart(axis, id) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            id,
+            EDIT_PART_METHOD.toggleMirrorAxis,
+            { axis }
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
+        },
+        addGroup(part) {
+          // moves the part into servoShapes array, making it a group
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            part.id,
+            EDIT_PART_METHOD.makeGroup
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
+        },
+        deleteServoOrShape(id) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveDelete(servoList, id);
+          get().equipActions.servoMenu.updateServoList(servoList);
+          get().equipActions.setEditPartId(get().editPartIdPrev);
         },
         selectServoID(servoId) {
-          set(() => ({ editServoId: servoId }));
-          set(() => ({ editServoShapeId: null }));
+          get().equipActions.setEditPartId(servoId);
           get().equipActions.weaponMenu.selectWeaponID(null);
           get().equipActions.servoMenu.selectLandingBayID(null);
         },
@@ -213,126 +369,80 @@ const useEquipStore = create((set, get) => {
           set(() => ({ editLandingBayId: id }));
         },
         // if provided seroShapeIndex, then it will move the specific shape not whole servo
-        adjustServoOffset(servoIndex, servoShapeIndex, x, y, z) {
-          const servoList = get().mechBP.servoList;
-          if (servoShapeIndex === null) {
-            servoList[servoIndex].movePart(x, y, z);
-          } else {
-            servoList[servoIndex].servoShapes[servoShapeIndex].movePart(
-              x,
-              y,
-              z
-            );
-          }
-          set((state) => ({
-            mechBP: {
-              ...state.mechBP,
-              servoList: servoList,
-            },
-          }));
+        adjustServoOrShapeOffset(id, axis, adjustVal) {
+          const posAdjust = { x: 0, y: 0, z: 0 };
+          posAdjust[axis] = adjustVal;
+          // posAdjust is an object with x, y, z values
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            id,
+            EDIT_PART_METHOD.adjustPosition,
+            posAdjust
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
         },
-        resetServoPosition(servoIndex, servoShapeIndex) {
-          const servoList = get().mechBP.servoList;
-          if (servoShapeIndex === null) {
-            servoList[servoIndex].resetPosition();
-          } else {
-            servoList[servoIndex].servoShapes[servoShapeIndex].resetPosition();
-          }
-          set((state) => ({
-            mechBP: {
-              ...state.mechBP,
-              servoList: servoList,
-            },
-          }));
+        resetServoPosition(id) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            id,
+            EDIT_PART_METHOD.resetPosition
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
         },
-        adjustServoRotation(servoIndex, servoShapeIndex, axis, direction) {
-          const servoList = get().mechBP.servoList;
-          if (servoShapeIndex === null) {
-            servoList[servoIndex].rotateShape(axis, direction);
-          } else {
-            servoList[servoIndex].servoShapes[servoShapeIndex].rotateShape(
+        adjustServoOrShapeRotation(id, axis, direction) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            id,
+            EDIT_PART_METHOD.adjustRotation,
+            {
               axis,
-              direction
-            );
-          }
-          set((state) => ({
-            mechBP: {
-              ...state.mechBP,
-              servoList: servoList,
-            },
-          }));
+              direction,
+            }
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
         },
-        adjustServoScale(servoIndex, servoShapeIndex, axis, val) {
-          let scaleAdjust = { x: 0, y: 0, z: 0 };
-          scaleAdjust[axis] = scaleAdjust[axis] + val;
-
-          const servoList = get().mechBP.servoList;
-          if (servoShapeIndex === null) {
-            if (axis === "reset") {
-              servoList[servoIndex].resetScale();
-            }
-            console.log(
-              servoIndex,
-              servoShapeIndex,
-              axis,
-              val,
-              servoList[servoIndex]
-            );
-            servoList[servoIndex].scaleShape(
-              scaleAdjust.x,
-              scaleAdjust.y,
-              scaleAdjust.z
-            );
-          } else {
-            if (axis === "reset") {
-              servoList[servoIndex].servoShapes[servoShapeIndex].resetScale();
-            }
-            servoList[servoIndex].servoShapes[servoShapeIndex].scaleShape(
-              scaleAdjust.x,
-              scaleAdjust.y,
-              scaleAdjust.z
-            );
-          }
-          set((state) => ({
-            mechBP: {
-              ...state.mechBP,
-              servoList: servoList,
-            },
-          }));
+        resetServoRotation(id) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            id,
+            EDIT_PART_METHOD.resetRotation
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
+        },
+        adjustServoScale(id, axis, adjustVal) {
+          const scaleAdjust = { x: 0, y: 0, z: 0 };
+          scaleAdjust[axis] = scaleAdjust[axis] + adjustVal;
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            id,
+            EDIT_PART_METHOD.adjustScale,
+            scaleAdjust
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
+        },
+        resetServoScale(id) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveCallMethod(
+            servoList,
+            id,
+            EDIT_PART_METHOD.resetScale
+          );
+          get().equipActions.servoMenu.updateServoList(servoList);
         },
       },
 
       //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
       //       NEW - CREATION OF SERVOS WITH MULTIPLE SHAPES
       servoShapeMenu: {
-        selectServoShapeID(servoId, servoShapeId) {
-          get().equipActions.servoMenu.selectServoID(servoId);
-          set(() => ({ editServoShapeId: servoShapeId }));
-        },
-        addServoShape(servoIndex) {
-          const servoList = get().mechBP.servoList;
-          servoList[servoIndex].servoShapes.push(new MechServoShape());
-          set((state) => ({
-            mechBP: { ...state.mechBP, servoList: servoList },
-          }));
-        },
-        deleteServoShape(servoIndex, servoShapeId) {
-          const servoList = get().mechBP.servoList;
-          servoList[servoIndex].servoShapes = servoList[
-            servoIndex
-          ].servoShapes.filter((servoShape) => servoShape.id !== servoShapeId);
-          set((state) => ({
-            mechBP: { ...state.mechBP, servoList: servoList },
-          }));
-        },
-        changeServoShape(servoIndex, servoShapeIndex, shapeIndex) {
-          // TODO: shapeIndex should be typed as number
-          shapeIndex = Number(shapeIndex);
-          const servoList = get().mechBP.servoList;
-          servoList[servoIndex].servoShapes[servoShapeIndex].shape = shapeIndex;
-          set((state) => ({
-            mechBP: { ...state.mechBP, servoList: servoList },
-          }));
+        addServoShape(parentId) {
+          let servoList = get().mechBP.servoList;
+          servoList = recursiveAdd(servoList, parentId, new MechServoShape());
+          get().equipActions.servoMenu.updateServoList(servoList);
         },
       },
 

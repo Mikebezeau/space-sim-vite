@@ -17,7 +17,7 @@ interface devStoreState {
 
 const useDevStore = create<devStoreState>()((set, get) => ({
   devEnemyTest: true,
-  devPlayerPilotMech: false,
+  devPlayerPilotMech: true,
   showLeaders: false,
   showObbBox: false,
   showBoidVectors: false,

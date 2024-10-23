@@ -3,7 +3,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import PlayerCrosshair from "./PlayerCrosshair";
-import BuildMech from "../BuildMech";
+import BuildMech from "../buildMech/BuildMech";
 import { MeshLineTrail } from "../Trail";
 import { setVisible } from "../../util/gameUtil";
 import { SCALE, PLAYER } from "../../constants/constants";
@@ -91,11 +91,7 @@ const PlayerMech = () => {
         <box3Helper box={hitBoxRef.current} color={0xffff00} />
       ) : null}
       <group ref={playerMechGroupRef} scale={SCALE}>
-        <BuildMech
-          mechBP={playerMechBP}
-          servoHitNames={servoHitNames}
-          showAxisLines={false}
-        />
+        <BuildMech mechBP={playerMechBP} servoHitNames={servoHitNames} />
       </group>
 
       <MeshLineTrail

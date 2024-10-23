@@ -1,8 +1,6 @@
 import { forwardRef } from "react";
 import { MeshBasicMaterial, Color } from "three";
-import { ServoShapes, WeaponShapes } from "../equipment/data/equipShapes";
-import { equipList } from "../equipment/data/equipData";
-import { mech } from "../util/mechServoUtil";
+import { ServoShapes, WeaponShapes } from "../../equipment/data/equipShapes";
 
 const blueMaterial = new MeshBasicMaterial({
   color: new Color("lightblue"),
@@ -23,11 +21,9 @@ const BuildMech = forwardRef(function BuildMech(
     damageReadoutMode = false,
     servoHitNames = [],
     drawDistanceLevel = 0,
-    editServoId = null,
-    editServoShapeId = null,
+    editPartId = null,
     weaponEditId = null,
     editMode = false,
-    showAxisLines = false,
     isWireFrame = false,
     isLeader = false,
     handleClick = () => {},
@@ -63,11 +59,8 @@ const BuildMech = forwardRef(function BuildMech(
             isHit={servoHitNames.find((name) => name === servo.id + "_servo")}
             servo={servo}
             drawDistanceLevel={drawDistanceLevel}
-            landingBay={mechBP.landingBay}
-            landingBayServoLocationId={mechBP.landingBayServoLocationId}
-            landingBayPosition={mechBP.landingBayPosition}
-            editServoId={editServoId}
-            editServoShapeId={editServoShapeId}
+            editMode={editMode}
+            editPartId={editPartId}
           />
           {mechBP.servoWeaponList(servo.id).map((weapon, j) => (
             <group
@@ -84,13 +77,14 @@ const BuildMech = forwardRef(function BuildMech(
                 )}
                 weapon={weapon}
                 drawDistanceLevel={drawDistanceLevel}
+                editMode={editMode}
                 weaponEditId={weaponEditId}
               />
             </group>
           ))}
         </group>
       ))}
-      {(showAxisLines || editMode) && (
+      {editMode && (
         <group scale={mechBP.size() * 0.1}>
           <mesh
             position={[0, 0, 150]}

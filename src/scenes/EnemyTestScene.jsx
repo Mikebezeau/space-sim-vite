@@ -16,7 +16,7 @@ import useParticleStore from "../stores/particleStore";
 import useDevStore from "../stores/devStore";
 import PlayerMech from "../3d/spaceFlight/PlayerMechNew";
 //import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
-import BuildMech from "../3d/BuildMech";
+import BuildMech from "../3d/buildMech/BuildMech";
 import InstancedMechGroups from "../3d/InstancedMechs";
 import Particles from "../3d/Particles";
 import BoidController from "../classes/BoidController";
@@ -57,7 +57,7 @@ export default function EnemyTestScene() {
       console.log("PlayerMech position", getPlayer().object3d.position);
     }
     enemies[0]?.object3d.position.set(0, 0, 0);
-    //enemies[0]?.object3d.lookAt(getPlayer().object3d.position);
+    enemies[0]?.object3d.lookAt(getPlayer().object3d.position);
     //console.log("enemies[0] rotation", enemies[0]?.object3d.rotation);
   }, [devPlayerPilotMech, enemies, getPlayer, setPlayerPosition]);
 
@@ -131,7 +131,7 @@ export default function EnemyTestScene() {
             if (i !== 0) addExplosion(enemies[i].object3d.position);
           }
           if (Math.random() < 0.5) {
-            if (i !== 0) addExplosion(enemies[j].object3d.position);
+            addExplosion(enemies[j].object3d.position);
           }
         }
       }

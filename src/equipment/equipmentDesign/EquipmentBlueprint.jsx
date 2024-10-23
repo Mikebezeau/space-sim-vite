@@ -2,20 +2,18 @@ import { useCallback, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useEquipStore from "../../stores/equipStore";
-import BuildMech from "../../3d/BuildMech";
+import BuildMech from "../../3d/buildMech/BuildMech";
 //import { useThree, useLoader, useFrame } from "@react-three/fiber";
 //import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 const MechDisplay = () => {
   const mechBP = useEquipStore((state) => state.mechBP);
-  const editServoId = useEquipStore((state) => state.editServoId);
-  const editServoShapeId = useEquipStore((state) => state.editServoShapeId);
+  const editPartId = useEquipStore((state) => state.editPartId);
   const editWeaponId = useEquipStore((state) => state.editWeaponId);
   return (
     <BuildMech
       mechBP={mechBP}
-      editServoId={editServoId}
-      editServoShapeId={editServoShapeId}
+      editPartId={editPartId}
       weaponEditId={editWeaponId}
       editMode={true}
     />
@@ -23,17 +21,20 @@ const MechDisplay = () => {
 };
 
 export default function EquipmentBlueprint() {
+  const isResetCamera = useEquipStore((state) => state.isResetCamera);
+  const resetCamera = useEquipStore((state) => state.resetCamera);
+  const cameraZoom = useEquipStore((state) => state.cameraZoom);
   const { camera } = useThree();
   const ref = useRef();
   const cameraControlsRef = useRef(null);
 
   const resestControlsCameraPosition = useCallback(() => {
     if (!cameraControlsRef.current) return;
-    console.log("resestControlsCameraPosition");
     cameraControlsRef.current.reset(); // reset camera controls
-    camera.position.set(0, 0, -10);
+    camera.position.set(0, 0, cameraZoom);
     camera.lookAt(0, 0, 0);
-  }, [camera]);
+    resetCamera(false);
+  }, [camera, cameraZoom, isResetCamera]);
 
   return (
     <>

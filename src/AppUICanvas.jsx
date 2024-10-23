@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { createRoot } from "@react-three/fiber";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
-import BuildMech from "./3d/BuildMech";
+import BuildMech from "./3d/buildMech/BuildMech";
 import PlanetScanReadout from "./3d/spaceFlight/PlanetScanReadout";
 import useStore from "./stores/store";
 import { IS_MOBILE, PLAYER } from "./constants/constants";

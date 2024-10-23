@@ -19,6 +19,14 @@ export const getRandomArbitrary = (min, max) => {
   return Math.random() * (max - min) + min;
 };
 
+export const roundTenth = (num) => {
+  return Math.round(num * 10) / 10;
+};
+
+export const roundhundredth = (num) => {
+  return Math.round(num * 100) / 100;
+};
+
 export const setVisible = (obj, isVisible) => {
   obj.traverse((child) => {
     if (child.isMesh) {

@@ -9,7 +9,7 @@ import { equipList } from "../../equipment/data/equipData";
 
 class MechServo extends MechServoShape {
   id: string;
-  name: string;
+  isServo: boolean;
   type: number;
   class: number;
   scale: number;
@@ -19,8 +19,9 @@ class MechServo extends MechServoShape {
   armor: { class: number; rating: number }; //rating 1 = standard armor
   armorDamage: number;
   structureDamage: number;
-  buildServoThreeGroup: (mechColor: string) => THREE.Group;
+  buildServoThreeGroup: (mechColor?: string) => THREE.Group;
   getVolume: () => number;
+  servoType: () => string;
   classType: () => string;
   classValue: () => number;
   size: () => number;
@@ -40,9 +41,9 @@ class MechServo extends MechServoShape {
     //  -> offset, rotation, scaleAdjust, shape, color
     // these settings cascade to all children servoShapes
     super();
-
+    //
     this.id = uuidv4();
-    this.name = "Servo name";
+    this.isServo = true;
     this.type = equipList.servoType.torso;
     this.class = 0;
     this.scale = 0;
@@ -63,14 +64,11 @@ class MechServo extends MechServoShape {
       }
     }
 
-    this.buildServoThreeGroup = (mechColor: string | null) => {
+    //TODO MAKE THHIS RECURSIVE
+    this.buildServoThreeGroup = (mechColor?: string) => {
       const servoMainGroup = new THREE.Group();
       const size = this.size();
       servoMainGroup.scale.set(size, size, size);
-
-      const getThreeRotation = (rotation: number) => {
-        return Math.sign(rotation) * (Math.PI / 1 + Math.abs(rotation));
-      };
 
       const servoShapesGroup = new THREE.Group();
       servoShapesGroup.position.set(
@@ -79,9 +77,9 @@ class MechServo extends MechServoShape {
         this.offset.z
       );
       servoShapesGroup.rotation.set(
-        getThreeRotation(this.rotation.x),
-        getThreeRotation(this.rotation.y),
-        getThreeRotation(this.rotation.z)
+        this.rotation.x,
+        this.rotation.y,
+        this.rotation.z
       );
       servoShapesGroup.scale.set(
         1 + this.scaleAdjust.x,
@@ -103,9 +101,9 @@ class MechServo extends MechServoShape {
           servoShape.offset.z
         );
         servoShapeMesh.rotation.set(
-          getThreeRotation(servoShape.rotation.x),
-          getThreeRotation(servoShape.rotation.y),
-          getThreeRotation(servoShape.rotation.z)
+          servoShape.rotation.x,
+          servoShape.rotation.y,
+          servoShape.rotation.z
         );
         servoShapeMesh.scale.set(
           1 + servoShape.scaleAdjust.x,
@@ -125,8 +123,14 @@ class MechServo extends MechServoShape {
     // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
     this.getVolume = () => {
       // need method to build the object3d with basic THREE comands
-      const bufferGeom = getMergedBufferGeom(this.buildServoThreeGroup(null));
+      const bufferGeom = getMergedBufferGeom(this.buildServoThreeGroup());
       return getVolume(bufferGeom);
+    };
+
+    this.servoType = () => {
+      return Object.entries(equipList.servoType).find(
+        ([key, value]) => value === this.type
+      )[0];
     };
 
     this.classType = () => {

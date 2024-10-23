@@ -5,7 +5,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 //import Mech from "./Mech";
-import BuildMech from "../BuildMech";
+import BuildMech from "../buildMech/BuildMech";
 import { flipRotation } from "../../util/gameUtil";
 import { SCALE_PLANET_WALK, PLAYER } from "../../constants/constants";
 
@@ -148,11 +148,7 @@ export default function PlayerWalk() {
       {/*<Suspense>*/}
       {/*<Mech />*/}
       {/*</Suspense>*/}
-      <BuildMech
-        mechBP={playerMechBP}
-        servoHitNames={servoHitNames}
-        showAxisLines={false}
-      />
+      <BuildMech mechBP={playerMechBP} servoHitNames={servoHitNames} />
       <group ref={cross} position={[0, 0, 300]} name="cross">
         <mesh renderOrder={1000} material={crossMaterial}>
           <boxGeometry attach="geometry" args={[20, 1, 1]} />

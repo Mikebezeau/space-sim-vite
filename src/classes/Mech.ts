@@ -81,12 +81,11 @@ class Mech implements MechInt {
     this.mechBP = loadBlueprint(JSON.stringify(mechDesign)); // mech blue print
     // build object3d from mechBP for instanced mechs
     if (this.useInstancedMesh) {
-      this.buildObject3d();
+      //this.buildObject3d();
     }
   };
 
   buildObject3d = () => {
-    console.log("buildObject3d");
     if (this.mechBP) {
       const object3d = new THREE.Object3D();
       this.mechBP.servoList.forEach((servo: MechServo) => {
@@ -94,28 +93,33 @@ class Mech implements MechInt {
         object3d.add(servoGroup);
       });
       this.object3d = object3d;
-      console.log(this.object3d);
     }
   };
 
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
   initObject3d = (object3d: THREE.Object3D, isPlayer: boolean = false) => {
     if (object3d) {
-      // deep copy temp object3d to set this.object3d for computations
-      // instanced mechs position will be assigned to the instanced enemy mesh component
-      // BoidController requires this for cacluations
-      // changes to this.object3d will update the object on screen
+      // keeping position and rotation of original object3d
+      const keepPosition = new THREE.Vector3();
+      keepPosition.copy(this.object3d.position);
+      const keepRotation = new THREE.Euler();
+      keepRotation.copy(this.object3d.rotation);
+      // when creating hitbox and obb, the rotation must be set to (0,0,0)
+      object3d.rotation.set(0, 0, 0);
+
       if (this.useInstancedMesh) {
-        const keepPosition = new THREE.Vector3();
-        keepPosition.copy(this.object3d.position);
+        // deep copy temp object3d to set this.object3d for computations
+        // instanced mechs position are updated in the InstancedEnemies mesh component
+        // since the object3d is not directly assigned to the mesh, just copied
         this.object3d.copy(object3d, true);
-        this.object3d.position.copy(keepPosition);
         this.setMergedBufferGeom();
         const geomColorList = getGeomColorList(this.object3d);
         if (geomColorList) {
           this.setMergedBufferGeomColorsList(geomColorList);
         }
       } else {
+        // directly assigned object ref
+        // changes to this.object3d will update the object on screen
         this.object3d = object3d;
       }
       // mech bounding box
@@ -137,8 +141,8 @@ class Mech implements MechInt {
         boxSize.z
       );
       this.maxHalfWidth = Math.max(boxSize.x, boxSize.y, boxSize.z) / 2;
-      if (!isPlayer && this.mechBP.id === 0)
-        console.log(this.mechBP.id, this.obb, this.maxHalfWidth);
+      this.object3d.position.copy(keepPosition);
+      this.object3d.rotation.copy(keepRotation);
     }
   };
 

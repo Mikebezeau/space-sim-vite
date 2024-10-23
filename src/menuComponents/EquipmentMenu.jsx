@@ -3,11 +3,12 @@ import { useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
 import mechDesigns from "../equipment/data/mechDesigns";
+import camera from "../assets/icons/camera-change.svg";
 
 import Mech from "../equipment/equipmentComponents/Mech";
 import { Crew, CrewAssignSpaces } from "../equipment/equipmentComponents/Crew";
 import { Servos } from "../equipment/equipmentComponents/Servos";
-import PositionPartsList from "../equipment/equipmentDesign/PositionPartsList";
+import PositionPartsList from "../equipment/equipmentDesign/PositionPartsList.tsx";
 //import ServoHydraulics from "./equipment/ServoHydraulics";
 import {
   Weapons,
@@ -22,7 +23,7 @@ import "../css/equipmentMenu.css";
 
 const EquipmentMenu = () => {
   //BLUEPRINT SELECTION MENU
-  const { equipActions } = useEquipStore((state) => state);
+  const { resetCamera, equipActions } = useEquipStore((state) => state);
 
   const [selectedBPid, setSelectedBPid] = useState(0); //top menu
   const [importExportText, setImportExportText] = useState("");
@@ -52,6 +53,7 @@ const EquipmentMenu = () => {
     setImportExportText(e.target.value);
   };
   const handleImportBP = () => {
+    equipActions.blueprintMenu.importBlueprint(importExportText);
     setImportExportText("");
   };
   const handleSelectPlayerBP = (i) => {
@@ -303,6 +305,20 @@ const EquipmentMenu = () => {
         {mainMenuSelection !== 3 &&
           subCatagories[mainMenuSelection][subSelection] &&
           subCatagories[mainMenuSelection][subSelection].component}
+      </div>
+      <div className="absolute bottom-0 right-0">
+        <div
+          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+          onClick={() => resetCamera(true)}
+        >
+          <span className="button-cyber-content">
+            <img
+              src={camera}
+              alt="camera icon"
+              className="w-[10vh] h-[10vh] pointer-events-none"
+            />
+          </span>
+        </div>
       </div>
     </>
   );

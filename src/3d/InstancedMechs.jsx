@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../stores/enemyStore";
-import BuildMech from "../3d/BuildMech";
+import BuildMech from "../3d/buildMech/BuildMech";
 
 // not using the forwarded ref for anything atm
 const InstancedMechs = ({ mechBpId }) => {

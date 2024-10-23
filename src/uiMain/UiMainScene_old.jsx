@@ -6,7 +6,7 @@ import Floor from "./Floor";
 import GridsContainer from "./GridsContainer";
 import useMainUIStore from "./useMainUIStore";
 import ZoomController from "./zoomEffects/ZoomController";
-import BuildMech from "../3d/BuildMech";
+import BuildMech from "../3d/buildMech/BuildMech";
 import { SCALE } from "../constants/constants";
 
 export default function UiMainScene() {

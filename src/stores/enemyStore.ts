@@ -4,7 +4,7 @@ import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
 //import BoidController from "../classes/BoidController";
 
-const numEnemies = 4;
+const numEnemies = 300;
 
 const generateEnemies = (numEnemies: number) => {
   // set enemy positions

@@ -86,6 +86,7 @@ const servoUtil = {
     SP = SP + SPMod; //space modifier (bonus space allotted)
     return SP;
   },
+
   usedSP: function (id, mechBP) {
     let usedSP = 0;
     //look for weapons in this location
@@ -100,6 +101,7 @@ const servoUtil = {
     //check all else
     return usedSP;
   },
+
   CP: function (classValue, wEff, armor) {
     //cost points
     var CP = classValue + 2 * wEff; //each weight point reduced costs 2 CP

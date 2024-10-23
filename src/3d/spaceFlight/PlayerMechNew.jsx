@@ -4,7 +4,7 @@ import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useDevStore from "../../stores/devStore";
 import PlayerCrosshair from "./PlayerCrosshair";
-import BuildMech from "../BuildMech";
+import BuildMech from "../buildMech/BuildMech";
 import { setVisible } from "../../util/gameUtil";
 import { SCALE, PLAYER } from "../../constants/constants";
 

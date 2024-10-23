@@ -3,10 +3,11 @@ import { equipList } from "../data/equipData";
 
 //DISPLAY LIST OF SERVOS
 const ServoList = () => {
-  const { mechBP, equipActions, editServoId } = useEquipStore((state) => state);
+  console.log("ServoList rendered");
+  const { mechBP, equipActions, editPartId } = useEquipStore((state) => state);
 
   const handleDeleteServo = (id) => {
-    equipActions.servoMenu.deleteServo(id);
+    equipActions.servoMenu.deleteServoOrShape(id);
   };
 
   return (
@@ -23,16 +24,15 @@ const ServoList = () => {
         <div
           key={"type" + index}
           className={
-            editServoId === servo.id ? "selectedItem" : "nonSelectedItem"
+            editPartId === servo.id ? "selectedItem" : "nonSelectedItem"
           }
         >
           <input
             type="text"
             value={servo.name}
             onChange={(e) =>
-              equipActions.servoMenu.changeProp(
-                index,
-                null,
+              equipActions.servoMenu.updateProp(
+                servo.id,
                 "name",
                 e.target.value
               )
@@ -42,9 +42,8 @@ const ServoList = () => {
             type="text"
             value={servo.color}
             onChange={(e) =>
-              equipActions.servoMenu.changeProp(
-                index,
-                null,
+              equipActions.servoMenu.updateProp(
+                servo.id,
                 "color",
                 e.target.value
               )
@@ -54,9 +53,8 @@ const ServoList = () => {
             name="servoScale"
             value={servo.scale}
             onChange={(e) => {
-              equipActions.servoMenu.changeProp(
-                index,
-                null,
+              equipActions.servoMenu.updateProp(
+                servo.id,
                 "scale",
                 e.target.value
               );
@@ -73,9 +71,8 @@ const ServoList = () => {
             value={servo.type}
             index={index}
             onChange={(e) => {
-              equipActions.servoMenu.changeProp(
-                index,
-                null,
+              equipActions.servoMenu.updateProp(
+                servo.id,
                 "type",
                 e.target.value
               );
@@ -91,9 +88,8 @@ const ServoList = () => {
             name="servoClassType"
             value={servo.class}
             onChange={(e) => {
-              equipActions.servoMenu.changeProp(
-                index,
-                null,
+              equipActions.servoMenu.updateProp(
+                servo.id,
                 "class",
                 e.target.value
               );

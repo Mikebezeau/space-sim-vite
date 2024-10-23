@@ -1,6 +1,7 @@
 import * as THREE from "three";
-//import { CSG } from "three-csg-ts";
+import { CSG } from "three-csg-ts";
 import { geoList } from "./shapeGeometry";
+import { mechMaterial } from "../../constants/mechMaterialConstants";
 //import { equipList } from "./equipData";
 import { geoListKey } from "../../constants/geometryShapes";
 
@@ -52,107 +53,7 @@ const constructionMaterial = (color) =>
     color: new THREE.Color(color),
   });
 
-const hitMaterial = new THREE.MeshLambertMaterial({
-  color: new THREE.Color("#006"),
-});
-
-const selectMaterial = new THREE.MeshLambertMaterial({
-  color: new THREE.Color("#669"),
-  flatShading: true,
-});
-
-const readoutMaterial_0 = new THREE.MeshBasicMaterial({
-  color: new THREE.Color("#669"),
-});
-
-const readoutMaterial_25 = new THREE.MeshBasicMaterial({
-  color: new THREE.Color("#966"),
-});
-
-const readoutMaterial_75 = new THREE.MeshBasicMaterial({
-  color: new THREE.Color("#900"),
-});
-
-const readoutMaterial_100 = new THREE.MeshBasicMaterial({
-  color: new THREE.Color("#000"),
-});
-
-const wireFrameMaterial = new THREE.MeshBasicMaterial({
-  color: new THREE.Color("#0F0"),
-  wireframe: true,
-});
-
-export const ServoShapes = ({
-  name,
-  color,
-  flatShading = false,
-  damageReadoutMode = false,
-  isWireFrame = false,
-  isHit,
-  servo,
-  drawDistanceLevel,
-  editServoId,
-  editServoShapeId,
-  //landingBay,
-  landingBayServoLocationId,
-  landingBayPosition,
-  bmap,
-}) => {
-  //constructionMaterial.bumpMap = bmap;
-  //constructionMaterial.bumpScale = 0.3;
-  //if (isHit !== undefined) console.log("hit");
-  const editing =
-    servo.id === editServoId && editServoShapeId === null ? true : false;
-  const size = servo.size();
-  let readoutMaterial;
-  if (damageReadoutMode) {
-    // just change the color, not material
-    const servoPercent =
-      ((servo.structure() - servo.structureDamage) / servo.structure()) * 100;
-    if (servoPercent < 0) {
-      readoutMaterial = readoutMaterial_100;
-    } else if (servoPercent < 25) {
-      readoutMaterial = readoutMaterial_25;
-    } else if (servoPercent < 75) {
-      readoutMaterial = readoutMaterial_75;
-    } else if (servoPercent < 100) {
-      readoutMaterial = readoutMaterial_100;
-    }
-  }
-
-  const getMaterial = (servo, servoShape) => {
-    let material = damageReadoutMode
-      ? readoutMaterial
-      : isWireFrame
-      ? wireFrameMaterial
-      : null;
-
-    if (material) material.flatShading = flatShading;
-    else {
-      material =
-        editServoShapeId === null
-          ? material
-            ? material
-            : constructionMaterial(
-                servoShape.color
-                  ? servoShape.color
-                  : servo.color
-                  ? servo.color
-                  : color
-              )
-          : editServoShapeId === servoShape.id
-          ? constructionMaterial(
-              servoShape.color
-                ? servoShape.color
-                : servo.color
-                ? servo.color
-                : color
-            )
-          : wireFrameMaterial;
-    }
-    return material;
-  };
-
+const ServoMesh = (servo, useMaterial) => {
   /*
   const visibilityMaterial = new THREE.MeshLambertMaterial({
     color: new THREE.Color("#669"),
@@ -161,36 +62,19 @@ export const ServoShapes = ({
   });
   const useMaterial = visibilityMaterial;
   */
-  //if there is a simpler version of this shape created to be shown at further distance brackets, show that version instead of detailed version
-  /*
   let servoGeometry = geoList[servo.shape][0];
-  servoGeometry = servoGeometry[drawDistanceLevel]
-    ? servoGeometry[drawDistanceLevel]
-    : servoGeometry[0];
-
   let ServoMesh = new THREE.Mesh(servoGeometry, useMaterial);
 
-  //only draw landing bay if within a certain distance
-  // get a buffered mesh of servo shapes and then apply a cutout shape to it
-  if (
-    drawDistanceLevel === 0 &&
-    !damageReadoutMode &&
-    landingBayServoLocationId === servo.id
-  ) {
-    // shape to cut from servo shape
-    const landingBayHole = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 1));
-    // Offset box by half its width
-    landingBayHole.position.set(
-      landingBayPosition.x,
-      landingBayPosition.y,
-      landingBayPosition.z
-    );
-    // Make sure the .matrix of each mesh is current
-    ServoMesh.updateMatrix();
-    landingBayHole.updateMatrix();
-    // Subtract landingBayHole from ServoMesh
-    ServoMesh = CSG.subtract(ServoMesh, landingBayHole);
-*/
+  // shape to cut from servo shape
+  const landingBayHole = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 1));
+  // Offset box by half its width
+  landingBayHole.position.set(0, 0, 0);
+  // Make sure the .matrix of each mesh is current
+  ServoMesh.updateMatrix();
+  landingBayHole.updateMatrix();
+  // Subtract landingBayHole from ServoMesh
+  ServoMesh = CSG.subtract(ServoMesh, landingBayHole);
+
   //add a translucent forcefield type shape on hole
   /*
     const landingBayGlowMaterial = new THREE.MeshLambertMaterial({
@@ -209,48 +93,126 @@ export const ServoShapes = ({
     //ServoMesh = CSG.union(ServoMesh, landingBayHoleForceField);
   }
   */
+  return ServoMesh;
+};
+
+export const ServoShapes = ({
+  name,
+  color,
+  flatShading = false,
+  damageReadoutMode = false,
+  isWireFrame = false,
+  isHit,
+  servo,
+  drawDistanceLevel,
+  bmap,
+  editMode,
+  editPartId,
+}) => {
+  //constructionMaterial.bumpMap = bmap;
+  //constructionMaterial.bumpScale = 0.3;
+  //if (isHit !== undefined) console.log("hit");
+  // TODO this will all be changed, no size method if a servoShape
+  const size = servo.isServo ? servo.size() : 1;
+  let readoutMaterial;
+  if (damageReadoutMode) {
+    // just change the color, not material
+    const servoPercent =
+      ((servo.structure() - servo.structureDamage) / servo.structure()) * 100;
+    if (servoPercent < 0) {
+      readoutMaterial = mechMaterial.readoutMaterial_100;
+    } else if (servoPercent < 25) {
+      readoutMaterial = mechMaterial.readoutMaterial_25;
+    } else if (servoPercent < 75) {
+      readoutMaterial = mechMaterial.readoutMaterial_75;
+    } else if (servoPercent < 100) {
+      readoutMaterial = mechMaterial.readoutMaterial_100;
+    }
+  }
+
+  const getMaterial = (servo, servoShape) => {
+    let material = damageReadoutMode
+      ? readoutMaterial
+      : isWireFrame
+      ? mechMaterial.wireFrameMaterial
+      : null;
+
+    if (material) material.flatShading = flatShading;
+    else {
+      material = !editMode
+        ? material
+          ? material
+          : constructionMaterial(
+              servoShape.color
+                ? servoShape.color
+                : servo.color
+                ? servo.color
+                : color
+            )
+        : editPartId === servoShape.id
+        ? mechMaterial.selectMaterial
+        : constructionMaterial(
+            servoShape.color
+              ? servoShape.color
+              : servo.color
+              ? servo.color
+              : color
+          );
+      //mechMaterial.wireFrameMaterial;
+    }
+    return material;
+  };
+
   return (
     <group scale={size}>
       <group
         position={[servo.offset.x, servo.offset.y, servo.offset.z]}
-        rotation={[
-          Math.sign(servo.rotation.x) *
-            (Math.PI / 1 + Math.abs(servo.rotation.x)),
-          Math.sign(servo.rotation.y) *
-            (Math.PI / 1 + Math.abs(servo.rotation.y)),
-          Math.sign(servo.rotation.z) *
-            (Math.PI / 1 + Math.abs(servo.rotation.z)),
-        ]}
+        rotation={[servo.rotation.x, servo.rotation.y, servo.rotation.z]}
         scale={[
-          1 + servo.scaleAdjust.x,
-          1 + servo.scaleAdjust.y,
-          1 + servo.scaleAdjust.z,
+          (1 + servo.scaleAdjust.x) * (servo.mirrorAxis.x ? -1 : 1),
+          (1 + servo.scaleAdjust.y) * (servo.mirrorAxis.y ? -1 : 1),
+          (1 + servo.scaleAdjust.z) * (servo.mirrorAxis.z ? -1 : 1),
         ]}
       >
         {servo.servoShapes.map((servoShape) => (
-          <mesh
-            key={servoShape.id}
-            position={[
-              servoShape.offset.x,
-              servoShape.offset.y,
-              servoShape.offset.z,
-            ]}
-            rotation={[
-              Math.sign(servoShape.rotation.x) *
-                (Math.PI / 1 + Math.abs(servoShape.rotation.x)),
-              Math.sign(servoShape.rotation.y) *
-                (Math.PI / 1 + Math.abs(servoShape.rotation.y)),
-              Math.sign(servoShape.rotation.z) *
-                (Math.PI / 1 + Math.abs(servoShape.rotation.z)),
-            ]}
-            scale={[
-              1 + servoShape.scaleAdjust.x,
-              1 + servoShape.scaleAdjust.y,
-              1 + servoShape.scaleAdjust.z,
-            ]}
-            geometry={geoList[servoShape.shape][0]}
-            material={getMaterial(servo, servoShape)}
-          />
+          <group key={servoShape.id}>
+            {servoShape.servoShapes.length === 0 ? (
+              <mesh
+                position={[
+                  servoShape.offset.x,
+                  servoShape.offset.y,
+                  servoShape.offset.z,
+                ]}
+                rotation={[
+                  servoShape.rotation.x,
+                  servoShape.rotation.y,
+                  servoShape.rotation.z,
+                ]}
+                scale={[
+                  (1 + servoShape.scaleAdjust.x) *
+                    (servoShape.mirrorAxis.x ? -1 : 1),
+                  (1 + servoShape.scaleAdjust.y) *
+                    (servoShape.mirrorAxis.y ? -1 : 1),
+                  (1 + servoShape.scaleAdjust.z) *
+                    (servoShape.mirrorAxis.z ? -1 : 1),
+                ]}
+                geometry={geoList[servoShape.shape][0]}
+                material={getMaterial(servo, servoShape)}
+              />
+            ) : (
+              <ServoShapes
+                name={name}
+                color={servoShape.color}
+                flatShading={flatShading}
+                damageReadoutMode={damageReadoutMode}
+                isWireFrame={isWireFrame}
+                isHit={isHit}
+                servo={servoShape} // passing servoShape as servo to build children
+                drawDistanceLevel={drawDistanceLevel}
+                editPartId={editPartId}
+              />
+            )}
+          </group>
         ))}
       </group>
     </group>
@@ -264,9 +226,10 @@ export const WeaponShapes = function ({
   isWireFrame = false,
   isHit,
   weapon,
+  editMode,
   weaponEditId,
 }) {
-  const editing = weapon.id === weaponEditId ? true : false;
+  const editing = editMode && weapon.id === weaponEditId ? true : false;
   const size = Math.cbrt(weapon.SP());
 
   let readoutMaterial;
@@ -275,26 +238,26 @@ export const WeaponShapes = function ({
       ((weapon.structure - weapon.structureDamage) / weapon.structure) * 100;
     switch (weaponPercent) {
       case weaponPercent >= 100:
-        readoutMaterial = readoutMaterial_100;
+        readoutMaterial = mechMaterial.readoutMaterial_100;
         break;
       case weaponPercent > 75:
-        readoutMaterial = readoutMaterial_75;
+        readoutMaterial = mechMaterial.readoutMaterial_75;
         break;
       case weaponPercent > 25:
-        readoutMaterial = readoutMaterial_25;
+        readoutMaterial = mechMaterial.readoutMaterial_25;
         break;
       default:
-        readoutMaterial = readoutMaterial_0;
+        readoutMaterial = mechMaterial.readoutMaterial_0;
     }
   }
 
   const useMaterial = damageReadoutMode
     ? readoutMaterial
     : isWireFrame
-    ? wireFrameMaterial
+    ? mechMaterial.wireFrameMaterial
     : editing
-    ? selectMaterial
-    : constructionMaterial; //weapon.material;
+    ? mechMaterial.selectMaterial
+    : constructionMaterial();
 
   useMaterial.flatShading = flatShading;
 

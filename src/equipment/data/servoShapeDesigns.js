@@ -1,0 +1,41 @@
+export const servoShapeDesigns = [
+  {
+    id: "hgfgfdgdghfdhgfdgfd",
+    name: "Wing Shape",
+    servoShapes: [
+      {
+        id: "187f14f4-8719-4e95-9721-a0dbb1f1c739",
+        name: "Name",
+        offset: { x: 0.1, y: -1.3, z: 0 },
+        rotation: { x: 0, y: 0, z: 0.39 },
+        scaleAdjust: { x: -0.2, y: 2, z: -0.8 },
+        mirrorAxis: { x: false, y: false, z: false },
+        shape: 12,
+        servoShapes: [],
+        color: "",
+      },
+      {
+        id: "4b4bce89-9c81-45be-a92e-9a23d96d2e1c",
+        name: "Name",
+        offset: { x: 0.1, y: 0.5, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scaleAdjust: { x: 0.8, y: 1.9, z: -0.8 },
+        mirrorAxis: { x: false, y: true, z: false },
+        shape: 12,
+        servoShapes: [],
+        color: "",
+      },
+      {
+        id: "a339319f-d0b4-4f72-9dac-6c088bdb2d3f",
+        name: "Name",
+        offset: { x: 0.9, y: -0.2, z: 0 },
+        rotation: { x: 0, y: 0, z: -1.56 },
+        scaleAdjust: { x: 2.6, y: 0, z: -0.8 },
+        mirrorAxis: { x: false, y: true, z: false },
+        shape: 12,
+        servoShapes: [],
+        color: "",
+      },
+    ],
+  },
+];

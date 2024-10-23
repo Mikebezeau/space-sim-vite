@@ -18,8 +18,9 @@ function transferProperties(mergBP, parsedBP) {
         key === "landingBayServoLocationId" ||
         key === "passengersLocationServoId" ||
         key === "name" ||
-        key === "type" ||
-        key === "color"
+        //key === "type" || // type is number servo type
+        key === "color" ||
+        key === "weaponType" // TODO: weaponType should be const number
           ? parsedBP[key]
           : Number(parsedBP[key]);
     } else if (
@@ -27,7 +28,8 @@ function transferProperties(mergBP, parsedBP) {
       key === "armor" ||
       key === "offset" ||
       key === "rotation" ||
-      key === "scaleAdjust"
+      key === "scaleAdjust" ||
+      key === "ammoList"
     ) {
       // recursivly transfering object properties: offset, rotation, scaleAdjust => {x,y,z}
       mergBP[key] = transferProperties(mergBP[key], parsedBP[key]);
