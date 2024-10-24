@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
+import { Texture, TextureLoader } from "three";
 import MechServo from "../classes/mechBP/MechServo";
 import MechServoShape, {
   EDIT_PROP_STRING,
@@ -13,13 +14,15 @@ import {
   initWeaponBP,
 } from "../util/initEquipUtil";
 import { servoShapeDesigns } from "../equipment/data/servoShapeDesigns";
+import greySpeckleBmpSrc from "../assets/bmp/greySpeckle.bmp";
 
 export const EDIT_MENU_SELECT = {
   none: 0,
   adjust: 1,
   edit: 2,
   mirror: 3,
-  addServoShapeDesign: 4,
+  color: 4,
+  addServoShapeDesign: 5,
 };
 
 // recursively find if group tree has childId
@@ -50,8 +53,8 @@ const recursiveUpdateProp = (arr, id, prop, val) => {
   if (!EDIT_PROP_STRING.includes(prop)) val = Number(val);
   arr.forEach((s) => {
     if (s.id === id) {
-      if (!s[prop]) console.log("prop not found", prop);
-      s[prop] = val;
+      if (!(prop in s)) console.log("prop not found", prop, s);
+      else s[prop] = val;
     } else if (s.servoShapes.length > 0) {
       recursiveUpdateProp(s.servoShapes, id, prop, val);
     }
@@ -63,8 +66,9 @@ const recursiveUpdateProp = (arr, id, prop, val) => {
 const recursiveCallMethod = (arr, id, method, props) => {
   arr.forEach((s) => {
     if (s.id === id) {
-      if (!s[method]) console.log("method not found", method);
-      props ? s[method](props) : s[method]();
+      if (!(typeof s[method] === "function"))
+        console.log("method not found", method, s);
+      else props ? s[method](props) : s[method]();
     } else if (s.servoShapes.length > 0) {
       recursiveCallMethod(s.servoShapes, id, method, props);
     }
@@ -94,35 +98,42 @@ function recursiveDelete(arr, id) {
   });
 }
 
-const getZoom = (scale) => {
+const getZoom = (mechBP) => {
   let cameraZoom = 0;
-  switch (scale) {
-    case 0:
-      cameraZoom = -10;
-      break;
-    case 1:
-      cameraZoom = -10;
-      break;
-    case 2:
-      cameraZoom = -10;
-      break;
-    case 3:
-      cameraZoom = -20;
-      break;
-    case 4:
-      cameraZoom = -100;
-      break;
-    case 5:
-      cameraZoom = -200;
-      break;
-    case 6:
-      cameraZoom = -500;
-      break;
-    case 7:
-      cameraZoom = -1000;
-      break;
-    default:
-      -10;
+  if (mechBP.servoList.length > 0) {
+    mechBP.servoList.forEach((servo) => {
+      cameraZoom = cameraZoom - servo.size() * 2;
+    });
+  } else {
+    const scale = mechBP.scale;
+    switch (scale) {
+      case 0:
+        cameraZoom = -10;
+        break;
+      case 1:
+        cameraZoom = -10;
+        break;
+      case 2:
+        cameraZoom = -10;
+        break;
+      case 3:
+        cameraZoom = -20;
+        break;
+      case 4:
+        cameraZoom = -100;
+        break;
+      case 5:
+        cameraZoom = -200;
+        break;
+      case 6:
+        cameraZoom = -500;
+        break;
+      case 7:
+        cameraZoom = -1000;
+        break;
+      default:
+        -10;
+    }
   }
   return cameraZoom;
 };
@@ -132,6 +143,7 @@ const getZoom = (scale) => {
 const useEquipStore = create((set, get) => {
   //globally available letiables
   return {
+    greySpeckleBmp: new TextureLoader().load(greySpeckleBmpSrc),
     isResetCamera: false,
     resetCamera: (isResetCamera) => set({ isResetCamera }),
     cameraZoom: 1,
@@ -173,7 +185,7 @@ const useEquipStore = create((set, get) => {
           set(() => ({
             mechBP: newMechBP,
           }));
-          const cameraZoom = getZoom(newMechBP.scale);
+          const cameraZoom = getZoom(newMechBP);
           set(() => ({ cameraZoom }));
         },
         /*
@@ -202,7 +214,7 @@ const useEquipStore = create((set, get) => {
         importBlueprint(importBP) {
           const loadBP = loadBlueprint(importBP);
           set(() => ({ mechBP: loadBP }));
-          const cameraZoom = getZoom(loadBP.scale);
+          const cameraZoom = getZoom(loadBP);
           set(() => ({ cameraZoom }));
           console.log("cameraZoom", cameraZoom);
         },
@@ -269,7 +281,7 @@ const useEquipStore = create((set, get) => {
             mechBP: { ...state.mechBP, [prop]: val },
           }));
           if (prop === "scale") {
-            const cameraZoom = getZoom(val);
+            const cameraZoom = getZoom(get().mechBP);
             set(() => ({ cameraZoom }));
           }
         },
@@ -370,15 +382,15 @@ const useEquipStore = create((set, get) => {
         },
         // if provided seroShapeIndex, then it will move the specific shape not whole servo
         adjustServoOrShapeOffset(id, axis, adjustVal) {
-          const posAdjust = { x: 0, y: 0, z: 0 };
-          posAdjust[axis] = adjustVal;
+          const props = { x: 0, y: 0, z: 0 };
+          props[axis] = adjustVal;
           // posAdjust is an object with x, y, z values
           let servoList = get().mechBP.servoList;
           servoList = recursiveCallMethod(
             servoList,
             id,
             EDIT_PART_METHOD.adjustPosition,
-            posAdjust
+            props
           );
           get().equipActions.servoMenu.updateServoList(servoList);
         },
@@ -391,16 +403,14 @@ const useEquipStore = create((set, get) => {
           );
           get().equipActions.servoMenu.updateServoList(servoList);
         },
-        adjustServoOrShapeRotation(id, axis, direction) {
+        adjustServoOrShapeRotation(id, axis, adjustVal, direction) {
+          const props = { axis, degreeChange: adjustVal * direction };
           let servoList = get().mechBP.servoList;
           servoList = recursiveCallMethod(
             servoList,
             id,
             EDIT_PART_METHOD.adjustRotation,
-            {
-              axis,
-              direction,
-            }
+            props
           );
           get().equipActions.servoMenu.updateServoList(servoList);
         },
@@ -414,14 +424,14 @@ const useEquipStore = create((set, get) => {
           get().equipActions.servoMenu.updateServoList(servoList);
         },
         adjustServoScale(id, axis, adjustVal) {
-          const scaleAdjust = { x: 0, y: 0, z: 0 };
-          scaleAdjust[axis] = scaleAdjust[axis] + adjustVal;
+          const props = { x: 0, y: 0, z: 0 };
+          props[axis] = props[axis] + adjustVal;
           let servoList = get().mechBP.servoList;
           servoList = recursiveCallMethod(
             servoList,
             id,
             EDIT_PART_METHOD.adjustScale,
-            scaleAdjust
+            props
           );
           get().equipActions.servoMenu.updateServoList(servoList);
         },

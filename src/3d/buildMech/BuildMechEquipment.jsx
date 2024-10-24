@@ -1,26 +1,30 @@
 import { useCallback, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-import useEquipStore from "../../stores/equipStore";
-import BuildMech from "../../3d/buildMech/BuildMech";
+import useEquipStore, { EDIT_MENU_SELECT } from "../../stores/equipStore";
+import BuildMech from "./BuildMech";
 //import { useThree, useLoader, useFrame } from "@react-three/fiber";
 //import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 const MechDisplay = () => {
   const mechBP = useEquipStore((state) => state.mechBP);
   const editPartId = useEquipStore((state) => state.editPartId);
+  const editPartMenuSelect = useEquipStore((state) => state.editPartMenuSelect);
   const editWeaponId = useEquipStore((state) => state.editWeaponId);
+
   return (
     <BuildMech
       mechBP={mechBP}
-      editPartId={editPartId}
+      editPartId={
+        editPartMenuSelect === EDIT_MENU_SELECT.color ? null : editPartId
+      }
       weaponEditId={editWeaponId}
       editMode={true}
     />
   );
 };
 
-export default function EquipmentBlueprint() {
+export default function BuildMechEquipment() {
   const isResetCamera = useEquipStore((state) => state.isResetCamera);
   const resetCamera = useEquipStore((state) => state.resetCamera);
   const cameraZoom = useEquipStore((state) => state.cameraZoom);

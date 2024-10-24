@@ -1,9 +1,13 @@
 import React from "react";
 import MechServo from "../../classes/mechBP/MechServo";
 import MechServoShape from "../../classes/mechBP/MechServoShape";
-import useEquipStore, { recursiveFindChildId } from "../../stores/equipStore";
+import useEquipStore, {
+  EDIT_MENU_SELECT,
+  recursiveFindChildId,
+} from "../../stores/equipStore";
 import { geoListKey } from "../../constants/geometryShapes";
 import PositionPartEditButtons from "./PositionPartEditButtons";
+import { color } from "three/webgpu";
 
 interface PartGroupInt {
   id: string;
@@ -60,6 +64,14 @@ const Part = (props: PartInt) => {
             equipActions.servoMenu.updateProp(part.id, "name", e.target.value)
           }
         />
+        <span
+          className="inline-block w-4 h-4"
+          style={{ backgroundColor: part.color }}
+          onClick={() => {
+            equipActions.setEditPartId(part.id);
+            equipActions.setEditPartMenuSelect(EDIT_MENU_SELECT.color);
+          }}
+        />
         {part instanceof MechServo || part.servoShapes.length > 0 ? (
           <button
             onClick={() => equipActions.servoShapeMenu.addServoShape(part.id)}
@@ -88,13 +100,6 @@ const Part = (props: PartInt) => {
             </select>
           )
         )}
-        <input
-          type="text"
-          value={part.color}
-          onChange={(e) =>
-            equipActions.servoMenu.updateProp(part.id, "color", e.target.value)
-          }
-        />
         {editPartId === part.id && <PositionPartEditButtons part={part} />}
       </div>
       {part.servoShapes.length > 0 && (

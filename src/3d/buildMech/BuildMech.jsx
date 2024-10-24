@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
-import { MeshBasicMaterial, Color } from "three";
-import { ServoShapes, WeaponShapes } from "../../equipment/data/equipShapes";
+import { MeshBasicMaterial, Color, RepeatWrapping } from "three";
+import useEquipStore from "../../stores/equipStore";
+import { ServoShapes, WeaponShapes } from "./equipShapes";
 
 const blueMaterial = new MeshBasicMaterial({
   color: new Color("lightblue"),
@@ -31,18 +32,16 @@ const BuildMech = forwardRef(function BuildMech(
   buildMechForwardRef
 ) {
   console.log("BuildMech rendered");
+  const texture = useEquipStore((state) => state.greySpeckleBmp);
+  texture.wrapS = RepeatWrapping; // MirroredRepeatWrapping
+  texture.wrapT = RepeatWrapping;
+  texture.repeat.set(10, 10);
+
   const directionPointerMaterial = isLeader
     ? directionPointerLeaderMaterial
     : directionPointerFollowerMaterial;
   //const axesHelper = new THREE.AxesHelper( 5 );
 
-  /*
-  const bmap = useLoader(TextureLoader, "images/maps/mechBumpMap.jpg");
-  bmap.repeat.set(1, 1);
-  bmap.wrapS = THREE.RepeatWrapping;
-  bmap.wrapT = THREE.RepeatWrapping;
-  */
-  //bmap={mechBP.scale > 3 ? bmap : undefined}
   return (
     <group ref={buildMechForwardRef} onClick={handleClick}>
       {mechBP.servoList.map((servo, index) => (
@@ -53,6 +52,7 @@ const BuildMech = forwardRef(function BuildMech(
           <ServoShapes
             name={servo.id + "_servo"}
             color={mechBP.color}
+            texture={texture}
             flatShading={flatShading}
             damageReadoutMode={damageReadoutMode}
             isWireFrame={isWireFrame}

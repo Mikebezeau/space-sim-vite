@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { HexColorPicker } from "react-colorful";
 import MechServo from "../../classes/mechBP/MechServo";
 import MechServoShape from "../../classes/mechBP/MechServoShape";
-import { useState } from "react";
 import useEquipStore, { EDIT_MENU_SELECT } from "../../stores/equipStore";
 //import { useKBControls } from "../../hooks/controls/useMouseKBControls";
 import { servoShapeDesigns } from "../data/servoShapeDesigns";
@@ -24,6 +24,29 @@ const PositionPartEditButtons = (props: MechServoInt) => {
 
   const AXIS = { x: "x", y: "y", z: "z" };
   const AXIS_DIRECTION = { positive: 1, negative: -1 };
+
+  // COLOR PICKER
+  const [openColorPicker, setOpenColorPicker] = useState(false);
+  const colorPickerRef = useRef<HTMLInputElement>(null);
+
+  const setPartColor = (color: string) => {
+    equipActions.servoMenu.updateProp(part.id, "color", color);
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(event.target)
+      ) {
+        setOpenColorPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [colorPickerRef]);
 
   //position
   function handleMovePart(axis, direction) {
@@ -92,7 +115,12 @@ const PositionPartEditButtons = (props: MechServoInt) => {
   //useKBControls("ArrowRight", handleMovePartRight);
 
   const handleRotateServoShape = (axis, direction) => {
-    equipActions.servoMenu.adjustServoOrShapeRotation(part.id, axis, direction);
+    equipActions.servoMenu.adjustServoOrShapeRotation(
+      part.id,
+      axis,
+      10 * adjustmentFactor,
+      direction
+    );
   };
 
   const handleScaleServoShape = (axis, direction) => {
@@ -162,6 +190,25 @@ const PositionPartEditButtons = (props: MechServoInt) => {
             }}
           >
             Mirror
+          </button>
+        </span>
+        <span
+          className={
+            editPartMenuSelect === EDIT_MENU_SELECT.color
+              ? "selectedItem"
+              : "nonSelectedItem"
+          }
+        >
+          <button
+            onClick={() => {
+              equipActions.setEditPartMenuSelect(
+                editPartMenuSelect === EDIT_MENU_SELECT.color
+                  ? 0
+                  : EDIT_MENU_SELECT.color
+              );
+            }}
+          >
+            Color
           </button>
         </span>
         {!(part instanceof MechServo) && part.servoShapes.length === 0 ? (
@@ -437,6 +484,40 @@ const PositionPartEditButtons = (props: MechServoInt) => {
               Z
             </button>
           </span>
+        </>
+      )}
+      {editPartMenuSelect === EDIT_MENU_SELECT.color && (
+        <>
+          <span
+            className={openColorPicker ? "selectedItem" : "nonSelectedItem"}
+          >
+            <button
+              onClick={() => {
+                setOpenColorPicker(true);
+              }}
+            >
+              Color Picker
+            </button>
+          </span>
+          <span className="nonSelectedItem">
+            <button
+              onClick={() => {
+                setPartColor("");
+              }}
+            >
+              Clear
+            </button>
+          </span>
+          {openColorPicker && (
+            <span className="relative">
+              <div className="absolute -top-1 -left-52">
+                <div ref={colorPickerRef}>
+                  <HexColorPicker color={part.color} onChange={setPartColor} />
+                </div>
+                <div className="w-full bg-black text-center">CLOSE</div>
+              </div>
+            </span>
+          )}
         </>
       )}
       {editPartMenuSelect === EDIT_MENU_SELECT.addServoShapeDesign &&

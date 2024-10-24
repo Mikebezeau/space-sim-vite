@@ -7,7 +7,7 @@ import SpaceFlightScene from "./scenes/SpaceFlightScene";
 import StarsBackgroundScene from "./scenes/StarsBackgroundScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
 import StationDockScene from "./scenes/StationDockScene";
-import EquipmentBlueprint from "./equipment/equipmentDesign/EquipmentBlueprint";
+import BuildMechEquipment from "./3d/buildMech/BuildMechEquipment";
 import EnemyTestScene from "./scenes/EnemyTestScene";
 import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER, PLAYER_START, SCALE } from "./constants/constants";
@@ -77,7 +77,7 @@ const AppCanvas = () => {
           <StationDockScene />
         ) : null}
         {playerScreen === PLAYER.screen.equipmentBuild ? (
-          <EquipmentBlueprint />
+          <BuildMechEquipment />
         ) : null}
         {/*<Effects />*/}
       </Canvas>

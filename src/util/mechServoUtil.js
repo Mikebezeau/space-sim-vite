@@ -1,4 +1,5 @@
 import { equipList } from "../equipment/data/equipData";
+import { roundTenth } from "./gameUtil";
 
 function applyScaledWeightMult(scale, weight) {
   return Math.round(weight * equipList.scale.weightMult[scale] * 10) / 10;
@@ -70,7 +71,8 @@ const servoUtil = {
   size: function (scale, classValue) {
     //used to calculate size of servo parts 3d rendering
     let size = applyScaledWeightMult(scale, classValue);
-    return size / 4; //slight reflection of volume change when dimensions change
+    //return size / 4; //slight reflection of volume change when dimensions change
+    return roundTenth(Math.cbrt(size));
   },
 
   structure: function (scale, classValue, SPMod) {

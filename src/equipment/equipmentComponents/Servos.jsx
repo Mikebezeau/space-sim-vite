@@ -106,6 +106,7 @@ const ServoList = () => {
           <span>/{servo.CP()}</span>
           <span>/{servo.armorVal()}</span>
           <span>/{servo.armorType()}</span>
+          <span> Size:{servo.size()}</span>
           <button onClick={() => handleDeleteServo(servo.id)}>X</button>
         </div>
       ))}

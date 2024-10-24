@@ -29,6 +29,7 @@ function transferProperties(mergBP, parsedBP) {
       key === "offset" ||
       key === "rotation" ||
       key === "scaleAdjust" ||
+      key === "mirrorAxis" ||
       key === "ammoList"
     ) {
       // recursivly transfering object properties: offset, rotation, scaleAdjust => {x,y,z}

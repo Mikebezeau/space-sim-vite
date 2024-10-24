@@ -9,7 +9,7 @@ export const EDIT_PROP_STRING = ["id", "name", "color"];
 export const EDIT_PART_METHOD = {
   adjustPosition: "movePart",
   resetPosition: "resetPosition",
-  adjustRotation: "rotateShape",
+  adjustRotation: "adjustRotation",
   resetRotation: "resetRotation",
   adjustScale: "scaleShape",
   resetScale: "resetScale",
@@ -31,7 +31,8 @@ class MechServoShape {
   threeColor: Color;
   movePart: (props: { x: number; y: number; z: number }) => void;
   resetPosition: () => void;
-  rotateShape: (props: { axis: string; direction: number }) => void;
+  rotationRadians: () => { x: number; y: number; z: number };
+  adjustRotation: (props: { axis: string; degreeChange: number }) => void;
   resetRotation: () => void;
   scaleShape: (props: { x: number; y: number; z: number }) => void;
   resetScale: () => void;
@@ -72,11 +73,24 @@ class MechServoShape {
       this.offset = { x: 0, y: 0, z: 0 };
     };
 
-    this.rotateShape = (props: { axis: string; direction: number }) => {
+    this.rotationRadians = () => {
+      return {
+        x: this.rotation.x * (Math.PI / 180),
+        y: this.rotation.y * (Math.PI / 180),
+        z: this.rotation.z * (Math.PI / 180),
+      };
+    };
+
+    this.adjustRotation = (props: { axis: string; degreeChange: number }) => {
+      // rotation in degrees
+      this.rotation[props.axis] =
+        this.rotation[props.axis] + props.degreeChange;
+      /*
       this.rotation[props.axis] = roundhundredth(
         (this.rotation[props.axis] + (props.direction * Math.PI) / 8) %
           (Math.PI * 2)
       );
+      */
     };
 
     this.resetRotation = () => {
