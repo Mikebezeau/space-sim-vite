@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from "uuid";
 import useStore from "./store";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
-import { servoUtil } from "../util/mechServoUtil";
 
 import {
   SCALE,
@@ -42,22 +41,20 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     //shoot each weapon if ready
     shoot(mechBP, shooter, target) {
       //for each weapon on the ship, find location and create a weaponFire to be shot from there
-      Object.values(mechBP.weaponList).forEach((weapons) => {
-        weapons.forEach((weapon) => {
-          //set weapon to firing mode
-          weapon.active = 1;
-          //shooter will hold target info - player, set variables - enemies, varaibles within the enemy array entry
-          //if weapon not ready to fire do not shoot again at new target
-          //will wait for the next shot to be ready before fires at new target
-          if (weapon.ready) {
-            const args = {
-              mechBP,
-              shooter,
-              target,
-            };
-            get().actions.shootWeapon(args);
-          }
-        });
+      mechBP.weaponList.forEach((weapon) => {
+        //set weapon to firing mode
+        weapon.active = 1;
+        //shooter will hold target info - player, set variables - enemies, varaibles within the enemy array entry
+        //if weapon not ready to fire do not shoot again at new target
+        //will wait for the next shot to be ready before fires at new target
+        if (weapon.ready) {
+          const args = {
+            mechBP,
+            shooter,
+            target,
+          };
+          get().actions.shootWeapon(args);
+        }
       });
       //if player play shooting sound
       //playAudio(audio.zap, 0.5);
@@ -72,26 +69,26 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       const reloadSpeed = weapon.burstValue()
         ? 1000 / weapon.burstValue()
         : 1000;
-      //console.log(weapon.data);
+      //console.log(weapon);
 
       const weaponFireObj = new THREE.Object3D();
       //copy position of weapon (offset from base mech)
       // weapon
       weaponFireObj.position.copy(shooter.object3d.position);
       weaponFireObj.rotation.copy(shooter.object3d.rotation);
-      const fireSpeed = WEAPON_FIRE_SPEED[weapon.data.weaponType];
+      const fireSpeed = WEAPON_FIRE_SPEED[weapon.weaponType];
 
-      weapon.servoOffset = servoUtil.servoLocation(
+      weapon.servoOffset = { x: 0, y: 0, z: 0 }; /* servoUtil.servoLocation(
         weapon.locationServoId,
         mechBP.servoList
-      ).offset;
+      ).offset;*/
 
       weaponFireObj.translateX(weapon.offset.x + weapon.servoOffset.x);
       weaponFireObj.translateY(weapon.offset.y + weapon.servoOffset.y);
       weaponFireObj.translateZ(weapon.offset.z + weapon.servoOffset.z);
 
       //if a missile fire straight ahead
-      if (weapon.data.weaponType === "missile") {
+      if (weapon.weaponType === "missile") {
         weaponFireObj.rotation.copy(shooter.object3d.rotation);
       }
 
@@ -99,7 +96,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       weaponFireObj.translateZ(weaponFireOffsetZ);
 
       //autofire target provided, if not a missile, only fire if within certain angle in front of ship
-      if (weapon.data.weaponType !== "missile" || autoAim === true) {
+      if (weapon.weaponType !== "missile" || autoAim === true) {
         const weaponRotation = new THREE.Quaternion();
         weaponFireObj.getWorldQuaternion(weaponRotation);
         //optional setting z angle to match roll of ship

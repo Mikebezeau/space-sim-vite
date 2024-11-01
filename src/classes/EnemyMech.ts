@@ -1,9 +1,9 @@
-import * as THREE from "three";
 import Mech from "./Mech";
 import mechDesigns from "../equipment/data/mechDesigns";
 
 export interface EnemyMechInt {
-  getIsLeader(): void;
+  getIsLeader(): boolean;
+  getHasGroup(): boolean;
 }
 
 class EnemyMech extends Mech implements EnemyMechInt {
@@ -26,6 +26,7 @@ class EnemyMech extends Mech implements EnemyMechInt {
   }
 
   getIsLeader = () => this.id === this.groupLeaderId;
+
   getHasGroup = () => this.groupLeaderId !== null;
 }
 

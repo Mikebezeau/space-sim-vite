@@ -1,17 +1,17 @@
-import * as THREE from "three";
+import { Vector3, Euler } from "three";
 import Mech from "./Mech";
 import mechDesigns from "../equipment/data/mechDesigns";
 import { PLAYER_START } from "../constants/constants";
 
-export interface PlayerMechInt {
+interface PlayerMechInt {
   storeSpaceLocation(): void;
   resetSpaceLocation(): void;
-  fireWeapon(): void;
+  //fireWeapon(): void;
 }
 
-class PlayerMech extends Mech {
+class PlayerMech extends Mech implements PlayerMechInt {
   locationInfo: {
-    saveSpaceObject3d: { position: THREE.Vector3; rotation: THREE.Euler };
+    saveSpaceObject3d: { position: Vector3; rotation: Euler };
   };
 
   constructor(mechBPIndex: number = PLAYER_START.mechBPindex) {
@@ -20,27 +20,29 @@ class PlayerMech extends Mech {
     // player locations in scenes, used for changing scenes
     this.locationInfo = {
       saveSpaceObject3d: {
-        position: new THREE.Vector3(),
-        rotation: new THREE.Euler(),
+        position: new Vector3(),
+        rotation: new Euler(),
       },
     };
     // initial player position
     this.object3d.position.set(PLAYER_START.x, PLAYER_START.y, PLAYER_START.z);
   }
   // save location in space
-  storeSpaceLocation() {
+  storeSpaceLocation = () => {
     this.locationInfo.saveSpaceObject3d.position.copy(this.object3d.position);
     this.locationInfo.saveSpaceObject3d.rotation.copy(this.object3d.rotation);
-  }
+  };
   // go back to location in space
-  resetSpaceLocation() {
+  resetSpaceLocation = () => {
     this.object3d.position.copy(this.locationInfo.saveSpaceObject3d.position);
     this.object3d.rotation.copy(this.locationInfo.saveSpaceObject3d.rotation);
-  }
-  // fire weapon
-  fireWeapon = () => {
-    super.fireWeapon(true);
   };
+  // fire weapon
+  /*
+  fireWeapon=()=> {
+    super.fireWeapon(true); // flag isPlayer = true
+  }
+  */
 }
 
 export default PlayerMech;

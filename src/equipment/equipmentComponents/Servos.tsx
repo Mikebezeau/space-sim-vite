@@ -1,12 +1,14 @@
+import React from "react";
 import useEquipStore from "../../stores/equipStore";
-import { equipList } from "../data/equipData";
+import MechServo from "../../classes/mechBP/MechServo";
+import { equipData } from "../data/equipData";
 
 //DISPLAY LIST OF SERVOS
 const ServoList = () => {
   console.log("ServoList rendered");
   const { mechBP, equipActions, editPartId } = useEquipStore((state) => state);
 
-  const handleDeleteServo = (id) => {
+  const handleDeleteServo = (id: string) => {
     equipActions.servoMenu.deleteServoOrShape(id);
   };
 
@@ -17,7 +19,7 @@ const ServoList = () => {
         type="text"
         value={mechBP.color}
         onChange={(e) =>
-          equipActions.basicMenu.setProp("color", e.target.value)
+          equipActions.blueprintMenu.updateMechBPprop("color", e.target.value)
         }
       />
       {mechBP.servoList.map((servo, index) => (
@@ -60,7 +62,7 @@ const ServoList = () => {
               );
             }}
           >
-            {equipList.scale.type.map((value, key) => (
+            {equipData.scale.type.map((value, key) => (
               <option key={"scale" + key} value={key}>
                 {value}
               </option>
@@ -69,7 +71,6 @@ const ServoList = () => {
           <select
             name="servoType"
             value={servo.type}
-            index={index}
             onChange={(e) => {
               equipActions.servoMenu.updateProp(
                 servo.id,
@@ -78,7 +79,7 @@ const ServoList = () => {
               );
             }}
           >
-            {Object.entries(equipList.servoType).map(([value, key]) => (
+            {Object.entries(equipData.servoType).map(([value, key]) => (
               <option key={"type" + key} value={key}>
                 {value}
               </option>
@@ -95,7 +96,7 @@ const ServoList = () => {
               );
             }}
           >
-            {equipList.class.type.map((value, key) => (
+            {equipData.class.type.map((value, key) => (
               <option key={"class" + index + key} value={key}>
                 {value}
               </option>
@@ -121,15 +122,16 @@ export const ServoSpaceAssignButtons = ({
 }) => {
   return (
     <>
-      {mechBP.servoList.map((servo, index) => (
+      {mechBP.servoList.map((servo: MechServo) => (
         <span
-          key={"servo" + index}
+          key={servo.id}
           className={
             servoSelectedId === servo.id ? "selectedItem" : "nonSelectedItem"
           }
         >
           <button onClick={() => callBack(servo.id)}>
-            {servo.type} {servo.usedSP(mechBP)} / {servo.SP()} SP
+            {servo.name ? servo.name : servo.servoLabel()}{" "}
+            {mechBP.usedServoSP(servo.id)} / {servo.SP()} SP
           </button>
         </span>
       ))}

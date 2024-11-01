@@ -28,7 +28,7 @@ const StarInfoCard = () => {
   );
   const { setSelectedWarpStar } = useStore((state) => state.actions);
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
-  const [showInfo, setShowInfo] = useState(true);
+  //const [showInfo, setShowInfo] = useState(true);
   const [viewStarIndex, setViewStarIndex] = useState(null);
   const systemInfoCardRef = useRef(null);
   const starInfoRef = useRef(null);
@@ -60,7 +60,7 @@ const StarInfoCard = () => {
       ref={systemInfoCardRef}
       id="star-info-card"
       className={`button-cyber w-48 sm:w-64 h-40 ${
-        showInfo && viewStarIndex ? "absolute" : "hidden"
+        /*showInfo &&*/ viewStarIndex ? "absolute" : "hidden"
       }`}
     >
       <div

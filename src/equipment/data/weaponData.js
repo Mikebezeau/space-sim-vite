@@ -1,24 +1,21 @@
-const oneToTwenty = [
+import { equipData } from "./equipData";
+
+const ONE_TO_TWENTY_ARR = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 ];
 
 //******************************************************
 //***************** MULTI USE
-const beamRange = [
+const BEAM_RANGE_ARR = [
   4, 6, 7, 8, 9, 10, 11, 11, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18,
 ];
 
-export const weaponList = {
-  weapon: {
-    type: ["Beam", "Projectile", "Missile", "Energy Melee", "Melee"],
-  },
-
-  beam: {
-    beamRange: beamRange,
+export const weaponData = {
+  [equipData.weaponType.beam]: {
     damageRange: {
-      val: oneToTwenty,
-      range: beamRange,
-      //label: doubleSliderLabel(oneToTwenty, beamRange),
+      val: ONE_TO_TWENTY_ARR,
+      range: BEAM_RANGE_ARR,
+      //label: doubleSliderLabel(ONE_TO_TWENTY_ARR, BEAM_RANGE_ARR),
       CP: [
         1.5, 3, 4.5, 6, 7.5, 9, 10.5, 12, 13.5, 15, 16.5, 18, 19.5, 21, 22.5,
         24, 25.5, 27, 28.5, 30,
@@ -58,13 +55,13 @@ export const weaponList = {
     disruptor: { val: [0, 1], CM: [1, 2] },
   },
 
-  proj: {
+  [equipData.weaponType.projectile]: {
     damageRange: {
-      val: oneToTwenty,
+      val: ONE_TO_TWENTY_ARR,
       range: [
         3, 4, 5, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 13, 13, 13,
       ],
-      CP: oneToTwenty,
+      CP: ONE_TO_TWENTY_ARR,
     },
     accuracy: { val: [-2, -1, 0, 1, 2], CM: [0.6, 0.8, 1, 1.5, 2] },
     burstValue: {
@@ -108,9 +105,9 @@ export const weaponList = {
     },
   },
 
-  missile: {
+  [equipData.weaponType.missile]: {
     damageRange: {
-      val: oneToTwenty,
+      val: ONE_TO_TWENTY_ARR,
       range: [
         4, 5, 6, 7, 8, 9, 9, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 15, 15, 16,
       ],
@@ -130,7 +127,7 @@ export const weaponList = {
     },
     smart: { val: ["None", 1, 2, 3, 4], CM: [1, 2.5, 3, 3.5, 4] },
     skill: { val: [6, 9, 12, 15, 18, 20], CM: [1, 1.3, 1.6, 1.9, 2.2, 2.5] },
-    type: {
+    warhead: {
       val: ["Regular", "Fuse", "Scatter", "Smoke & Scatter", "Nuclear"],
       CM: [1, 1.1, 0.5, 1, 1000],
     },
@@ -140,8 +137,12 @@ export const weaponList = {
     hyperVelocity: { val: [0, 1], CM: [1, 1.25] },
   },
 
-  eMelee: {
-    damageRange: { val: oneToTwenty, range: "melee", CP: oneToTwenty },
+  [equipData.weaponType.energyMelee]: {
+    damageRange: {
+      val: ONE_TO_TWENTY_ARR,
+      range: "melee",
+      CP: ONE_TO_TWENTY_ARR,
+    },
     accuracy: { val: [-2, -1, 0, 1, 2, 3], CM: [0.6, 0.8, 0.9, 1, 1.5, 2] },
     turnsUse: {
       val: ["Unlimited", 1, 2, 3, 4, 5, 7, 10],
@@ -159,9 +160,9 @@ export const weaponList = {
     variable: { val: [0, 1], CM: [1, 2] }, //variable shield/regular weapon
   },
 
-  melee: {
+  [equipData.weaponType.melee]: {
     damageRange: {
-      val: oneToTwenty,
+      val: ONE_TO_TWENTY_ARR,
       range: "melee",
       CP: [
         0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9,

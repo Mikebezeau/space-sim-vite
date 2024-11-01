@@ -1,15 +1,16 @@
+import React from "react";
 import useEquipStore from "../../stores/equipStore";
-import { equipList } from "../data/equipData";
+import { equipData } from "../data/equipData";
 
 const Mech = () => {
   const { mechBP, equipActions } = useEquipStore((state) => state);
 
-  const handleName = (e) => {
-    equipActions.basicMenu.setProp("name", e.target.value);
+  const handleName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    equipActions.blueprintMenu.updateMechBPprop("name", e.target.value);
   };
 
-  const handleScale = (e) => {
-    equipActions.basicMenu.setProp("scale", e.target.value);
+  const handleScale = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    equipActions.blueprintMenu.updateMechBPprop("scale", e.target.value);
   };
 
   return (
@@ -36,7 +37,7 @@ const Mech = () => {
                   value={mechBP.scale}
                   onChange={handleScale}
                 >
-                  {equipList.scale.type.map((value, key) => (
+                  {equipData.scale.type.map((value, key) => (
                     <option key={"scale" + key} value={key}>
                       {value}
                     </option>
@@ -50,7 +51,7 @@ const Mech = () => {
             {/*<th>Cost</th>*/}
             {/*<th>{mechBP.totalCP()}</th>*/}
             <th>Scale Cost Mult.</th>
-            <th>{equipList.scale.costMult[mechBP.scale]}</th>
+            <th>{equipData.scale.costMult[mechBP.scale]}</th>
             <th>Scaled Cost</th>
             <th>{mechBP.totalScaledCP()}</th>
           </tr>
@@ -58,7 +59,7 @@ const Mech = () => {
             {/*<th>Relative Weight</th>
             <th>{mechBP.totalWeight()}</th>*/}
             <th>Scale Weight Mult.</th>
-            <th>{equipList.scale.weightMult[mechBP.scale]}</th>
+            <th>{equipData.scale.weightMult[mechBP.scale]}</th>
             <th>Scaled Weight</th>
             <th>{mechBP.totalKGWeight()}</th>
           </tr>

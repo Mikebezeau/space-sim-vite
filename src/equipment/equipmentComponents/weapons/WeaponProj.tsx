@@ -1,27 +1,22 @@
-import useEquipStore from "../../stores/equipStore";
-import { weaponList } from "../data/weaponData";
-import WeaponSliderControl from "../equipmentDesign/WeaponSliderControl";
-import WeaponToggleControl from "../equipmentDesign/WeaponToggleControl";
-import "../../css/formContainers.css";
-import "../../css/sliderControl.css";
-import "../../css/toggleControl.css";
+import React from "react";
+import MechWeaponProjectile from "../../../classes/mechBP/weaponBP/MechWeaponProjectile";
+import useEquipStore from "../../../stores/equipStore";
+import WeaponSliderControl from "../../equipmentDesign/WeaponSliderControl";
+import WeaponToggleControl from "../../equipmentDesign/WeaponToggleControl";
+import { equipData } from "../../data/equipData";
+import { weaponData } from "../../data/weaponData";
 
-export const WeaponProjList = () => {
-  const { mechBP } = useEquipStore((state) => state);
-  return (
-    <>
-      {mechBP.weaponList.proj.map((value, index) => (
-        <WeaponProjItem key={"projBP" + index} projBP={value} />
-      ))}
-    </>
-  );
-};
-
-export const WeaponProjItem = ({ projBP, edit = false }) => {
-  const { equipActions } = useEquipStore((state) => state);
-  const handleChangeData = (weaponType, id, propName, val) => {
-    equipActions.weaponMenu.setDataValue(weaponType, id, propName, val);
-  };
+interface WeaponProjItemInt {
+  handleChangeProp?: (
+    weaponType: number,
+    id: string,
+    propName: string,
+    val: number | string
+  ) => void;
+  weaponBP: MechWeaponProjectile;
+}
+export const WeaponProjItem = (props: WeaponProjItemInt) => {
+  const { handleChangeProp, weaponBP } = props;
 
   return (
     <>
@@ -30,12 +25,21 @@ export const WeaponProjItem = ({ projBP, edit = false }) => {
           <tr>
             <th>Name</th>
             <td>
-              <input
-                onChange={(e) =>
-                  handleChangeData("proj", projBP.id, "name", e.target.value)
-                }
-                value={projBP.data.name}
-              />
+              {handleChangeProp ? (
+                <input
+                  onChange={(e) =>
+                    handleChangeProp(
+                      weaponBP.weaponType,
+                      weaponBP.id,
+                      "name",
+                      e.target.value
+                    )
+                  }
+                  value={weaponBP.name}
+                />
+              ) : (
+                weaponBP.name
+              )}
             </td>
           </tr>
           <tr>
@@ -52,59 +56,79 @@ export const WeaponProjItem = ({ projBP, edit = false }) => {
             <th>Scaled Cost</th>
           </tr>
           <tr>
-            <td>{projBP.damage()}</td>
-            <td>{projBP.structure()}</td>
-            <td>{projBP.range()}</td>
-            <td>{projBP.accuracy()}</td>
-            <td>{projBP.burstValue()}</td>
+            <td>{weaponBP.damage()}</td>
+            <td>{weaponBP.structure()}</td>
+            <td>{weaponBP.range()}</td>
+            <td>{weaponBP.accuracy()}</td>
+            <td>{weaponBP.burstValue()}</td>
             {/*<td>
               <input
                 onChange={(e) =>
-                  handleChangeData("proj", projBP.id, "SPeff", e.target.value)
+                  handleChangeData("proj", weaponBP.id, "SPeff", e.target.value)
                 }
-                value={projBP.data.SPeff}
+                value={weaponBP.SPeff}
               />
             </td>
-            <td>{projBP.SP()}</td>
+            <td>{weaponBP.SP()}</td>
             {/*<td>
               <input
                 onChange={(e) =>
-                  handleChangeData("proj", projBP.id, "wEff", e.target.value)
+                  handleChangeData("proj", weaponBP.id, "wEff", e.target.value)
                 }
-                value={projBP.data.wEff}
+                value={weaponBP.wEff}
               />
             </td>*/}
-            <td>{projBP.weight()}</td>
+            <td>{weaponBP.weight()}</td>
             {/*<td>getKGWeight(this.getWeight())</td>*/}
-            <td>{projBP.scaledCP()}</td>
+            <td>{weaponBP.scaledCP()}</td>
           </tr>
           <tr>
-            <td colSpan="100%">
+            <td colSpan={100}>
               <span>Special:</span>
-              {projBP.special !== 0 && (
+              {weaponBP.data.special !== 0 && (
                 <span>
-                  |{weaponList.proj.special.val[projBP.data.special]}
-                  {projBP.data.variable !== 0 && <>, Variable</>}|
+                  |
+                  {
+                    weaponData[equipData.weaponType.projectile].special?.val[
+                      weaponBP.data.special
+                    ]
+                  }
+                  {weaponBP.data.variable !== 0 && <>, Variable</>}|
                 </span>
               )}
-              {projBP.data.multiFeed !== 0 && (
+              {weaponBP.data.multiFeed !== 0 && (
                 <span>
                   |Multi-Feed:{" "}
-                  {weaponList.proj.multiFeed.val[projBP.data.multiFeed]}|
+                  {
+                    weaponData[equipData.weaponType.projectile].multiFeed?.val[
+                      weaponBP.data.multiFeed
+                    ]
+                  }
+                  |
                 </span>
               )}
-              {projBP.data.longRange !== 0 && (
+              {weaponBP.data.longRange !== 0 && (
                 <span>|Extreme Range: -2 Accuracy|"</span>
               )}
-              {projBP.data.hyperVelocity !== 0 && <span>|Hyper Velocity|</span>}
+              {weaponBP.data.hyperVelocity !== 0 && (
+                <span>|Hyper Velocity|</span>
+              )}
             </td>
           </tr>
-          {projBP.data.ammoList.map((ammo, index) => (
-            <tr key={index}>
-              <td colSpan="2">Ammunition</td>
-              <td colSpan="4">| {weaponList.proj.ammo.val[ammo.type]} |</td>
-              <td colSpan="1">{ammo.numAmmo} Shots</td>
-              <td>{/*projBP.getAmmoCP()*/}</td>
+          {weaponBP.ammoList.map((ammo) => (
+            <tr key={ammo.type}>
+              <td colSpan={2}>Ammunition</td>
+              <td colSpan={4}>
+                |{" "}
+                {
+                  weaponData[equipData.weaponType.projectile].ammo?.val[
+                    ammo.type
+                  ]
+                }{" "}
+                |
+              </td>
+              <td colSpan={1}>{ammo.numAmmo} Shots</td>
+              <td>{/*weaponBP.getAmmoCP()*/}</td>
               <td>{/*mecha.getScaledCost(this.getAmmoCP())*/}</td>
             </tr>
           ))}
@@ -114,13 +138,20 @@ export const WeaponProjItem = ({ projBP, edit = false }) => {
   );
 };
 
-export const WeaponProjCreate = () => {
-  const { projBP, equipActions } = useEquipStore((state) => state);
+interface WeaponProjCreateInt {
+  handleAddWeapon: (weaponType: number) => void;
+  handleChangeProp: (
+    weaponType: number,
+    id: string,
+    propName: string,
+    val: number | string
+  ) => void;
+}
+export const WeaponProjCreate = (props: WeaponProjCreateInt) => {
+  const { handleAddWeapon, handleChangeProp } = props;
+  const { editNewWeaponBP, equipActions } = useEquipStore((state) => state);
 
-  const handleAddWeapon = () => {
-    equipActions.weaponMenu.addProjWeapon();
-    alert("weapon added");
-  };
+  const editWeaponBP = editNewWeaponBP[equipData.weaponType.projectile];
 
   const sliderControls = [
     {
@@ -188,37 +219,36 @@ export const WeaponProjCreate = () => {
   return (
     <>
       <h2>Create Projectile Weapon</h2>
-      <WeaponProjItem projBP={projBP} edit={true} />
+      <WeaponProjItem
+        handleChangeProp={handleChangeProp}
+        weaponBP={editWeaponBP}
+      />
       <hr />
 
       <div className="formControlCol1">
         <WeaponSliderControl
-          weaponType={"proj"}
-          weaponBP={projBP}
+          weaponBP={editWeaponBP}
           controlData={sliderControls[0]}
         />
       </div>
       <div>
         <div className="formControlCol3">
           <WeaponSliderControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={sliderControls[1]}
           />
         </div>
 
         <div className="formControlCol3">
           <WeaponSliderControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={sliderControls[2]}
           />
         </div>
 
         <div className="formControlCol3">
           <WeaponSliderControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={sliderControls[3]}
           />
         </div>
@@ -227,8 +257,7 @@ export const WeaponProjCreate = () => {
       <div>
         <div className="formControlCol3">
           <WeaponSliderControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={sliderControls[4]}
           />
         </div>
@@ -237,8 +266,7 @@ export const WeaponProjCreate = () => {
 
         <div className="formControlCol3">
           <WeaponSliderControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={sliderControls[5]}
           />
         </div>
@@ -247,28 +275,28 @@ export const WeaponProjCreate = () => {
       <div>
         <div className="formControlCol3">
           <WeaponToggleControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={toggleControls[0]}
           />
         </div>
         <div className="formControlCol3">
           <WeaponToggleControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={toggleControls[1]}
           />
         </div>
         <div className="formControlCol3">
           <WeaponToggleControl
-            weaponType={"proj"}
-            weaponBP={projBP}
+            weaponBP={editWeaponBP}
             controlData={toggleControls[2]}
           />
         </div>
       </div>
 
-      <button className="addWeaponButton" onClick={handleAddWeapon}>
+      <button
+        className="addWeaponButton"
+        onClick={() => handleAddWeapon(editWeaponBP.weaponType)}
+      >
         Add Weapon
       </button>
     </>

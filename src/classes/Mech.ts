@@ -1,19 +1,20 @@
 import * as THREE from "three";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
+import MechBP from "./mechBP/MechBP";
 import MechServo from "./mechBP/MechServo";
 import useParticleStore from "../stores/particleStore";
 import { loadBlueprint } from "../util/initEquipUtil";
-import { servoUtil } from "../util/mechServoUtil";
 import { SCALE } from "../constants/constants";
 import {
   getGeomColorList,
   getMergedBufferGeom,
   getMergedBufferGeomColor,
 } from "../util/gameUtil";
+import { equipData } from "../equipment/data/equipData";
 //import { setCustomData } from "r3f-perf";
 
-export interface MechInt {
+interface MechInt {
   setMechBP(mechDesign: any): void;
   buildObject3d(): void;
   initObject3d(object3d: THREE.Object3D): void;
@@ -21,13 +22,13 @@ export interface MechInt {
   setObject3dCenterOffset(): void;
   setMergedBufferGeom(): void;
   setMergedBufferGeomColorsList(geomColorList: THREE.Color[]): void;
-  fireWeapon(isPlayer: boolean): void;
+  fireWeapon(/*isPlayer: boolean*/): void;
 }
 
 class Mech implements MechInt {
   id: string;
   useInstancedMesh: boolean;
-  mechBP: any;
+  mechBP: MechBP;
   shield: { max: number; damage: number };
   object3d: THREE.Object3D;
   bufferGeom: THREE.BufferGeometry | null;
@@ -146,7 +147,7 @@ class Mech implements MechInt {
     }
   };
 
-  updateObb() {
+  updateObb = () => {
     this.obbNeedsUpdate = false;
     this.setObject3dCenterOffset();
     //this.object3dCenterOffset.updateMatrix(); // Updates the local transform, not needed yet
@@ -159,20 +160,20 @@ class Mech implements MechInt {
     this.obbPositioned.center.copy(this.object3dCenterOffset.position);
     // rotation helper for testing obb: to view box in correct orientation
     this.obbRotationHelper.setFromMatrix3(this.obbPositioned.rotation);
-  }
+  };
 
   // set the position of object3d so that the geometry is centered at the position
-  setObject3dCenterOffset() {
+  setObject3dCenterOffset = () => {
     this.object3dCenterOffset.position.copy(this.object3d.position);
     this.object3dCenterOffset.rotation.copy(this.object3d.rotation);
     // todo: use translateOnAxis for simpler calculation
     this.object3dCenterOffset.translateX(this.mechCenter.x);
     this.object3dCenterOffset.translateY(this.mechCenter.y);
     this.object3dCenterOffset.translateZ(this.mechCenter.z);
-  }
+  };
 
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
-  setMergedBufferGeom() {
+  setMergedBufferGeom = () => {
     if (this.object3d) {
       // split object children into meshes of same colors
       // merge all meshes of same color into one buffer geometry
@@ -184,9 +185,9 @@ class Mech implements MechInt {
         this.object3d
       );
     }
-  }
+  };
 
-  setMergedBufferGeomColorsList(geomColorList: THREE.Color[]) {
+  setMergedBufferGeomColorsList = (geomColorList: THREE.Color[]) => {
     if (this.object3d) {
       this.bufferGeomColorsList = [];
       geomColorList.forEach((color) => {
@@ -195,9 +196,9 @@ class Mech implements MechInt {
         );
       });
     }
-  }
+  };
 
-  fireWeapon(isPlayer = false) {
+  fireWeapon = (/*isPlayer = false*/) => {
     if (this.mechBP?.weaponList) {
       const mechRefObj = new THREE.Group();
       const weaponObj = new THREE.Group();
@@ -206,40 +207,35 @@ class Mech implements MechInt {
       mechRefObj.rotation.copy(this.object3d.rotation);
       mechRefObj.add(weaponObj);
       // for each weapon type array
-      for (const [weaponType, weaponList] of Object.entries(
-        this.mechBP.weaponList
-      )) {
-        weaponList.forEach((weapon) => {
-          weapon.servoOffset = servoUtil.servoLocation(
-            weapon.locationServoId,
-            this.mechBP.servoList
-          )?.offset;
-          if (weapon.servoOffset) {
-            weaponObj.position.set(0, 0, 0);
-            weaponObj.translateX(weapon.offset.x + weapon.servoOffset.x);
-            weaponObj.translateY(weapon.offset.y + weapon.servoOffset.y);
-            weaponObj.translateZ(weapon.offset.z + weapon.servoOffset.z);
-            weaponObj.getWorldPosition(weaponWorldPositionVec);
-            if (weaponType === "beam") {
-              useParticleStore
-                .getState()
-                .addLaser(weaponWorldPositionVec, mechRefObj.rotation);
-            } else if (weaponType === "proj") {
-              useParticleStore
-                .getState()
-                .addBullet(weaponWorldPositionVec, mechRefObj.rotation);
-            } else if (weaponType === "missile") {
-              useParticleStore
-                .getState()
-                .addMissile(weaponWorldPositionVec, mechRefObj.rotation);
-            }
-          } else {
-            console.log("servoOffset not found for weapon", weapon);
+      this.mechBP.weaponList.forEach((weapon: any) => {
+        weapon.servoOffset = this.mechBP.servoList.find(
+          (s) => s.id === weapon.locationServoId
+        )?.offset;
+        if (weapon.servoOffset) {
+          weaponObj.position.set(0, 0, 0);
+          weaponObj.translateX(weapon.offset.x + weapon.servoOffset.x);
+          weaponObj.translateY(weapon.offset.y + weapon.servoOffset.y);
+          weaponObj.translateZ(weapon.offset.z + weapon.servoOffset.z);
+          weaponObj.getWorldPosition(weaponWorldPositionVec);
+          if (weapon.weaponType === equipData.weaponType.beam) {
+            useParticleStore
+              .getState()
+              .addLaser(weaponWorldPositionVec, mechRefObj.rotation);
+          } else if (weapon.weaponType === equipData.weaponType.projectile) {
+            useParticleStore
+              .getState()
+              .addBullet(weaponWorldPositionVec, mechRefObj.rotation);
+          } else if (weapon.weaponType === equipData.weaponType.missile) {
+            useParticleStore
+              .getState()
+              .addMissile(weaponWorldPositionVec, mechRefObj.rotation);
           }
-        });
-      }
+        } else {
+          console.log("servoOffset not found for weapon", weapon);
+        }
+      });
     }
-  }
+  };
 }
 
 export default Mech;

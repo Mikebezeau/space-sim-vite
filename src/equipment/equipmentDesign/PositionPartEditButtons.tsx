@@ -12,7 +12,9 @@ interface MechServoInt {
 const PositionPartEditButtons = (props: MechServoInt) => {
   const part = props.part;
   // for editing servo shapes and groups
-  const copiedPartJSON = useEquipStore((state) => state.copiedPartJSON);
+  const copiedPartParsedJSON = useEquipStore(
+    (state) => state.copiedPartParsedJSON
+  );
   const addServoShapeDesignId = useEquipStore(
     (state) => state.addServoShapeDesignId
   );
@@ -49,7 +51,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
   }, [colorPickerRef]);
 
   //position
-  function handleMovePart(axis, direction) {
+  function handleMovePart(axis: string, direction: number) {
     // TODO landing bay will be replaced
     /*
     const posAdjust = { x: 0, y: 0, z: 0 };
@@ -61,7 +63,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
         y: mechBP.landingBayPosition.y + posAdjust.y,
         z: mechBP.landingBayPosition.z + posAdjust.z,
       };
-      equipActions.basicMenu.setProp("landingBayPosition", bayPosition);
+      equipActions.blueprintMenu.updateMechBPprop("landingBayPosition", bayPosition);
     }
     */
     equipActions.servoMenu.adjustServoOrShapeOffset(
@@ -114,7 +116,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
   }
   //useKBControls("ArrowRight", handleMovePartRight);
 
-  const handleRotateServoShape = (axis, direction) => {
+  const handleRotateServoShape = (axis: string, direction: number) => {
     equipActions.servoMenu.adjustServoOrShapeRotation(
       part.id,
       axis,
@@ -433,7 +435,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
             </>
           )}
           {(part.servoShapes.length > 0 || part instanceof MechServo) &&
-            copiedPartJSON !== "" && (
+            copiedPartParsedJSON !== "" && (
               <button
                 onClick={() => {
                   equipActions.servoMenu.pastePartIntoGroup(part.id);
@@ -538,7 +540,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
             </select>
             <button
               onClick={() =>
-                equipActions.servoMenu.setAddServoShapeDesignId(part.id)
+                equipActions.servoMenu.addServoShapeDesign(part.id)
               }
             >
               + Part

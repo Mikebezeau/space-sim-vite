@@ -1,19 +1,18 @@
-//import React, { useMemo, useRef, useEffect } from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
 import mechDesigns from "../equipment/data/mechDesigns";
+// @ts-ignore
 import camera from "../assets/icons/camera-change.svg";
-
 import Mech from "../equipment/equipmentComponents/Mech";
 import { Crew, CrewAssignSpaces } from "../equipment/equipmentComponents/Crew";
 import { Servos } from "../equipment/equipmentComponents/Servos";
-import PositionPartsList from "../equipment/equipmentDesign/PositionPartsList.tsx";
+import PositionPartsList from "../equipment/equipmentDesign/PositionPartsList";
 //import ServoHydraulics from "./equipment/ServoHydraulics";
 import {
   Weapons,
   WeaponsAssignSpaces,
-} from "../equipment/equipmentComponents/Weapons";
+} from "../equipment/equipmentComponents/weapons/Weapons";
 import {
   LandingBay,
   LandingBayAssignSpaces,
@@ -22,16 +21,19 @@ import { PLAYER } from "../constants/constants";
 import "../css/equipmentMenu.css";
 
 const EquipmentMenu = () => {
+  // updateState is used to force a re-render of the component when
+  // the class is updated in the store (useEquipStore)
+  const updateState = useEquipStore((state) => state.updateState);
   //BLUEPRINT SELECTION MENU
   const { resetCamera, equipActions } = useEquipStore((state) => state);
 
-  const [selectedBPid, setSelectedBPid] = useState(0); //top menu
+  const [selectedBPid, setSelectedBPid] = useState(""); //top menu
   const [importExportText, setImportExportText] = useState("");
 
   const handleNewBP = () => {
     equipActions.blueprintMenu.newBlueprint();
-    setSelectedBPid(0);
-    setSubSelection(null);
+    setSelectedBPid("");
+    setSubSelection("");
   };
   /*
   const handleSelectBlueprint = (id) => {
@@ -80,10 +82,8 @@ const EquipmentMenu = () => {
 
   //MAIN DESIGN MENU
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
-
   const { mainMenuSelection } = useEquipStore((state) => state); //top menu
-
-  const [subSelection, setSubSelection] = useState(null); //current sub menu
+  const [subSelection, setSubSelection] = useState(""); //current sub menu
 
   const topMenuSelection = [
     "Mech Menu",
@@ -99,7 +99,7 @@ const EquipmentMenu = () => {
           <div>
             <span
               className={
-                selectedBPid === 0 ? "selectedItem" : "nonSelectedItem"
+                selectedBPid === "" ? "selectedItem" : "nonSelectedItem"
               }
             >
               <button onClick={handleNewBP}>New BP</button>

@@ -1,53 +1,11 @@
+import React from "react";
 import * as THREE from "three";
-import { CSG } from "three-csg-ts";
-import { geoList } from "../../equipment/data/shapeGeometry";
+//import { CSG } from "three-csg-ts";
+import { geoList } from "./shapeGeometry";
 import { mechMaterial } from "../../constants/mechMaterialConstants";
-//import { equipList } from "./equipData";
-import { geoListKey } from "../../constants/geometryShapes";
-
-export const weaponShapeData = {
-  beam: [
-    {
-      scale: [0.15, 1, 0.15],
-      position: [0, 0, 0.5],
-      rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList[geoListKey.cone],
-    },
-  ],
-  proj: [
-    {
-      scale: [0.15, 0.7, 0.15],
-      position: [0, 0, 0.35],
-      rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList[geoListKey.cone],
-    },
-  ],
-  missile: [
-    {
-      scale: [0.15, 0.2, 0.15],
-      position: [0, 0, 0.1],
-      rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList[geoListKey.cone],
-    },
-  ],
-  eMelee: [
-    {
-      scale: [0.15, 1, 0.15],
-      position: [0, 0, 0.5],
-      rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList[geoListKey.cone],
-    },
-  ],
-  melee: [
-    {
-      scale: [0.15, 1, 0.15],
-      position: [0, 0, 0.5],
-      rotation: [Math.PI / 2, 0, 0],
-      geometry: geoList[geoListKey.cone],
-    },
-  ],
-};
-
+import MechServo from "../../classes/mechBP/MechServo";
+import MechServoShape from "../../classes/mechBP/MechServoShape";
+/*
 const AddForceField = (mesh, landingBayHole) => {
   //add a translucent forcefield type shape on hole
   const landingBayGlowMaterial = new THREE.MeshLambertMaterial({
@@ -79,8 +37,15 @@ const MeshSubtract = (mesh) => {
   // AddForceField = (mesh, landingBayHole)
   return mesh;
 };
+*/
 
-export const ServoShape = ({ servoShape, material }) => {
+interface ServoShapeInt {
+  servoShape: MechServoShape;
+  material: THREE.Material;
+}
+
+const ServoShape = (props: ServoShapeInt) => {
+  const { servoShape, material } = props;
   return (
     <mesh
       position={[servoShape.offset.x, servoShape.offset.y, servoShape.offset.z]}
@@ -94,33 +59,40 @@ export const ServoShape = ({ servoShape, material }) => {
         (1 + servoShape.scaleAdjust.y) * (servoShape.mirrorAxis.y ? -1 : 1),
         (1 + servoShape.scaleAdjust.z) * (servoShape.mirrorAxis.z ? -1 : 1),
       ]}
-      geometry={geoList[servoShape.shape][0]}
+      geometry={geoList[servoShape.shape]}
       material={material}
     />
   );
 };
 
-export const ServoShapes = ({
-  name,
-  color,
-  flatShading = false,
-  damageReadoutMode = false,
-  isWireFrame = false,
-  isHit,
-  servo,
-  drawDistanceLevel,
-  texture,
-  textureScaleAdjust = { x: 10, y: 10, z: 10 },
-  editMode,
-  editPartId,
-}) => {
-  color = servo.color ? servo.color : color;
-  //constructionMaterial.bumpScale = 0.3;
-  //if (isHit !== undefined) console.log("hit");
-  // TODO this will all be changed, no size method if a servoShape
-  let readoutMaterial;
-  if (damageReadoutMode) {
+interface ServoShapesInt {
+  servo: MechServo | MechServoShape;
+  color: string;
+  texture: THREE.Texture;
+  flatShading?: boolean;
+  damageReadoutMode?: boolean;
+  isWireFrame?: boolean;
+  editMode?: boolean;
+  editPartId?: string;
+  //textureScaleAdjust?: { x: number; y: number; z: number };
+}
+
+const ServoShapes = (props: ServoShapesInt) => {
+  const {
+    servo,
+    color,
+    texture,
+    flatShading = true,
+    damageReadoutMode,
+    isWireFrame,
+    editMode,
+    editPartId,
+  } = props;
+  const thisColor = servo.color ? servo.color : color;
+  let readoutMaterial: THREE.Material | null = null;
+  if (servo instanceof MechServo && damageReadoutMode) {
     // just change the color, not material
+    // this will not work with child groups, must pass down damage readout mode and material
     const servoPercent =
       ((servo.structure() - servo.structureDamage) / servo.structure()) * 100;
     if (servoPercent < 0) {
@@ -134,15 +106,14 @@ export const ServoShapes = ({
     }
   }
 
-  const getMaterial = (servoShape) => {
+  const getMaterial = (servoShape: MechServoShape) => {
     let material = damageReadoutMode
       ? readoutMaterial
       : isWireFrame
       ? mechMaterial.wireFrameMaterial
       : null;
 
-    if (material) material.flatShading = flatShading;
-    else {
+    if (!material) {
       const constructionMaterial = new THREE.MeshLambertMaterial();
       // will have to use bounding box size to calculate texture scale
       /*
@@ -158,24 +129,26 @@ export const ServoShapes = ({
         textureScaleAdjust.y
       );
       */
+
+      constructionMaterial.flatShading = flatShading;
       constructionMaterial.color = new THREE.Color(
-        servoShape.color ? servoShape.color : color
+        servoShape.color ? servoShape.color : thisColor
       );
 
       material = !editMode
-        ? material
-          ? material
-          : constructionMaterial
+        ? constructionMaterial
         : editPartId === servoShape.id
         ? mechMaterial.selectMaterial
         : constructionMaterial;
       //mechMaterial.wireFrameMaterial;
     }
+
+    material.side = THREE.DoubleSide;
     return material;
   };
 
   return (
-    <group scale={servo.isServo ? servo.size() : 1}>
+    <group scale={servo instanceof MechServo ? servo.size() : 1}>
       <group
         position={[servo.offset.x, servo.offset.y, servo.offset.z]}
         rotation={[
@@ -198,18 +171,15 @@ export const ServoShapes = ({
               />
             ) : (
               <ServoShapes
-                name={name}
-                color={color ? color : servoShape.color}
+                servo={servoShape} // passing servoShape as servo to build children
+                color={thisColor ? thisColor : servoShape.color}
+                texture={texture}
                 flatShading={flatShading}
                 damageReadoutMode={damageReadoutMode}
                 isWireFrame={isWireFrame}
-                isHit={isHit}
-                servo={servoShape} // passing servoShape as servo to build children
-                drawDistanceLevel={drawDistanceLevel}
-                texture={texture}
-                textureScaleAdjust={textureScaleAdjust}
                 editMode={editMode}
                 editPartId={editPartId}
+                //textureScaleAdjust={textureScaleAdjust}
               />
             )}
           </group>
@@ -219,60 +189,4 @@ export const ServoShapes = ({
   );
 };
 
-export const WeaponShapes = function ({
-  name,
-  flatShading = false,
-  damageReadoutMode = false,
-  isWireFrame = false,
-  isHit,
-  weapon,
-  editMode,
-  weaponEditId,
-}) {
-  const editing = editMode && weapon.id === weaponEditId ? true : false;
-  const size = Math.cbrt(weapon.SP());
-  const constructionMaterial = new THREE.MeshLambertMaterial({
-    color: new THREE.Color("#FFF"),
-  });
-  let readoutMaterial;
-  if (damageReadoutMode) {
-    const weaponPercent =
-      ((weapon.structure - weapon.structureDamage) / weapon.structure) * 100;
-    switch (weaponPercent) {
-      case weaponPercent >= 100:
-        readoutMaterial = mechMaterial.readoutMaterial_100;
-        break;
-      case weaponPercent > 75:
-        readoutMaterial = mechMaterial.readoutMaterial_75;
-        break;
-      case weaponPercent > 25:
-        readoutMaterial = mechMaterial.readoutMaterial_25;
-        break;
-      default:
-        readoutMaterial = mechMaterial.readoutMaterial_0;
-    }
-  }
-
-  const useMaterial = damageReadoutMode
-    ? readoutMaterial
-    : isWireFrame
-    ? mechMaterial.wireFrameMaterial
-    : editing
-    ? mechMaterial.selectMaterial
-    : constructionMaterial;
-
-  useMaterial.flatShading = flatShading;
-
-  return (
-    <group scale={[size, size, size]}>
-      <mesh
-        name={name}
-        rotation={weaponShapeData[weapon.data.weaponType][0].rotation}
-        position={weaponShapeData[weapon.data.weaponType][0].position}
-        scale={weaponShapeData[weapon.data.weaponType][0].scale}
-        geometry={weaponShapeData[weapon.data.weaponType][0].geometry[0]}
-        material={useMaterial}
-      ></mesh>
-    </group>
-  );
-};
+export default ServoShapes;

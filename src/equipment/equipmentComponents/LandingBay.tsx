@@ -1,19 +1,26 @@
+import React from "react";
 import { useState } from "react";
 import useEquipStore from "../../stores/equipStore";
 import { ServoSpaceAssignButtons } from "./Servos";
-//CREW / PILOT
 
-export const LandingBayAssignSpaces = ({ heading }) => {
+interface LandingBayAssignSpacesInt {
+  heading: string;
+}
+export const LandingBayAssignSpaces = (props: LandingBayAssignSpacesInt) => {
+  const { heading } = props;
   const { mechBP, equipActions } = useEquipStore((state) => state);
-  const [servoSelectedId, setServoSelectedId] = useState(0);
+  const [servoSelectedId, setServoSelectedId] = useState("");
   /*
   const handleCrewSelect = (weaponType, id) => {
     equipActions.assignPartLocationMenu.setCrewLocation(servoSelectedId);
   };
 */
-  const handleServoSelect = (id) => {
+  const handleServoSelect = (id: string) => {
     setServoSelectedId(id);
-    equipActions.basicMenu.setProp("landingBayServoLocationId", id);
+    equipActions.blueprintMenu.updateMechBPprop(
+      "landingBayServoLocationId",
+      id
+    );
   };
 
   return (
@@ -26,9 +33,17 @@ export const LandingBayAssignSpaces = ({ heading }) => {
       />
       <hr />
       <button>
-        Landing Bay {"?"}SP{" "}
-        {mechBP.getServoById(mechBP.landingBayServoLocationId) &&
-          ">>> " + mechBP.getServoById(mechBP.landingBayServoLocationId).type}
+        {`Landing Bay ${"?"} SP `}
+        {mechBP.getServoById(mechBP.landingBayServoLocationId[0]) && (
+          <>{`->  ${
+            mechBP.getServoById(mechBP.landingBayServoLocationId[0]).name
+              ? mechBP.getServoById(mechBP.landingBayServoLocationId[0]).name
+              : mechBP
+                  .getServoById(mechBP.landingBayServoLocationId[0])
+                  ?.servoLabel()
+          }
+        `}</>
+        )}
       </button>
     </>
   );
@@ -38,7 +53,7 @@ export const LandingBay = ({ heading }) => {
   const { mechBP, equipActions } = useEquipStore((state) => state);
 
   const handleBaySelect = (e) => {
-    equipActions.basicMenu.setProp("landingBay", e.target.value);
+    equipActions.blueprintMenu.updateMechBPprop("landingBay", e.target.value);
     console.log(mechBP.landingBay);
   };
 

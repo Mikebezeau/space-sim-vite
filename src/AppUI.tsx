@@ -11,7 +11,6 @@ import {
 import SpeedReadout from "./uiCockpit/SpeedReadout";
 import ShieldsReadout from "./uiCockpit/ShieldsReadout";
 import WeaponsReadout from "./uiCockpit/WeaponsReadout";
-import TestingMenu from "./testingControls/TestingMenu";
 import GalaxyMapMenu from "./menuComponents/GalaxyMapMenu";
 import StationDockMenu from "./menuComponents/StationDockMenu";
 import EquipmentMenu from "./menuComponents/EquipmentMenu";
@@ -68,7 +67,6 @@ const AppUI = () => {
             ) : (
               <SpaceFlightControlsMouseKB />
             )}
-            <TestingMenu />
           </>
         )}
       {/*<CustomCursor />*/}

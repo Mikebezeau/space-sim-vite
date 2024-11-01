@@ -1,17 +1,21 @@
+import React from "react";
 import { useState } from "react";
 import useEquipStore from "../../stores/equipStore";
 import { ServoSpaceAssignButtons } from "./Servos";
-//CREW / PILOT
 
-export const CrewAssignSpaces = ({ heading }) => {
+interface CrewAssignSpacesInt {
+  heading: string;
+}
+export const CrewAssignSpaces = (props: CrewAssignSpacesInt) => {
+  const { heading } = props;
   const { mechBP, equipActions } = useEquipStore((state) => state);
-  const [servoSelectedId, setServoSelectedId] = useState(0);
+  const [servoSelectedId, setServoSelectedId] = useState("");
   /*
   const handleCrewSelect = (weaponType, id) => {
     equipActions.assignPartLocationMenu.setCrewLocation(servoSelectedId);
   };
 */
-  const handleServoSelect = (id) => {
+  const handleServoSelect = (id: string) => {
     setServoSelectedId(id);
     equipActions.assignPartLocationMenu.setCrewLocation(id);
   };
@@ -26,9 +30,15 @@ export const CrewAssignSpaces = ({ heading }) => {
       />
       <hr />
       <button>
-        Crew/Passengers {mechBP.crewSP()}SP{" "}
-        {mechBP.getServoById(mechBP.crewLocationServoId[0]) &&
-          ">>> " + mechBP.getServoById(mechBP.crewLocationServoId[0]).type}
+        {`Crew/Passengers ${mechBP.crewSP()} SP `}
+        {mechBP.getServoById(mechBP.crewLocationServoId[0]) && (
+          <>{`->  ${
+            mechBP.getServoById(mechBP.crewLocationServoId[0]).name
+              ? mechBP.getServoById(mechBP.crewLocationServoId[0]).name
+              : mechBP.getServoById(mechBP.crewLocationServoId[0])?.servoLabel()
+          }
+          `}</>
+        )}
       </button>
     </>
   );
@@ -37,12 +47,14 @@ export const CrewAssignSpaces = ({ heading }) => {
 export const Crew = ({ heading }) => {
   const { mechBP, equipActions } = useEquipStore((state) => state);
 
-  const handleCrew = (e) => {
-    equipActions.basicMenu.setProp("crew", e.target.value);
+  const handleCrew = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (e.target)
+      equipActions.blueprintMenu.updateMechBPprop("crew", e.target.value);
   };
 
-  const handlePassengers = (e) => {
-    equipActions.basicMenu.setProp("passengers", e.target.value);
+  const handlePassengers = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (e.target)
+      equipActions.blueprintMenu.updateMechBPprop("passengers", e.target.value);
   };
 
   return (

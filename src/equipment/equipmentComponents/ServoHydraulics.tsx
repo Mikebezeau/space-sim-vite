@@ -1,12 +1,19 @@
+import React from "react";
 import useEquipStore from "../../stores/equipStore";
-import { equipList } from "../data/equipData";
+import { equipData } from "../data/equipData";
 
-//DISPLAY LIST OF SERVOS
-const ServoHydraulics = ({ heading }) => {
+interface ServoHydraulicsInt {
+  heading: string;
+}
+const ServoHydraulics = (props: ServoHydraulicsInt) => {
+  const { heading } = props;
   const { mechBP, equipActions } = useEquipStore((state) => state);
 
-  const handleHydraulics = (e) => {
-    equipActions.basicMenu.setProp("hydraulicsType", e.target.value);
+  const handleHydraulics = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    equipActions.blueprintMenu.updateMechBPprop(
+      "hydraulicsType",
+      e.target.value
+    );
   };
 
   return (
@@ -15,7 +22,7 @@ const ServoHydraulics = ({ heading }) => {
       <table>
         <tr>
           <th>Servo Hydraulics</th>
-          <th colspan="3">
+          <th colSpan={3}>
             <div className="sliderLable">
               <select
                 name="hydraulics"
@@ -23,7 +30,7 @@ const ServoHydraulics = ({ heading }) => {
                 value={mechBP.hydraulicsType}
                 onChange={handleHydraulics}
               >
-                {equipList.hydraulics.type.map((value, key) => (
+                {equipData.hydraulics.type.map((value, key) => (
                   <option key={key} value={value}>
                     {value}
                   </option>
@@ -38,8 +45,8 @@ const ServoHydraulics = ({ heading }) => {
           <th></th>
         </tr>
         <tr>
-          <th>{equipList.hydraulics.CM[mechBP.hydraulicsType]}</th>
-          <th>{equipList.hydraulics.SP[mechBP.hydraulicsType]}</th>
+          <th>{equipData.hydraulics.CM[mechBP.hydraulicsType]}</th>
+          <th>{equipData.hydraulics.SP[mechBP.hydraulicsType]}</th>
           <th></th>
         </tr>
         <tr>
@@ -48,8 +55,8 @@ const ServoHydraulics = ({ heading }) => {
           <th>Lifting Ability</th>
         </tr>
         <tr>
-          <th>{equipList.hydraulics.melee[mechBP.hydraulicsType]}</th>
-          <th>{equipList.hydraulics.lift[mechBP.hydraulicsType]}</th>
+          <th>{equipData.hydraulics.melee[mechBP.hydraulicsType]}</th>
+          <th>{equipData.hydraulics.lift[mechBP.hydraulicsType]}</th>
           <th>{mechBP.liftVal()} KG</th>
         </tr>
       </table>

@@ -40,47 +40,62 @@ const makeTriangle = (isRight = false) => {
 };
 
 export const geoList = {
-  [geoListKey.box]: [new THREE.BoxGeometry(1, 1, 1)],
+  [geoListKey.box]: new THREE.BoxGeometry(1, 1, 1),
   //BoxGeometry(width : Float, height : Float, depth : Float, widthSegments : Integer, heightSegments : Integer, depthSegments : Integer)
 
-  [geoListKey.extrudeBox]: [
-    new THREE.ExtrudeGeometry(extrudeShape, extrudeSettings).center(),
-  ],
+  [geoListKey.extrudeBox]: new THREE.ExtrudeGeometry(
+    extrudeShape,
+    extrudeSettings
+  ).center(),
 
-  [geoListKey.circle]: [new THREE.CircleGeometry(1, 8)],
+  [geoListKey.circle]: new THREE.CircleGeometry(1, 8),
   //CircleGeometry(radius : Float, segments : Integer, thetaStart : Float, thetaLength : Float)
 
-  [geoListKey.cone]: [new THREE.ConeGeometry(1, 1, 8)],
+  //{
+  [geoListKey.cone]:
+    //3: new THREE.ConeGeometry(1, 1, 3),
+    //4: new THREE.ConeGeometry(1, 1, 4),
+    //8:
+    new THREE.ConeGeometry(1, 1, 8),
+  //},
   //ConeGeometry(radius : Float, height : Float, radialSegments : Integer, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
-  [geoListKey.cylinder]: [new THREE.CylinderGeometry(4, 4, 4, 8)],
+  [geoListKey.cylinder]: new THREE.CylinderGeometry(1, 1, 1, 8),
   //CylinderGeometry(radiusTop : Float, radiusBottom : Float, height : Float, radialSegments : Integer, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
-  [geoListKey.dodecahedron]: [new THREE.DodecahedronGeometry(1, 0)],
+  [geoListKey.dodecahedron]: new THREE.DodecahedronGeometry(1, 0),
   //DodecahedronGeometry(radius : Float, detail : Integer) //20
 
-  [geoListKey.icosahedron]: [new THREE.IcosahedronGeometry(1, 0)],
+  [geoListKey.icosahedron]: new THREE.IcosahedronGeometry(1, 0),
   //IcosahedronGeometry(radius : Float, detail : Integer) //12
 
-  [geoListKey.octahedron]: [new THREE.OctahedronGeometry(1, 0)],
+  [geoListKey.octahedron]: new THREE.OctahedronGeometry(1, 0),
   //OctahedronGeometry(radius : Float, detail : Integer) //8
 
-  [geoListKey.plane]: [new THREE.PlaneGeometry(1, 1, 1)],
+  [geoListKey.plane]: new THREE.PlaneGeometry(1, 1, 1),
 
-  [geoListKey.sphere]: [new THREE.SphereGeometry(1, 16, 16)],
+  [geoListKey.sphere]: new THREE.SphereGeometry(1, 16, 16),
 
-  [geoListKey.tetrahedron]: [new THREE.TetrahedronGeometry(1, 0)],
+  [geoListKey.tetrahedron]: new THREE.TetrahedronGeometry(1, 0),
   //TetrahedronGeometry(radius : Float, detail : Integer) //4
 
-  [geoListKey.torus]: [
-    new THREE.TorusGeometry(1, 0.2, 4, 16),
-    new THREE.TorusGeometry(1, 0.2, 0, 0),
-  ],
+  [geoListKey.torus]: new THREE.TorusGeometry(1, 0.2, 4, 16),
   //TorusGeometry(radius : Float, tube : Float, radialSegments : Integer, tubularSegments : Integer, arc : Float)
 
-  [geoListKey.triangle]: [makeTriangle()],
+  [geoListKey.triangle]: makeTriangle(),
 
-  [geoListKey.triangleRight]: [makeTriangle(true)],
+  [geoListKey.triangleRight]: makeTriangle(true),
 
   //TubeGeometry
+};
+
+export const getGeometry = (geoKey, props) => {
+  /*
+  geoKey: string
+
+  */
+  if (props) {
+    // styore custom geometries for possible reuse
+    return geoList[geoKey];
+  } else return geoList[geoKey];
 };

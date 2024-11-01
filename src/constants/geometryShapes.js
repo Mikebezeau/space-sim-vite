@@ -13,4 +13,5 @@ export const geoListKey = {
   torus: 11,
   triangle: 12,
   triangleRight: 13,
+  pyramid: 14,
 };

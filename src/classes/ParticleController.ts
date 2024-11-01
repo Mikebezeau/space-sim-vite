@@ -240,6 +240,7 @@ class ParticleController implements ParticleControllerInt {
       UPDATEABLE_ATTRIBUTES.forEach((name) => {
         if (this.offset + this.count < this.PARTICLE_COUNT) {
           const attr = this.geometry.getAttribute(name);
+          // @ts-ignore: Property 'addUpdateRange' does not exist on type 'InterleavedBufferAttribute'.ts(2339)
           attr.addUpdateRange(
             this.offset * attr.itemSize,
             this.count * attr.itemSize
@@ -253,6 +254,7 @@ class ParticleController implements ParticleControllerInt {
       this.particleNeedClearUpdateRanges = false;
       UPDATEABLE_ATTRIBUTES.forEach((name) => {
         const attr = this.geometry.getAttribute(name);
+        // @ts-ignore: Property 'clearUpdateRanges' does not exist on type 'InterleavedBufferAttribute'.ts(2339)
         attr.clearUpdateRanges();
       });
     }

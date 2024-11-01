@@ -1,17 +1,29 @@
-import * as THREE from "three";
-import { v4 as guid } from "uuid";
-import { equipList } from "../equipment/data/equipData";
-import { weaponList } from "../equipment/data/weaponData";
-import { applyScaledCPMult, servoUtil, mech } from "./mechServoUtil";
-import { weaponUtil } from "./weaponUtil";
+//import * as THREE from "three";
+//import { v4 as guid } from "uuid";
+import { equipData } from "../equipment/data/equipData";
+//import { weaponData } from "../equipment/data/weaponData";
+//import { applyScaledCPMult, servoUtil, mech } from "./mechServoUtil";
+//import { weaponUtil } from "./weaponUtil";
 import mechDesigns from "../equipment/data/mechDesigns";
-import MechServo from "../classes/mechBP/MechServo";
+import MechBP from "../classes/mechBP/MechBP";
+import MechWeaponBeam from "../classes/mechBP/weaponBP/MechWeaponBeam";
+import MechWeaponEnergyMelee from "../classes/mechBP/weaponBP/MechWeaponEnergyMelee";
+import MechWeaponMelee from "../classes/mechBP/weaponBP/MechWeaponMelee";
+import MechWeaponMissile from "../classes/mechBP/weaponBP/MechWeaponMissile";
+import MechWeaponProjectile from "../classes/mechBP/weaponBP/MechWeaponProjectile";
 
 function transferProperties(mergBP, parsedBP) {
   // transfering select properties from parsedBP to mergBP
   Object.keys(parsedBP).forEach((key) => {
     if (typeof parsedBP[key] !== "object") {
       // non object props: name and type are strings, all others are numbers
+      /*
+      crewLocationServoId: [],
+      passengersLocationServoId: [],
+      propulsionList: [],
+      partList: [],
+      multSystemList: [],
+      */
       mergBP[key] =
         key === "id" ||
         key === "locationServoId" ||
@@ -44,19 +56,8 @@ function transferProperties(mergBP, parsedBP) {
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 const loadBlueprint = function (importJsonBP) {
   const parsedBP = JSON.parse(importJsonBP);
-  let mergBP = initMechBP();
-  mergBP = transferProperties(mergBP, parsedBP);
+  const mergBP = new MechBP(parsedBP);
   /*
-  crewLocationServoId: [],
-  passengersLocationServoId: [],
-  propulsionList: [],
-  partList: [],
-  multSystemList: [],
-  */
-  parsedBP.servoList.forEach((parsedServo) => {
-    mergBP.servoList.push(new MechServo(parsedServo));
-  });
-  //parsedBP.weaponList.forEach((list, key) => {
   Object.keys(parsedBP.weaponList).forEach((key) => {
     parsedBP.weaponList[key].forEach((parsedWeapon) => {
       let weaponBP = initWeaponBP(0, key);
@@ -64,13 +65,13 @@ const loadBlueprint = function (importJsonBP) {
       mergBP.weaponList[key].push(transferProperties(weaponBP, parsedWeapon));
     });
   });
+  */
   return mergBP;
 };
 
 const initPlayerMechBP = function () {
   let playerMechBP = loadBlueprint(JSON.stringify(mechDesigns.player[0]));
-  playerMechBP.id = 1;
-  return [playerMechBP];
+  return playerMechBP;
 };
 
 //Station BLUEPRINT list
@@ -88,7 +89,7 @@ const initEnemyMechBP = function (bluePrintIndex) {
   );
   return emenyMechBP;
 };
-
+/*
 const initMechBP = function (guid) {
   return {
     id: guid, //will not need new id for reseting base design template blueprint
@@ -128,11 +129,11 @@ const initMechBP = function (guid) {
     color: "#999",
 
     scaleType: function () {
-      return equipList.scale.type[this.scale];
+      return equipData.scale.type[this.scale];
     },
 
     scaleVal: function (val) {
-      return val * equipList.scale.weightMult[this.scale];
+      return val * equipData.scale.weightMult[this.scale];
     },
     size: function () {
       return mech.size(this.servoList);
@@ -225,12 +226,13 @@ const initMechBP = function (guid) {
     },
   };
 };
-
+*/
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                BASE WEAPON METHODS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //initWeaponData only used locally (initWeaponBP)
-const initWeaponData = function (weaponType, scale = 1) {
+/*
+const initWeaponData = function (weaponType, scale = 2) {
   switch (weaponType) {
     case "beam":
       return {
@@ -346,8 +348,30 @@ const initWeaponData = function (weaponType, scale = 1) {
       return null;
   }
 };
-
-const initWeaponBP = function (guid, weaponType, scale) {
+*/
+const initWeaponBP = function (weaponData) {
+  let newWeaponBP;
+  switch (weaponData.weaponType) {
+    case equipData.weaponType.beam:
+      newWeaponBP = new MechWeaponBeam(weaponData);
+      break;
+    case equipData.weaponType.projectile:
+      newWeaponBP = new MechWeaponProjectile(weaponData);
+      break;
+    case equipData.weaponType.missile:
+      newWeaponBP = new MechWeaponMissile(weaponData);
+      break;
+    case equipData.weaponType.energyMelee:
+      newWeaponBP = new MechWeaponEnergyMelee(weaponData);
+      break;
+    case equipData.weaponType.melee:
+      newWeaponBP = new MechWeaponMelee(weaponData);
+      break;
+  }
+  return transferProperties(newWeaponBP, weaponData);
+};
+/*
+const initWeaponBP = function (weaponType, scale) {
   return {
     id: guid,
     offset: { x: 0, y: 0, z: 0 },
@@ -417,15 +441,16 @@ const initWeaponBP = function (guid, weaponType, scale) {
     },
   };
 };
+  */
 
 export {
-  guid,
+  //guid,
   transferProperties,
   loadBlueprint,
   initPlayerMechBP,
   initStationBP,
   initEnemyMechBP,
-  initMechBP,
+  //initMechBP,
   //initMechServo,
   initWeaponBP,
 };

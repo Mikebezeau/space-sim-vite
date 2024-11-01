@@ -75,8 +75,8 @@ const WeaponFire = ({ scale }) => {
           <mesh
             key={weaponFire.id}
             scale={scale}
-            geometry={weaponFireGeometry[weaponFire.weapon.data.weaponType]}
-            material={weaponFireMaterial[weaponFire.weapon.data.weaponType]}
+            geometry={weaponFireGeometry[weaponFire.weapon.weaponType]}
+            material={weaponFireMaterial[weaponFire.weapon.weaponType]}
           />
         ))}
       </group>

@@ -2,13 +2,11 @@ import { create } from "zustand";
 import * as THREE from "three";
 import PlayerMech from "../classes/PlayerMech";
 import usePlayerControlsStore from "./playerControlsStore";
-import useDevStore from "./devStore";
 import { randomData, genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
 import systemGen from "../solarSystemGen/systemGen";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import { addEffect } from "@react-three/fiber";
-import { loopAI } from "../masterAI";
 import { track } from "../util/track";
 
 import {

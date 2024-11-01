@@ -1,13 +1,14 @@
 import React from "react";
 import MechServo from "../../classes/mechBP/MechServo";
 import MechServoShape from "../../classes/mechBP/MechServoShape";
+import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
+
 import useEquipStore, {
   EDIT_MENU_SELECT,
   recursiveFindChildId,
 } from "../../stores/equipStore";
 import { geoListKey } from "../../constants/geometryShapes";
 import PositionPartEditButtons from "./PositionPartEditButtons";
-import { color } from "three/webgpu";
 
 interface PartGroupInt {
   id: string;
@@ -32,13 +33,16 @@ const PartGroup = (props: PartGroupInt) => {
 };
 
 interface PartInt {
-  part: MechServo | MechServoShape;
+  part: MechServo | MechServoShape | MechWeapon;
 }
 const Part = (props: PartInt) => {
   const { part } = props;
-
   const editPartId = useEquipStore((state) => state.editPartId);
   const equipActions = useEquipStore((state) => state.equipActions);
+
+  // MechWeapon is a child of MechServo, so we need to check if the part is a weapon or servo
+  const isWeaponInstance = part instanceof MechWeapon;
+  const isServoInstance = !isWeaponInstance && part instanceof MechServo;
 
   return (
     <>
@@ -49,9 +53,15 @@ const Part = (props: PartInt) => {
             editPartId === part.id ? "selectedItem" : "nonSelectedItem"
           }
         >
-          <button onClick={() => equipActions.setEditPartId(part.id)}>
-            {part instanceof MechServo
-              ? part.servoType() + " >"
+          <button
+            onClick={() =>
+              equipActions.setEditPartId(editPartId === part.id ? "" : part.id)
+            }
+          >
+            {isServoInstance
+              ? part.servoLabel() + " >"
+              : isWeaponInstance
+              ? "Weapon >"
               : part.servoShapes.length > 0
               ? "Group >"
               : ">"}
@@ -64,42 +74,50 @@ const Part = (props: PartInt) => {
             equipActions.servoMenu.updateProp(part.id, "name", e.target.value)
           }
         />
-        <span
-          className="inline-block w-4 h-4"
-          style={{ backgroundColor: part.color }}
-          onClick={() => {
-            equipActions.setEditPartId(part.id);
-            equipActions.setEditPartMenuSelect(EDIT_MENU_SELECT.color);
-          }}
-        />
-        {part instanceof MechServo || part.servoShapes.length > 0 ? (
-          <button
-            onClick={() => equipActions.servoShapeMenu.addServoShape(part.id)}
-          >
-            + Shape
-          </button>
-        ) : (
-          !(part instanceof MechServo) &&
-          part.servoShapes.length === 0 && (
-            <select
-              value={part.shape}
-              onChange={(e) => {
+        {part.color && (
+          <span className="selectedItem">
+            <button
+              style={{ backgroundColor: part.color }}
+              onClick={() => {
                 equipActions.setEditPartId(part.id);
-                equipActions.servoMenu.updateProp(
-                  part.id,
-                  "shape",
-                  e.target.value
-                );
+                equipActions.setEditPartMenuSelect(EDIT_MENU_SELECT.color);
               }}
             >
-              {Object.keys(geoListKey).map((key, geoListKeyVal) => (
-                <option key={key} value={geoListKeyVal}>
-                  {key}
-                </option>
-              ))}
-            </select>
-          )
+              C
+            </button>
+          </span>
         )}
+        {
+          // MechWeapon is instanceof MechServo (child class of MechServo)
+          part instanceof MechServo || part.servoShapes.length > 0 ? (
+            <button
+              onClick={() => equipActions.servoMenu.addServoShape(part.id)}
+            >
+              + Shape
+            </button>
+          ) : (
+            !(part instanceof MechServo) &&
+            part.servoShapes.length === 0 && (
+              <select
+                value={part.shape}
+                onChange={(e) => {
+                  equipActions.setEditPartId(part.id);
+                  equipActions.servoMenu.updateProp(
+                    part.id,
+                    "shape",
+                    e.target.value
+                  );
+                }}
+              >
+                {Object.keys(geoListKey).map((key, geoListKeyVal) => (
+                  <option key={key} value={geoListKeyVal}>
+                    {key}
+                  </option>
+                ))}
+              </select>
+            )
+          )
+        }
         {editPartId === part.id && <PositionPartEditButtons part={part} />}
       </div>
       {part.servoShapes.length > 0 && (
@@ -116,19 +134,19 @@ const PositionPartsList = () => {
   const mechBP = useEquipStore((state) => state.mechBP);
   const editPartId = useEquipStore((state) => state.editPartId);
   const editWeaponId = useEquipStore((state) => state.editWeaponId);
-  const editLandingBayId = useEquipStore((state) => state.editLandingBayId);
+  //const editLandingBayId = useEquipStore((state) => state.editLandingBayId);
   const equipActions = useEquipStore((state) => state.equipActions);
 
   const handleSelectEditWeaponId = (id: string) => {
-    equipActions.servoMenu.selectPartID(null);
+    equipActions.setEditPartId("");
     equipActions.weaponMenu.selectWeaponID(id);
-    equipActions.servoMenu.selectLandingBayID(null);
+    equipActions.servoMenu.selectLandingBayID("");
   };
 
   const handleSelectEditLandingBay = () => {
-    equipActions.servoMenu.selectPartID(null);
-    equipActions.weaponMenu.selectWeaponID(null);
-    equipActions.servoMenu.selectLandingBayID(1);
+    equipActions.setEditPartId("");
+    equipActions.weaponMenu.selectWeaponID("");
+    equipActions.servoMenu.selectLandingBayID("1");
   };
 
   return (
@@ -150,21 +168,21 @@ const PositionPartsList = () => {
           <div>
             {mechBP.servoWeaponList(servo.id).map((weapon) => (
               <span
-                key={weapon.id + "weapon"}
+                key={weapon.id}
                 className={
-                  editWeaponId === weapon.id
+                  (editWeaponId === weapon.id ||
+                  recursiveFindChildId(servo.servoShapes, editWeaponId)
                     ? "selectedItem"
-                    : "nonSelectedItem"
+                    : "nonSelectedItem") + " servoPositionSelect border-t-2"
                 }
               >
-                <button onClick={() => handleSelectEditWeaponId(weapon.id)}>
-                  {weapon.data.name}
-                </button>
+                <Part part={weapon} />
               </span>
             ))}
           </div>
+          {/*
           <div>
-            {mechBP.landingBayServoLocationId === servo.id && (
+            {mechBP.landingBayServoLocationId[0] === servo.id && (
               <span
                 key={"bay"}
                 className={
@@ -177,6 +195,7 @@ const PositionPartsList = () => {
               </span>
             )}
           </div>
+           */}
         </span>
       ))}
     </>

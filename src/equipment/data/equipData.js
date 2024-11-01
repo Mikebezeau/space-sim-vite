@@ -1,6 +1,4 @@
-export const equipConst = {};
-
-export const equipList = {
+export const equipData = {
   scale: {
     type: [
       "Power Armor",
@@ -17,6 +15,15 @@ export const equipList = {
   },
 
   servoType: { turret: 0, pod: 1, head: 2, wing: 3, arm: 4, leg: 5, torso: 6 },
+  servoLabel: {
+    0: "Turret",
+    1: "Pod",
+    2: "Head",
+    3: "Wing",
+    4: "Arm",
+    5: "Leg",
+    6: "Torso",
+  },
 
   class: {
     type: [
@@ -73,7 +80,12 @@ export const equipList = {
     typeArmor: [1, 0.5, 0],
   },
 
-  weapon: {
-    type: ["Beam", "Projectile", "Missile", "Energy Melee", "Melee"],
+  weaponType: { beam: 0, projectile: 1, missile: 2, energyMelee: 3, melee: 4 },
+  weaponLabel: {
+    0: "Beam",
+    1: "Projectile",
+    2: "Missile",
+    3: "Energy Melee",
+    4: "Melee",
   },
 };

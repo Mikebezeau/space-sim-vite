@@ -1,4 +1,3 @@
-//import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
 import { Color } from "three";
 import { transferProperties } from "../../util/initEquipUtil";
@@ -17,8 +16,19 @@ export const EDIT_PART_METHOD = {
   toggleMirrorAxis: "toggleMirrorAxis",
 };
 
-//TODO MAKE THHIS RECURSIVE
-class MechServoShape {
+interface MechServoShapeInt {
+  movePart: (props: { x: number; y: number; z: number }) => void;
+  resetPosition: () => void;
+  rotationRadians: () => { x: number; y: number; z: number };
+  adjustRotation: (props: { axis: string; degreeChange: number }) => void;
+  resetRotation: () => void;
+  scaleShape: (props: { x: number; y: number; z: number }) => void;
+  resetScale: () => void;
+  makeGroup: () => void;
+  toggleMirrorAxis: (props: { axis: string }) => void;
+}
+
+class MechServoShape implements MechServoShapeInt {
   id: string;
   name: string;
   offset: { x: number; y: number; z: number };
@@ -29,19 +39,10 @@ class MechServoShape {
   servoShapes: MechServoShape[];
   color: string;
   threeColor: Color;
-  movePart: (props: { x: number; y: number; z: number }) => void;
-  resetPosition: () => void;
-  rotationRadians: () => { x: number; y: number; z: number };
-  adjustRotation: (props: { axis: string; degreeChange: number }) => void;
-  resetRotation: () => void;
-  scaleShape: (props: { x: number; y: number; z: number }) => void;
-  resetScale: () => void;
-  makeGroup: () => void;
-  toggleMirrorAxis: (props: { axis: string }) => void;
 
   constructor(servoShapeData: any | null = null) {
     this.id = uuidv4(); // id for new shape
-    this.name = "Name";
+    this.name = "";
     this.offset = { x: 0, y: 0, z: 0 };
     this.rotation = { x: 0, y: 0, z: 0 };
     this.scaleAdjust = { x: 0, y: 0, z: 0 };
@@ -59,69 +60,68 @@ class MechServoShape {
         });
       }
     }
+  }
 
-    // use of props to call this method dynamically
-    this.movePart = (props: { x: number; y: number; z: number }) => {
-      this.offset = {
-        x: roundhundredth(this.offset.x + props.x),
-        y: roundhundredth(this.offset.y + props.y),
-        z: roundhundredth(this.offset.z + props.z),
-      };
+  // use of props to call this method dynamically
+  movePart(props: { x: number; y: number; z: number }) {
+    this.offset = {
+      x: roundhundredth(this.offset.x + props.x),
+      y: roundhundredth(this.offset.y + props.y),
+      z: roundhundredth(this.offset.z + props.z),
     };
+  }
 
-    this.resetPosition = () => {
-      this.offset = { x: 0, y: 0, z: 0 };
+  resetPosition() {
+    this.offset = { x: 0, y: 0, z: 0 };
+  }
+
+  rotationRadians() {
+    return {
+      x: this.rotation.x * (Math.PI / 180),
+      y: this.rotation.y * (Math.PI / 180),
+      z: this.rotation.z * (Math.PI / 180),
     };
+  }
 
-    this.rotationRadians = () => {
-      return {
-        x: this.rotation.x * (Math.PI / 180),
-        y: this.rotation.y * (Math.PI / 180),
-        z: this.rotation.z * (Math.PI / 180),
-      };
-    };
-
-    this.adjustRotation = (props: { axis: string; degreeChange: number }) => {
-      // rotation in degrees
-      this.rotation[props.axis] =
-        this.rotation[props.axis] + props.degreeChange;
-      /*
+  adjustRotation = (props: { axis: string; degreeChange: number }) => {
+    // rotation in degrees
+    this.rotation[props.axis] = this.rotation[props.axis] + props.degreeChange;
+    /*
       this.rotation[props.axis] = roundhundredth(
         (this.rotation[props.axis] + (props.direction * Math.PI) / 8) %
           (Math.PI * 2)
       );
       */
-    };
+  };
 
-    this.resetRotation = () => {
-      this.rotation = { x: 0, y: 0, z: 0 };
-    };
+  resetRotation() {
+    this.rotation = { x: 0, y: 0, z: 0 };
+  }
 
-    this.scaleShape = (props: { x: number; y: number; z: number }) => {
-      this.scaleAdjust = {
-        x: roundhundredth(this.scaleAdjust.x + props.x),
-        y: roundhundredth(this.scaleAdjust.y + props.y),
-        z: roundhundredth(this.scaleAdjust.z + props.z),
-      };
+  scaleShape(props: { x: number; y: number; z: number }) {
+    this.scaleAdjust = {
+      x: roundhundredth(this.scaleAdjust.x + props.x),
+      y: roundhundredth(this.scaleAdjust.y + props.y),
+      z: roundhundredth(this.scaleAdjust.z + props.z),
     };
+  }
 
-    this.resetScale = () => {
-      this.scaleAdjust = { x: 0, y: 0, z: 0 };
-    };
+  resetScale() {
+    this.scaleAdjust = { x: 0, y: 0, z: 0 };
+  }
 
-    this.makeGroup = () => {
-      const part = new MechServoShape();
-      part.shape = this.shape;
-      part.rotation = { ...this.rotation };
-      part.scaleAdjust = { ...this.scaleAdjust };
-      this.rotation = { x: 0, y: 0, z: 0 };
-      this.scaleAdjust = { x: 0, y: 0, z: 0 };
-      this.servoShapes.push(part);
-    };
+  makeGroup() {
+    const part = new MechServoShape();
+    part.shape = this.shape;
+    part.rotation = { ...this.rotation };
+    part.scaleAdjust = { ...this.scaleAdjust };
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.scaleAdjust = { x: 0, y: 0, z: 0 };
+    this.servoShapes.push(part);
+  }
 
-    this.toggleMirrorAxis = (props: { axis: string }) => {
-      this.mirrorAxis[props.axis] = !this.mirrorAxis[props.axis];
-    };
+  toggleMirrorAxis(props: { axis: string }) {
+    this.mirrorAxis[props.axis] = !this.mirrorAxis[props.axis];
   }
 }
 

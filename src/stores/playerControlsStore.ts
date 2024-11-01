@@ -30,7 +30,10 @@ interface playerControlStoreState {
     switchScreen: (playerScreen: number) => void;
     setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
   };
-  updatePlayerMechAndCameraFrame: (camera: THREE.Camera, main: any) => void;
+  updatePlayerMechAndCameraFrame: (
+    camera: THREE.PerspectiveCamera,
+    main: any
+  ) => void;
 }
 
 const cameraLerpToObj = new THREE.Object3D();
