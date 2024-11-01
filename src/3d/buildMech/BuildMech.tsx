@@ -10,7 +10,6 @@ interface BuildMechInt {
   flatShading?: boolean;
   damageReadoutMode?: boolean;
   editPartId?: string;
-  weaponEditId?: string;
   editMode?: boolean;
   isWireFrame?: boolean;
   handleClick?: () => void;
@@ -26,7 +25,6 @@ const BuildMech = forwardRef(function BuildMech(
     flatShading,
     damageReadoutMode,
     editPartId,
-    weaponEditId,
     editMode,
     isWireFrame,
     handleClick,
@@ -40,10 +38,7 @@ const BuildMech = forwardRef(function BuildMech(
   return (
     <group ref={buildMechForwardRef} onClick={handleClick}>
       {mechBP.servoList.map((servo, index) => (
-        <group
-          key={index}
-          position={[servo.offset.x, servo.offset.y, servo.offset.z]}
-        >
+        <group key={index}>
           <ServoShapes
             servo={servo}
             color={mechBP.color}
@@ -55,10 +50,7 @@ const BuildMech = forwardRef(function BuildMech(
             editPartId={editPartId}
           />
           {mechBP.servoWeaponList(servo.id).map((weapon) => (
-            <group
-              key={weapon.id}
-              position={[weapon.offset.x, weapon.offset.y, weapon.offset.z]}
-            >
+            <group key={weapon.id}>
               <ServoShapes
                 servo={weapon}
                 color={mechBP.color}

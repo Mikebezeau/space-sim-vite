@@ -46,7 +46,7 @@ const Part = (props: PartInt) => {
 
   return (
     <>
-      <div className="m-1 mt-2">
+      <div className={`m-1 mt-2 ${isWeaponInstance && "ml-8"}`}>
         <hr className="mb-2" />
         <span
           className={
@@ -136,18 +136,6 @@ const PositionPartsList = () => {
   const editWeaponId = useEquipStore((state) => state.editWeaponId);
   //const editLandingBayId = useEquipStore((state) => state.editLandingBayId);
   const equipActions = useEquipStore((state) => state.equipActions);
-
-  const handleSelectEditWeaponId = (id: string) => {
-    equipActions.setEditPartId("");
-    equipActions.weaponMenu.selectWeaponID(id);
-    equipActions.servoMenu.selectLandingBayID("");
-  };
-
-  const handleSelectEditLandingBay = () => {
-    equipActions.setEditPartId("");
-    equipActions.weaponMenu.selectWeaponID("");
-    equipActions.servoMenu.selectLandingBayID("1");
-  };
 
   return (
     <>

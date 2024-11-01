@@ -213,9 +213,9 @@ class Mech implements MechInt {
         )?.offset;
         if (weapon.servoOffset) {
           weaponObj.position.set(0, 0, 0);
-          weaponObj.translateX(weapon.offset.x + weapon.servoOffset.x);
-          weaponObj.translateY(weapon.offset.y + weapon.servoOffset.y);
-          weaponObj.translateZ(weapon.offset.z + weapon.servoOffset.z);
+          weaponObj.translateX(weapon.offset.x); // + weapon.servoOffset.x);
+          weaponObj.translateY(weapon.offset.y); // + weapon.servoOffset.y);
+          weaponObj.translateZ(weapon.offset.z); // + weapon.servoOffset.z);
           weaponObj.getWorldPosition(weaponWorldPositionVec);
           if (weapon.weaponType === equipData.weaponType.beam) {
             useParticleStore

@@ -1,8 +1,11 @@
+import React from "react";
 import useStore from "../stores/store";
 import "../css/glitch.css";
 
 const SpeedReadout = () => {
   const speed = useStore((state) => state.player.speed);
+  // to re-render component on player prop change
+  const playerPropUpdate = useStore((state) => state.playerPropUpdate);
 
   return (
     <div

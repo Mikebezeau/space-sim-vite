@@ -37,7 +37,7 @@ export const EDIT_MENU_SELECT = {
 
 // recursively find if group tree has childId
 export const recursiveFindChildId = (
-  arr: MechServo[] | MechServoShape[],
+  arr: (MechServo | MechServoShape)[],
   childId: string
 ) => {
   let idFound = false;
@@ -63,7 +63,7 @@ export const recursiveSetNewIds = (part: MechServo | MechServoShape) => {
 };
 
 const recursiveUpdateProp = (
-  arr: MechServo[] | MechServoShape[],
+  arr: (MechServo | MechServoShape)[],
   id: string,
   prop: string,
   val: number | string
@@ -71,7 +71,7 @@ const recursiveUpdateProp = (
   if (!EDIT_PROP_STRING.includes(prop)) val = Number(val);
   arr.forEach((s) => {
     if (s.id === id) {
-      if (!(prop in s)) console.log("prop not found", prop, s);
+      if (!s.hasOwnProperty(prop)) console.log("Property not found", prop);
       else s[prop] = val;
     } else if (s.servoShapes.length > 0) {
       recursiveUpdateProp(s.servoShapes, id, prop, val);
@@ -82,15 +82,15 @@ const recursiveUpdateProp = (
 
 // recursive update for servo and servoshapes
 const recursiveCallMethod = (
-  arr: MechServo[] | MechServoShape[],
+  arr: (MechServo | MechServoShape)[],
   id: string,
   method: string,
   props?: any
 ) => {
   arr.forEach((s) => {
     if (s.id === id) {
-      if (!(typeof s[method] === "function"))
-        console.log("method not found", method, s);
+      if (typeof s[method] !== "function")
+        console.log("Method not found", method);
       else props ? s[method](props) : s[method]();
     } else if (s.servoShapes.length > 0) {
       recursiveCallMethod(s.servoShapes, id, method, props);
@@ -204,7 +204,7 @@ interface equipStoreState {
       ) => void;
     };
     servoMenu: {
-      getServoOrWeaponList: (partId: string) => MechServo[] | undefined;
+      getList: (partId: string) => (MechServo | MechServoShape)[];
       updateProp: (id: string, prop: string, val: any) => void;
       addServo: () => void;
       addServoShape: (parentId: string) => void;
@@ -234,9 +234,9 @@ interface equipStoreState {
       resetServoScale: (id: string) => void;
     };
     weaponMenu: {
-      selectWeaponID: (id: string) => void;
       addWeapon: (weaponType: number) => void;
-      deleteWeapon: (weaponType: number, id: string) => void;
+      deleteWeapon: (id: string) => void;
+      // designing new weapons (or editing existing weapons)
       updateProp: (
         weaponType: number,
         id: string,
@@ -387,20 +387,19 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
     },
 
     servoMenu: {
-      getServoOrWeaponList(partId) {
+      getList(partId) {
         if (recursiveFindChildId(get().mechBP.servoList, partId)) {
           return get().mechBP.servoList;
         } else if (recursiveFindChildId(get().mechBP.weaponList, partId)) {
           return get().mechBP.weaponList;
         } else {
           console.log("List not found");
-          return undefined;
+          return [];
         }
       },
       updateProp(id, prop, val) {
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        // @ts-ignore
-        if (list !== undefined) list = recursiveUpdateProp(list, id, prop, val);
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveUpdateProp(list, id, prop, val);
         get().toggleUpdateState();
       },
       addServo() {
@@ -411,21 +410,20 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         get().toggleUpdateState();
       },
       addServoShape(parentId) {
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(parentId);
-        if (list !== undefined)
-          list = recursiveAdd(list, parentId, new MechServoShape());
+        let list = get().equipActions.servoMenu.getList(parentId);
+        list = recursiveAdd(list, parentId, new MechServoShape());
         get().toggleUpdateState();
       },
       duplicateServo(part) {
         const copiedPartParsedJSON = JSON.parse(JSON.stringify(part));
-        let newPart;
+        let newPart: MechServo; // MechWeapon child class of MechServo
         if (part instanceof MechWeapon)
           newPart = initWeaponBP(copiedPartParsedJSON);
         else newPart = new MechServo(copiedPartParsedJSON);
         recursiveSetNewIds(newPart);
-        // add the new part into the servoList
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(part.id);
-        if (list !== undefined) list.push(newPart);
+        // add the new part into the servo or weapon list
+        let list = get().equipActions.servoMenu.getList(part.id);
+        list.push(newPart);
         get().toggleUpdateState();
       },
       copyPart(part) {
@@ -447,42 +445,34 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         const newPart = new MechServoShape(copiedPartParsedJSON);
         recursiveSetNewIds(newPart);
         // add the new part into the servo or weapon list
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(parentId);
-        if (list !== undefined) list = recursiveAdd(list, parentId, newPart);
+        let list = get().equipActions.servoMenu.getList(parentId);
+        list = recursiveAdd(list, parentId, newPart);
         get().toggleUpdateState();
       },
       mirrorPart(axis, id) {
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) {
-          // @ts-ignore
-          list = recursiveCallMethod(
-            list,
-            id,
-            EDIT_PART_METHOD.toggleMirrorAxis,
-            { axis }
-          );
-          get().toggleUpdateState();
-        }
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveCallMethod(
+          list,
+          id,
+          EDIT_PART_METHOD.toggleMirrorAxis,
+          { axis }
+        );
+        get().toggleUpdateState();
       },
       addGroup(part) {
-        // moves the part into servoShapes array, making it a group
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(part.id);
-        if (list !== undefined) {
-          // @ts-ignore - TODO find way to typecheck this
-          list = recursiveCallMethod(list, part.id, EDIT_PART_METHOD.makeGroup);
-          get().toggleUpdateState();
-        }
+        // moves the part into servoShapes array property, making part a shape group
+        let list = get().equipActions.servoMenu.getList(part.id);
+        list = recursiveCallMethod(list, part.id, EDIT_PART_METHOD.makeGroup);
+        get().toggleUpdateState();
       },
       deleteServoOrShape(id) {
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) list = recursiveDelete(list, id);
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveDelete(list, id);
         get().toggleUpdateState();
         get().equipActions.setEditPartId(get().editPartIdPrev);
       },
       selectServoID(servoId) {
         get().equipActions.setEditPartId(servoId);
-        get().equipActions.weaponMenu.selectWeaponID("");
-        get().equipActions.servoMenu.selectLandingBayID("");
       },
       selectLandingBayID(id) {
         set(() => ({ editLandingBayId: id }));
@@ -492,77 +482,63 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         const props = { x: 0, y: 0, z: 0 };
         props[axis] = adjustVal;
         // posAdjust is an object with x, y, z values
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) {
-          // @ts-ignore
-          list = recursiveCallMethod(
-            list,
-            id,
-            EDIT_PART_METHOD.adjustPosition,
-            props
-          );
-          get().toggleUpdateState();
-        }
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveCallMethod(
+          list,
+          id,
+          EDIT_PART_METHOD.adjustPosition,
+          props
+        );
+        get().toggleUpdateState();
       },
       resetServoPosition(id) {
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) {
-          // @ts-ignore
-          list = recursiveCallMethod(list, id, EDIT_PART_METHOD.resetPosition);
-          get().toggleUpdateState();
-        }
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveCallMethod(list, id, EDIT_PART_METHOD.resetPosition);
+        get().toggleUpdateState();
       },
       adjustServoOrShapeRotation(id, axis, adjustVal, direction) {
         const props = { axis, degreeChange: adjustVal * direction };
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) {
-          // @ts-ignore
-          list = recursiveCallMethod(
-            list,
-            id,
-            EDIT_PART_METHOD.adjustRotation,
-            props
-          );
-          get().toggleUpdateState();
-        }
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveCallMethod(
+          list,
+          id,
+          EDIT_PART_METHOD.adjustRotation,
+          props
+        );
+        get().toggleUpdateState();
       },
       resetServoRotation(id) {
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) {
-          // @ts-ignore
-          list = recursiveCallMethod(list, id, EDIT_PART_METHOD.resetRotation);
-          get().toggleUpdateState();
-        }
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveCallMethod(list, id, EDIT_PART_METHOD.resetRotation);
+        get().toggleUpdateState();
       },
       adjustServoScale(id, axis, adjustVal) {
         const props = { x: 0, y: 0, z: 0 };
         props[axis] = props[axis] + adjustVal;
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) {
-          // @ts-ignore
-          list = recursiveCallMethod(
-            list,
-            id,
-            EDIT_PART_METHOD.adjustScale,
-            props
-          );
-          get().toggleUpdateState();
-        }
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveCallMethod(
+          list,
+          id,
+          EDIT_PART_METHOD.adjustScale,
+          props
+        );
+        get().toggleUpdateState();
       },
       resetServoScale(id) {
-        let list = get().equipActions.servoMenu.getServoOrWeaponList(id);
-        if (list !== undefined) {
-          // @ts-ignore
-          list = recursiveCallMethod(list, id, EDIT_PART_METHOD.resetScale);
+        let list = get().equipActions.servoMenu.getList(id);
+        const updateList = recursiveCallMethod(
+          list,
+          id,
+          EDIT_PART_METHOD.resetScale
+        );
+        if (updateList !== undefined) {
+          list = updateList;
           get().toggleUpdateState();
         }
       },
     },
 
     weaponMenu: {
-      selectWeaponID(id) {
-        set(() => ({ editWeaponId: id }));
-      },
       addWeapon(weaponType) {
         // get a copy of weapon data from editNewWeaponBP
         const weaponData = JSON.parse(
@@ -573,7 +549,7 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         get().mechBP.weaponList.push(newWeapon);
         get().toggleUpdateState();
       },
-      deleteWeapon(weaponType, id) {
+      deleteWeapon(id) {
         get().mechBP.weaponList = get().mechBP.weaponList.filter(
           (w) => w.id !== id
         );
@@ -581,10 +557,13 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
       },
       updateProp(weaponType, id, propName, val, isEdit = true) {
         if (isEdit) {
-          //editing a new weapon design
+          //editing a new weapon design in the store
           get().editNewWeaponBP[weaponType][propName] = val;
         } else {
-          get().mechBP.findWeaponId(id)[propName] = val;
+          const weapon = get().mechBP.findWeaponId(id);
+          if (weapon !== undefined && weapon.hasOwnProperty(propName)) {
+            weapon[propName] = val;
+          } else console.log("Property not found: ", propName);
         }
         get().toggleUpdateState();
       },
@@ -593,7 +572,10 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
           //editing a new weapon design
           get().editNewWeaponBP[weaponType].data[propName] = Number(val);
         } else {
-          get().mechBP.findWeaponId(id).data[propName] = Number(val);
+          const weapon = get().mechBP.findWeaponId(id);
+          if (weapon !== undefined && weapon.data.hasOwnProperty(propName)) {
+            weapon.data[propName] = Number(val);
+          } else console.log("Data property not found: ", propName);
         }
         get().toggleUpdateState();
       },

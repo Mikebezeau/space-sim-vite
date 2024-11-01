@@ -8,10 +8,10 @@ const MechDisplay = () => {
   // updateState is used to force a re-render of the component when
   // the class is updated in the store (useEquipStore)
   const updateState = useEquipStore((state) => state.updateState);
+  // do not delete ^
   const mechBP = useEquipStore((state) => state.mechBP);
   const editPartId = useEquipStore((state) => state.editPartId);
   const editPartMenuSelect = useEquipStore((state) => state.editPartMenuSelect);
-  const editWeaponId = useEquipStore((state) => state.editWeaponId);
 
   return (
     <>
@@ -20,23 +20,37 @@ const MechDisplay = () => {
           <BuildMech
             mechBP={mechBP}
             editPartId={
+              // show real part color when changing color in edit menu
               editPartMenuSelect === EDIT_MENU_SELECT.color ? "" : editPartId
             }
-            weaponEditId={editWeaponId}
             editMode={true}
           />
           <group scale={mechBP.size() * 0.1}>
+            {mechBP.weaponList.map((weapon) => (
+              // weapon fire position / direction lines
+              <mesh
+                key={weapon.id}
+                position={[0, 0, 150]}
+                rotation={[Math.PI / 2, 0, 0]}
+              >
+                <meshBasicMaterial color="red" />
+                <cylinderGeometry
+                  attach="geometry"
+                  args={[0.15, 0.15, 300, 4]}
+                />
+              </mesh>
+            ))}
             <mesh position={[0, 0, 150]} rotation={[Math.PI / 2, 0, 0]}>
               <meshBasicMaterial color="red" />
-              <cylinderGeometry attach="geometry" args={[0.25, 0.25, 300, 4]} />
+              <cylinderGeometry attach="geometry" args={[0.15, 0.15, 300, 4]} />
             </mesh>
             <mesh position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
               <meshBasicMaterial color="blue" />
-              <cylinderGeometry attach="geometry" args={[0.25, 0.25, 150, 4]} />
+              <cylinderGeometry attach="geometry" args={[0.15, 0.15, 150, 4]} />
             </mesh>
             <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
               <meshBasicMaterial color="blue" />
-              <cylinderGeometry attach="geometry" args={[0.25, 0.25, 150, 4]} />
+              <cylinderGeometry attach="geometry" args={[0.15, 0.15, 150, 4]} />
             </mesh>
           </group>
         </>
@@ -63,6 +77,10 @@ export default function BuildMechEquipment() {
       resetCamera(false);
     }
   }, [camera, cameraZoom, isResetCamera, resetCamera]);
+
+  useEffect(() => {
+    resestControlsCameraPosition();
+  }, [resestControlsCameraPosition]);
 
   return (
     <>

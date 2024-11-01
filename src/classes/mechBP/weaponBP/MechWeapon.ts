@@ -1,11 +1,53 @@
 import MechServo from "../MechServo";
-import { transferProperties } from "../../../util/initEquipUtil";
+import {
+  transferProperties,
+  initServoShapes,
+} from "../../../util/initEquipUtil";
 import { equipData } from "../../../equipment/data/equipData";
 import { weaponData } from "../../../equipment/data/weaponData";
 import {
   applyScaledWeightMult,
   applyScaledCPMult,
 } from "../../../util/mechServoUtil";
+
+const DEFAULT_DATA = {
+  damageRange: 5,
+  accuracy: 2,
+  shots: 0,
+  rangeMod: 3,
+  warmUp: 0,
+  wideAngle: 0,
+  burstValue: 0,
+  special: 0,
+  variable: 0,
+  fragile: 0,
+  longRange: 0,
+  megaBeam: 0,
+  disruptor: 0,
+  turnsUse: 0,
+  attackFactor: 0,
+  recharge: 0,
+  throw: 0,
+  quick: 0,
+  hyper: 0,
+  shield: 0,
+  handy: 0,
+  clumsy: 0,
+  armorPiercing: 0,
+  entangle: 0,
+  returning: 0,
+  shockOnly: 0,
+  shockAdded: 0,
+  blastRadius: 0,
+  smart: 0,
+  skill: 0,
+  warhead: 0,
+  numMissile: 0,
+  multiFeed: 0,
+  hyperVelocity: 0,
+};
+
+const DEFAULT_AMMO = [{ type: 0, numAmmo: 10 }];
 
 interface MechWeaponInt {
   accuracy(): number;
@@ -75,53 +117,26 @@ class MechWeapon extends MechServo implements MechWeaponInt {
     hyperVelocity: number;
     //special: number;
     //variable: number;
-  } = {
-    damageRange: 5,
-    accuracy: 2,
-    shots: 0,
-    rangeMod: 3,
-    warmUp: 0,
-    wideAngle: 0,
-    burstValue: 0,
-    special: 0,
-    variable: 0,
-    fragile: 0,
-    longRange: 0,
-    megaBeam: 0,
-    disruptor: 0,
-    turnsUse: 0,
-    attackFactor: 0,
-    recharge: 0,
-    throw: 0,
-    quick: 0,
-    hyper: 0,
-    shield: 0,
-    handy: 0,
-    clumsy: 0,
-    armorPiercing: 0,
-    entangle: 0,
-    returning: 0,
-    shockOnly: 0,
-    shockAdded: 0,
-    blastRadius: 0,
-    smart: 0,
-    skill: 0,
-    warhead: 0,
-    numMissile: 0,
-    multiFeed: 0,
-    hyperVelocity: 0,
   };
   numMissile: number = 0;
-  ammoList: { type: number; numAmmo: number }[] = [];
+  ammoList: { type: number; numAmmo: number }[];
 
   constructor(weaponData?: any) {
-    // super: set id, name and the properties and methods for altering this parent servo:
+    // super: set id, name and other servo utility properties and methods
+    // also properties and methods for altering this parent servo/servo shape lists:
     //  -> offset, rotation, scaleAdjust, shape, color
-    // these settings cascade to all children servoShapes
-    super(weaponData);
-    // super has already transfered other properties from weaponData
-    if (weaponData?.data) {
-      transferProperties(this.data, weaponData.data);
+    super();
+    // must set data object, or properties will not be transferred (doing this way to enforce type casting)
+    this.data = DEFAULT_DATA;
+    // arrays not set up for transfer in transferProperties, set ammo list directly for now
+    this.ammoList = weaponData?.ammoList || DEFAULT_AMMO;
+    if (weaponData) transferProperties(this, weaponData);
+    // transfer properties from parsed JSON data (servoData) to this
+    if (weaponData) {
+      transferProperties(this, weaponData);
+      if (weaponData.servoShapes) {
+        initServoShapes(this, weaponData.servoShapes);
+      }
     }
   }
 

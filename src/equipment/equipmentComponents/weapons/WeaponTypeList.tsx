@@ -35,9 +35,7 @@ export const WeaponTypeList = (props: WeaponTypeListInt) => {
           ) => (
             <span key={weapon.id}>
               <button
-                onClick={() =>
-                  equipActions.weaponMenu.deleteWeapon(weaponType, weapon.id)
-                }
+                onClick={() => equipActions.weaponMenu.deleteWeapon(weapon.id)}
               >
                 X
               </button>

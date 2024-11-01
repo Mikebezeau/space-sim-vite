@@ -1,8 +1,11 @@
 import { create } from "zustand";
 import { Color, Euler, Texture, TextureLoader, Vector3 } from "three";
 import ParticleController from "../classes/ParticleController";
+// @ts-ignore
 import starSpriteSrc from "../sprites/sprite120.png";
+// @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
+// @ts-ignore
 import smokeTextureSrc from "../sprites/particles/pngTrans/smoke_11.png";
 import { WEAPON_FIRE_SPEED } from "../constants/constants";
 import { SPRITE_TYPE, DESIGN_TYPE } from "../constants/particleConstants";
@@ -17,11 +20,11 @@ interface particleStoreState {
   initControllers: () => void;
   addExplosion: (
     position: Vector3 | { x: number; y: number; z: number },
-    numParticles: number,
-    size: number,
-    spread: number,
-    lifeTime: number,
-    color: Color,
+    numParticles?: number,
+    size?: number,
+    spread?: number,
+    lifeTime?: number,
+    color?: Color,
     endColor?: Color
   ) => void;
   addBullet: (

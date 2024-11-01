@@ -6,6 +6,7 @@ import { equipData } from "../equipment/data/equipData";
 //import { weaponUtil } from "./weaponUtil";
 import mechDesigns from "../equipment/data/mechDesigns";
 import MechBP from "../classes/mechBP/MechBP";
+import MechServoShape from "../classes/mechBP/MechServoShape";
 import MechWeaponBeam from "../classes/mechBP/weaponBP/MechWeaponBeam";
 import MechWeaponEnergyMelee from "../classes/mechBP/weaponBP/MechWeaponEnergyMelee";
 import MechWeaponMelee from "../classes/mechBP/weaponBP/MechWeaponMelee";
@@ -24,15 +25,14 @@ function transferProperties(mergBP, parsedBP) {
       partList: [],
       multSystemList: [],
       */
+
       mergBP[key] =
         key === "id" ||
         key === "locationServoId" ||
         key === "landingBayServoLocationId" ||
         key === "passengersLocationServoId" ||
         key === "name" ||
-        //key === "type" || // type is number servo type
-        key === "color" ||
-        key === "weaponType" // TODO: weaponType should be const number
+        key === "color"
           ? parsedBP[key]
           : Number(parsedBP[key]);
     } else if (
@@ -42,14 +42,22 @@ function transferProperties(mergBP, parsedBP) {
       key === "rotation" ||
       key === "scaleAdjust" ||
       key === "mirrorAxis" ||
-      key === "ammoList"
+      key === "data"
     ) {
-      // recursivly transfering object properties: offset, rotation, scaleAdjust => {x,y,z}
+      // transfering object properties
       mergBP[key] = transferProperties(mergBP[key], parsedBP[key]);
     }
   });
   return mergBP;
 }
+
+export const initServoShapes = (part, servoShapesData) => {
+  servoShapesData.forEach((shapeData) => {
+    const servoShape = new MechServoShape(shapeData);
+    part.servoShapes.push(servoShape);
+  });
+  return part;
+};
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //                all MECH PROPERTIES and METHODS
@@ -367,8 +375,11 @@ const initWeaponBP = function (weaponData) {
     case equipData.weaponType.melee:
       newWeaponBP = new MechWeaponMelee(weaponData);
       break;
+    default:
+      newWeaponBP = new MechWeaponBeam(weaponData);
+      console.log("Invalid weapon type");
   }
-  return transferProperties(newWeaponBP, weaponData);
+  return newWeaponBP;
 };
 /*
 const initWeaponBP = function (weaponType, scale) {

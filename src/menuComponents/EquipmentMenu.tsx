@@ -58,19 +58,19 @@ const EquipmentMenu = () => {
     equipActions.blueprintMenu.importBlueprint(importExportText);
     setImportExportText("");
   };
-  const handleSelectPlayerBP = (i) => {
+  const handleSelectPlayerBP = (i: number) => {
     if (mechDesigns.player[i])
       equipActions.blueprintMenu.importBlueprint(
         JSON.stringify(mechDesigns.player[i])
       );
   };
-  const handleSelectEnemyBP = (i) => {
+  const handleSelectEnemyBP = (i: number) => {
     if (mechDesigns.enemy[i])
       equipActions.blueprintMenu.importBlueprint(
         JSON.stringify(mechDesigns.enemy[i])
       );
   };
-  const handleSelectStationBP = (i) => {
+  const handleSelectStationBP = (i: number) => {
     if (mechDesigns.station[i])
       equipActions.blueprintMenu.importBlueprint(
         JSON.stringify(mechDesigns.station[i])
@@ -129,7 +129,7 @@ const EquipmentMenu = () => {
         */}
             <select
               onChange={(e) => {
-                handleSelectPlayerBP(e.target.value);
+                handleSelectPlayerBP(Number(e.target.value));
               }}
             >
               <option>Select Player BP</option>
@@ -141,7 +141,7 @@ const EquipmentMenu = () => {
             </select>
             <select
               onChange={(e) => {
-                handleSelectEnemyBP(e.target.value);
+                handleSelectEnemyBP(Number(e.target.value));
               }}
             >
               <option>Select Enemy BP</option>
@@ -153,7 +153,7 @@ const EquipmentMenu = () => {
             </select>
             <select
               onChange={(e) => {
-                handleSelectStationBP(e.target.value);
+                handleSelectStationBP(Number(e.target.value));
               }}
             >
               <option>Select Station BP</option>

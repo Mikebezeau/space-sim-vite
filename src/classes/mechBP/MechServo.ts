@@ -2,7 +2,7 @@ import * as THREE from "three";
 import MechServoShape from "./MechServoShape";
 import { getGeometry } from "../../3d/buildMech/shapeGeometry";
 import { getMergedBufferGeom, getVolume } from "../../util/gameUtil";
-import { transferProperties } from "../../util/initEquipUtil";
+import { transferProperties, initServoShapes } from "../../util/initEquipUtil";
 import { equipData } from "../../equipment/data/equipData";
 import { armorUtil } from "../../util/mechServoUtil";
 import {
@@ -30,39 +30,26 @@ interface MechServoInt {
 }
 
 class MechServo extends MechServoShape implements MechServoInt {
-  type: number;
-  class: number;
-  scale: number;
-  servoShapes: MechServoShape[];
-  SPMod: number;
-  wEff: number;
-  armor: { class: number; rating: number }; //rating 1 = standard armor
-  armorDamage: number;
-  structureDamage: number;
+  type: number = equipData.servoType.torso;
+  class: number = 4;
+  scale: number = 0;
+  servoShapes: MechServoShape[] = [];
+  SPMod: number = 0;
+  wEff: number = 0;
+  armor: { class: number; rating: number } = { class: 2, rating: 1 }; //rating 1 = standard armor
+  armorDamage: number = 0;
+  structureDamage: number = 0;
 
   constructor(servoData?: any) {
     // super: set the id, name and properties and methods for altering this parent servo:
     //  -> offset, rotation, scaleAdjust, shape, color
     // these settings cascade to all children servoShapes
     super();
-    //
-    this.type = equipData.servoType.torso;
-    this.class = 0;
-    this.scale = 0;
-    this.servoShapes = [];
-    this.SPMod = 0;
-    this.wEff = 0;
-    this.armor = { class: 0, rating: 1 }; //rating 1 = standard armor
-    this.armorDamage = 0;
-    this.structureDamage = 0;
     // transfer properties from parsed JSON data (servoData) to this
     if (servoData) {
       transferProperties(this, servoData);
       if (servoData.servoShapes) {
-        servoData.servoShapes.forEach((shapeData: any) => {
-          const servoShape = new MechServoShape(shapeData);
-          this.servoShapes.push(servoShape);
-        });
+        initServoShapes(this, servoData.servoShapes);
       }
     }
   }

@@ -7,6 +7,7 @@ interface devStoreState {
   devEnemyTest: boolean;
   devPlayerPilotMech: boolean;
   showLeaders: boolean;
+  showObbBox: boolean;
   showBoidVectors: boolean;
   boidAlignmentMod: number;
   boidSeparationMod: number;
@@ -24,7 +25,8 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   boidAlignmentMod: 0,
   boidSeparationMod: 0,
   boidCohesionMod: 0,
-  setProp: (propName: string, value: any) => set(() => ({ [propName]: value })),
+  setProp: (propName: string, value: number | boolean) =>
+    set(() => ({ [propName]: value })),
   summonEnemy() {
     const playerPosition = useStore.getState().player.object3d.position;
     useEnemyStore.getState().enemies.map((enemy) => {

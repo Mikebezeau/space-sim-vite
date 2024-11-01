@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { Color } from "three";
-import { transferProperties } from "../../util/initEquipUtil";
+import { transferProperties, initServoShapes } from "../../util/initEquipUtil";
 import { roundhundredth } from "../../util/gameUtil";
 
 export const EDIT_PROP_STRING = ["id", "name", "color"];
@@ -29,35 +29,27 @@ interface MechServoShapeInt {
 }
 
 class MechServoShape implements MechServoShapeInt {
-  id: string;
-  name: string;
-  offset: { x: number; y: number; z: number };
-  rotation: { x: number; y: number; z: number };
-  scaleAdjust: { x: number; y: number; z: number };
-  mirrorAxis: { x: boolean; y: boolean; z: boolean };
-  shape: number;
-  servoShapes: MechServoShape[];
-  color: string;
+  id: string = uuidv4();
+  name: string = "";
+  offset: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
+  rotation: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
+  scaleAdjust: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
+  mirrorAxis: { x: boolean; y: boolean; z: boolean } = {
+    x: false,
+    y: false,
+    z: false,
+  };
+  shape: number = 0;
+  servoShapes: MechServoShape[] = [];
+  color: string = "";
   threeColor: Color;
 
   constructor(servoShapeData: any | null = null) {
-    this.id = uuidv4(); // id for new shape
-    this.name = "";
-    this.offset = { x: 0, y: 0, z: 0 };
-    this.rotation = { x: 0, y: 0, z: 0 };
-    this.scaleAdjust = { x: 0, y: 0, z: 0 };
-    this.mirrorAxis = { x: false, y: false, z: false };
-    this.shape = 0; // default box shape
-    this.servoShapes = [];
-    this.color = "";
     if (servoShapeData) {
       transferProperties(this, servoShapeData);
       // recursively create servo shapes with new MechServoShape
       if (servoShapeData.servoShapes) {
-        servoShapeData.servoShapes.forEach((shapeData: any) => {
-          const servoShape = new MechServoShape(shapeData);
-          this.servoShapes.push(servoShape);
-        });
+        initServoShapes(this, servoShapeData.servoShapes);
       }
     }
   }

@@ -27,7 +27,10 @@ interface storeState {
   galaxy: Object;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
+  // therefore do not really need to use getPlayer
   getPlayer: () => Object;
+  playerPropUpdate: boolean; // used to re-render player prop based menu components
+  setPlayerPropUpdate: () => void;
   focusTargetIndex: number | null;
   selectedTargetIndex: number | null;
   focusPlanetIndex: number | null;
@@ -35,17 +38,18 @@ interface storeState {
   getTargets: () => Object;
   planets: Object | null;
   stations: Object | null;
-  planetTerrain: Object | null;
+  planetTerrain: any;
   actions: {
     beginSpaceFlightSceneLoop: () => void;
     setSpeed: (speed: number) => void;
+    setPlayerPosition: (positionVec3: THREE.Vector3) => void;
     setFocusPlanetIndex: (focusPlanetIndex: number) => void;
     setFocusTargetIndex: (focusTargetIndex: number) => void;
     setSelectedTargetIndex: () => void;
     getPlayerCurrentStarIndex: () => number;
     setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
     setShowInfoHoveredStarIndex: (showInfoHoveredStarIndex: number) => void;
-    getShowInfoTargetStarIndex: () => number;
+    getShowInfoTargetStarIndex: () => number | null;
     setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
     setSelectedWarpStar: (selectedWarpStar: number) => void;
     setSelectedPanetIndex: (planetIndex: number) => void;
@@ -84,6 +88,12 @@ const useStore = create<storeState>()((set, get) => ({
   player: new PlayerMech(),
   getPlayer: () => get().player, // getting state to avoid rerenders in components when necessary
   //playerMechBP: initPlayerMechBP(),
+  playerPropUpdate: false, // currently used for speed updates
+  setPlayerPropUpdate: () => {
+    set({
+      playerPropUpdate: !get().playerPropUpdate,
+    });
+  },
   // targeting
   focusTargetIndex: null,
   selectedTargetIndex: null,
@@ -178,13 +188,13 @@ const useStore = create<storeState>()((set, get) => ({
         usePlayerControlsStore.getState().playerScreen ===
         PLAYER.screen.landedPlanet
       ) {
-        let player = get().player;
-        player.object3d.position.setX(
-          get().planetTerrain.terrain.CityPositions[0].position.x
+        const planetTerrain = get().planetTerrain.terrain;
+        get().player.object3d.position.setX(
+          planetTerrain.CityPositions[0].position.x
         );
-        player.object3d.position.setY(0);
-        player.object3d.position.setZ(
-          get().planetTerrain.terrain.CityPositions[0].position.z
+        get().player.object3d.position.setY(0);
+        get().player.object3d.position.setZ(
+          get().planetTerrain.CityPositions[0].position.z
         );
       }
     },
@@ -244,12 +254,8 @@ const useStore = create<storeState>()((set, get) => ({
 
     // updating speed of player through state to trigger rerenders in components (i.e SpeedReadout)
     setSpeed(speedValue) {
-      set((state) => ({
-        player: {
-          ...state.player,
-          speed: speedValue,
-        },
-      }));
+      get().player.speed = speedValue;
+      get().setPlayerPropUpdate();
     },
 
     setPlayerPosition(positionVec3) {
@@ -370,7 +376,7 @@ const useStore = create<storeState>()((set, get) => ({
     // save screen touch position (-0.5 to 0.5) relative to
     // triggering event.target (mobile movement control circle)
     updateTouchMobileMoveShip(event) {
-      if (event) {
+      if (event.target) {
         var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
         const x = event.changedTouches[0].clientX - bounds.left;
         const y = event.changedTouches[0].clientY - bounds.top;

@@ -1,12 +1,10 @@
-import {
-  forwardRef,
+import React, {
   Fragment,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
-//import PropTypes from "prop-types";
 import * as THREE from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
@@ -26,7 +24,7 @@ export default function EnemyTestScene() {
   console.log("EnemyTest Scene rendered");
   const [scene] = useState(() => new THREE.Scene());
   const { camera } = useThree();
-  const getPlayer = useStore((state) => state.getPlayer);
+  const player = useStore((state) => state.player);
   const setPlayerPosition = useStore(
     (state) => state.actions.setPlayerPosition
   );
@@ -35,16 +33,17 @@ export default function EnemyTestScene() {
   const showObbBox = useDevStore((state) => state.showObbBox);
   const addExplosion = useParticleStore((state) => state.addExplosion);
 
-  const cameraControlsRef = useRef(null);
-  const enemyMechRefs = useRef([]);
-  const obbBoxRefs = useRef([]);
+  const cameraControlsRef = useRef<any>(null);
+  const enemyMechRefs = useRef<THREE.Object3D[]>([]);
+  const obbBoxRefs = useRef<THREE.Mesh[]>([]);
   //const instancedMeshRef = useRef(null);
-  const boidControllerRef = useRef(null);
+  const boidControllerRef = useRef<BoidController | null>(null);
 
   const resestControlsCameraPosition = useCallback(() => {
     if (!cameraControlsRef.current || devPlayerPilotMech) return;
     console.log("resestControlsCameraPosition");
-    cameraControlsRef.current.reset(); // reset camera controls
+    if (cameraControlsRef.current.reset !== undefined)
+      cameraControlsRef.current.reset(); // reset camera controls
     camera.position.set(0, 0, -600);
     camera.lookAt(0, 0, 0);
   }, [camera, devPlayerPilotMech]);
@@ -53,13 +52,13 @@ export default function EnemyTestScene() {
     console.log("setPositions");
     if (devPlayerPilotMech) {
       setPlayerPosition(new THREE.Vector3(0, 0, -150));
-      getPlayer().object3d.lookAt(0, 0, 0);
-      console.log("PlayerMech position", getPlayer().object3d.position);
+      player.object3d.lookAt(0, 0, 0);
+      console.log("PlayerMech position", player.object3d.position);
     }
     enemies[0]?.object3d.position.set(0, 0, 0);
-    enemies[0]?.object3d.lookAt(getPlayer().object3d.position);
+    enemies[0]?.object3d.lookAt(player.object3d.position);
     //console.log("enemies[0] rotation", enemies[0]?.object3d.rotation);
-  }, [devPlayerPilotMech, enemies, getPlayer, setPlayerPosition]);
+  }, [devPlayerPilotMech, enemies, setPlayerPosition]);
 
   useEffect(() => {
     console.log("boidController set");
@@ -88,6 +87,7 @@ export default function EnemyTestScene() {
         obbBoxRefs.current[i].position.copy(enemy.obbPositioned.center);
         obbBoxRefs.current[i].setRotationFromMatrix(enemy.obbRotationHelper);
         // show leaders in red and followers in green, no group in blue
+        // @ts-ignore - material.color does exist
         obbBoxRefs.current[i].material.color.setHex(
           enemy.getIsLeader()
             ? 0xff0000
@@ -123,7 +123,9 @@ export default function EnemyTestScene() {
         if (obb.intersectsOBB(obbToTest) === true) {
           //if (i === 0) console.log("obb collision", i, j);
           // change color of obb test boxes if colliding
+          // @ts-ignore - material.color exists
           obbBoxRefs.current[i].material.color.setHex(0xffff00);
+          // @ts-ignore
           obbBoxRefs.current[j].material.color.setHex(0xffff00);
 
           // add test explosions
@@ -176,7 +178,9 @@ export default function EnemyTestScene() {
           {enemies.map((enemyMech, index) => (
             <Fragment key={enemyMech.id}>
               <mesh
-                ref={(obbBoxRef) => (obbBoxRefs.current[index] = obbBoxRef)}
+                ref={(obbBoxRef) =>
+                  (obbBoxRefs.current[index] = obbBoxRef as THREE.Mesh)
+                }
                 geometry={enemyMech.obbGeoHelper}
                 material={
                   new THREE.MeshBasicMaterial({
@@ -189,8 +193,8 @@ export default function EnemyTestScene() {
                 <BuildMech
                   mechBP={enemyMech.mechBP}
                   ref={(mechRef) => {
-                    enemyMechRefs.current[index] = mechRef;
-                    enemyMech.initObject3d(mechRef);
+                    enemyMechRefs.current[index] = mechRef as THREE.Object3D;
+                    enemyMech.initObject3d(mechRef as THREE.Object3D);
                   }}
                 />
               ) : null}
@@ -204,15 +208,6 @@ export default function EnemyTestScene() {
   );
 }
 /*
-<BuildEnemyMech
-  ref={(mechRef) => {
-    enemyMechRefs.current[index] = mechRef;
-    console.log("init boss mech");
-    enemyMech.initObject3d(mechRef);
-  }}
-  mechBP={enemyMech.mechBP}
-/>
-*/
 const BuildEnemyMech = forwardRef(function Enemy(props, buildMechForwardRef) {
   // Hold state for hovered and clicked events
   //const [hovered, hover] = useState(false);
@@ -231,3 +226,4 @@ const BuildEnemyMech = forwardRef(function Enemy(props, buildMechForwardRef) {
     />
   );
 });
+*/
