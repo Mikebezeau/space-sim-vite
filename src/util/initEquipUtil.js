@@ -42,6 +42,7 @@ function transferProperties(mergBP, parsedBP) {
       key === "rotation" ||
       key === "scaleAdjust" ||
       key === "mirrorAxis" ||
+      key === "shapeProps" ||
       key === "data"
     ) {
       // transfering object properties

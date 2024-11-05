@@ -1,7 +1,6 @@
 import React from "react";
 import * as THREE from "three";
 //import { CSG } from "three-csg-ts";
-import { geoList } from "./shapeGeometry";
 import { mechMaterial } from "../../constants/mechMaterialConstants";
 import MechServo from "../../classes/mechBP/MechServo";
 import MechServoShape from "../../classes/mechBP/MechServoShape";
@@ -38,12 +37,10 @@ const MeshSubtract = (mesh) => {
   return mesh;
 };
 */
-
 interface ServoShapeInt {
   servoShape: MechServoShape;
   material: THREE.Material;
 }
-
 const ServoShape = (props: ServoShapeInt) => {
   const { servoShape, material } = props;
   return (
@@ -59,7 +56,7 @@ const ServoShape = (props: ServoShapeInt) => {
         (1 + servoShape.scaleAdjust.y) * (servoShape.mirrorAxis.y ? -1 : 1),
         (1 + servoShape.scaleAdjust.z) * (servoShape.mirrorAxis.z ? -1 : 1),
       ]}
-      geometry={geoList[servoShape.shape]}
+      geometry={servoShape.geometry()}
       material={material}
     />
   );
@@ -71,9 +68,9 @@ interface ServoShapesInt {
   texture: THREE.Texture;
   flatShading?: boolean;
   damageReadoutMode?: boolean;
-  isWireFrame?: boolean;
   editMode?: boolean;
   editPartId?: string;
+  isWireFrame?: boolean;
   //textureScaleAdjust?: { x: number; y: number; z: number };
 }
 
@@ -84,9 +81,9 @@ const ServoShapes = (props: ServoShapesInt) => {
     texture,
     flatShading = true,
     damageReadoutMode,
-    isWireFrame,
     editMode,
     editPartId,
+    isWireFrame,
   } = props;
   const thisColor = servo.color ? servo.color : color;
   let readoutMaterial: THREE.Material | null = null;
@@ -139,8 +136,9 @@ const ServoShapes = (props: ServoShapesInt) => {
         ? constructionMaterial
         : editPartId === servoShape.id
         ? mechMaterial.selectMaterial
+        : isWireFrame
+        ? mechMaterial.wireFrameMaterial
         : constructionMaterial;
-      //mechMaterial.wireFrameMaterial;
     }
 
     material.side = THREE.DoubleSide;

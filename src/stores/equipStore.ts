@@ -121,7 +121,7 @@ function recursiveDelete(arr, id) {
   });
 }
 
-const getZoom = (mechBP) => {
+const getZoom = (mechBP: MechBP) => {
   let cameraZoom = 0;
   if (mechBP.servoList.length > 0) {
     cameraZoom = mechBP.size() * -2;
@@ -205,6 +205,7 @@ interface equipStoreState {
     };
     servoMenu: {
       getList: (partId: string) => (MechServo | MechServoShape)[];
+      updateShape: (id: string, shape: number) => void;
       updateProp: (id: string, prop: string, val: any) => void;
       addServo: () => void;
       addServoShape: (parentId: string) => void;
@@ -340,14 +341,19 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         console.log("cameraZoom", cameraZoom);
       },
       exportBlueprint() {
+        /*
         function replacer(key, value) {
-          if (key === "metadata" || key === "threeColor" || key === "material")
+          if (
+            key === "material"
+          ) {
+            console.log(key);
             return undefined;
-          else {
+          } else {
             return value;
           }
         }
-        const JSONBP = JSON.stringify(get().mechBP, replacer);
+          */
+        const JSONBP = JSON.stringify(get().mechBP); //, replacer);
         return JSONBP;
       },
       updateMechBPprop(prop, val) {
@@ -396,6 +402,14 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
           console.log("List not found");
           return [];
         }
+      },
+      updateShape(id, shapeType) {
+        shapeType = Number(shapeType);
+        const props = { shapeType };
+        // also sets default props for the shape
+        let list = get().equipActions.servoMenu.getList(id);
+        list = recursiveCallMethod(list, id, EDIT_PART_METHOD.setShape, props);
+        get().toggleUpdateState();
       },
       updateProp(id, prop, val) {
         let list = get().equipActions.servoMenu.getList(id);

@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import MechServoShape from "./MechServoShape";
-import { getGeometry } from "../../3d/buildMech/shapeGeometry";
 import { getMergedBufferGeom, getVolume } from "../../util/gameUtil";
 import { transferProperties, initServoShapes } from "../../util/initEquipUtil";
 import { equipData } from "../../equipment/data/equipData";
@@ -33,7 +32,6 @@ class MechServo extends MechServoShape implements MechServoInt {
   type: number = equipData.servoType.torso;
   class: number = 4;
   scale: number = 0;
-  servoShapes: MechServoShape[] = [];
   SPMod: number = 0;
   wEff: number = 0;
   armor: { class: number; rating: number } = { class: 2, rating: 1 }; //rating 1 = standard armor
@@ -95,7 +93,7 @@ class MechServo extends MechServoShape implements MechServoInt {
         1 + servoShape.scaleAdjust.y,
         1 + servoShape.scaleAdjust.z
       );
-      servoShapeMesh.geometry = getGeometry(servoShape.shape);
+      servoShapeMesh.geometry = servoShape.getGeometry();
       servoShapeMesh.material = new THREE.MeshLambertMaterial({
         color: new THREE.Color(color),
       });

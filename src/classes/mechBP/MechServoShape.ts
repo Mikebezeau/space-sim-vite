@@ -1,11 +1,16 @@
 import { v4 as uuidv4 } from "uuid";
-import { Color } from "three";
+import { BufferGeometry } from "three";
 import { transferProperties, initServoShapes } from "../../util/initEquipUtil";
+import {
+  getGeomtryDefaultProps,
+  getGeometryFromList,
+} from "../../util/geometryUtil";
 import { roundhundredth } from "../../util/gameUtil";
 
 export const EDIT_PROP_STRING = ["id", "name", "color"];
 
 export const EDIT_PART_METHOD = {
+  setShape: "setShape",
   adjustPosition: "movePart",
   resetPosition: "resetPosition",
   adjustRotation: "adjustRotation",
@@ -17,6 +22,8 @@ export const EDIT_PART_METHOD = {
 };
 
 interface MechServoShapeInt {
+  geometry: () => BufferGeometry;
+  setShape: (props: { shapeType: number }) => void;
   movePart: (props: { x: number; y: number; z: number }) => void;
   resetPosition: () => void;
   rotationRadians: () => { x: number; y: number; z: number };
@@ -40,9 +47,9 @@ class MechServoShape implements MechServoShapeInt {
     z: false,
   };
   shape: number = 0;
+  shapeProps: number[] = [];
   servoShapes: MechServoShape[] = [];
   color: string = "";
-  threeColor: Color;
 
   constructor(servoShapeData: any | null = null) {
     if (servoShapeData) {
@@ -52,6 +59,15 @@ class MechServoShape implements MechServoShapeInt {
         initServoShapes(this, servoShapeData.servoShapes);
       }
     }
+  }
+
+  geometry() {
+    return getGeometryFromList(this.shape, this.shapeProps);
+  }
+
+  setShape(props: { shapeType: number }) {
+    this.shape = props.shapeType;
+    this.shapeProps = getGeomtryDefaultProps(props.shapeType);
   }
 
   // use of props to call this method dynamically

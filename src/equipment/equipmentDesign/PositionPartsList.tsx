@@ -2,12 +2,11 @@ import React from "react";
 import MechServo from "../../classes/mechBP/MechServo";
 import MechServoShape from "../../classes/mechBP/MechServoShape";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
-
 import useEquipStore, {
   EDIT_MENU_SELECT,
   recursiveFindChildId,
 } from "../../stores/equipStore";
-import { geoListKey } from "../../constants/geometryShapes";
+import { GEO_SHAPE_TYPE } from "../../constants/geometryConstants";
 import PositionPartEditButtons from "./PositionPartEditButtons";
 
 interface PartGroupInt {
@@ -102,14 +101,13 @@ const Part = (props: PartInt) => {
                 value={part.shape}
                 onChange={(e) => {
                   equipActions.setEditPartId(part.id);
-                  equipActions.servoMenu.updateProp(
+                  equipActions.servoMenu.updateShape(
                     part.id,
-                    "shape",
-                    e.target.value
+                    Number(e.target.value)
                   );
                 }}
               >
-                {Object.keys(geoListKey).map((key, geoListKeyVal) => (
+                {Object.keys(GEO_SHAPE_TYPE).map((key, geoListKeyVal) => (
                   <option key={key} value={geoListKeyVal}>
                     {key}
                   </option>
@@ -130,12 +128,11 @@ const Part = (props: PartInt) => {
 };
 
 const PositionPartsList = () => {
-  //lust of servos, player clicks one of the buttons to select that servo, and then will be able to edit size/location
+  //list of servos, player clicks one of the buttons to select that servo
+  // and then can to edit shaped / shape groups
   const mechBP = useEquipStore((state) => state.mechBP);
   const editPartId = useEquipStore((state) => state.editPartId);
   const editWeaponId = useEquipStore((state) => state.editWeaponId);
-  //const editLandingBayId = useEquipStore((state) => state.editLandingBayId);
-  const equipActions = useEquipStore((state) => state.equipActions);
 
   return (
     <>
@@ -168,22 +165,6 @@ const PositionPartsList = () => {
               </span>
             ))}
           </div>
-          {/*
-          <div>
-            {mechBP.landingBayServoLocationId[0] === servo.id && (
-              <span
-                key={"bay"}
-                className={
-                  editLandingBayId ? "selectedItem" : "nonSelectedItem"
-                }
-              >
-                <button onClick={() => handleSelectEditLandingBay()}>
-                  Landing Bay
-                </button>
-              </span>
-            )}
-          </div>
-           */}
         </span>
       ))}
     </>

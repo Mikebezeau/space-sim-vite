@@ -3,14 +3,13 @@ import { RepeatWrapping } from "three";
 import MechBP from "../../classes/mechBP/MechBP";
 import useEquipStore from "../../stores/equipStore";
 import ServoShapes from "./ServoShapes";
-//import WeaponShape from "./WeaponShape";
 
 interface BuildMechInt {
   mechBP: MechBP;
   flatShading?: boolean;
   damageReadoutMode?: boolean;
-  editPartId?: string;
   editMode?: boolean;
+  editPartId?: string;
   isWireFrame?: boolean;
   handleClick?: () => void;
 }
@@ -24,8 +23,8 @@ const BuildMech = forwardRef(function BuildMech(
     mechBP,
     flatShading,
     damageReadoutMode,
-    editPartId,
     editMode,
+    editPartId,
     isWireFrame,
     handleClick,
   } = props;
@@ -45,9 +44,9 @@ const BuildMech = forwardRef(function BuildMech(
             texture={texture}
             flatShading={flatShading}
             damageReadoutMode={damageReadoutMode}
-            isWireFrame={isWireFrame}
             editMode={editMode}
             editPartId={editPartId}
+            isWireFrame={isWireFrame}
           />
           {mechBP.servoWeaponList(servo.id).map((weapon) => (
             <group key={weapon.id}>
@@ -57,9 +56,9 @@ const BuildMech = forwardRef(function BuildMech(
                 texture={texture}
                 flatShading={flatShading}
                 damageReadoutMode={damageReadoutMode}
-                isWireFrame={isWireFrame}
                 editMode={editMode}
                 editPartId={editPartId}
+                isWireFrame={isWireFrame}
               />
             </group>
           ))}
