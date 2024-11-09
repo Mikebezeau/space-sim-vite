@@ -1,5 +1,6 @@
 import React from "react";
 import useEquipStore from "../../../stores/equipStore";
+import EditorMechBP from "../../../classes/mechBP/EditorMechBP";
 import MechWeaponBeam from "../../../classes/mechBP/weaponBP/MechWeaponBeam";
 import MechWeaponEnergyMelee from "../../../classes/mechBP/weaponBP/MechWeaponEnergyMelee";
 import MechWeaponMelee from "../../../classes/mechBP/weaponBP/MechWeaponMelee";
@@ -13,16 +14,16 @@ import { WeaponProjItem } from "./WeaponProj";
 import { equipData } from "../../data/equipData";
 
 interface WeaponTypeListInt {
+  editorMechBP: EditorMechBP;
   weaponType: number;
 }
 export const WeaponTypeList = (props: WeaponTypeListInt) => {
-  const { weaponType } = props;
-  const { mechBP } = useEquipStore((state) => state);
-  const { equipActions } = useEquipStore((state) => state);
+  const { editorMechBP, weaponType } = props;
+  const equipActions = useEquipStore((state) => state.equipActions);
 
   return (
     <>
-      {mechBP.weaponList
+      {editorMechBP.weaponList
         .filter((w) => w.weaponType === weaponType)
         .map(
           (

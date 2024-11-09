@@ -13,7 +13,7 @@ import {
 const DEFAULT_DATA = {
   damageRange: 5,
   accuracy: 2,
-  shots: 0,
+  shots: 5,
   rangeMod: 3,
   warmUp: 0,
   wideAngle: 0,
@@ -47,7 +47,7 @@ const DEFAULT_DATA = {
   hyperVelocity: 0,
 };
 
-const DEFAULT_AMMO = [{ type: 0, numAmmo: 10 }];
+const DEFAULT_AMMO_OBJECT = { type: 0, numAmmo: 10 };
 
 interface MechWeaponInt {
   accuracy(): number;
@@ -127,17 +127,18 @@ class MechWeapon extends MechServo implements MechWeaponInt {
     //  -> offset, rotation, scaleAdjust, shape, color
     super();
     // must set data object, or properties will not be transferred (doing this way to enforce type casting)
-    this.data = DEFAULT_DATA;
+    this.data = { ...DEFAULT_DATA };
     // arrays not set up for transfer in transferProperties, set ammo list directly for now
-    this.ammoList = weaponData?.ammoList || DEFAULT_AMMO;
-    if (weaponData) transferProperties(this, weaponData);
-    // transfer properties from parsed JSON data (servoData) to this
+    this.ammoList = weaponData?.ammoList || [{ ...DEFAULT_AMMO_OBJECT }];
+    // transfer properties from parsed JSON data (weaponData) to this
     if (weaponData) {
       transferProperties(this, weaponData);
       if (weaponData.servoShapes) {
         initServoShapes(this, weaponData.servoShapes);
       }
     }
+    // this is not making sense where is .ammoList
+    if (weaponData) transferProperties(this, weaponData);
   }
 
   accuracy() {

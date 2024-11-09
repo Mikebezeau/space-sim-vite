@@ -15,7 +15,6 @@ import {
 
 import { lerp } from "../util/gameUtil";
 import "./cockpit.css";
-import "../css/buttonCyber.css";
 import CockpitLeft from "./faces/CockpitLeft";
 import CockpitMiddle from "./faces/CockpitMiddle";
 import CockpitRight from "./faces/CockpitRight";

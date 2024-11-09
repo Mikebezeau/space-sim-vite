@@ -6,11 +6,9 @@ import {
   getGeometryFromList,
 } from "../../util/geometryUtil";
 import { roundhundredth } from "../../util/gameUtil";
-
-export const EDIT_PROP_STRING = ["id", "name", "color"];
+import { GEO_SHAPE_TYPE } from "../../constants/geometryConstants";
 
 export const EDIT_PART_METHOD = {
-  setShape: "setShape",
   adjustPosition: "movePart",
   resetPosition: "resetPosition",
   adjustRotation: "adjustRotation",
@@ -22,8 +20,9 @@ export const EDIT_PART_METHOD = {
 };
 
 interface MechServoShapeInt {
+  label: () => string;
   geometry: () => BufferGeometry;
-  setShape: (props: { shapeType: number }) => void;
+
   movePart: (props: { x: number; y: number; z: number }) => void;
   resetPosition: () => void;
   rotationRadians: () => { x: number; y: number; z: number };
@@ -46,28 +45,53 @@ class MechServoShape implements MechServoShapeInt {
     y: false,
     z: false,
   };
-  shape: number = 0;
+  _shape: number = 0;
   shapeProps: number[] = [];
   servoShapes: MechServoShape[] = [];
-  color: string = "";
+  _color: string = "";
 
   constructor(servoShapeData: any | null = null) {
     if (servoShapeData) {
       transferProperties(this, servoShapeData);
-      // recursively create servo shapes with new MechServoShape
+      // recursively create servoShapes tree with new MechServoShapes
       if (servoShapeData.servoShapes) {
         initServoShapes(this, servoShapeData.servoShapes);
       }
     }
   }
 
-  geometry() {
-    return getGeometryFromList(this.shape, this.shapeProps);
+  public get color() {
+    return this._color;
   }
 
-  setShape(props: { shapeType: number }) {
-    this.shape = props.shapeType;
-    this.shapeProps = getGeomtryDefaultProps(props.shapeType);
+  public set color(color: string) {
+    if (color.length > 0) {
+      var pattern = new RegExp("^#([a-fA-F0-9]){3}$|[a-fA-F0-9]{6}$");
+      if (!pattern.test(color)) this._color = "#FFFFFF";
+      else this._color = color;
+    }
+  }
+
+  public get shape() {
+    return this._shape;
+  }
+
+  public set shape(shapeType: number) {
+    if (Object.values(GEO_SHAPE_TYPE).includes(shapeType)) {
+      this._shape = shapeType;
+      this.shapeProps = getGeomtryDefaultProps(shapeType);
+    } else {
+      console.error("shapeType not found", shapeType);
+    }
+  }
+
+  label() {
+    // TODO: add to MechServo and WechWeapon for servo type or weapon type
+    return this.name || "Unnamed Part";
+  }
+
+  geometry() {
+    return getGeometryFromList(this.shape, this.shapeProps);
   }
 
   // use of props to call this method dynamically

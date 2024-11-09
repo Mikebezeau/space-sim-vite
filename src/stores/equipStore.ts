@@ -1,10 +1,9 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { Texture, TextureLoader } from "three";
-import MechBP from "../classes/mechBP/MechBP";
+import EditorMechBP from "../classes/mechBP/EditorMechBP";
 import MechServo from "../classes/mechBP/MechServo";
 import MechServoShape, {
-  EDIT_PROP_STRING,
   EDIT_PART_METHOD,
 } from "../classes/mechBP/MechServoShape";
 import MechWeapon from "../classes/mechBP/weaponBP/MechWeapon";
@@ -14,25 +13,21 @@ import MechWeaponMelee from "../classes/mechBP/weaponBP/MechWeaponMelee";
 import MechWeaponMissile from "../classes/mechBP/weaponBP/MechWeaponMissile";
 import MechWeaponProjectile from "../classes/mechBP/weaponBP/MechWeaponProjectile";
 
-import {
-  loadBlueprint,
-  //initPlayerMechBP,
-  //initMechBP,
-  initWeaponBP,
-} from "../util/initEquipUtil";
+import { initWeaponBP } from "../util/initEquipUtil";
 import { servoShapeDesigns } from "../equipment/data/servoShapeDesigns";
 // @ts-ignore
 import greySpeckleBmpSrc from "../assets/bmp/greySpeckle.bmp";
 import { equipData } from "../equipment/data/equipData";
-import { string } from "three/webgpu";
+import { getZoom } from "../util/editUtil";
 
 export const EDIT_MENU_SELECT = {
   none: 0,
-  adjust: 1,
-  edit: 2,
-  mirror: 3,
-  color: 4,
-  addServoShapeDesign: 5,
+  shape: 1,
+  adjust: 2,
+  edit: 3,
+  mirror: 4,
+  color: 5,
+  addServoShapeDesign: 6,
 };
 
 // recursively find if group tree has childId
@@ -60,24 +55,6 @@ export const recursiveSetNewIds = (part: MechServo | MechServoShape) => {
     recursiveSetNewIds(s);
   });
   return part;
-};
-
-const recursiveUpdateProp = (
-  arr: (MechServo | MechServoShape)[],
-  id: string,
-  prop: string,
-  val: number | string
-) => {
-  if (!EDIT_PROP_STRING.includes(prop)) val = Number(val);
-  arr.forEach((s) => {
-    if (s.id === id) {
-      if (!s.hasOwnProperty(prop)) console.log("Property not found", prop);
-      else s[prop] = val;
-    } else if (s.servoShapes.length > 0) {
-      recursiveUpdateProp(s.servoShapes, id, prop, val);
-    }
-  });
-  return arr;
 };
 
 // recursive update for servo and servoshapes
@@ -111,70 +88,21 @@ function recursiveAdd(arr, id, newPart) {
   return arr;
 }
 
-// recursive delete for servo and servoshapes
-function recursiveDelete(arr, id) {
-  return arr.filter((item) => {
-    if ("servoShapes" in item) {
-      item.servoShapes = recursiveDelete(item.servoShapes, id);
-    }
-    return item.id !== id;
-  });
-}
-
-const getZoom = (mechBP: MechBP) => {
-  let cameraZoom = 0;
-  if (mechBP.servoList.length > 0) {
-    cameraZoom = mechBP.size() * -2;
-  } else {
-    const scale = mechBP.scale;
-    switch (scale) {
-      case 0:
-        cameraZoom = -10;
-        break;
-      case 1:
-        cameraZoom = -10;
-        break;
-      case 2:
-        cameraZoom = -10;
-        break;
-      case 3:
-        cameraZoom = -20;
-        break;
-      case 4:
-        cameraZoom = -100;
-        break;
-      case 5:
-        cameraZoom = -200;
-        break;
-      case 6:
-        cameraZoom = -500;
-        break;
-      case 7:
-        cameraZoom = -1000;
-        break;
-      default:
-        -10;
-    }
-  }
-  return cameraZoom;
-};
-
 interface equipStoreState {
   greySpeckleBmp: Texture;
   updateState: boolean;
   toggleUpdateState: () => void;
-  isResetCamera: boolean;
+  isResetCamera: boolean; // from 3d mech editor menu component EquipmentMenu.tsx
   resetCamera: (isResetCamera: boolean) => void;
   cameraZoom: number;
   mainMenuSelection: number;
+  editPartMenuSelect: number;
   editPartId: string;
   editPartIdPrev: string;
-  editPartMenuSelect: number;
-  addServoShapeDesignId: string;
-  editWeaponId: string;
   editLandingBayId: string;
+  addServoShapeDesignId: string;
   copiedPartParsedJSON: any;
-  mechBP: MechBP;
+  editorMechBP: EditorMechBP;
   editNewWeaponBP: {
     [key: number]:
       | MechWeaponBeam
@@ -192,22 +120,15 @@ interface equipStoreState {
       newBlueprint: () => void;
       importBlueprint: (importBP: any) => void;
       exportBlueprint: () => string;
-      updateMechBPprop: (prop: string, val: any) => void;
+      setCameraZoom: () => void;
     };
     assignPartLocationMenu: {
       setCrewLocation: (locationServoId: string) => void;
       setLandingBayLocation: (locationServoId: string) => void;
-      setWeaponLocation: (
-        weaponType: number,
-        id: string,
-        locationServoId: string
-      ) => void;
+      setWeaponLocation: (id: string, locationServoId: string) => void;
     };
     servoMenu: {
       getList: (partId: string) => (MechServo | MechServoShape)[];
-      updateShape: (id: string, shape: number) => void;
-      updateProp: (id: string, prop: string, val: any) => void;
-      addServo: () => void;
       addServoShape: (parentId: string) => void;
       duplicateServo: (part: MechServo) => void;
       copyPart: (part: MechServo | MechServoShape) => void;
@@ -215,9 +136,7 @@ interface equipStoreState {
       pastePartIntoGroup: (parentId: string) => void;
       mirrorPart: (axis: string, id: string) => void;
       addGroup: (part: MechServo | MechServoShape) => void;
-      deleteServoOrShape: (id: string) => void;
-      selectServoID: (servoId: string) => void;
-      selectLandingBayID: (id: string) => void;
+      deletePart: (id: string) => void;
       adjustServoOrShapeOffset: (
         id: string,
         axis: string,
@@ -264,15 +183,14 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
   cameraZoom: 1,
   //3d ship editor global variables
   mainMenuSelection: 0,
+  editPartMenuSelect: EDIT_MENU_SELECT.none,
   editPartId: "",
   editPartIdPrev: "",
-  editPartMenuSelect: EDIT_MENU_SELECT.none,
+  editLandingBayId: "", // TODO remove
   addServoShapeDesignId: "",
-  editWeaponId: "",
-  editLandingBayId: "",
   copiedPartParsedJSON: "",
   //MECH blueprint TEMPLATE
-  mechBP: new MechBP(),
+  editorMechBP: new EditorMechBP(),
   //weapon blueprints template
   editNewWeaponBP: {
     [equipData.weaponType.beam]: new MechWeaponBeam(),
@@ -303,42 +221,19 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
 
     blueprintMenu: {
       newBlueprint() {
-        const newMechBP = new MechBP();
+        const newMechBP = new EditorMechBP();
         set(() => ({
-          mechBP: newMechBP,
+          editorMechBP: newMechBP,
         }));
         const cameraZoom = getZoom(newMechBP);
         set(() => ({ cameraZoom }));
       },
-      /*
-        selectBlueprint(id) {
-          set((state) => ({
-            mechBP: state.playerMechBP.find((bp) => bp.id === id),
-          }));
-        },
-        saveBlueprint(id) {
-          if (!get().playerMechBP.find((bp) => bp.id === id)) {
-            id = guid(get().playerMechBP);
-          } else {
-            get().equipActions.blueprintMenu.deleteBlueprint(id);
-          }
-          set((state) => ({
-            playerMechBP: [...state.playerMechBP, { ...state.mechBP, id: id }],
-          }));
-          return id;
-        },
-        deleteBlueprint(id) {
-          set((state) => ({
-            playerMechBP: state.playerMechBP.filter((bp) => bp.id !== id),
-          }));
-        },
-        */
       importBlueprint(importBP: any) {
-        const loadBP = loadBlueprint(importBP);
-        set(() => ({ mechBP: loadBP }));
-        const cameraZoom = getZoom(loadBP);
+        const parsedBP = JSON.parse(importBP);
+        const newEditorMechBP = new EditorMechBP(parsedBP);
+        set(() => ({ editorMechBP: newEditorMechBP }));
+        const cameraZoom = getZoom(newEditorMechBP);
         set(() => ({ cameraZoom }));
-        console.log("cameraZoom", cameraZoom);
       },
       exportBlueprint() {
         /*
@@ -353,38 +248,26 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
           }
         }
           */
-        const JSONBP = JSON.stringify(get().mechBP); //, replacer);
+        const JSONBP = JSON.stringify(get().editorMechBP); //, replacer);
         return JSONBP;
       },
-      updateMechBPprop(prop, val) {
-        val =
-          prop === "id" || prop === "name" || prop === "color"
-            ? val
-            : Number(val);
-        if (prop === "scale") {
-          const cameraZoom = getZoom(get().mechBP);
-          set(() => ({ cameraZoom }));
-        }
-        get().mechBP[prop] = val;
-        get().toggleUpdateState();
+      setCameraZoom() {
+        const cameraZoom = getZoom(get().editorMechBP);
+        set(() => ({ cameraZoom }));
       },
     },
 
     assignPartLocationMenu: {
       setCrewLocation(locationServoId: string) {
-        get().mechBP.crewLocationServoId = [locationServoId];
+        get().editorMechBP.crewLocationServoId = [locationServoId];
         get().toggleUpdateState();
       },
       setLandingBayLocation(locationServoId) {
-        get().mechBP.landingBayServoLocationId = [locationServoId];
+        get().editorMechBP.landingBayServoLocationId = [locationServoId];
         get().toggleUpdateState();
       },
-      setWeaponLocation(
-        weaponType: number,
-        id: string,
-        locationServoId: string
-      ) {
-        const weapon = get().mechBP.weaponList.find((w) => w.id === id);
+      setWeaponLocation(id: string, locationServoId: string) {
+        const weapon = get().editorMechBP.weaponList.find((w) => w.id === id);
         if (weapon !== undefined) {
           weapon.locationServoId = locationServoId;
           get().toggleUpdateState();
@@ -394,34 +277,16 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
 
     servoMenu: {
       getList(partId) {
-        if (recursiveFindChildId(get().mechBP.servoList, partId)) {
-          return get().mechBP.servoList;
-        } else if (recursiveFindChildId(get().mechBP.weaponList, partId)) {
-          return get().mechBP.weaponList;
+        if (recursiveFindChildId(get().editorMechBP.servoList, partId)) {
+          return get().editorMechBP.servoList;
+        } else if (
+          recursiveFindChildId(get().editorMechBP.weaponList, partId)
+        ) {
+          return get().editorMechBP.weaponList;
         } else {
           console.log("List not found");
           return [];
         }
-      },
-      updateShape(id, shapeType) {
-        shapeType = Number(shapeType);
-        const props = { shapeType };
-        // also sets default props for the shape
-        let list = get().equipActions.servoMenu.getList(id);
-        list = recursiveCallMethod(list, id, EDIT_PART_METHOD.setShape, props);
-        get().toggleUpdateState();
-      },
-      updateProp(id, prop, val) {
-        let list = get().equipActions.servoMenu.getList(id);
-        list = recursiveUpdateProp(list, id, prop, val);
-        get().toggleUpdateState();
-      },
-      addServo() {
-        const newServo = new MechServo();
-        newServo.scale = get().mechBP.scale;
-        newServo.servoShapes.push(new MechServoShape());
-        get().mechBP.servoList.push(newServo);
-        get().toggleUpdateState();
       },
       addServoShape(parentId) {
         let list = get().equipActions.servoMenu.getList(parentId);
@@ -479,17 +344,10 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         list = recursiveCallMethod(list, part.id, EDIT_PART_METHOD.makeGroup);
         get().toggleUpdateState();
       },
-      deleteServoOrShape(id) {
-        let list = get().equipActions.servoMenu.getList(id);
-        list = recursiveDelete(list, id);
-        get().toggleUpdateState();
+      deletePart(id) {
+        get().editorMechBP.deletePart(id);
         get().equipActions.setEditPartId(get().editPartIdPrev);
-      },
-      selectServoID(servoId) {
-        get().equipActions.setEditPartId(servoId);
-      },
-      selectLandingBayID(id) {
-        set(() => ({ editLandingBayId: id }));
+        get().toggleUpdateState();
       },
       // if provided seroShapeIndex, then it will move the specific shape not whole servo
       adjustServoOrShapeOffset(id, axis, adjustVal) {
@@ -560,11 +418,11 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         );
         const newWeapon = initWeaponBP(weaponData);
         newWeapon.id = uuidv4();
-        get().mechBP.weaponList.push(newWeapon);
+        get().editorMechBP.weaponList.push(newWeapon);
         get().toggleUpdateState();
       },
       deleteWeapon(id) {
-        get().mechBP.weaponList = get().mechBP.weaponList.filter(
+        get().editorMechBP.weaponList = get().editorMechBP.weaponList.filter(
           (w) => w.id !== id
         );
         get().toggleUpdateState();
@@ -574,7 +432,7 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
           //editing a new weapon design in the store
           get().editNewWeaponBP[weaponType][propName] = val;
         } else {
-          const weapon = get().mechBP.findWeaponId(id);
+          const weapon = get().editorMechBP.getPartById(id);
           if (weapon !== undefined && weapon.hasOwnProperty(propName)) {
             weapon[propName] = val;
           } else console.log("Property not found: ", propName);
@@ -586,8 +444,11 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
           //editing a new weapon design
           get().editNewWeaponBP[weaponType].data[propName] = Number(val);
         } else {
-          const weapon = get().mechBP.findWeaponId(id);
-          if (weapon !== undefined && weapon.data.hasOwnProperty(propName)) {
+          const weapon = get().editorMechBP.getPartById(id);
+          if (
+            weapon instanceof MechWeapon &&
+            weapon.data.hasOwnProperty(propName)
+          ) {
             weapon.data[propName] = Number(val);
           } else console.log("Data property not found: ", propName);
         }

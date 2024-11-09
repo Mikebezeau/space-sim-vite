@@ -13,7 +13,6 @@ import { roundTenth } from "../../util/gameUtil";
 interface MechServoInt {
   buildServoThreeGroup: (mechColor?: string) => THREE.Group;
   getVolume: () => number;
-  servoLabel: () => string;
   classType: () => string;
   classValue: () => number;
   size: () => number;
@@ -51,6 +50,12 @@ class MechServo extends MechServoShape implements MechServoInt {
       }
     }
   }
+
+  label() {
+    // TODO: add to MechServo and WechWeapon for servo type or weapon type
+    return this.name || equipData.servoLabel[this.type];
+  }
+
   //TODO MAKE THHIS RECURSIVE
   buildServoThreeGroup(mechColor?: string) {
     const servoMainGroup = new THREE.Group();
@@ -93,7 +98,7 @@ class MechServo extends MechServoShape implements MechServoInt {
         1 + servoShape.scaleAdjust.y,
         1 + servoShape.scaleAdjust.z
       );
-      servoShapeMesh.geometry = servoShape.getGeometry();
+      servoShapeMesh.geometry = servoShape.geometry();
       servoShapeMesh.material = new THREE.MeshLambertMaterial({
         color: new THREE.Color(color),
       });
@@ -108,10 +113,6 @@ class MechServo extends MechServoShape implements MechServoInt {
     // need method to build the object3d with basic THREE comands
     const bufferGeom = getMergedBufferGeom(this.buildServoThreeGroup());
     return getVolume(bufferGeom);
-  }
-
-  servoLabel() {
-    return equipData.servoLabel[this.type];
   }
 
   classType() {

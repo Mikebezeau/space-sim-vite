@@ -1,58 +1,47 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef, Fragment } from "react";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useEquipStore, { EDIT_MENU_SELECT } from "../../stores/equipStore";
 import BuildMech from "./BuildMech";
+//import { fitCameraToObject } from "../../util/gameUtil";
 
 const MechDisplay = () => {
+  // seperate component to display the mech and update on changes
   // updateState is used to force a re-render of the component when
   // the class is updated in the store (useEquipStore)
   const updateState = useEquipStore((state) => state.updateState);
   // do not delete ^
-  const mechBP = useEquipStore((state) => state.mechBP);
+  const editorMechBP = useEquipStore((state) => state.editorMechBP);
   const editPartId = useEquipStore((state) => state.editPartId);
   const editPartMenuSelect = useEquipStore((state) => state.editPartMenuSelect);
 
   return (
     <>
-      {mechBP ? (
+      {editorMechBP ? (
         <>
           <BuildMech
-            mechBP={mechBP}
+            mechBP={editorMechBP}
             editPartId={
               // show real part color when changing color in edit menu
               editPartMenuSelect === EDIT_MENU_SELECT.color ? "" : editPartId
             }
             editMode={true}
           />
-          <group scale={mechBP.size() * 0.1}>
-            {mechBP.weaponList.map((weapon) => (
-              // weapon fire position / direction lines
-              <mesh
-                key={weapon.id}
-                position={[0, 0, 150]}
-                rotation={[Math.PI / 2, 0, 0]}
-              >
-                <meshBasicMaterial color="red" />
-                <cylinderGeometry
-                  attach="geometry"
-                  args={[0.15, 0.15, 300, 4]}
+          <axesHelper args={[editorMechBP.size() * 2]} />
+          {editorMechBP.weaponList.map((weapon) => (
+            // weapon fire position / direction lines for selected weapon
+            // check if child part is selected
+            <Fragment key={weapon.id}>
+              {(editPartId === weapon.id ||
+                editorMechBP.isPartContainsId(weapon, editPartId)) && (
+                <axesHelper
+                  key={weapon.id}
+                  args={[weapon.size()]}
+                  position={[weapon.offset.x, weapon.offset.y, weapon.offset.z]}
                 />
-              </mesh>
-            ))}
-            <mesh position={[0, 0, 150]} rotation={[Math.PI / 2, 0, 0]}>
-              <meshBasicMaterial color="red" />
-              <cylinderGeometry attach="geometry" args={[0.15, 0.15, 300, 4]} />
-            </mesh>
-            <mesh position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-              <meshBasicMaterial color="blue" />
-              <cylinderGeometry attach="geometry" args={[0.15, 0.15, 150, 4]} />
-            </mesh>
-            <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <meshBasicMaterial color="blue" />
-              <cylinderGeometry attach="geometry" args={[0.15, 0.15, 150, 4]} />
-            </mesh>
-          </group>
+              )}
+            </Fragment>
+          ))}
         </>
       ) : (
         <></>
@@ -72,6 +61,7 @@ export default function BuildMechEquipment() {
   const resestControlsCameraPosition = useCallback(() => {
     if (cameraControlsRef.current !== null) {
       cameraControlsRef.current.reset();
+      //fitCameraToObject(camera, cameraControlsRef.current, 0.5);
       camera.position.set(0, 0, cameraZoom);
       camera.lookAt(0, 0, 0);
       resetCamera(false);

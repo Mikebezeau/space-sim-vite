@@ -16,6 +16,7 @@ import StationDockMenu from "./menuComponents/StationDockMenu";
 import EquipmentMenu from "./menuComponents/EquipmentMenu";
 //import CustomCursor from "./CustomCursor";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
+import "./css/cyberPunk.css";
 
 const AppUI = () => {
   console.log("AppUI render");

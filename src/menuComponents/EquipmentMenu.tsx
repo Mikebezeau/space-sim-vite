@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
 import mechDesigns from "../equipment/data/mechDesigns";
@@ -6,7 +6,7 @@ import mechDesigns from "../equipment/data/mechDesigns";
 import camera from "../assets/icons/camera-change.svg";
 import Mech from "../equipment/equipmentComponents/Mech";
 import { Crew, CrewAssignSpaces } from "../equipment/equipmentComponents/Crew";
-import { Servos } from "../equipment/equipmentComponents/Servos";
+import Servos from "../equipment/equipmentComponents/Servos";
 import PositionPartsList from "../equipment/equipmentDesign/PositionPartsList";
 //import ServoHydraulics from "./equipment/ServoHydraulics";
 import {
@@ -25,6 +25,8 @@ const EquipmentMenu = () => {
   // the class is updated in the store (useEquipStore)
   const updateState = useEquipStore((state) => state.updateState);
   //BLUEPRINT SELECTION MENU
+  // editorMechBP class object will not trigger a re-render when updated
+  const editorMechBP = useEquipStore((state) => state.editorMechBP);
   const { resetCamera, equipActions } = useEquipStore((state) => state);
 
   const [selectedBPid, setSelectedBPid] = useState(""); //top menu
@@ -180,7 +182,7 @@ const EquipmentMenu = () => {
       },
       mech: {
         buttonLable: "Mech",
-        component: <Mech />,
+        component: <Mech editorMechBP={editorMechBP} />,
       },
     },
     {
@@ -189,7 +191,12 @@ const EquipmentMenu = () => {
 
       servos: {
         buttonLable: "Servos",
-        component: <Servos heading="Mech parts: Size and Armor" />,
+        component: (
+          <Servos
+            editorMechBP={editorMechBP}
+            heading="Mech parts: Size and Armor"
+          />
+        ),
       },
       /*
       hydraulics: {
@@ -202,16 +209,27 @@ const EquipmentMenu = () => {
       */
       weapons: {
         buttonLable: "Weapons / Shields",
-        component: <Weapons heading={"View Weapon List, add weaponry"} />,
+        component: (
+          <Weapons
+            editorMechBP={editorMechBP}
+            heading={"View Weapon List, add weaponry"}
+          />
+        ),
       },
       landingBay: {
         buttonLable: "Landing Bay",
-        component: <LandingBay heading={"Select Landing Bays"} />,
+        component: (
+          <LandingBay
+            editorMechBP={editorMechBP}
+            heading={"Select Landing Bays"}
+          />
+        ),
       },
       crew: {
         buttonLable: "Crew / Controls / Passengers",
         component: (
           <Crew
+            editorMechBP={editorMechBP}
             heading={"Assign number of crew, control type, and passenger space"}
           />
         ),
@@ -230,6 +248,7 @@ const EquipmentMenu = () => {
         buttonLable: "Weapons / Shields",
         component: (
           <WeaponsAssignSpaces
+            editorMechBP={editorMechBP}
             heading={"Select Servo, then select weapon to place"}
           />
         ),
@@ -237,13 +256,19 @@ const EquipmentMenu = () => {
       landingBay: {
         buttonLable: "Landing Bay",
         component: (
-          <LandingBayAssignSpaces heading={"Select Landing Bay Location"} />
+          <LandingBayAssignSpaces
+            editorMechBP={editorMechBP}
+            heading={"Select Landing Bay Location"}
+          />
         ),
       },
       crew: {
         buttonLable: "Crew / Controls / Passengers",
         component: (
-          <CrewAssignSpaces heading={"Choose servo to hold compartment"} />
+          <CrewAssignSpaces
+            editorMechBP={editorMechBP}
+            heading={"Choose servo to hold compartment"}
+          />
         ),
       },
     },
@@ -278,7 +303,7 @@ const EquipmentMenu = () => {
           ))}
           <hr />
           {mainMenuSelection === 3 ? (
-            <PositionPartsList />
+            <PositionPartsList editorMechBP={editorMechBP} />
           ) : (
             //edit servo/weapon graphical locations
             //will also load the blueprint design 3d interface

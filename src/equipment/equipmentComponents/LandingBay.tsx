@@ -1,47 +1,39 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import useEquipStore from "../../stores/equipStore";
+import EditorMechBP from "../../classes/mechBP/EditorMechBP";
 import { ServoSpaceAssignButtons } from "./Servos";
 
 interface LandingBayAssignSpacesInt {
+  editorMechBP: EditorMechBP;
   heading: string;
 }
 export const LandingBayAssignSpaces = (props: LandingBayAssignSpacesInt) => {
-  const { heading } = props;
-  const { mechBP, equipActions } = useEquipStore((state) => state);
+  const { editorMechBP, heading } = props;
+  const { equipActions } = useEquipStore((state) => state);
   const [servoSelectedId, setServoSelectedId] = useState("");
-  /*
-  const handleCrewSelect = (weaponType, id) => {
-    equipActions.assignPartLocationMenu.setCrewLocation(servoSelectedId);
-  };
-*/
+
   const handleServoSelect = (id: string) => {
     setServoSelectedId(id);
-    equipActions.blueprintMenu.updateMechBPprop(
-      "landingBayServoLocationId",
-      id
-    );
+    equipActions.assignPartLocationMenu.setLandingBayLocation(id);
   };
 
   return (
     <>
       <h2>{heading}</h2>
       <ServoSpaceAssignButtons
-        mechBP={mechBP}
+        editorMechBP={editorMechBP}
         servoSelectedId={servoSelectedId}
         callBack={handleServoSelect}
       />
       <hr />
       <button>
         {`Landing Bay ${"?"} SP `}
-        {mechBP.getServoById(mechBP.landingBayServoLocationId[0]) && (
-          <>{`->  ${
-            mechBP.getServoById(mechBP.landingBayServoLocationId[0]).name
-              ? mechBP.getServoById(mechBP.landingBayServoLocationId[0]).name
-              : mechBP
-                  .getServoById(mechBP.landingBayServoLocationId[0])
-                  ?.servoLabel()
-          }
+        {editorMechBP.getPartById(
+          editorMechBP.landingBayServoLocationId[0]
+        ) && (
+          <>{`->  ${editorMechBP
+            .getPartById(editorMechBP.landingBayServoLocationId[0])
+            ?.label()}
         `}</>
         )}
       </button>
@@ -49,13 +41,13 @@ export const LandingBayAssignSpaces = (props: LandingBayAssignSpacesInt) => {
   );
 };
 
-export const LandingBay = ({ heading }) => {
-  const { mechBP, equipActions } = useEquipStore((state) => state);
-
-  const handleBaySelect = (e) => {
-    equipActions.blueprintMenu.updateMechBPprop("landingBay", e.target.value);
-    console.log(mechBP.landingBay);
-  };
+interface LandingBayInt {
+  editorMechBP: EditorMechBP;
+  heading: string;
+}
+export const LandingBay = (props: LandingBayInt) => {
+  const { editorMechBP, heading } = props;
+  const toggleUpdateState = useEquipStore((state) => state.toggleUpdateState);
 
   return (
     <>
@@ -65,8 +57,11 @@ export const LandingBay = ({ heading }) => {
         <select
           name="landingBay"
           id="landingBay"
-          value={mechBP.landingBay}
-          onChange={handleBaySelect}
+          value={editorMechBP.landingBay}
+          onChange={(e) => {
+            editorMechBP.landingBay = Number(e.target.value);
+            toggleUpdateState();
+          }}
         >
           <option value="0">0</option>
           <option value="1">1</option>
@@ -89,8 +84,8 @@ export const LandingBay = ({ heading }) => {
               <th>Cost</th>
             </tr>
             <tr>
-              <td>{/*mechBP.ladingBaySP()*/ "?"} SP</td>
-              <td>{/*mechBP.ladingBayCP()*/ "?"} CP</td>
+              <td>{/*editorMechBP.ladingBaySP()*/ "?"} SP</td>
+              <td>{/*editorMechBP.ladingBayCP()*/ "?"} CP</td>
             </tr>
           </tbody>
         </table>

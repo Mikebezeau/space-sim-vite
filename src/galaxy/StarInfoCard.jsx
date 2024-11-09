@@ -3,7 +3,6 @@ import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { systemInfoGen } from "../solarSystemGen/systemGen";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
-import "../css/buttonCyber.css";
 
 export const isMouseOverStarInfoCard = (e) => {
   const starInfoCard = document.querySelector("#star-info-card");

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useEquipStore from "../../../stores/equipStore";
+import EditorMechBP from "../../../classes/mechBP/EditorMechBP";
 import WeaponTypeList from "./WeaponTypeList";
 import { WeaponBeamCreate } from "./WeaponBeam";
 import { WeaponProjCreate } from "./WeaponProj";
@@ -10,20 +11,13 @@ import { ServoSpaceAssignButtons } from "../Servos";
 import { equipData } from "../../data/equipData";
 
 interface WeaponsAssignSpacesInt {
+  editorMechBP: EditorMechBP;
   heading: string;
 }
 export const WeaponsAssignSpaces = (props: WeaponsAssignSpacesInt) => {
-  const { heading } = props;
-  const { mechBP, equipActions } = useEquipStore((state) => state);
+  const { editorMechBP, heading } = props;
+  const toggleUpdateState = useEquipStore((state) => state.toggleUpdateState);
   const [servoSelectedId, setServoSelectedId] = useState("");
-
-  const handleWeapSelect = (weaponType: number, id: string) => {
-    equipActions.assignPartLocationMenu.setWeaponLocation(
-      weaponType,
-      id,
-      servoSelectedId
-    );
-  };
 
   const handleServoSelect = (id: string) => {
     setServoSelectedId(id);
@@ -33,19 +27,22 @@ export const WeaponsAssignSpaces = (props: WeaponsAssignSpacesInt) => {
     <>
       <h2>{heading}</h2>
       <ServoSpaceAssignButtons
-        mechBP={mechBP}
+        editorMechBP={editorMechBP}
         servoSelectedId={servoSelectedId}
         callBack={handleServoSelect}
       />
       <hr />
-      {mechBP.weaponList.map((weapon) => (
+      {editorMechBP.weaponList.map((weapon) => (
         <button
           key={weapon.id}
-          onClick={() => handleWeapSelect(weapon.weaponType, weapon.id)}
+          onClick={() => {
+            weapon.locationServoId = servoSelectedId;
+            toggleUpdateState();
+          }}
         >
           {weapon.name} {weapon.SP()} SP{" "}
-          {weapon.servoLocation(mechBP.servoList) &&
-            "-> " + weapon.servoLocation(mechBP.servoList)?.name}
+          {weapon.servoLocation(editorMechBP.servoList) &&
+            "-> " + weapon.servoLocation(editorMechBP.servoList)?.name}
         </button>
       ))}
     </>
@@ -53,10 +50,11 @@ export const WeaponsAssignSpaces = (props: WeaponsAssignSpacesInt) => {
 };
 
 interface WeaponsInt {
+  editorMechBP: EditorMechBP;
   heading: string;
 }
 export const Weapons = (props: WeaponsInt) => {
-  const { heading } = props;
+  const { editorMechBP, heading } = props;
   const { equipActions } = useEquipStore((state) => state);
 
   const [selection, setSelection] = useState(-1); //set to view weapon list by default
@@ -74,21 +72,7 @@ export const Weapons = (props: WeaponsInt) => {
   ) => {
     equipActions.weaponMenu.updateProp(weaponType, id, propName, val);
   };
-  /*
-  const handleChangeData = (
-    weaponType: number,
-    id: string,
-    propName: string,
-    val: number
-  ) => {
-    equipActions.weaponMenu.setDataValue(
-      weaponType,
-      id,
-      propName,
-      val //e.target.checked ? 1 : 0
-    );
-  };
-*/
+
   return (
     <>
       <h2>{heading}</h2>
@@ -110,7 +94,7 @@ export const Weapons = (props: WeaponsInt) => {
           </span>
         ))}
       </div>
-      {selection === -1 && <WeaponList />}
+      {selection === -1 && <WeaponList editorMechBP={editorMechBP} />}
       {selection === equipData.weaponType.beam && (
         <WeaponBeamCreate
           handleAddWeapon={handleAddWeapon}
@@ -145,12 +129,21 @@ export const Weapons = (props: WeaponsInt) => {
   );
 };
 
-const WeaponList = () => {
+interface WeaponListInt {
+  editorMechBP: EditorMechBP;
+}
+export const WeaponList = (props: WeaponListInt) => {
+  const { editorMechBP } = props;
+
   return (
     <>
       <h2>Weapon List</h2>
       {Object.values(equipData.weaponType).map((weaponType) => (
-        <WeaponTypeList key={weaponType} weaponType={weaponType} />
+        <WeaponTypeList
+          editorMechBP={editorMechBP}
+          key={weaponType}
+          weaponType={weaponType}
+        />
       ))}
     </>
   );

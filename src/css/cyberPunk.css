@@ -29,3 +29,33 @@
     background-color: rgb(190, 242, 255);
   }
 }
+
+.clip-path-cyber {
+  clip-path: polygon(
+    0% 0%,
+    0% 30%,
+    15px calc(30% + 15px),
+    15px 100%,
+    45% 100%,
+    calc(45% + 15px) calc(100% - 15px),
+    100% calc(100% - 15px),
+    100% 55%,
+    calc(100% - 15px) calc(55% - 15px),
+    calc(100% - 15px) 0%
+  );
+}
+
+.clip-path-cyber-inner {
+  clip-path: polygon(
+    5px 5px,
+    5px calc(30% - 3px),
+    20px calc(30% + 12px),
+    20px calc(100% - 5px),
+    calc(45% - 3px) calc(100% - 5px),
+    calc(45% + 12px) calc(100% - 20px),
+    calc(100% - 5px) calc(100% - 20px),
+    calc(100% - 5px) calc(55% + 3px),
+    calc(100% - 20px) calc(55% - 12px),
+    calc(100% - 20px) 5px
+  );
+}

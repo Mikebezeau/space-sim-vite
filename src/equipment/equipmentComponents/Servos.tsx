@@ -1,65 +1,79 @@
 import React from "react";
 import useEquipStore from "../../stores/equipStore";
+import EditorMechBP from "../../classes/mechBP/EditorMechBP";
 import MechServo from "../../classes/mechBP/MechServo";
 import { equipData } from "../data/equipData";
+import ColorPicker from "../ColorPicker";
 
-//DISPLAY LIST OF SERVOS
-const ServoList = () => {
-  console.log("ServoList rendered");
-  const { mechBP, equipActions, editPartId } = useEquipStore((state) => state);
+interface ServosInt {
+  editorMechBP: EditorMechBP;
+  heading: string;
+}
+const Servos = (props: ServosInt) => {
+  const { editorMechBP, heading } = props;
+  const { editPartId, equipActions, toggleUpdateState } = useEquipStore(
+    (state) => state
+  );
 
-  const handleDeleteServo = (id: string) => {
-    equipActions.servoMenu.deleteServoOrShape(id);
+  const updateAndZoom = () => {
+    equipActions.blueprintMenu.setCameraZoom();
+    toggleUpdateState();
+  };
+
+  const setServoColor = (servo: MechServo, color: string) => {
+    servo.color = color;
   };
 
   return (
     <>
+      <h2>{heading}</h2>
       Mech Color:
-      <input
-        type="text"
-        value={mechBP.color}
-        onChange={(e) =>
-          equipActions.blueprintMenu.updateMechBPprop("color", e.target.value)
-        }
+      <ColorPicker
+        color={editorMechBP.color}
+        setPartColor={(color) => {
+          editorMechBP.color = color;
+          toggleUpdateState();
+        }}
       />
-      {mechBP.servoList.map((servo, index) => (
-        <div
-          key={"type" + index}
-          className={
-            editPartId === servo.id ? "selectedItem" : "nonSelectedItem"
-          }
-        >
-          <input
-            type="text"
-            value={servo.name}
-            onChange={(e) =>
-              equipActions.servoMenu.updateProp(
-                servo.id,
-                "name",
-                e.target.value
-              )
+      Servos:{" "}
+      <button
+        onClick={() => {
+          editorMechBP.addServo();
+          updateAndZoom();
+        }}
+      >
+        ADD SERVO
+      </button>
+      {editorMechBP.servoList.map((servo, index) => (
+        <div key={"type" + index}>
+          <span
+            className={
+              editPartId === servo.id ? "selectedItem" : "nonSelectedItem"
             }
-          />
-          <input
-            type="text"
-            value={servo.color}
-            onChange={(e) =>
-              equipActions.servoMenu.updateProp(
-                servo.id,
-                "color",
-                e.target.value
-              )
-            }
+          >
+            <input
+              type="text"
+              value={servo.name}
+              onChange={(e) => {
+                servo.name = e.target.value;
+                toggleUpdateState();
+              }}
+            />
+          </span>
+
+          <ColorPicker
+            color={servo.color}
+            setPartColor={(color) => {
+              setServoColor(servo, color);
+              toggleUpdateState();
+            }}
           />
           <select
             name="servoScale"
             value={servo.scale}
             onChange={(e) => {
-              equipActions.servoMenu.updateProp(
-                servo.id,
-                "scale",
-                e.target.value
-              );
+              servo.scale = Number(e.target.value);
+              updateAndZoom();
             }}
           >
             {equipData.scale.type.map((value, key) => (
@@ -72,11 +86,8 @@ const ServoList = () => {
             name="servoType"
             value={servo.type}
             onChange={(e) => {
-              equipActions.servoMenu.updateProp(
-                servo.id,
-                "type",
-                e.target.value
-              );
+              servo.type = Number(e.target.value);
+              updateAndZoom();
             }}
           >
             {Object.entries(equipData.servoType).map(([value, key]) => (
@@ -89,11 +100,8 @@ const ServoList = () => {
             name="servoClassType"
             value={servo.class}
             onChange={(e) => {
-              equipActions.servoMenu.updateProp(
-                servo.id,
-                "class",
-                e.target.value
-              );
+              servo.class = Number(e.target.value);
+              updateAndZoom();
             }}
           >
             {equipData.class.type.map((value, key) => (
@@ -108,7 +116,14 @@ const ServoList = () => {
           <span>/{servo.armorVal()}</span>
           <span>/{servo.armorType()}</span>
           <span> Size:{servo.size()}</span>
-          <button onClick={() => handleDeleteServo(servo.id)}>X</button>
+          <button
+            onClick={() => {
+              editorMechBP.deletePart(servo.id);
+              updateAndZoom();
+            }}
+          >
+            DELETE SERVO
+          </button>
         </div>
       ))}
     </>
@@ -116,13 +131,13 @@ const ServoList = () => {
 };
 
 export const ServoSpaceAssignButtons = ({
-  mechBP,
+  editorMechBP,
   servoSelectedId,
   callBack,
 }) => {
   return (
     <>
-      {mechBP.servoList.map((servo: MechServo) => (
+      {editorMechBP.servoList.map((servo: MechServo) => (
         <span
           key={servo.id}
           className={
@@ -130,8 +145,8 @@ export const ServoSpaceAssignButtons = ({
           }
         >
           <button onClick={() => callBack(servo.id)}>
-            {servo.name ? servo.name : servo.servoLabel()}{" "}
-            {mechBP.usedServoSP(servo.id)} / {servo.SP()} SP
+            {servo.label()} {editorMechBP.usedServoSP(servo.id)} / {servo.SP()}{" "}
+            SP
           </button>
         </span>
       ))}
@@ -139,15 +154,4 @@ export const ServoSpaceAssignButtons = ({
   );
 };
 
-//DISPLAY LIST OF SERVOS
-export const Servos = ({ heading }) => {
-  const { equipActions } = useEquipStore((state) => state);
-
-  return (
-    <>
-      <h2>{heading}</h2>
-      <ServoList />
-      <button onClick={equipActions.servoMenu.addServo}>ADD SERVO</button>
-    </>
-  );
-};
+export default Servos;

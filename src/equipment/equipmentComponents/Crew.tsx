@@ -1,20 +1,17 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import useEquipStore from "../../stores/equipStore";
+import EditorMechBP from "../../classes/mechBP/EditorMechBP";
 import { ServoSpaceAssignButtons } from "./Servos";
 
 interface CrewAssignSpacesInt {
+  editorMechBP: EditorMechBP;
   heading: string;
 }
 export const CrewAssignSpaces = (props: CrewAssignSpacesInt) => {
-  const { heading } = props;
-  const { mechBP, equipActions } = useEquipStore((state) => state);
+  const { editorMechBP, heading } = props;
+  const { equipActions } = useEquipStore((state) => state);
   const [servoSelectedId, setServoSelectedId] = useState("");
-  /*
-  const handleCrewSelect = (weaponType, id) => {
-    equipActions.assignPartLocationMenu.setCrewLocation(servoSelectedId);
-  };
-*/
+
   const handleServoSelect = (id: string) => {
     setServoSelectedId(id);
     equipActions.assignPartLocationMenu.setCrewLocation(id);
@@ -24,19 +21,17 @@ export const CrewAssignSpaces = (props: CrewAssignSpacesInt) => {
     <>
       <h2>{heading}</h2>
       <ServoSpaceAssignButtons
-        mechBP={mechBP}
+        editorMechBP={editorMechBP}
         servoSelectedId={servoSelectedId}
         callBack={handleServoSelect}
       />
       <hr />
       <button>
-        {`Crew/Passengers ${mechBP.crewSP()} SP `}
-        {mechBP.getServoById(mechBP.crewLocationServoId[0]) && (
-          <>{`->  ${
-            mechBP.getServoById(mechBP.crewLocationServoId[0]).name
-              ? mechBP.getServoById(mechBP.crewLocationServoId[0]).name
-              : mechBP.getServoById(mechBP.crewLocationServoId[0])?.servoLabel()
-          }
+        {`Crew/Passengers ${editorMechBP.crewSP()} SP `}
+        {editorMechBP.getPartById(editorMechBP.crewLocationServoId[0]) && (
+          <>{`->  ${editorMechBP
+            .getPartById(editorMechBP.crewLocationServoId[0])
+            ?.label()}
           `}</>
         )}
       </button>
@@ -44,18 +39,13 @@ export const CrewAssignSpaces = (props: CrewAssignSpacesInt) => {
   );
 };
 
-export const Crew = ({ heading }) => {
-  const { mechBP, equipActions } = useEquipStore((state) => state);
-
-  const handleCrew = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (e.target)
-      equipActions.blueprintMenu.updateMechBPprop("crew", e.target.value);
-  };
-
-  const handlePassengers = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (e.target)
-      equipActions.blueprintMenu.updateMechBPprop("passengers", e.target.value);
-  };
+interface CrewInt {
+  editorMechBP: EditorMechBP;
+  heading: string;
+}
+export const Crew = (props: CrewInt) => {
+  const { editorMechBP, heading } = props;
+  const toggleUpdateState = useEquipStore((state) => state.toggleUpdateState);
 
   return (
     <>
@@ -63,7 +53,15 @@ export const Crew = ({ heading }) => {
       <h3>(does not scale)</h3>
       <div>
         <label htmlFor="crew">CREW MEMBERS (2 CP / each additional)</label>
-        <select name="crew" id="crew" value={mechBP.crew} onChange={handleCrew}>
+        <select
+          name="crew"
+          id="crew"
+          value={editorMechBP.crew}
+          onChange={(e) => {
+            editorMechBP.crew = Number(e.target.value);
+            toggleUpdateState();
+          }}
+        >
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
@@ -81,8 +79,11 @@ export const Crew = ({ heading }) => {
         <select
           name="passengers"
           id="passengers"
-          defaultValue={mechBP.passengers}
-          onChange={handlePassengers}
+          defaultValue={editorMechBP.passengers}
+          onChange={(e) => {
+            editorMechBP.passengers = Number(e.target.value);
+            toggleUpdateState();
+          }}
         >
           <option value="0">0</option>
           <option value="1">1</option>
@@ -104,8 +105,8 @@ export const Crew = ({ heading }) => {
               <th>Cost</th>
             </tr>
             <tr>
-              <td>{mechBP.crewSP()} SP</td>
-              <td>{mechBP.crewCP()} CP</td>
+              <td>{editorMechBP.crewSP()} SP</td>
+              <td>{editorMechBP.crewCP()} CP</td>
             </tr>
           </tbody>
         </table>
