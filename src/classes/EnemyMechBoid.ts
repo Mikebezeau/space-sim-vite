@@ -4,8 +4,9 @@ import { FPS } from "../constants/constants";
 //import { setCustomData } from "r3f-perf";
 
 export interface EnemyMechBoidInt {
-  applyForce(fVec3: THREE.Vector3): void;
-  update(delta: number): void;
+  resetVectors: () => void;
+  applyForce: (fVec3: THREE.Vector3) => void;
+  update: (delta: number) => void;
 }
 
 class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
@@ -30,7 +31,9 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
 
   constructor(enemyMechBPindex: number = 0, isBossMech: boolean = false) {
     super(enemyMechBPindex, isBossMech);
-
+    // WARNING: SETTING PROPERTY VALUES ABOVE DROPS FRAME RATE
+    // - must declare new THREE classes here in constructor
+    // - sometimes seems to makes the frame rate drop significantly!
     this.velocity = new THREE.Vector3();
     this.adjustedVelocityDeltaFPS = new THREE.Vector3();
     this.lerpVelocity = new THREE.Vector3();
@@ -51,7 +54,7 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
     this.cohesionSteerVector = new THREE.Vector3();
   }
 
-  resetVectors = () => {
+  resetVectors() {
     this.alignCount = 0;
     this.alignSumVector.set(0, 0, 0);
     this.alignSteerVector.set(0, 0, 0);
@@ -63,15 +66,15 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
     this.cohesionCount = 0;
     this.cohesionSumVector.set(0, 0, 0);
     this.cohesionSteerVector.set(0, 0, 0);
-  };
+  }
 
   // Boid apply force
-  applyForce = (fVec3: THREE.Vector3) => {
+  applyForce(fVec3: THREE.Vector3) {
     if (!this.isBossMech) this.acceleration.add(fVec3.clone());
-  };
+  }
 
   // update Boid movement
-  update = (delta: number) => {
+  update(delta: number) {
     if (!this.isBossMech) {
       const deltaFPS = delta * FPS;
       //(deltaFPS);
@@ -99,7 +102,7 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
       this.heading.add(this.object3d.position);
       this.object3d.lookAt(this.heading);
     }
-  };
+  }
 }
 
 export default EnemyMechBoid;

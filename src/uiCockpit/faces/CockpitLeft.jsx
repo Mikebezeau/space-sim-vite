@@ -7,7 +7,7 @@ const CockpitLeft = () => {
   const planets = useStore((state) => state.planets);
 
   const sunScanData = useMemo(
-    () => (planets ? Object.entries(planets[0].data) : null),
+    () => (planets.length > 0 && planets[0].data ? planets[0].data : []),
     [planets]
   );
 
@@ -50,10 +50,10 @@ const CockpitLeft = () => {
       style={{ backgroundImage: `url(${screenBImage})` }}
     >
       <div className="absolute w-[200px] right-12 top-20 text-right text-xs">
-        {sunScanData && !focusPlanetIndex && (
+        {sunScanData?.length > 0 && !focusPlanetIndex && (
           <>
             <p className="">System</p>
-            {sunScanData?.map(([key, value]) => {
+            {sunScanData.map(([key, value]) => {
               return (
                 <span key={key}>
                   {key}:{" "}

@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, Fragment } from "react";
 import { RepeatWrapping } from "three";
 import MechBP from "../../classes/mechBP/MechBP";
 import useEquipStore from "../../stores/equipStore";
@@ -32,12 +32,11 @@ const BuildMech = forwardRef(function BuildMech(
   texture.wrapS = RepeatWrapping; // MirroredRepeatWrapping
   texture.wrapT = RepeatWrapping;
   texture.repeat.set(10, 10);
-  //const axesHelper = new THREE.AxesHelper( 5 );
 
   return (
     <group ref={buildMechForwardRef} onClick={handleClick}>
       {mechBP.servoList.map((servo, index) => (
-        <group key={index}>
+        <Fragment key={index}>
           <ServoShapes
             servo={servo}
             color={mechBP.color}
@@ -49,7 +48,7 @@ const BuildMech = forwardRef(function BuildMech(
             isWireFrame={isWireFrame}
           />
           {mechBP.servoWeaponList(servo.id).map((weapon) => (
-            <group key={weapon.id}>
+            <Fragment key={weapon.id}>
               <ServoShapes
                 servo={weapon}
                 color={mechBP.color}
@@ -60,9 +59,9 @@ const BuildMech = forwardRef(function BuildMech(
                 editPartId={editPartId}
                 isWireFrame={isWireFrame}
               />
-            </group>
+            </Fragment>
           ))}
-        </group>
+        </Fragment>
       ))}
     </group>
   );

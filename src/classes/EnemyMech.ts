@@ -2,8 +2,8 @@ import Mech from "./Mech";
 import mechDesigns from "../equipment/data/mechDesigns";
 
 export interface EnemyMechInt {
-  getIsLeader(): boolean;
-  getHasGroup(): boolean;
+  getIsLeader: () => boolean;
+  getHasGroup: () => boolean;
 }
 
 class EnemyMech extends Mech implements EnemyMechInt {
@@ -25,9 +25,13 @@ class EnemyMech extends Mech implements EnemyMechInt {
     this.formation = 0;
   }
 
-  getIsLeader = () => this.id === this.groupLeaderId;
+  getIsLeader() {
+    return this.id === this.groupLeaderId;
+  }
 
-  getHasGroup = () => this.groupLeaderId !== null;
+  getHasGroup() {
+    return this.groupLeaderId !== null;
+  }
 }
 
 export default EnemyMech;

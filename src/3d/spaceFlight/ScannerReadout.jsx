@@ -6,7 +6,7 @@ import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { SCALE } from "../../constants/constants";
-import { setCustomData } from "r3f-perf";
+//import { setCustomData } from "r3f-perf";
 
 const dummyObj = new THREE.Object3D(),
   targetDummyObj = new THREE.Object3D(),
@@ -75,11 +75,10 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 const ScannerReadout = () => {
   console.log("ScannerReadout rendered");
   const { camera } = useThree();
-  const getPlayer = useStore((state) => state.getPlayer);
+  const player = useStore((state) => state.player);
   const getTargets = useStore((state) => state.getTargets);
   const planets = useStore((state) => state.planets);
-  const getEnemies = useEnemyStore((state) => state.getEnemies);
-  const numEnemies = useEnemyStore((state) => state.enemies.length);
+  const enemies = useEnemyStore((state) => state.enemies);
 
   const { setFocusPlanetIndex, setFocusTargetIndex } = useStore(
     (state) => state.actions
@@ -91,8 +90,6 @@ const ScannerReadout = () => {
 
   useFrame(() => {
     if (!planetTargetGroupRef.current) return null;
-    const player = getPlayer();
-    const enemies = getEnemies();
     const { focusPlanetIndex, focusTargetIndex, selectedTargetIndex } =
       getTargets();
     let tempFocusPlanetIndex = null;

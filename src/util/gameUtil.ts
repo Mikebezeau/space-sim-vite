@@ -1,9 +1,16 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
+/* FUNCTIONS
+
+TODO list functions here - fix TS errors
+
+distance(p1: THREE.Vector3, p2: THREE.Vector3): number
+
+*/
 // A helper function to calculate the distance between two points in 3d space.
 // Used to detect lasers intersecting with enemies.
-export const distance = (p1, p2) => {
+export const distance = (p1: THREE.Vector3, p2: THREE.Vector3) => {
   const a = p2.x - p1.x;
   const b = p2.y - p1.y;
   const c = p2.z - p1.z;

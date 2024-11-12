@@ -1,38 +1,44 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../stores/enemyStore";
 import BuildMech from "../3d/buildMech/BuildMech";
 
+interface InstancedMechsInt {
+  mechBpId: string;
+}
 // not using the forwarded ref for anything atm
-const InstancedMechs = ({ mechBpId }) => {
+const InstancedMechs = (props: InstancedMechsInt) => {
+  const { mechBpId } = props;
   /*
     forwardRef(function Enemy(
     { mechBpId },
     instancedMeshRef
     )
   */
-  console.log("InstancedMechs rendered", mechBpId);
   const enemies = useEnemyStore((state) => state.enemies);
-  const instancedMechObject3d = useRef(null);
+  const instancedMechObject3d = useRef<THREE.Object3D | null>(null);
   const instancedEnemies = enemies.filter(
     (enemy) => enemy.useInstancedMesh && enemy.mechBP.id === mechBpId
   );
-  console.log("instancedEnemies", instancedEnemies.length);
-  const instancedMeshRef = useRef(null);
+  console.log("InstancedMechs rendered", instancedEnemies.length, mechBpId);
+  const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
 
   // set loaded BuildMech object3d for instancedMesh
   useEffect(() => {
-    if (instancedMechObject3d.current === null) return;
-    instancedEnemies.forEach((enemy) => {
-      enemy.initObject3d(instancedMechObject3d.current);
-    });
+    if (instancedMechObject3d.current !== null) {
+      instancedEnemies.forEach((enemy) => {
+        // @ts-ignore
+        enemy.initObject3d(instancedMechObject3d.current);
+      });
+    }
   }, [instancedEnemies, instancedMechObject3d]);
 
   useEffect(() => {
     if (instancedMeshRef.current === null) return;
     const red = new THREE.Color(0xff0000);
     instancedEnemies.forEach((enemy, i) => {
+      // @ts-ignore
       if (enemy.getIsLeader()) instancedMeshRef.current.setColorAt(i, red);
     });
     /*
@@ -57,6 +63,7 @@ const InstancedMechs = ({ mechBpId }) => {
     if (instancedMeshRef.current === null) return;
     instancedEnemies.forEach((enemy, i) => {
       enemy.object3d.updateMatrix();
+      // @ts-ignore
       instancedMeshRef.current.setMatrixAt(i, enemy.object3d.matrix);
     });
     instancedMeshRef.current.instanceMatrix.needsUpdate = true;
@@ -70,7 +77,7 @@ const InstancedMechs = ({ mechBpId }) => {
             // building mech to set enemy bufferGeom for use in instancedMesh
             instancedEnemies[0].bufferGeom === null ? (
               <BuildMech
-                ref={(buildMechRef) => {
+                ref={(buildMechRef: THREE.Object3D) => {
                   // buildMechRef === null on removing BuildMech component
                   if (buildMechRef !== null) {
                     instancedMechObject3d.current = new THREE.Object3D();
@@ -85,7 +92,7 @@ const InstancedMechs = ({ mechBpId }) => {
                 ref={instancedMeshRef}
                 args={[
                   instancedEnemies[0].bufferGeom,
-                  null,
+                  undefined,
                   instancedEnemies.length,
                 ]}
               >
@@ -122,7 +129,6 @@ const InstancedMechs = ({ mechBpId }) => {
 //);
 
 const InstancedMechGroups = () => {
-  console.log("instancedEnemiesBpIdListRef");
   const enemies = useEnemyStore((state) => state.enemies);
   // using useRef to store unique instancedEnemies mechBP ids
   // using spread operator to change into an array of ids

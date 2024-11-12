@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useRef } from "react";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
@@ -28,10 +29,12 @@ const AppUI = () => {
   const devEnemyTest = useDevStore((state) => state.devEnemyTest);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
-  const transitionFadeDiv = useRef(null);
+  const transitionFadeDiv = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    transitionFadeDiv.current.style.display = "none";
+    if (transitionFadeDiv.current) {
+      transitionFadeDiv.current.style.display = "none";
+    }
   }, [playerScreen]);
 
   return (

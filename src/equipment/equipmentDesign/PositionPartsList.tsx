@@ -1,13 +1,14 @@
-import React, { Fragment } from "react";
+import React from "react";
 import EditorMechBP from "../../classes/mechBP/EditorMechBP";
 import MechServo from "../../classes/mechBP/MechServo";
 import MechServoShape from "../../classes/mechBP/MechServoShape";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
-import PositionPartEditButtons from "./PositionPartEditButtons";
 import useEquipStore, {
   EDIT_MENU_SELECT,
   recursiveFindChildId,
 } from "../../stores/equipStore";
+// @ts-ignore
+import openList from "../../assets/icons/arrows/arrows-ascending-down-sort-sorting.svg";
 
 interface PartGroupInt {
   editorMechBP: EditorMechBP;
@@ -64,13 +65,23 @@ const Part = (props: PartInt) => {
               equipActions.setEditPartId(editPartId === part.id ? "" : part.id)
             }
           >
-            {isServoInstance
-              ? part.label() + " >"
-              : isWeaponInstance
-              ? "Weapon >"
-              : part.servoShapes.length > 0
-              ? "[ ] >"
-              : ">"}
+            {isServoInstance ? (
+              part.label() + " >"
+            ) : isWeaponInstance ? (
+              "Weapon >"
+            ) : part.servoShapes.length > 0 ? (
+              <div className="pointer-events-auto button-cyber w-[4vh] h-[4vh]">
+                <span className="button-cyber-content">
+                  <img
+                    src={openList}
+                    alt="camera icon"
+                    className="w-[10vh] h-[10vh] pointer-events-none"
+                  />
+                </span>
+              </div>
+            ) : (
+              ">"
+            )}
           </button>
         </span>
         <input
@@ -110,17 +121,13 @@ interface PositionPartsListInt {
 export const PositionPartsList = (props: PositionPartsListInt) => {
   const { editorMechBP } = props;
 
-  //list of servos, player clicks one of the buttons to select that servo
-  // and then can to edit shaped / shape groups
+  // list of servos, player clicks one of the buttons to select that servo
+  // and then can edit
   const editPartId = useEquipStore((state) => state.editPartId);
-  const editPart = editorMechBP.getPartById(editPartId);
 
   return (
     <>
       <span className="text-2xl">Select Part / Shape to Position</span>
-      {editPart && (
-        <PositionPartEditButtons editorMechBP={editorMechBP} part={editPart} />
-      )}
       <div className="w-20" />
       {editorMechBP.servoList.map((servo: MechServo) => (
         <div key={servo.id}>

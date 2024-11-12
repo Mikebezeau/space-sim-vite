@@ -25,6 +25,7 @@ interface storeState {
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
   galaxy: Object;
+  galaxyLoaded: boolean;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
   // therefore do not really need to use getPlayer
@@ -36,8 +37,8 @@ interface storeState {
   focusPlanetIndex: number | null;
   selectedPanetIndex: number | null;
   getTargets: () => Object;
-  planets: Object | null;
-  stations: Object | null;
+  planets: any[];
+  stations: any[];
   planetTerrain: any;
   actions: {
     beginSpaceFlightSceneLoop: () => void;
@@ -82,7 +83,11 @@ const useStore = create<storeState>()((set, get) => ({
   showInfoHoveredStarIndex: null, // used in galaxy map ui
   showInfoTargetStarIndex: null,
   selectedWarpStar: null,
-  galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+  galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
+    set({ galaxy: galaxyData });
+    set({ galaxyLoaded: true });
+  }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+  galaxyLoaded: false, // used to trigger render
   // intial player star
   playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
   player: new PlayerMech(),
@@ -107,9 +112,9 @@ const useStore = create<storeState>()((set, get) => ({
       focusTargetIndex: get().focusTargetIndex,
     };
   },
-  planets: null, // set in call to setPlayerCurrentStarIndex
+  planets: [], // set in call to setPlayerCurrentStarIndex
   asteroidBands: null, // set in call to setPlayerCurrentStarIndex
-  stations: null, // set in call to setPlayerCurrentStarIndex
+  stations: [], // set in call to setPlayerCurrentStarIndex
   planetTerrain: cityTerrianGen(PLAYER_START.system, {
     numCity: 4,
     minSize: 3,
@@ -199,8 +204,8 @@ const useStore = create<storeState>()((set, get) => ({
       }
     },
     warpToStation() {
-      let player = get().player;
-      if (get().stations !== null && get().stations[0]) {
+      if (get().stations.length > 0) {
+        let player = get().player;
         const targetStation = get().stations[0];
         player.object3d.position.copy(targetStation.object3d.position);
         player.object3d.translateZ(-30000 * SCALE);
@@ -209,8 +214,9 @@ const useStore = create<storeState>()((set, get) => ({
     },
     warpToPlanet() {
       let player = get().player;
-      if (get().focusPlanetIndex) {
-        const targetPlanet = get().planets[get().focusPlanetIndex];
+      const focusPlanetIndex = get().focusPlanetIndex || -1;
+      if (focusPlanetIndex > -1 && get().planets[focusPlanetIndex]) {
+        const targetPlanet = get().planets[focusPlanetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
         player.object3d.translateZ(-targetPlanet.radius * 5);
       }
@@ -377,6 +383,7 @@ const useStore = create<storeState>()((set, get) => ({
     // triggering event.target (mobile movement control circle)
     updateTouchMobileMoveShip(event) {
       if (event.target) {
+        // TODO fix this
         var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
         const x = event.changedTouches[0].clientX - bounds.left;
         const y = event.changedTouches[0].clientY - bounds.top;

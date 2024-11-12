@@ -1,8 +1,8 @@
-import { v4 as uuidv4 } from "uuid";
 import DataMechBP from "./DataMechBP";
 import MechServo from "./MechServo";
 import MechServoShape from "./MechServoShape";
 import MechWeapon from "./weaponBP/MechWeapon";
+
 interface MechBPInt {
   getPartById: (
     id: string,
@@ -21,11 +21,8 @@ interface MechBPInt {
 }
 
 class MechBP extends DataMechBP implements MechBPInt {
-  id: string;
-
   constructor(mechBPdata?: any) {
     super(mechBPdata);
-    this.id = uuidv4();
   }
 
   // find MechServo | MechWeapon, or recursively find MechServoShape of either list by id

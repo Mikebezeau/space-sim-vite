@@ -28,15 +28,15 @@ class PlayerMech extends Mech implements PlayerMechInt {
     this.object3d.position.set(PLAYER_START.x, PLAYER_START.y, PLAYER_START.z);
   }
   // save location in space
-  storeSpaceLocation = () => {
+  storeSpaceLocation() {
     this.locationInfo.saveSpaceObject3d.position.copy(this.object3d.position);
     this.locationInfo.saveSpaceObject3d.rotation.copy(this.object3d.rotation);
-  };
+  }
   // go back to location in space
-  resetSpaceLocation = () => {
+  resetSpaceLocation() {
     this.object3d.position.copy(this.locationInfo.saveSpaceObject3d.position);
     this.object3d.rotation.copy(this.locationInfo.saveSpaceObject3d.rotation);
-  };
+  }
   // fire weapon
   /*
   fireWeapon=()=> {

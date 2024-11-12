@@ -9,6 +9,7 @@ function applyScaledCPMult(scale, CP) {
   return roundTenth(CP * equipData.scale.costMult[scale]);
 }
 
+// TODO create armor class
 const armorUtil = {
   value: function (armor) {
     //cost points

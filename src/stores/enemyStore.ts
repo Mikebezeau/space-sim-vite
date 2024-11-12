@@ -4,9 +4,11 @@ import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
 //import BoidController from "../classes/BoidController";
 
-const numEnemies = 300;
+const numEnemies = 200;
 
-const generateEnemies = (numEnemies: number) => {
+const generateEnemies = async (
+  numEnemies: number
+): Promise<EnemyMechBoid[]> => {
   // set enemy positions
   const enemies = genBoidEnemies(numEnemies);
   enemies.forEach((enemy) => {
@@ -23,15 +25,18 @@ const generateEnemies = (numEnemies: number) => {
 
 interface enemyStoreState {
   numEnemies: number;
-  enemies: EnemyMechBoid[];
-  getEnemies: () => EnemyMechBoid[];
-  boidController: Object | null;
+  enemies: EnemyMechBoid[] | Promise<void | EnemyMechBoid[]>;
+  enemiesLoaded: boolean;
+  boidController: any | null;
 }
 
 const useEnemyStore = create<enemyStoreState>()((set, get) => ({
   numEnemies: numEnemies,
-  enemies: generateEnemies(numEnemies),
-  getEnemies: () => get().enemies,
+  enemies: generateEnemies(numEnemies).then((enemiesData: EnemyMechBoid[]) => {
+    set({ enemies: enemiesData });
+    set({ enemiesLoaded: true });
+  }),
+  enemiesLoaded: false,
   boidController: null, // todo: new BoidController(get().enemies)
 }));
 

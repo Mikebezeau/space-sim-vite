@@ -1,27 +1,29 @@
-import { forwardRef, useRef, useLayoutEffect } from "react";
+import React, { forwardRef, useRef, useLayoutEffect } from "react";
 import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
+// @ts-ignore
 import starSpriteSrc from "../sprites/sprite120.png";
+// @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
 import useStore from "../stores/store";
 import "./shaders/starPointsShaderMaterial";
 
+interface StarPointsInt {
+  viewAsBackground?: boolean;
+}
 const StarPoints = forwardRef(function StarPoints(
-  { viewAsBackground = false },
+  props: StarPointsInt,
   starPointsForwardRef
 ) {
   console.log("StarPoints rendered");
+  const { viewAsBackground = false } = props;
   const starPointsBufferGeoRef = useRef();
   const starSprite = new TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new TextureLoader().load(featheredSpriteSrc);
-  const {
-    starCoordsBuffer,
-    starColorBuffer,
-    starSizeBuffer,
-    starSelectedBuffer,
-  } = useStore((state) => state.galaxy);
+  const galaxy = useStore((state) => state.galaxy);
 
   useLayoutEffect(() => {
-    if (viewAsBackground) {
+    if (viewAsBackground && galaxy.starCoordsBuffer?.array) {
+      const { starCoordsBuffer } = galaxy;
       const pushedAwayCoordsArray = [];
       const nebulaSelectedArray = [];
       //let errorShown = false;
@@ -57,17 +59,27 @@ const StarPoints = forwardRef(function StarPoints(
       // needsUpdate not needed due to useLayoutEffect timing
       //starPointsBufferGeoRef.current.attributes.position.needsUpdate = true;
     }
-  }, [viewAsBackground, starCoordsBuffer.array]);
+  }, [viewAsBackground, galaxy]);
 
+  if (!galaxy.starCoordsBuffer) return null;
   return (
     <points ref={starPointsForwardRef} frustumCulled={viewAsBackground}>
       <bufferGeometry ref={starPointsBufferGeoRef}>
-        <bufferAttribute attach={"attributes-position"} {...starCoordsBuffer} />
-        <bufferAttribute attach={"attributes-aColor"} {...starColorBuffer} />
-        <bufferAttribute attach={"attributes-aSize"} {...starSizeBuffer} />
+        <bufferAttribute
+          attach={"attributes-position"}
+          {...galaxy.starCoordsBuffer}
+        />
+        <bufferAttribute
+          attach={"attributes-aColor"}
+          {...galaxy.starColorBuffer}
+        />
+        <bufferAttribute
+          attach={"attributes-aSize"}
+          {...galaxy.starSizeBuffer}
+        />
         <bufferAttribute
           attach={"attributes-aSelected"}
-          {...starSelectedBuffer}
+          {...galaxy.starSelectedBuffer}
         />
       </bufferGeometry>
       <starPointsShaderMaterial

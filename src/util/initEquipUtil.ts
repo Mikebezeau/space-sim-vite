@@ -8,7 +8,7 @@ import MechWeaponMelee from "../classes/mechBP/weaponBP/MechWeaponMelee";
 import MechWeaponMissile from "../classes/mechBP/weaponBP/MechWeaponMissile";
 import MechWeaponProjectile from "../classes/mechBP/weaponBP/MechWeaponProjectile";
 
-function transferProperties(mergBP, parsedBP) {
+function transferProperties(mergBP: any, parsedBP: any) {
   // transfering select properties from parsedBP to mergBP
   Object.keys(parsedBP).forEach((key) => {
     if (typeof parsedBP[key] !== "object") {
@@ -28,7 +28,7 @@ function transferProperties(mergBP, parsedBP) {
         key === "passengersLocationServoId" ||
         key === "name" ||
         key === "color"
-          ? parsedBP[key]
+          ? String(parsedBP[key])
           : Number(parsedBP[key]);
     } else if (
       // objects with properties
@@ -47,17 +47,25 @@ function transferProperties(mergBP, parsedBP) {
   return mergBP;
 }
 
-export const initServoShapes = (part, servoShapesData) => {
-  servoShapesData.forEach((shapeData) => {
+export const initServoShapes = (
+  part: MechServoShape,
+  servoShapesData: any[]
+) => {
+  servoShapesData.forEach((shapeData: any) => {
     const servoShape = new MechServoShape(shapeData);
     part.servoShapes.push(servoShape);
   });
   return part;
 };
 
-const loadBlueprint = function (importJsonBP) {
-  const parsedBP = JSON.parse(importJsonBP);
-  return new MechBP(parsedBP);
+const loadBlueprint = function (mechDesign: any) {
+  let loadJsonBP = mechDesign;
+  if (typeof mechDesign === "string") {
+    loadJsonBP = JSON.parse(mechDesign);
+  }
+  //JSON.stringify(loadJsonBP);
+  //const loadJsonBP = JSON.parse(loadJsonBP);
+  return new MechBP(loadJsonBP);
 };
 
 const initPlayerMechBP = function () {

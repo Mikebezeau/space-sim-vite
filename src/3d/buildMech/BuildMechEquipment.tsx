@@ -11,9 +11,23 @@ const MechDisplay = () => {
   // the class is updated in the store (useEquipStore)
   const updateState = useEquipStore((state) => state.updateState);
   // do not delete ^
+  const { gl, size } = useThree();
   const editorMechBP = useEquipStore((state) => state.editorMechBP);
   const editPartId = useEquipStore((state) => state.editPartId);
   const editPartMenuSelect = useEquipStore((state) => state.editPartMenuSelect);
+
+  useEffect(() => {
+    // Define the scissor and viewport to half of the screen
+    if (size.width >= 1024) {
+      gl.setViewport(size.width / 4, 0, size.width, size.height);
+    } else {
+      gl.setViewport(0, -size.height / 4, size.width, size.height);
+    }
+
+    return () => {
+      gl.setViewport(0, 0, size.width, size.height);
+    };
+  }, [size]);
 
   return (
     <>

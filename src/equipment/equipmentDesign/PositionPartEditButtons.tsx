@@ -10,10 +10,13 @@ import { GEO_SHAPE_TYPE } from "../../constants/geometryConstants";
 
 interface MechServoInt {
   editorMechBP: EditorMechBP;
-  part: MechServo | MechServoShape;
 }
 const PositionPartEditButtons = (props: MechServoInt) => {
-  const { editorMechBP, part } = props;
+  const { editorMechBP } = props;
+
+  const editPartId = useEquipStore((state) => state.editPartId);
+  const part = editorMechBP.getPartById(editPartId);
+
   // for editing servo shapes and groups
   const {
     addServoShapeDesignId,
@@ -119,6 +122,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
     setAdjustmentFactor(val);
   };
 
+  if (part === undefined) return null;
   return (
     <div className="fixed top-[5%] right-[5%] clip-path-cyber bg-white">
       <div className="clip-path-cyber-inner bg-black p-8">

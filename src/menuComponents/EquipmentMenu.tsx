@@ -8,6 +8,7 @@ import Mech from "../equipment/equipmentComponents/Mech";
 import { Crew, CrewAssignSpaces } from "../equipment/equipmentComponents/Crew";
 import Servos from "../equipment/equipmentComponents/Servos";
 import PositionPartsList from "../equipment/equipmentDesign/PositionPartsList";
+import PositionPartEditButtons from "../equipment/equipmentDesign/PositionPartEditButtons";
 //import ServoHydraulics from "./equipment/ServoHydraulics";
 import {
   Weapons,
@@ -29,62 +30,20 @@ const EquipmentMenu = () => {
   const editorMechBP = useEquipStore((state) => state.editorMechBP);
   const { resetCamera, equipActions } = useEquipStore((state) => state);
 
-  const [selectedBPid, setSelectedBPid] = useState(""); //top menu
+  const [mainMenuSelection, setMainMenuSelection] = useState(0);
   const [importExportText, setImportExportText] = useState("");
 
   const handleNewBP = () => {
     equipActions.blueprintMenu.newBlueprint();
-    setSelectedBPid("");
     setSubSelection("");
   };
-  /*
-  const handleSelectBlueprint = (id) => {
-    equipActions.blueprintMenu.selectBlueprint(id);
-    setSelectedBPid(id);
-    setSubSelection(null);
-  };
-  const handleSaveBlueprint = () => {
-    const id = equipActions.blueprintMenu.saveBlueprint(selectedBPid); //returns id of saved Blueprint
-    setSelectedBPid(id);
-  };
-  const handleDeleteBlueprint = (id) => {
-    equipActions.blueprintMenu.deleteBlueprint(id);
-    handleNewBP();
-    setSubSelection(null);
-  };
-  */
-  const handleImportChange = (e) => {
-    setImportExportText(e.target.value);
-  };
+
   const handleImportBP = () => {
     equipActions.blueprintMenu.importBlueprint(importExportText);
     setImportExportText("");
   };
-  const handleSelectPlayerBP = (i: number) => {
-    if (mechDesigns.player[i])
-      equipActions.blueprintMenu.importBlueprint(
-        JSON.stringify(mechDesigns.player[i])
-      );
-  };
-  const handleSelectEnemyBP = (i: number) => {
-    if (mechDesigns.enemy[i])
-      equipActions.blueprintMenu.importBlueprint(
-        JSON.stringify(mechDesigns.enemy[i])
-      );
-  };
-  const handleSelectStationBP = (i: number) => {
-    if (mechDesigns.station[i])
-      equipActions.blueprintMenu.importBlueprint(
-        JSON.stringify(mechDesigns.station[i])
-      );
-  };
-  const handleExportBP = () => {
-    setImportExportText(equipActions.blueprintMenu.exportBlueprint());
-  };
-
   //MAIN DESIGN MENU
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
-  const { mainMenuSelection } = useEquipStore((state) => state); //top menu
   const [subSelection, setSubSelection] = useState(""); //current sub menu
 
   const topMenuSelection = [
@@ -99,40 +58,15 @@ const EquipmentMenu = () => {
         buttonLable: "Save / Load",
         component: (
           <div>
-            <span
-              className={
-                selectedBPid === "" ? "selectedItem" : "nonSelectedItem"
-              }
-            >
+            <span className="selectedItem">
               <button onClick={handleNewBP}>New BP</button>
             </span>
-            {/*playerMechBP.map((value, index) => (
-          <span
-            key={"mechbp" + index}
-            className={
-              selectedBPid === value.id ? "selectedItem" : "nonSelectedItem"
-            }
-          >
-            <button
-              key={"select" + index}
-              onClick={() => handleSelectBlueprint(value.id)}
-            >
-              {value.name}
-            </button>
-            <button
-              key={"delete" + index}
-              onClick={() => handleDeleteBlueprint(value.id)}
-            >
-              X
-            </button>
-          </span>
-        ))
-        <button onClick={handleSaveBlueprint}>Save Blueprint</button>
-        */}
             <select
-              onChange={(e) => {
-                handleSelectPlayerBP(Number(e.target.value));
-              }}
+              onChange={(e) =>
+                equipActions.blueprintMenu.setBluePrint(
+                  mechDesigns.player[e.target.value]
+                )
+              }
             >
               <option>Select Player BP</option>
               {mechDesigns.player.map((bp, i) => (
@@ -142,9 +76,11 @@ const EquipmentMenu = () => {
               ))}
             </select>
             <select
-              onChange={(e) => {
-                handleSelectEnemyBP(Number(e.target.value));
-              }}
+              onChange={(e) =>
+                equipActions.blueprintMenu.setBluePrint(
+                  mechDesigns.enemy[e.target.value]
+                )
+              }
             >
               <option>Select Enemy BP</option>
               {mechDesigns.enemy.map((bp, i) => (
@@ -154,9 +90,11 @@ const EquipmentMenu = () => {
               ))}
             </select>
             <select
-              onChange={(e) => {
-                handleSelectStationBP(Number(e.target.value));
-              }}
+              onChange={(e) =>
+                equipActions.blueprintMenu.setBluePrint(
+                  mechDesigns.station[e.target.value]
+                )
+              }
             >
               <option>Select Station BP</option>
               {mechDesigns.station.map((bp, i) => (
@@ -169,12 +107,20 @@ const EquipmentMenu = () => {
               <button onClick={handleImportBP}>Import BP</button>
             </span>
             <span>
-              <button onClick={handleExportBP}>Export BP</button>
+              <button
+                onClick={() =>
+                  setImportExportText(
+                    equipActions.blueprintMenu.exportBlueprint()
+                  )
+                }
+              >
+                Export BP
+              </button>
             </span>
             <input
               style={{ textTransform: "none" }}
               type="textbox"
-              onChange={(e) => handleImportChange(e)}
+              onChange={(e) => setImportExportText(e.target.value)}
               value={importExportText}
             />
           </div>
@@ -274,67 +220,79 @@ const EquipmentMenu = () => {
     },
   ];
 
-  const topSelectionHandler = (key) => {
-    equipActions.changeMainMenuSelection(key);
-  };
-  const subSelectionHandler = (key) => {
-    //console.log(key);
-    setSubSelection(key);
-  };
-
   return (
-    <>
-      <div
-        id="equipmentMenu"
-        className="absolute top-8 mr-20 w-full lg:w-1/2 h-1/2 lg:h-[90vh]"
-      >
-        <button onClick={() => switchScreen(PLAYER.screen.flight)}>Exit</button>
-        <div>
-          <hr />
-          {topMenuSelection.map((value, key) => (
-            <span
-              key={"topmenu" + key}
-              className={
-                mainMenuSelection === key ? "selectedItem" : "nonSelectedItem"
-              }
-            >
-              <button onClick={() => topSelectionHandler(key)}>{value}</button>
+    <div id="equipmentMenu">
+      <div className="absolute clip-path-cyber bg-white top-8 w-full lg:w-1/2 h-1/2 lg:h-[90vh]">
+        <div className="flex flex-col clip-path-cyber-inner bg-black w-full h-full p-8">
+          <div
+            className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+            onClick={() => switchScreen(PLAYER.screen.flight)}
+          >
+            <span className="button-cyber-content">
+              <img
+                src={camera}
+                alt="camera icon"
+                className="w-[10vh] h-[10vh] pointer-events-none"
+              />
             </span>
-          ))}
+          </div>
+          <div>
+            <hr />
+            {topMenuSelection.map((value, key) => (
+              <span
+                key={"topmenu" + key}
+                className={
+                  mainMenuSelection === key ? "selectedItem" : "nonSelectedItem"
+                }
+              >
+                <button onClick={() => setMainMenuSelection(key)}>
+                  {value}
+                </button>
+              </span>
+            ))}
+          </div>
           <hr />
-          {mainMenuSelection === 3 ? (
-            <PositionPartsList editorMechBP={editorMechBP} />
-          ) : (
-            //edit servo/weapon graphical locations
-            //will also load the blueprint design 3d interface
-            Object.entries(subCatagories[mainMenuSelection]).map(
-              ([key, value]) => {
-                return (
-                  <span
-                    key={"submenu" + key}
-                    className={
-                      subSelection === key ? "selectedItem" : "nonSelectedItem"
-                    }
-                  >
-                    <button onClick={() => subSelectionHandler(key)}>
-                      {value.buttonLable}
-                    </button>
-                  </span>
-                  //)
-                );
-              }
-            )
-          )}
+          <div className="grow w-full overflow-auto">
+            {mainMenuSelection === 3 ? (
+              <PositionPartsList editorMechBP={editorMechBP} />
+            ) : (
+              //edit servo/weapon graphical locations
+              //will also load the blueprint design 3d interface
+              Object.entries(subCatagories[mainMenuSelection]).map(
+                ([key, value]) => {
+                  return (
+                    <span
+                      key={"submenu" + key}
+                      className={
+                        subSelection === key
+                          ? "selectedItem"
+                          : "nonSelectedItem"
+                      }
+                    >
+                      <button onClick={() => setSubSelection(key)}>
+                        {value.buttonLable}
+                      </button>
+                    </span>
+                    //)
+                  );
+                }
+              )
+            )}
+
+            <hr style={{ clear: "both" }} />
+            {mainMenuSelection !== 3 &&
+              subCatagories[mainMenuSelection][subSelection] &&
+              subCatagories[mainMenuSelection][subSelection].component}
+          </div>
         </div>
-        <hr style={{ clear: "both" }} />
-        {mainMenuSelection !== 3 &&
-          subCatagories[mainMenuSelection][subSelection] &&
-          subCatagories[mainMenuSelection][subSelection].component}
       </div>
-      <div className="absolute bottom-0 right-0">
+      {mainMenuSelection === 3 && (
+        <PositionPartEditButtons editorMechBP={editorMechBP} />
+      )}
+      <div className="absolute bottom-4 right-4">
         <div
           className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
-          onClick={() => resetCamera(true)}
+          onClick={() => resetCamera()}
         >
           <span className="button-cyber-content">
             <img
@@ -345,7 +303,7 @@ const EquipmentMenu = () => {
           </span>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

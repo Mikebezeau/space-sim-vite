@@ -5,7 +5,6 @@ import MechBP from "./mechBP/MechBP";
 import MechServo from "./mechBP/MechServo";
 import useParticleStore from "../stores/particleStore";
 import { loadBlueprint } from "../util/initEquipUtil";
-import { SCALE } from "../constants/constants";
 import {
   getGeomColorList,
   getMergedBufferGeom,
@@ -15,20 +14,19 @@ import { equipData } from "../equipment/data/equipData";
 //import { setCustomData } from "r3f-perf";
 
 interface MechInt {
-  setMechBP(mechDesign: any): void;
-  buildObject3d(): void;
+  buildObject3d: () => void;
   initObject3d(object3d: THREE.Object3D): void;
-  updateObb(): void;
-  setObject3dCenterOffset(): void;
-  setMergedBufferGeom(): void;
-  setMergedBufferGeomColorsList(geomColorList: THREE.Color[]): void;
-  fireWeapon(/*isPlayer: boolean*/): void;
+  updateObb: () => void;
+  setObject3dCenterOffset: () => void;
+  setMergedBufferGeom: () => void;
+  setMergedBufferGeomColorsList: (geomColorList: THREE.Color[]) => void;
+  fireWeapon: (/*isPlayer: boolean*/) => void;
 }
 
 class Mech implements MechInt {
   id: string;
   useInstancedMesh: boolean;
-  mechBP: MechBP;
+  _mechBP: MechBP;
   shield: { max: number; damage: number };
   object3d: THREE.Object3D;
   bufferGeom: THREE.BufferGeometry | null;
@@ -43,7 +41,6 @@ class Mech implements MechInt {
   maxHalfWidth: number;
   // old stuff
   speed: number;
-  size: number;
   drawDistanceLevel: number;
   ray: THREE.Ray;
   hit: THREE.Vector3;
@@ -52,10 +49,13 @@ class Mech implements MechInt {
   servoHitNames: string[];
 
   constructor(mechDesign: any, useInstancedMesh: boolean = false) {
+    // WARNING: SETTING PROPERTY VALUES ABOVE DROPS FRAME RATE
+    // - must declare new THREE classes here in constructor
     this.id = uuidv4();
     this.useInstancedMesh = useInstancedMesh;
-    //this.mechBP
-    this.setMechBP(mechDesign);
+    // try to set 'new MechBP' directly error:
+    // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
+    this._mechBP = loadBlueprint(mechDesign);
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
     this.object3d = new THREE.Object3D(); // set from BuildMech ref, updating this will update the object on screen
     this.bufferGeom = null; // merged geometry for instanced mesh
@@ -68,7 +68,6 @@ class Mech implements MechInt {
     this.obbGeoHelper = new THREE.BoxGeometry(); // helpers only for testing obb to view box
     this.obbRotationHelper = new THREE.Matrix4();
     this.speed = 0;
-    this.size = this.mechBP.size() * SCALE;
     this.drawDistanceLevel = 0; // todo: there is a built in object3d property for this
     this.ray = new THREE.Ray(); // ray from ship for weaponFire hit detection - todo: use built in object3d raycast method
     // hit testing
@@ -78,15 +77,19 @@ class Mech implements MechInt {
     this.servoHitNames = [];
   }
 
-  setMechBP = (mechDesign: any) => {
-    this.mechBP = loadBlueprint(JSON.stringify(mechDesign)); // mech blue print
+  public get mechBP() {
+    return this._mechBP;
+  }
+
+  public set mechBP(mechDesign: any) {
+    this._mechBP = loadBlueprint(mechDesign); // mech blue print
     // build object3d from mechBP for instanced mechs
     if (this.useInstancedMesh) {
       //this.buildObject3d();
     }
-  };
+  }
 
-  buildObject3d = () => {
+  buildObject3d() {
     if (this.mechBP) {
       const object3d = new THREE.Object3D();
       this.mechBP.servoList.forEach((servo: MechServo) => {
@@ -95,7 +98,7 @@ class Mech implements MechInt {
       });
       this.object3d = object3d;
     }
-  };
+  }
 
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
   initObject3d = (object3d: THREE.Object3D, isPlayer: boolean = false) => {
@@ -147,7 +150,7 @@ class Mech implements MechInt {
     }
   };
 
-  updateObb = () => {
+  updateObb() {
     this.obbNeedsUpdate = false;
     this.setObject3dCenterOffset();
     //this.object3dCenterOffset.updateMatrix(); // Updates the local transform, not needed yet
@@ -160,20 +163,20 @@ class Mech implements MechInt {
     this.obbPositioned.center.copy(this.object3dCenterOffset.position);
     // rotation helper for testing obb: to view box in correct orientation
     this.obbRotationHelper.setFromMatrix3(this.obbPositioned.rotation);
-  };
+  }
 
   // set the position of object3d so that the geometry is centered at the position
-  setObject3dCenterOffset = () => {
+  setObject3dCenterOffset() {
     this.object3dCenterOffset.position.copy(this.object3d.position);
     this.object3dCenterOffset.rotation.copy(this.object3d.rotation);
     // todo: use translateOnAxis for simpler calculation
     this.object3dCenterOffset.translateX(this.mechCenter.x);
     this.object3dCenterOffset.translateY(this.mechCenter.y);
     this.object3dCenterOffset.translateZ(this.mechCenter.z);
-  };
+  }
 
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
-  setMergedBufferGeom = () => {
+  setMergedBufferGeom() {
     if (this.object3d) {
       // split object children into meshes of same colors
       // merge all meshes of same color into one buffer geometry
@@ -185,9 +188,9 @@ class Mech implements MechInt {
         this.object3d
       );
     }
-  };
+  }
 
-  setMergedBufferGeomColorsList = (geomColorList: THREE.Color[]) => {
+  setMergedBufferGeomColorsList(geomColorList: THREE.Color[]) {
     if (this.object3d) {
       this.bufferGeomColorsList = [];
       geomColorList.forEach((color) => {
@@ -196,9 +199,9 @@ class Mech implements MechInt {
         );
       });
     }
-  };
+  }
 
-  fireWeapon = (/*isPlayer = false*/) => {
+  fireWeapon(/*isPlayer = false*/) {
     if (this.mechBP?.weaponList) {
       const mechRefObj = new THREE.Group();
       const weaponObj = new THREE.Group();
@@ -235,7 +238,7 @@ class Mech implements MechInt {
         }
       });
     }
-  };
+  }
 }
 
 export default Mech;

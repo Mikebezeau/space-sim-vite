@@ -7,7 +7,7 @@ import mechDesigns from "../equipment/data/mechDesigns";
 
 //used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
-  return new Array(count).fill().map(() => {
+  return new Array(count).map(() => {
     const t = Math.random();
     //new pos will be translateZ
     const pos = track.parameters.path.getPointAt(t);
@@ -42,22 +42,22 @@ export const randomData = (count, track, radius, size, randomScale) => {
   });
 };
 
-export const genBoidEnemies = (numEnemies) => {
-  let enemies = Array(numEnemies)
-    .fill()
-    // EnemyMechBoid(bpIndex, isBossMech)
-    .map((_, i) => new EnemyMechBoid(i === 0 ? 0 : 1, i === 0 ? true : false));
+export const genBoidEnemies = (numEnemies: number) => {
+  let enemies = Array(numEnemies).map(
+    (_, i) => new EnemyMechBoid(i === 0 ? 0 : 1, i === 0 ? true : false)
+  );
+  // EnemyMechBoid(bpIndex, isBossMech)
   return enemies;
 };
 
-export const groupEnemies = (enemies) => {
+export const groupEnemies = (enemies: EnemyMechBoid[]) => {
   //group enemies into squads
   enemies.forEach((enemy) => {
     //enemy with no group: make group leader and select all nearby enemies to join group
     //this is also setting all followers of boss ship to upgrade to special mechBP
     if (!enemy.groupLeaderId) {
       //upgrade the leader mech to special mechBp
-      if (!enemy.isBossMech) enemy.setMechBP(mechDesigns.enemy[2]);
+      if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[2];
 
       enemies
         .filter(
@@ -89,8 +89,8 @@ export const groupEnemies = (enemies) => {
 };
 
 export const genStations = () => {
-  let stations = [];
-  //create station
+  let stations: any[] = [];
+  //create station TODO create Station class, use Mech class parent
   stations.push({
     id: uuidv4(),
     type: "EQUIPMENT",

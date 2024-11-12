@@ -16,7 +16,7 @@ const Servos = (props: ServosInt) => {
   );
 
   const updateAndZoom = () => {
-    equipActions.blueprintMenu.setCameraZoom();
+    equipActions.blueprintMenu.resetCameraZoom();
     toggleUpdateState();
   };
 

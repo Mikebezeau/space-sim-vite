@@ -3279,7 +3279,7 @@ const mechDesigns = {
 
   station: [
     {
-      id: 0,
+      id: "hgjgfxytgiughrdy6gihtdt",
       name: "PlayerShip",
       scale: 2,
       generatorClass: 0,
@@ -3397,7 +3397,7 @@ const mechDesigns = {
 
   enemy: [
     {
-      id: 0,
+      id: "uyf6898yoihghrd6u",
       name: "Destroyer",
       scale: 4,
       generatorClass: 0,
@@ -3548,7 +3548,7 @@ const mechDesigns = {
       color: "#999",
     },
     {
-      id: 1,
+      id: "tderas65r98yhpihutrs",
       name: "Enemy Ship",
       scale: 2,
       generatorClass: 0,
@@ -3683,7 +3683,7 @@ const mechDesigns = {
       color: "#999",
     },
     {
-      id: 2,
+      id: "gvvxgfigoijop98876f",
       name: "Enemy Leader Ship",
       scale: 3,
       generatorClass: 0,

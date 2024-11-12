@@ -37,7 +37,7 @@ const Mech = (props: MechInt) => {
                   value={editorMechBP.scale}
                   onChange={(e) => {
                     editorMechBP.scale = Number(e.target.value);
-                    equipActions.blueprintMenu.setCameraZoom();
+                    equipActions.blueprintMenu.resetCameraZoom();
                     toggleUpdateState();
                   }}
                 >

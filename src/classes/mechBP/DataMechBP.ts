@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import MechServo from "./MechServo";
 import MechWeaponBeam from "./weaponBP/MechWeaponBeam";
 import MechWeaponEnergyMelee from "./weaponBP/MechWeaponEnergyMelee";
@@ -34,6 +35,7 @@ interface DataMechBPInt {
 }
 
 class DataMechBP implements DataMechBPInt {
+  id: string;
   name: string;
   scale: number;
   generatorClass: number;
@@ -64,6 +66,7 @@ class DataMechBP implements DataMechBPInt {
   color: string;
 
   constructor(mechBPdata?: any) {
+    this.id = uuidv4();
     this.name = "New Blueprint";
     this.scale = 2; //Mech, Light
     this.generatorClass = 0;

@@ -18,7 +18,6 @@ import { servoShapeDesigns } from "../equipment/data/servoShapeDesigns";
 // @ts-ignore
 import greySpeckleBmpSrc from "../assets/bmp/greySpeckle.bmp";
 import { equipData } from "../equipment/data/equipData";
-import { getZoom } from "../util/editUtil";
 
 export const EDIT_MENU_SELECT = {
   none: 0,
@@ -93,9 +92,8 @@ interface equipStoreState {
   updateState: boolean;
   toggleUpdateState: () => void;
   isResetCamera: boolean; // from 3d mech editor menu component EquipmentMenu.tsx
-  resetCamera: (isResetCamera: boolean) => void;
+  resetCamera: (isResetCamera?: boolean) => void;
   cameraZoom: number;
-  mainMenuSelection: number;
   editPartMenuSelect: number;
   editPartId: string;
   editPartIdPrev: string;
@@ -112,15 +110,15 @@ interface equipStoreState {
       | MechWeaponMelee;
   };
   equipActions: {
-    changeMainMenuSelection: (mainMenuSelection: number) => void;
     setEditPartId: (id: string) => void;
     setEditPartMenuSelect: (editPartMenuSelect: number) => void;
     setAddServoShapeDesignId: (addServoShapeDesignId: string) => void;
     blueprintMenu: {
       newBlueprint: () => void;
-      importBlueprint: (importBP: any) => void;
+      setBluePrint: (mechDesign: any) => void;
+      importBlueprint: (importBP: string) => void;
       exportBlueprint: () => string;
-      setCameraZoom: () => void;
+      resetCameraZoom: () => void;
     };
     assignPartLocationMenu: {
       setCrewLocation: (locationServoId: string) => void;
@@ -179,10 +177,9 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
   updateState: false,
   toggleUpdateState: () => set({ updateState: !get().updateState }),
   isResetCamera: false,
-  resetCamera: (isResetCamera) => set({ isResetCamera }),
+  resetCamera: (isResetCamera = true) => set({ isResetCamera }),
   cameraZoom: 1,
   //3d ship editor global variables
-  mainMenuSelection: 0,
   editPartMenuSelect: EDIT_MENU_SELECT.none,
   editPartId: "",
   editPartIdPrev: "",
@@ -201,11 +198,6 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
   },
 
   equipActions: {
-    changeMainMenuSelection(mainMenuSelection: number) {
-      //when "Edit Blueprint" selected, switches to 3d design mode
-      set(() => ({ mainMenuSelection }));
-    },
-
     setEditPartId: (id: string) => {
       if (id !== get().editPartId) {
         set({ editPartIdPrev: get().editPartId });
@@ -225,15 +217,16 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         set(() => ({
           editorMechBP: newMechBP,
         }));
-        const cameraZoom = getZoom(newMechBP);
-        set(() => ({ cameraZoom }));
+        get().equipActions.blueprintMenu.resetCameraZoom();
       },
-      importBlueprint(importBP: any) {
-        const parsedBP = JSON.parse(importBP);
-        const newEditorMechBP = new EditorMechBP(parsedBP);
-        set(() => ({ editorMechBP: newEditorMechBP }));
-        const cameraZoom = getZoom(newEditorMechBP);
-        set(() => ({ cameraZoom }));
+      setBluePrint(mechDesign: any) {
+        const editorMechBP = new EditorMechBP(mechDesign);
+        set(() => ({ editorMechBP }));
+        get().equipActions.blueprintMenu.resetCameraZoom();
+      },
+      importBlueprint(importBP: string) {
+        const mechDesign = JSON.parse(importBP);
+        get().equipActions.blueprintMenu.setBluePrint(mechDesign);
       },
       exportBlueprint() {
         /*
@@ -251,8 +244,8 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         const JSONBP = JSON.stringify(get().editorMechBP); //, replacer);
         return JSONBP;
       },
-      setCameraZoom() {
-        const cameraZoom = getZoom(get().editorMechBP);
+      resetCameraZoom() {
+        const cameraZoom = get().editorMechBP.size() * -3;
         set(() => ({ cameraZoom }));
       },
     },

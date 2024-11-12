@@ -1,28 +1,22 @@
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
-import { createPortal, useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-import useStore from "../stores/store";
-import useEnemyStore from "../stores/enemyStore";
-import useParticleStore from "../stores/particleStore";
-import useDevStore from "../stores/devStore";
-import PlayerMech from "../3d/spaceFlight/PlayerMechNew";
+import useStore from "../../stores/store";
+import useEnemyStore from "../../stores/enemyStore";
+import useParticleStore from "../../stores/particleStore";
+import useDevStore from "../../stores/devStore";
+import PlayerMech from "../../3d/spaceFlight/PlayerMechNew";
 //import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
-import BuildMech from "../3d/buildMech/BuildMech";
-import InstancedMechGroups from "../3d/InstancedMechs";
-import Particles from "../3d/Particles";
-import BoidController from "../classes/BoidController";
+import BuildMech from "../../3d/buildMech/BuildMech";
+import InstancedMechGroups from "../../3d/InstancedMechs";
+import Particles from "../../3d/Particles";
+import BoidController from "../../classes/BoidController";
+import ObbTest from "./dev/ObbTest";
 //import { setCustomData } from "r3f-perf";
 
 export default function EnemyTestScene() {
   console.log("EnemyTest Scene rendered");
-  const [scene] = useState(() => new THREE.Scene());
   const { camera } = useThree();
   const player = useStore((state) => state.player);
   const setPlayerPosition = useStore(
@@ -30,7 +24,6 @@ export default function EnemyTestScene() {
   );
   const enemies = useEnemyStore((state) => state.enemies);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
-  const showObbBox = useDevStore((state) => state.showObbBox);
   const addExplosion = useParticleStore((state) => state.addExplosion);
 
   const cameraControlsRef = useRef<any>(null);
@@ -68,36 +61,6 @@ export default function EnemyTestScene() {
       enemies //.filter((enemy) => enemy.useInstancedMesh)
     );
   }, [enemies]);
-
-  // show hide obb boxes
-  useEffect(() => {
-    console.log("obbBoxRefs visibility");
-    obbBoxRefs.current.forEach((obbBox) => {
-      if (showObbBox) obbBox.visible = true;
-      else obbBox.visible = false;
-    });
-  }, [showObbBox]);
-
-  useFrame(() => {
-    if (showObbBox) {
-      // update obb test boxes
-      enemies.forEach((enemy, i) => {
-        enemy.updateObb();
-        // for testing obb placement and intersection
-        obbBoxRefs.current[i].position.copy(enemy.obbPositioned.center);
-        obbBoxRefs.current[i].setRotationFromMatrix(enemy.obbRotationHelper);
-        // show leaders in red and followers in green, no group in blue
-        // @ts-ignore - material.color does exist
-        obbBoxRefs.current[i].material.color.setHex(
-          enemy.getIsLeader()
-            ? 0xff0000
-            : enemy.groupLeaderId
-            ? 0x00ff00
-            : 0x0000ff
-        );
-      });
-    }
-  });
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.5); // cap delta to 500ms
@@ -149,13 +112,7 @@ export default function EnemyTestScene() {
     }
   });
 
-  // render scene overtop of star points scene
-  useFrame(
-    ({ gl }) => void ((gl.autoClear = false), gl.render(scene, camera)),
-    1
-  );
-
-  return createPortal(
+  return (
     <>
       <ambientLight intensity={0.2} />
       <pointLight intensity={1} decay={0} position={[-10000, 10000, 0]} />
@@ -173,38 +130,25 @@ export default function EnemyTestScene() {
         />
       )}
       <Particles />
+      <ObbTest ref={obbBoxRefs} />
       {enemies.length > 0 && (
         <>
-          {enemies.map((enemyMech, index) => (
-            <Fragment key={enemyMech.id}>
-              <mesh
-                ref={(obbBoxRef) =>
-                  (obbBoxRefs.current[index] = obbBoxRef as THREE.Mesh)
-                }
-                geometry={enemyMech.obbGeoHelper}
-                material={
-                  new THREE.MeshBasicMaterial({
-                    color: 0x00ff00,
-                    wireframe: true,
-                  })
-                }
+          {enemies.map((enemyMech, index) =>
+            !enemyMech.useInstancedMesh ? (
+              <BuildMech
+                key={enemyMech.id}
+                mechBP={enemyMech.mechBP}
+                ref={(mechRef) => {
+                  enemyMechRefs.current[index] = mechRef as THREE.Object3D;
+                  enemyMech.initObject3d(mechRef as THREE.Object3D);
+                }}
               />
-              {!enemyMech.useInstancedMesh ? (
-                <BuildMech
-                  mechBP={enemyMech.mechBP}
-                  ref={(mechRef) => {
-                    enemyMechRefs.current[index] = mechRef as THREE.Object3D;
-                    enemyMech.initObject3d(mechRef as THREE.Object3D);
-                  }}
-                />
-              ) : null}
-            </Fragment>
-          ))}
+            ) : null
+          )}
           <InstancedMechGroups />
         </>
       )}
-    </>,
-    scene
+    </>
   );
 }
 /*

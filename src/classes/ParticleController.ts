@@ -1,9 +1,5 @@
 import * as THREE from "three";
-import {
-  GPU_PARTICLE_SHADER,
-  SPRITE_TYPE,
-  DESIGN_TYPE,
-} from "../constants/particleConstants";
+import { GPU_PARTICLE_SHADER } from "../constants/particleConstants";
 //import { setCustomData } from "r3f-perf";
 
 const UPDATEABLE_ATTRIBUTES = [
@@ -78,7 +74,7 @@ class ParticleController implements ParticleControllerInt {
 
     // preload a 10_000 random numbers from -0.5 to 0.5
     this.rand = [];
-    let i;
+    let i: number;
     for (i = 1e5; i > 0; i--) {
       this.rand.push(Math.random() - 0.5);
     }
@@ -274,7 +270,7 @@ class ParticleController implements ParticleControllerInt {
     this.geometryUpdate();
   }
 
-  dispose(scene) {
+  dispose(scene: THREE.Scene) {
     if (this.particleSystem) scene.remove(this.particleSystem);
     this.material.dispose();
     this.sprite.dispose();
@@ -289,8 +285,20 @@ class ParticleController implements ParticleControllerInt {
 
     This if spawnParticle is called three times in a row before rendering,
     then count will be 3 and the cursor will have moved by three.
-     */
-  spawnParticle(options) {
+  */
+  spawnParticle(options: {
+    position: THREE.Vector3;
+    velocity: THREE.Vector3;
+    acceleration: THREE.Vector3;
+    color: THREE.Color;
+    endColor: THREE.Color;
+    lifetime: number;
+    size: number;
+    sizeRandomness: number;
+    sprite: number;
+    design: number;
+    angle: number;
+  }) {
     const spriteAttribute = this.geometry.getAttribute("aSprite");
     const designAttribute = this.geometry.getAttribute("aDesign");
     const positionStartAttribute = this.geometry.getAttribute("positionStart");
