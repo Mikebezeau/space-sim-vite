@@ -7,7 +7,7 @@ import mechDesigns from "../equipment/data/mechDesigns";
 
 //used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
-  return new Array(count).map(() => {
+  return new Array(count).fill(null).map(() => {
     const t = Math.random();
     //new pos will be translateZ
     const pos = track.parameters.path.getPointAt(t);
@@ -42,11 +42,11 @@ export const randomData = (count, track, radius, size, randomScale) => {
   });
 };
 
-export const genBoidEnemies = (numEnemies: number) => {
-  let enemies = Array(numEnemies).map(
-    (_, i) => new EnemyMechBoid(i === 0 ? 0 : 1, i === 0 ? true : false)
-  );
-  // EnemyMechBoid(bpIndex, isBossMech)
+export const genBoidEnemies = (numEnemies) => {
+  let enemies = new Array(numEnemies)
+    .fill(null)
+    // EnemyMechBoid(bpIndex, isBossMech)
+    .map((_, i) => new EnemyMechBoid(i === 0 ? 0 : 1, i === 0 ? true : false));
   return enemies;
 };
 
@@ -90,7 +90,7 @@ export const groupEnemies = (enemies: EnemyMechBoid[]) => {
 
 export const genStations = () => {
   let stations: any[] = [];
-  //create station TODO create Station class, use Mech class parent
+  //create station
   stations.push({
     id: uuidv4(),
     type: "EQUIPMENT",

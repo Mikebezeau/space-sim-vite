@@ -1,7 +1,7 @@
 import itemsData from "../data/items";
 
 const generateItems = (number, category) =>
-  new Array(number).map((_, index) => {
+  new Array(number).fill(null).map((_, index) => {
     const random = Math.floor(Math.random() * itemsData.length);
     const damage = Math.round(Math.random() * 100);
     return {
