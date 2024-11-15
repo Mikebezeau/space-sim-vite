@@ -20,6 +20,7 @@ export const PLAYER_START = {
 
 export const PLAYER = {
   screen: {
+    mainMenu: 0,
     flight: 1,
     landedPlanet: 2,
     galaxyMap: 3,

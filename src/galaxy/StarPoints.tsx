@@ -1,4 +1,5 @@
-import React, { forwardRef, useRef, useLayoutEffect } from "react";
+import React, { forwardRef, useEffect, useRef, useLayoutEffect } from "react";
+//import { Points } from "three";
 import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
 // @ts-ignore
 import starSpriteSrc from "../sprites/sprite120.png";
@@ -12,7 +13,7 @@ interface StarPointsInt {
 }
 const StarPoints = forwardRef(function StarPoints(
   props: StarPointsInt,
-  starPointsForwardRef
+  starPointsForwardRef: any
 ) {
   console.log("StarPoints rendered");
   const { viewAsBackground = false } = props;
@@ -20,6 +21,8 @@ const StarPoints = forwardRef(function StarPoints(
   const starSprite = new TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new TextureLoader().load(featheredSpriteSrc);
   const galaxy = useStore((state) => state.galaxy);
+
+  //addAfterEffect(() => console.log("addAfterEffect"));
 
   useLayoutEffect(() => {
     if (viewAsBackground && galaxy.starCoordsBuffer?.array) {
@@ -63,7 +66,12 @@ const StarPoints = forwardRef(function StarPoints(
 
   if (!galaxy.starCoordsBuffer) return null;
   return (
-    <points ref={starPointsForwardRef} frustumCulled={viewAsBackground}>
+    <points
+      ref={(ref) => {
+        if (ref !== null) starPointsForwardRef = ref;
+      }}
+      frustumCulled={viewAsBackground}
+    >
       <bufferGeometry ref={starPointsBufferGeoRef}>
         <bufferAttribute
           attach={"attributes-position"}

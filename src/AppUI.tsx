@@ -1,5 +1,4 @@
 import React from "react";
-import { useEffect, useRef } from "react";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
@@ -12,12 +11,16 @@ import {
 import SpeedReadout from "./uiCockpit/SpeedReadout";
 import ShieldsReadout from "./uiCockpit/ShieldsReadout";
 import WeaponsReadout from "./uiCockpit/WeaponsReadout";
+import MainMenu from "./menuComponents/MainMenu";
 import GalaxyMapMenu from "./menuComponents/GalaxyMapMenu";
 import StationDockMenu from "./menuComponents/StationDockMenu";
 import EquipmentMenu from "./menuComponents/EquipmentMenu";
 //import CustomCursor from "./CustomCursor";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
+
+import AppScreenTransition from "./AppScreenTransition";
+import useStore from "./stores/store";
 
 const AppUI = () => {
   console.log("AppUI render");
@@ -29,16 +32,10 @@ const AppUI = () => {
   const devEnemyTest = useDevStore((state) => state.devEnemyTest);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
-  const transitionFadeDiv = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (transitionFadeDiv.current) {
-      transitionFadeDiv.current.style.display = "none";
-    }
-  }, [playerScreen]);
-
   return (
     <div className="pointer-events-none touch-none">
+      {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
+      {playerScreen === PLAYER.screen.flight && <AppScreenTransition />}
       {playerScreen === PLAYER.screen.flight &&
         (devEnemyTest ? devPlayerPilotMech : true) && (
           <>
@@ -74,10 +71,6 @@ const AppUI = () => {
           </>
         )}
       {/*<CustomCursor />*/}
-      <div
-        ref={transitionFadeDiv}
-        className="absolute top-0 right-0 bottom-0 left-0 bg-black"
-      />
     </div>
   );
 };

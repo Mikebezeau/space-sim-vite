@@ -24,11 +24,11 @@ const AppCanvas = () => {
         shadows={false}
         resize={{ debounce: 1000 }}
         gl={{
-          autoClear: false,
+          //autoClear: false,
           logarithmicDepthBuffer: true,
-          precision: "lowp", //highp", "mediump" or "lowp"
-          // TODO use this if mobile device
-          powerPreference: "default", //"low-power"//"high-performance", "low-power" or "default"
+          //precision: "mediump", // "highp", "mediump" or "lowp"
+          // TODO use "low-power" if mobile device?
+          //powerPreference: "default", // "high-performance", "low-power" or "default"
           antialias: false,
         }}
         onCreated={

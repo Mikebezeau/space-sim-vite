@@ -8,17 +8,15 @@ import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
 import useStore from "../../stores/store";
 import { flipRotation } from "../../util/gameUtil";
 
-export default function SpaceFlightScene() {
+const SpaceFlightPlanetsScene = () => {
   console.log("SpaceFlight Scene rendered");
   const { camera } = useThree();
   const player = useStore((state) => state.player);
 
   useLayoutEffect(() => {
     // set camera when returning to flight screen
-    const playerObj = player.object3d;
-
-    camera.position.copy(playerObj.position);
-    camera.rotation.setFromQuaternion(flipRotation(playerObj.quaternion));
+    camera.position.copy(player.object3d.position);
+    camera.rotation.setFromQuaternion(flipRotation(player.object3d.quaternion));
   }, []);
 
   return (
@@ -36,4 +34,6 @@ export default function SpaceFlightScene() {
       {/*<Skybox />*/}
     </>
   );
-}
+};
+
+export default SpaceFlightPlanetsScene;

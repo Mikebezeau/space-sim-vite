@@ -1,10 +1,10 @@
-import React, { forwardRef, useEffect, useRef } from "react";
+import React, { forwardRef, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../../../stores/enemyStore";
 import useDevStore from "../../../stores/devStore";
 
-const ObbTest = forwardRef(function BuildMech(
+const ObbTest = forwardRef(function ObbTest(
   props: any,
   obbTestForwardRef: any
 ) {
@@ -14,7 +14,6 @@ const ObbTest = forwardRef(function BuildMech(
 
   // show hide obb boxes
   useEffect(() => {
-    console.log("obbTestForwardRef visibility");
     obbTestForwardRef.current.forEach((obbBox: THREE.Mesh) => {
       if (showObbBox) obbBox.visible = true;
       else obbBox.visible = false;
@@ -22,7 +21,7 @@ const ObbTest = forwardRef(function BuildMech(
   }, [showObbBox]);
 
   useFrame(() => {
-    if (showObbBox) {
+    if (showObbBox && enemies instanceof Array) {
       // update obb test boxes
       enemies.forEach((enemy, i) => {
         enemy.updateObb();
@@ -46,7 +45,7 @@ const ObbTest = forwardRef(function BuildMech(
 
   return (
     <>
-      {enemies.length > 0 && (
+      {enemies instanceof Array && enemies.length > 0 && (
         <>
           {enemies.map((enemyMech, index) => (
             <mesh

@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
-import mechDesigns from "../equipment/data/mechDesigns";
-// @ts-ignore
-import camera from "../assets/icons/camera-change.svg";
+import CyberMenuBorder from "./common/CyberMenuBorder";
+import ButtonIcon from "./ButtonIcon";
 import Mech from "../equipment/equipmentComponents/Mech";
 import { Crew, CrewAssignSpaces } from "../equipment/equipmentComponents/Crew";
 import Servos from "../equipment/equipmentComponents/Servos";
@@ -19,6 +18,9 @@ import {
   LandingBayAssignSpaces,
 } from "../equipment/equipmentComponents/LandingBay";
 import { PLAYER } from "../constants/constants";
+import mechDesigns from "../equipment/data/mechDesigns";
+// @ts-ignore
+import camera from "../assets/icons/camera-change.svg";
 import "../css/equipmentMenu.css";
 
 const EquipmentMenu = () => {
@@ -32,6 +34,10 @@ const EquipmentMenu = () => {
 
   const [mainMenuSelection, setMainMenuSelection] = useState(0);
   const [importExportText, setImportExportText] = useState("");
+
+  useEffect(() => {
+    equipActions.blueprintMenu.setBluePrint(mechDesigns.player[0]);
+  }, []);
 
   const handleNewBP = () => {
     equipActions.blueprintMenu.newBlueprint();
@@ -222,69 +228,65 @@ const EquipmentMenu = () => {
 
   return (
     <div id="equipmentMenu">
-      <div className="absolute clip-path-cyber bg-white top-8 w-full lg:w-1/2 h-1/2 lg:h-[90vh]">
-        <div className="flex flex-col clip-path-cyber-inner bg-black w-full h-full p-8">
-          <div
-            className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
-            onClick={() => switchScreen(PLAYER.screen.flight)}
-          >
-            <span className="button-cyber-content">
-              <img
-                src={camera}
-                alt="camera icon"
-                className="w-[10vh] h-[10vh] pointer-events-none"
-              />
-            </span>
-          </div>
-          <div>
+      <div className="absolute top-8 left-8 right-8 lg:right-auto lg:w-1/2 h-1/2 lg:h-[90vh]">
+        <CyberMenuBorder>
+          <div className="flex flex-col">
+            <ButtonIcon
+              onClick={() => switchScreen(PLAYER.screen.flight)}
+              iconSrc={camera}
+            />
+            <div>
+              <hr />
+              {topMenuSelection.map((value, key) => (
+                <span
+                  key={"topmenu" + key}
+                  className={
+                    mainMenuSelection === key
+                      ? "selectedItem"
+                      : "nonSelectedItem"
+                  }
+                >
+                  <button onClick={() => setMainMenuSelection(key)}>
+                    {value}
+                  </button>
+                </span>
+              ))}
+            </div>
             <hr />
-            {topMenuSelection.map((value, key) => (
-              <span
-                key={"topmenu" + key}
-                className={
-                  mainMenuSelection === key ? "selectedItem" : "nonSelectedItem"
-                }
-              >
-                <button onClick={() => setMainMenuSelection(key)}>
-                  {value}
-                </button>
-              </span>
-            ))}
-          </div>
-          <hr />
-          <div className="grow w-full overflow-auto">
-            {mainMenuSelection === 3 ? (
-              <PositionPartsList editorMechBP={editorMechBP} />
-            ) : (
-              //edit servo/weapon graphical locations
-              //will also load the blueprint design 3d interface
-              Object.entries(subCatagories[mainMenuSelection]).map(
-                ([key, value]) => {
-                  return (
-                    <span
-                      key={"submenu" + key}
-                      className={
-                        subSelection === key
-                          ? "selectedItem"
-                          : "nonSelectedItem"
-                      }
-                    >
-                      <button onClick={() => setSubSelection(key)}>
-                        {value.buttonLable}
-                      </button>
-                    </span>
-                    //)
-                  );
-                }
-              )
-            )}
+            <div className="grow w-full overflow-auto">
+              {mainMenuSelection === 3 ? (
+                <PositionPartsList editorMechBP={editorMechBP} />
+              ) : (
+                //edit servo/weapon graphical locations
+                //will also load the blueprint design 3d interface
+                Object.entries(subCatagories[mainMenuSelection]).map(
+                  ([key, value]) => {
+                    return (
+                      <span
+                        key={"submenu" + key}
+                        className={
+                          subSelection === key
+                            ? "selectedItem"
+                            : "nonSelectedItem"
+                        }
+                      >
+                        <button onClick={() => setSubSelection(key)}>
+                          {value.buttonLable}
+                        </button>
+                      </span>
+                      //)
+                    );
+                  }
+                )
+              )}
 
-            <hr style={{ clear: "both" }} />
-            {mainMenuSelection !== 3 &&
-              subCatagories[mainMenuSelection][subSelection] &&
-              subCatagories[mainMenuSelection][subSelection].component}
+              <hr style={{ clear: "both" }} />
+              {mainMenuSelection !== 3 &&
+                subCatagories[mainMenuSelection][subSelection] &&
+                subCatagories[mainMenuSelection][subSelection].component}
+            </div>
           </div>
-        </div>
+        </CyberMenuBorder>
       </div>
       {mainMenuSelection === 3 && (
         <PositionPartEditButtons editorMechBP={editorMechBP} />

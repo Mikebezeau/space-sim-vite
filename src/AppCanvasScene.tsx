@@ -1,13 +1,13 @@
 import React from "react";
 import { Perf } from "r3f-perf";
 import usePlayerControlsStore from "./stores/playerControlsStore";
-import useStore from "./stores/store";
-import SpaceScene from "./scenes/spaceFlight/SpaceScene";
+import SpaceFlightScene from "./scenes/SpaceFlightScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
 import StationDockScene from "./scenes/StationDockScene";
 import BuildMechEquipment from "./3d/buildMech/BuildMechEquipment";
 import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER } from "./constants/constants";
+//import GlitchEffect from "./3d/effects/GlitchEffect";
 
 const AppCanvas = () => {
   console.log("AppCanvasScene rendered");
@@ -27,7 +27,7 @@ const AppCanvas = () => {
         />
       ) : null}
 
-      {playerScreen === PLAYER.screen.flight ? <SpaceScene /> : null}
+      {playerScreen === PLAYER.screen.flight ? <SpaceFlightScene /> : null}
       {playerScreen === PLAYER.screen.landedPlanet ? (
         <PlanetExploreScene />
       ) : null}
@@ -38,7 +38,7 @@ const AppCanvas = () => {
       {playerScreen === PLAYER.screen.equipmentBuild ? (
         <BuildMechEquipment />
       ) : null}
-      {/*<Effects />*/}
+      {/*<GlitchEffect />*/}
     </>
   );
 };

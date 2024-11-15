@@ -18,14 +18,14 @@ import {
 } from "../constants/constants";
 
 interface storeState {
-  showTestControls: boolean;
+  flightSceneRendered: boolean;
+  setFlightSceneRendered: (flightSceneRendered: boolean) => void;
   sound: boolean;
   playerCurrentStarIndex: number;
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
   galaxy: Object;
-  galaxyLoaded: boolean;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
   // therefore do not really need to use getPlayer
@@ -65,7 +65,6 @@ interface storeState {
     mouseScreen: THREE.Vector2;
   };
   testing: {
-    toggleTestControls: () => void;
     changeLocationSpace: () => void;
     changeLocationPlanet: () => void;
     changeLocationCity: () => void;
@@ -77,17 +76,21 @@ interface storeState {
 //const useStore = create((set, get) => {
 
 const useStore = create<storeState>()((set, get) => ({
-  showTestControls: false,
   sound: false,
+  flightSceneRendered: false, // used to trigger render
+  setFlightSceneRendered: (flightSceneRendered) => {
+    if (flightSceneRendered !== get().flightSceneRendered) {
+      set({ flightSceneRendered });
+      console.log("flightSceneRendered", get().flightSceneRendered);
+    }
+  },
   // for galaxy map
   showInfoHoveredStarIndex: null, // used in galaxy map ui
   showInfoTargetStarIndex: null,
   selectedWarpStar: null,
   galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
     set({ galaxy: galaxyData });
-    set({ galaxyLoaded: true });
   }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
-  galaxyLoaded: false, // used to trigger render
   // intial player star
   playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
   player: new PlayerMech(),
@@ -137,11 +140,6 @@ const useStore = create<storeState>()((set, get) => ({
   },
 
   testing: {
-    toggleTestControls() {
-      set((state) => ({
-        showTestControls: !state.showTestControls,
-      }));
-    },
     /*
       // this can be used to collect a JSON string of the galaxy map data
       // for use in the galaxy map UI. i.e. where are terrestrial planets located
@@ -381,9 +379,9 @@ const useStore = create<storeState>()((set, get) => ({
 
     // save screen touch position (-0.5 to 0.5) relative to
     // triggering event.target (mobile movement control circle)
-    updateTouchMobileMoveShip(event) {
+    updateTouchMobileMoveShip(event: TouchEvent) {
       if (event.target) {
-        // TODO fix this
+        // @ts-ignore
         var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
         const x = event.changedTouches[0].clientX - bounds.left;
         const y = event.changedTouches[0].clientY - bounds.top;

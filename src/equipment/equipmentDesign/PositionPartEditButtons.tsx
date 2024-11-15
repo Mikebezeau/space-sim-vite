@@ -34,8 +34,10 @@ const PositionPartEditButtons = (props: MechServoInt) => {
 
   // COLOR PICKER
   const setPartColor = (color: string) => {
-    part.color = color;
-    toggleUpdateState();
+    if (part) {
+      part.color = color;
+      toggleUpdateState();
+    }
   };
 
   //position
@@ -55,7 +57,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
     }
     */
     equipActions.servoMenu.adjustServoOrShapeOffset(
-      part.id,
+      editPartId,
       axis,
       adjustmentBaseVal * adjustmentFactor * direction
     );
@@ -106,7 +108,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
 
   const handleRotateServoShape = (axis: string, direction: number) => {
     equipActions.servoMenu.adjustServoOrShapeRotation(
-      part.id,
+      editPartId,
       axis,
       10 * adjustmentFactor,
       direction
@@ -115,7 +117,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
 
   const handleScaleServoShape = (axis, direction) => {
     const adjustVal = adjustmentBaseVal * adjustmentFactor * direction;
-    equipActions.servoMenu.adjustServoScale(part.id, axis, adjustVal);
+    equipActions.servoMenu.adjustServoScale(editPartId, axis, adjustVal);
   };
 
   const handleSetAdjustmentAmount = (val) => {

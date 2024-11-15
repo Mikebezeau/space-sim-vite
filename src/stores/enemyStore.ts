@@ -26,7 +26,6 @@ const generateEnemies = async (
 interface enemyStoreState {
   numEnemies: number;
   enemies: EnemyMechBoid[] | Promise<void | EnemyMechBoid[]>;
-  enemiesLoaded: boolean;
   boidController: any | null;
 }
 
@@ -34,9 +33,7 @@ const useEnemyStore = create<enemyStoreState>()((set, get) => ({
   numEnemies: numEnemies,
   enemies: generateEnemies(numEnemies).then((enemiesData: EnemyMechBoid[]) => {
     set({ enemies: enemiesData });
-    set({ enemiesLoaded: true });
   }),
-  enemiesLoaded: false,
   boidController: null, // todo: new BoidController(get().enemies)
 }));
 

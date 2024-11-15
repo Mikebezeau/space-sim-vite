@@ -13,6 +13,7 @@ import InstancedMechGroups from "../../3d/InstancedMechs";
 import Particles from "../../3d/Particles";
 import BoidController from "../../classes/BoidController";
 import ObbTest from "./dev/ObbTest";
+import GlitchEffect from "../../3d/effects/GlitchEffect";
 //import { setCustomData } from "r3f-perf";
 
 export default function EnemyTestScene() {
@@ -25,6 +26,11 @@ export default function EnemyTestScene() {
   const enemies = useEnemyStore((state) => state.enemies);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
   const addExplosion = useParticleStore((state) => state.addExplosion);
+
+  const setFlightSceneRendered = useStore(
+    (state) => state.setFlightSceneRendered
+  );
+  const sceneRenderedRef = useRef(false);
 
   const cameraControlsRef = useRef<any>(null);
   const enemyMechRefs = useRef<THREE.Object3D[]>([]);
@@ -54,15 +60,25 @@ export default function EnemyTestScene() {
   }, [devPlayerPilotMech, enemies, setPlayerPosition]);
 
   useEffect(() => {
+    if (!(enemies instanceof Array)) return;
     console.log("boidController set");
     // set boid controller for flocking enemies
     // must use all enemies (for checking groupLeaderId)
-    boidControllerRef.current = new BoidController(
-      enemies //.filter((enemy) => enemy.useInstancedMesh)
-    );
+    boidControllerRef.current = new BoidController(enemies);
+    return () => {
+      console.log("unmounting EnemyTestScene");
+      sceneRenderedRef.current = false;
+      setFlightSceneRendered(false);
+    };
   }, [enemies]);
 
   useFrame((_, delta) => {
+    if (!(enemies instanceof Array)) return;
+    // set sceneRenderedRef to make more efficient, propbably don't need this
+    if (!sceneRenderedRef.current && delta < 0.1) {
+      sceneRenderedRef.current = true;
+      setFlightSceneRendered(true);
+    }
     delta = Math.min(delta, 0.5); // cap delta to 500ms
     // boid flocking movement
     boidControllerRef.current?.update(delta);
@@ -102,18 +118,12 @@ export default function EnemyTestScene() {
       }
       // reset obbNeedsUpdate for next frame
       enemies[i].obbNeedsUpdate = true;
-      /*
-      enemies[0].object3d.position.setX(
-        enemies[0].object3d.position.x + 0.00005
-      );
-      enemies[0].object3d.rotation.y += 0.00001;
-      enemies[0].object3d.rotation.x += 0.00001;
-      */
     }
   });
 
   return (
     <>
+      {/*<GlitchEffect />*/}
       <ambientLight intensity={0.2} />
       <pointLight intensity={1} decay={0} position={[-10000, 10000, 0]} />
       <fog attach="fog" args={["#2A3C47", 100, 1500]} />
@@ -131,7 +141,7 @@ export default function EnemyTestScene() {
       )}
       <Particles />
       <ObbTest ref={obbBoxRefs} />
-      {enemies.length > 0 && (
+      {enemies instanceof Array && enemies.length > 0 && (
         <>
           {enemies.map((enemyMech, index) =>
             !enemyMech.useInstancedMesh ? (
