@@ -4,7 +4,7 @@
   outline: none;
   background-color: rgb(78, 220, 255);
   cursor: pointer;
-  font-family: tomorrow, sans-serif;
+  font-family: "tomorrow", sans-serif;
   font-size: 0.85rem;
   text-transform: uppercase;
   color: black;
@@ -24,10 +24,8 @@
   clip-path: polygon(92% 0, 100% 25%, 100% 100%, 8% 100%, 0% 75%, 0 0);
 }
 
-@media only screen and (min-width: 500px) {
-  .button-cyber-content:hover {
-    background-color: rgb(190, 242, 255);
-  }
+.button-cyber-content:hover {
+  background-color: rgb(190, 242, 255);
 }
 
 .clip-path-cyber {
@@ -167,8 +165,7 @@
   );
   pointer-events: auto;
   cursor: pointer;
-  padding-left: 100px;
-  font-family: "Cyber", sans-serif;
+  font-family: "tomorrow", sans-serif;
   color: var(--color);
   background: transparent;
   text-transform: uppercase;
@@ -178,7 +175,6 @@
   position: relative;
   font-weight: 700;
   border: 0;
-  min-width: 300px;
   height: 75px;
   line-height: 75px;
 }

@@ -18,9 +18,9 @@ import EquipmentMenu from "./menuComponents/EquipmentMenu";
 //import CustomCursor from "./CustomCursor";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
+import "./css/glitch.css";
 
 import AppScreenTransition from "./AppScreenTransition";
-import useStore from "./stores/store";
 
 const AppUI = () => {
   console.log("AppUI render");

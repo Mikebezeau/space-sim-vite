@@ -25,9 +25,8 @@ import "../css/equipmentMenu.css";
 
 const EquipmentMenu = () => {
   // updateState is used to force a re-render of the component when
-  // the class is updated in the store (useEquipStore)
+  // the class instance of editorMechBP is updated in the store (useEquipStore)
   const updateState = useEquipStore((state) => state.updateState);
-  //BLUEPRINT SELECTION MENU
   // editorMechBP class object will not trigger a re-render when updated
   const editorMechBP = useEquipStore((state) => state.editorMechBP);
   const { resetCamera, equipActions } = useEquipStore((state) => state);
@@ -53,7 +52,8 @@ const EquipmentMenu = () => {
   const [subSelection, setSubSelection] = useState(""); //current sub menu
 
   const topMenuSelection = [
-    "Mech Menu",
+    "Save / Load",
+    "Mech",
     "Design Parts",
     "Assign Part Locations",
     "Position Servo Shapes",
@@ -132,6 +132,8 @@ const EquipmentMenu = () => {
           </div>
         ),
       },
+    },
+    {
       mech: {
         buttonLable: "Mech",
         component: <Mech editorMechBP={editorMechBP} />,
@@ -168,6 +170,7 @@ const EquipmentMenu = () => {
           />
         ),
       },
+      /*
       landingBay: {
         buttonLable: "Landing Bay",
         component: (
@@ -177,6 +180,7 @@ const EquipmentMenu = () => {
           />
         ),
       },
+      */
       crew: {
         buttonLable: "Crew / Controls / Passengers",
         component: (
@@ -205,6 +209,7 @@ const EquipmentMenu = () => {
           />
         ),
       },
+      /*
       landingBay: {
         buttonLable: "Landing Bay",
         component: (
@@ -214,6 +219,7 @@ const EquipmentMenu = () => {
           />
         ),
       },
+      */
       crew: {
         buttonLable: "Crew / Controls / Passengers",
         component: (
