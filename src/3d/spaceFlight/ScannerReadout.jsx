@@ -3,9 +3,10 @@ import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
+import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
-import { SCALE } from "../../constants/constants";
+import { PLAYER, SCALE } from "../../constants/constants";
 //import { setCustomData } from "r3f-perf";
 
 const dummyObj = new THREE.Object3D(),
@@ -76,6 +77,9 @@ const ScannerReadout = () => {
   console.log("ScannerReadout rendered");
   const { camera } = useThree();
   const player = useStore((state) => state.player);
+  const getPlayerState = usePlayerControlsStore(
+    (state) => state.getPlayerState
+  );
   const getTargets = useStore((state) => state.getTargets);
   const planets = useStore((state) => state.planets);
   const enemies = useEnemyStore((state) => state.enemies);
@@ -129,10 +133,12 @@ const ScannerReadout = () => {
         const mesh = planetTargetGroupRef.current.children[i];
         dummyObj.position.copy(camera.position);
         dummyObj.lookAt(planets[i].object3d.position);
-        const highlight = tempFocusPlanetIndex === i;
+        const highlight = tempFocusPlanetIndex === i || focusPlanetIndex === i;
         placeTarget(dummyObj, camera, mesh, highlight, 0, i, 1);
       }
-      setFocusPlanetIndex(tempFocusPlanetIndex);
+      // only change target planet if player is in pilot control mode (not just looking around)
+      if (getPlayerState().playerActionMode === PLAYER.action.manualControl)
+        setFocusPlanetIndex(tempFocusPlanetIndex);
     }
     //save enemy nearest to direction player is facing
     //placing targets on enemies, and arrows toward their location on scanner readout

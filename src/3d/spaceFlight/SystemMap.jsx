@@ -67,7 +67,7 @@ export default function SystemMap({ showPlayer = false }) {
   });
 
   return (
-    <group ref={systemMap} scale={showPlayer ? SCALE : 20 / SYSTEM_SCALE}>
+    <group ref={systemMap} scale={showPlayer ? SCALE : 20 / 1000}>
       <System showPlayer={showPlayer} mapScale={mapScaleRef.current} />
       {showPlayer && <ShipPositions mapScale={mapScaleRef.current} />}
     </group>

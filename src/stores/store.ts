@@ -15,6 +15,7 @@ import {
   GALAXY_SIZE,
   PLAYER,
   PLAYER_START,
+  SYSTEM_SCALE,
 } from "../constants/constants";
 
 interface storeState {
@@ -213,10 +214,11 @@ const useStore = create<storeState>()((set, get) => ({
     warpToPlanet() {
       let player = get().player;
       const focusPlanetIndex = get().focusPlanetIndex || -1;
+      console.log("warpToPlanet", focusPlanetIndex);
       if (focusPlanetIndex > -1 && get().planets[focusPlanetIndex]) {
         const targetPlanet = get().planets[focusPlanetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
-        player.object3d.translateZ(-targetPlanet.radius * 5);
+        player.object3d.translateZ(-targetPlanet.radius * 2);
       }
     },
   },
@@ -316,11 +318,12 @@ const useStore = create<storeState>()((set, get) => ({
       set(() => ({
         planets: systemGen(playerCurrentStarIndex),
       }));
-      //console.log(get().planets);
       const player = get().player;
       player.object3d.position.setX(0);
       player.object3d.position.setY(0);
-      player.object3d.position.setZ(get().planets[0].radius * 5);
+      player.object3d.position.setZ(
+        get().planets[0].radius + get().planets[0].radius * 5 * SYSTEM_SCALE
+      );
       player.object3d.lookAt(0, 0, 0);
       //clear variables
       set(() => ({

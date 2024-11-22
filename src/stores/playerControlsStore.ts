@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import useStore from "./store";
+import useDevStore from "./devStore";
 import * as THREE from "three";
 import { flipRotation, lerp } from "../util/gameUtil";
 import { PLAYER, SCALE, SPEED_VALUES } from "../constants/constants";
@@ -53,8 +54,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
     // testing
-    playerScreen: PLAYER.screen.mainMenu,
-    //playerScreen: PLAYER.screen.flight,
+    //playerScreen: PLAYER.screen.newCampaign, //mainMenu,
+    playerScreen: PLAYER.screen.flight,
     isResetCamera: true,
     getPlayerState: () => {
       return {
@@ -113,11 +114,15 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       const setSpeed = useStore.getState().actions.setSpeed;
       const mouse = useStore.getState().mutation.mouse;
 
+      const devPlayerSpeedX1000 = useDevStore.getState().devPlayerSpeedX1000;
+
       //set speed
       if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
         let speed = lerp(
           player.speed,
-          SPEED_VALUES[get().playerSpeedSetting],
+          SPEED_VALUES[get().playerSpeedSetting] *
+            // increase speed by 100x for testing
+            (devPlayerSpeedX1000 ? 1000 : 1),
           0.6
         );
         // round speed to integer

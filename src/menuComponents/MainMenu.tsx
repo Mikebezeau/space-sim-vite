@@ -26,9 +26,15 @@ const MainMenu = () => {
 
   const menuItems = [
     {
-      title: "Launch",
+      title: "New Campaign",
       onClick: () => {
-        menuAction("Launch", PLAYER.screen.flight);
+        menuAction("New Campaign", PLAYER.screen.newCampaign);
+      },
+    },
+    {
+      title: "Continue",
+      onClick: () => {
+        menuAction("Continue", PLAYER.screen.flight);
       },
     },
     {
@@ -63,32 +69,32 @@ const MainMenu = () => {
           className={`absolute w-full h-full transition-opacity duration-1000 
       ${/* fade in on */ isTitleImgLoaded ? "opacity-100" : "opacity-0"}`}
         >
-          <div className="absolute bottom-[45%] left-1/2 h-2 w-fit transition-opacity duration-1000">
+          <div className="absolute top-[calc(60vw+50px)] sm:top-[50vh] left-1/2 h-2 w-fit transition-opacity duration-1000">
             <div
-              className="-ml-[50%] glitch text-black opacity-80 font-black tracking-widest text-6xl sm:text-7xl"
-              data-text="SWITCH"
+              className="-ml-[50%] glitch text-black opacity-80 font-black text-[#0083a3] tracking-wide text-5xl sm:text-7xl"
+              data-text="MACHINE"
             >
-              SWITCH
+              MACHINE
             </div>
           </div>
           <img
             src={robot}
-            className="invert rotate-[-7deg] opacity-50 absolute top-1/2 right-[500px] md:-right-[465px] min-w-[1000px] w-[1000px] -mt-[370px]"
+            className="invert rotate-[-7deg] opacity-0 md:opacity-50 absolute top-1/2 md:-right-[62vh] min-w-[140vh] w-[140vh] -mt-[55vh]"
           />
           <img
             src={skeleton}
-            className="invert opacity-30 absolute top-1/2 -left-[350px] md:-left-[350px] min-w-[800px] w-[800px] -mt-[400px]"
+            className="invert opacity-30 absolute top-1/2 -left-[45vh] min-w-[110vh] w-[110vh] -mt-[59vh]"
           />
           <img
             src={titleDeath}
             onLoad={() => {
               setisTitleImgLoaded(true);
             }}
-            className="absolute top-[40%] -mt-[200px] sm:-mt-[60px] sm:top-20 left-[calc(50%-175px)] sm:left-[calc(50%-250px)] min-w-[350px] w-[350px] sm:w-[500px] transition-opacity duration-1000"
+            className="absolute top-[40%] -mt-[200px] sm:-mt-[60px] sm:top-20 left-[5%] sm:left-[50%] sm:-ml-[37vh] w-[90%] sm:w-[75vh] transition-opacity duration-1000"
           />
           <div className="clip-path-cyber-inner w-80 h-40 absolute p-10 bottom-[5%] left-1/2 -ml-40">
             <div
-              className="w-full pl-[20%] cybr-btn"
+              className="w-full text-center cybr-btn"
               onClick={() => {
                 setIsStartClciked(true);
                 setTimeout(() => {
@@ -123,13 +129,13 @@ const MainMenu = () => {
         </div>
 
         {isShowMenu && (
-          <div className="absolute w-[90%] sm:w-[500px] h-72 ml-[5%] sm:ml-[15%] mt-[25vh]">
+          <div className="absolute w-[90%] sm:w-[500px] h-60 ml-[5%] sm:ml-[15%] bottom-[5vh] sm:bottom-[20vh]">
             <CyberMenuBorder>
-              <div className="px-8 relative">
+              <div className="px-3 relative">
                 {menuItems.map((menuItem, index) => (
                   <div
                     key={menuItem.title}
-                    className="w-full pl-[20%] my-6 cybr-btn"
+                    className="w-full pl-[10%] mb-6 cybr-btn"
                     onClick={menuItem.onClick}
                   >
                     {menuItem.title}
@@ -144,8 +150,10 @@ const MainMenu = () => {
                   </div>
                 ))}
               </div>
-              <div className="relative text-slate-800 text-right top-12 -right-6">
-                EC-392-F-4K-34I3-34K
+              <div className="relative text-slate-700 align-top bottom-[2px] -left-3 bg-slate-900">
+                <div className="relative -top-1 left-1">
+                  EC-392-F-4K-34I3-34K
+                </div>
               </div>
             </CyberMenuBorder>
           </div>

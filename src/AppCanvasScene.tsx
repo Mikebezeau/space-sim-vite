@@ -1,6 +1,7 @@
 import React from "react";
 import { Perf } from "r3f-perf";
 import usePlayerControlsStore from "./stores/playerControlsStore";
+import NewCampaignScene from "./scenes/NewCampaignScene";
 import SpaceFlightScene from "./scenes/SpaceFlightScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
 import StationDockScene from "./scenes/StationDockScene";
@@ -15,7 +16,7 @@ const AppCanvas = () => {
 
   return (
     <>
-      {playerScreen === PLAYER.screen.flight ? (
+      {true ? ( //playerScreen === PLAYER.screen.flight ? (
         <Perf
           logsPerSecond={5}
           customData={{
@@ -26,7 +27,7 @@ const AppCanvas = () => {
           }}
         />
       ) : null}
-
+      {playerScreen === PLAYER.screen.newCampaign ? <NewCampaignScene /> : null}
       {playerScreen === PLAYER.screen.flight ? <SpaceFlightScene /> : null}
       {playerScreen === PLAYER.screen.landedPlanet ? (
         <PlanetExploreScene />

@@ -1,24 +1,52 @@
 import { memo, useRef } from "react";
 import * as THREE from "three";
-import { useLoader /*useFrame*/ } from "@react-three/fiber";
+import { useLoader, useFrame } from "@react-three/fiber";
 import { TextureLoader } from "three/src/loaders/TextureLoader.js";
 import useStore from "../../stores/store";
 import PropTypes from "prop-types";
-import { DEBUG_RENDERS } from "../../constants/debugConstants";
+import { setCustomData } from "r3f-perf";
 
 const Planet = ({ planet, textureMaps }) => {
-  console.log("Planet rendered", DEBUG_RENDERS);
+  console.log("Planet rendered", planet.radius);
+  const player = useStore((state) => state.player);
   //planet rotation
   //const { clock } = useStore((state) => state.mutation);
   const planetRef = useRef();
-  /*
-  useFrame(() => {
+
+  const ZOOM_DIST_START =
+    planet.type === "SUN" ? planet.radius * 2.5 : planet.radius * 5;
+
+  const SCALE_MIN = 0.01;
+
+  useFrame((_, delta) => {
     if (planetRef.current) {
-      const r = clock.getElapsedTime() / 60;
-      planetRef.current.rotation.set(0, r, 0);
+      delta = Math.min(delta, 0.1); // cap delta to 100ms
+      const r = delta / 120;
+      planetRef.current.rotateY(r);
+      // scale planet to look smaller from far away
+      const distance = planet.object3d.position.distanceTo(
+        player.object3d.position
+      );
+      if (distance >= ZOOM_DIST_START) {
+        planetRef.current.scale.set(SCALE_MIN, SCALE_MIN, SCALE_MIN);
+      } else if (distance < ZOOM_DIST_START) {
+        const ZOOM_DIST_MIN = planet.radius;
+        // normalZoom from 0 to 1 as distance goes from ZOOM_DIST_START to ZOOM_DIST_MIN
+        let normalZoom =
+          (distance - ZOOM_DIST_MIN) / (ZOOM_DIST_START - ZOOM_DIST_MIN);
+        normalZoom = Math.round(normalZoom * 10000) / 10000;
+        normalZoom = Math.pow(1 - normalZoom, 6); // 6th power curve (starts slow)
+        let scale = Math.max(SCALE_MIN, normalZoom); //min scale = 0.001 / 0.01, max scale = 1
+        if (planetRef.current.scale.x !== scale) {
+          planetRef.current.scale.set(scale, scale, scale);
+        }
+
+        if (planet.type === "SUN") {
+          setCustomData(normalZoom); //planetRef.current.scale.x);
+        }
+      }
     }
   });
-  */
 
   //load textures
 
@@ -84,8 +112,6 @@ Planet.propTypes = {
 };
 
 const PrePlanets = () => {
-  console.log("Planets rendered");
-
   const textureMaps = useLoader(TextureLoader, [
     "images/maps/sunmap.jpg",
     "images/maps/earthmap1k.jpg",

@@ -78,14 +78,14 @@
     100% 0,
     100% 100%,
     95% 100%,
-    95% 90%,
-    85% 90%,
+    95% calc(100% - 8px),
+    85% calc(100% - 8px),
     85% 100%,
-    8% 100%,
-    0 70%
+    15px 100%,
+    0 calc(100% - 15px)
   );
   --border: 4px;
-  --shimmy-distance: 5;
+  --shimmy-distance: 1;
   --clip-one: polygon(
     0 2%,
     100% 2%,
@@ -175,8 +175,9 @@
   position: relative;
   font-weight: 700;
   border: 0;
-  height: 75px;
+  /*height: 75px;
   line-height: 75px;
+  vertical-align: middle;*/
 }
 
 .cybr-btn:hover {
@@ -225,7 +226,7 @@
   background: var(--shadow-primary);
   text-shadow: 2px 2px var(--shadow-primary), -2px -2px var(--shadow-secondary);
   clip-path: var(--clip);
-  animation: glitch 500ms infinite;
+  animation: glitch 1000ms infinite;
   display: block; /*none;*/
 }
 /*

@@ -1,6 +1,5 @@
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import { IS_MOBILE, PLAYER } from "../constants/constants";
 import controls from "../assets/icons/controls.svg";
 import rightClick from "../assets/icons/mouse/right-click-1.svg";
 import warp from "../assets/icons/warp-galaxy.svg";
@@ -10,7 +9,7 @@ import radarDish from "../assets/icons/radarDish.svg";
 import sword from "../assets/icons/sword.svg";
 import stars from "../assets/icons/stars.svg";
 import camera from "../assets/icons/camera-change.svg";
-import { SCALE } from "../constants/constants";
+import { SCALE, IS_MOBILE, PLAYER } from "../constants/constants";
 
 // for mouse users, click to enter manual control mode of piloting
 const ActionControlPilot = () => {

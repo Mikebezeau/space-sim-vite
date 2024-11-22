@@ -13,7 +13,7 @@ import InstancedMechGroups from "../../3d/InstancedMechs";
 import Particles from "../../3d/Particles";
 import BoidController from "../../classes/BoidController";
 import ObbTest from "./dev/ObbTest";
-import GlitchEffect from "../../3d/effects/GlitchEffect";
+//import GlitchEffect from "../../3d/effects/GlitchEffect";
 //import { setCustomData } from "r3f-perf";
 
 export default function EnemyTestScene() {
@@ -79,7 +79,7 @@ export default function EnemyTestScene() {
       sceneRenderedRef.current = true;
       setFlightSceneRendered(true);
     }
-    delta = Math.min(delta, 0.5); // cap delta to 500ms
+    delta = Math.min(delta, 0.1); // cap delta to 500ms
     // boid flocking movement
     boidControllerRef.current?.update(delta);
     // non-instanced mechs are updated when their object3d is updated

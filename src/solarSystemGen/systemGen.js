@@ -36,9 +36,12 @@ const systemGen = (
   systemScale = SYSTEM_SCALE, // systemScale and planetScale used for mini system map
   planetScale = PLANET_SCALE
 ) => {
+  const rng = seedrandom(starIndex);
   //const rng = seedrandom(starIndex);
   const [star, newSystem] = systemInfoGen(starIndex);
-  const solarRadius = newSystem.radius * SCALE * planetScale; //star.size * 700000 * SCALE * planetScale;
+  console.log("star", star);
+  console.log("newSystem", newSystem);
+  const solarRadius = newSystem.radius * SCALE; // * planetScale; //star.size * 700000 * SCALE * planetScale;
   //-------
   let temp = [];
   //create sun
@@ -102,8 +105,9 @@ types:
     */
 
     // 1 AU = 150 million kilometres
-    const orbitRadius = solarRadius * 2 + planet.a * 1500 * SCALE * systemScale;
-    const angle = Math.random() * 2 * Math.PI;
+    const orbitRadius = solarRadius * 2 + planet.a * SCALE * systemScale;
+    console.log("orbitRadius", orbitRadius);
+    const angle = rng() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
     const y = 0;
     const z = Math.sin(angle) * orbitRadius;

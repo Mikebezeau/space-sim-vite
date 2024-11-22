@@ -6,6 +6,7 @@ import { SCALE } from "../constants/constants";
 interface devStoreState {
   devEnemyTest: boolean;
   devPlayerPilotMech: boolean;
+  devPlayerSpeedX1000: boolean;
   showLeaders: boolean;
   showObbBox: boolean;
   showBoidVectors: boolean;
@@ -17,8 +18,9 @@ interface devStoreState {
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
-  devEnemyTest: true,
+  devEnemyTest: false,
   devPlayerPilotMech: true,
+  devPlayerSpeedX1000: true,
   showLeaders: false,
   showObbBox: false,
   showBoidVectors: false,

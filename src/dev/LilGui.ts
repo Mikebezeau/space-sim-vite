@@ -15,6 +15,9 @@ const LilGui = () => {
     gui.add(devStoreState, "devPlayerPilotMech").onChange((value) => {
       devStoreState.setProp("devPlayerPilotMech", value ? 1 : 0);
     });
+    gui.add(devStoreState, "devPlayerSpeedX1000").onChange((value) => {
+      devStoreState.setProp("devPlayerSpeedX1000", value ? 1 : 0);
+    });
     gui.add(devStoreState, "showObbBox").onChange((value) => {
       devStoreState.setProp("showObbBox", value ? 1 : 0);
     });
