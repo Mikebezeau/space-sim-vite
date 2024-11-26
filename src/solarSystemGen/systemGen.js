@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
-import { SCALE, SYSTEM_SCALE, PLANET_SCALE } from "../constants/constants";
+import { SCALE, SYSTEM_SCALE } from "../constants/constants";
 import { starTypeGen } from "../galaxy/galaxyGen";
 import StarSystem from "./classes/StarSystem"; //ACCRETE
 
@@ -34,7 +34,7 @@ export const systemInfoGen = (starIndex) => {
 const systemGen = (
   starIndex,
   systemScale = SYSTEM_SCALE, // systemScale and planetScale used for mini system map
-  planetScale = PLANET_SCALE
+  planetScale = 1
 ) => {
   const rng = seedrandom(starIndex);
   //const rng = seedrandom(starIndex);
@@ -57,7 +57,7 @@ const systemGen = (
       greenhouseRadius: newSystem.greenhouseRadius,
     },
     color: new THREE.Color(star.colorHex),
-    radius: solarRadius,
+    radius: solarRadius * planetScale,
     textureMap: 0,
     object3d: new THREE.Object3D(),
   });
@@ -105,7 +105,8 @@ types:
     */
 
     // 1 AU = 150 million kilometres
-    const orbitRadius = solarRadius * 2 + planet.a * SCALE * systemScale;
+    //const orbitRadius = solarRadius * 2 + planet.a * SCALE * systemScale;
+    const orbitRadius = planet.a * 147000000 * SCALE * systemScale;
     console.log("orbitRadius", orbitRadius);
     const angle = rng() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
@@ -159,7 +160,7 @@ types:
       type: "PLANET",
       data: planet.toJSONforHud(),
       color: color,
-      radius: planet.radius * SCALE * planetScale,
+      radius: planet.radius * planetScale,
       textureMap: textureMap,
       object3d: object3d,
     });

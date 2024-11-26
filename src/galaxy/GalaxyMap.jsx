@@ -134,8 +134,9 @@ const GalaxyMap = () => {
     }, []);
 
     useEffect(() => {
+      console.log(starPointsRef.current);
       const playerCurrentStarIndex = getPlayerCurrentStarIndex();
-      if (playerCurrentStarIndex !== null) {
+      if (playerCurrentStarIndex !== null && starPointsRef.current !== null) {
         // dim all stars
         setStarSelectionBuffer(STAR_DISPLAY_MODE.dim);
         viewSelectedStar(playerCurrentStarIndex);
@@ -157,7 +158,7 @@ const GalaxyMap = () => {
         // update star points aSelected attribute
         updateStarPointsSelectedAttribute();
       } else resestControlsCameraPosition();
-    }, []);
+    }, [starPointsRef.current]);
 
     const getRaycasterIntersects = (e, threshold) => {
       const raycaster = new THREE.Raycaster();

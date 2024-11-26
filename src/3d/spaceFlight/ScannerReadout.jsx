@@ -102,31 +102,35 @@ const ScannerReadout = () => {
     //temp planet scanning
     if (planets?.length > 0) {
       // selecting the targeted planet
-      for (let i = 1; i < planets.length; i++) {
-        //planets.forEach((planet, i) => {
-        const planet = planets[i];
-        dummyObj.position.copy(camera.position);
-        dummyObj.lookAt(planet.object3d.position);
-        const flipRotation = new THREE.Quaternion();
-        dummyObj.getWorldQuaternion(targetQuat);
-        //flip the opposite direction
-        flipRotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
-        targetQuat.multiplyQuaternions(targetQuat, flipRotation);
-        //
-        dummyObj.rotation.setFromQuaternion(targetQuat);
-        //optional setting z angle to match roll of ship
-        dummyObj.rotation.set(
-          dummyObj.rotation.x,
-          dummyObj.rotation.y,
-          camera.rotation.z
-        );
-        dummyObj.getWorldQuaternion(targetQuat);
-        // set a target on the planet if it's within 0.38 radians of the camera direction
-        const angleDiff = targetQuat.angleTo(camera.quaternion);
-        if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
-          smallestTargetAngle = angleDiff;
-          tempFocusPlanetIndex = i;
+      // only change target planet if player is in pilot control mode (not just looking around)
+      if (getPlayerState().playerActionMode === PLAYER.action.manualControl) {
+        for (let i = 1; i < planets.length; i++) {
+          //planets.forEach((planet, i) => {
+          const planet = planets[i];
+          dummyObj.position.copy(camera.position);
+          dummyObj.lookAt(planet.object3d.position);
+          const flipRotation = new THREE.Quaternion();
+          dummyObj.getWorldQuaternion(targetQuat);
+          //flip the opposite direction
+          flipRotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+          targetQuat.multiplyQuaternions(targetQuat, flipRotation);
+          //
+          dummyObj.rotation.setFromQuaternion(targetQuat);
+          //optional setting z angle to match roll of ship
+          dummyObj.rotation.set(
+            dummyObj.rotation.x,
+            dummyObj.rotation.y,
+            camera.rotation.z
+          );
+          dummyObj.getWorldQuaternion(targetQuat);
+          // set a target on the planet if it's within 0.38 radians of the camera direction
+          const angleDiff = targetQuat.angleTo(camera.quaternion);
+          if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
+            smallestTargetAngle = angleDiff;
+            tempFocusPlanetIndex = i;
+          }
         }
+        setFocusPlanetIndex(tempFocusPlanetIndex);
       }
       // placing targets over planets
       for (let i = 1; i < planets.length; i++) {
@@ -136,9 +140,6 @@ const ScannerReadout = () => {
         const highlight = tempFocusPlanetIndex === i || focusPlanetIndex === i;
         placeTarget(dummyObj, camera, mesh, highlight, 0, i, 1);
       }
-      // only change target planet if player is in pilot control mode (not just looking around)
-      if (getPlayerState().playerActionMode === PLAYER.action.manualControl)
-        setFocusPlanetIndex(tempFocusPlanetIndex);
     }
     //save enemy nearest to direction player is facing
     //placing targets on enemies, and arrows toward their location on scanner readout

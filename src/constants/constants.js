@@ -2,7 +2,7 @@ export const FPS = 60;
 export const SCALE = 1; //=0.001
 // SCALE todo: stationDockScene buildMech is not scaled
 export const SCALE_PLANET_WALK = 2;
-export const SYSTEM_SCALE = 0.0000001;
+export const SYSTEM_SCALE = 0.01;
 export const PLANET_SCALE = 10;
 
 export const STARS_IN_GALAXY = 150000;

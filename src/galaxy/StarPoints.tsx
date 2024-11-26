@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useLayoutEffect } from "react";
+import React, { forwardRef, useRef, useLayoutEffect } from "react";
 //import { Points } from "three";
 import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
 // @ts-ignore
@@ -66,12 +66,7 @@ const StarPoints = forwardRef(function StarPoints(
 
   if (!galaxy.starCoordsBuffer) return null;
   return (
-    <points
-      ref={(ref) => {
-        if (ref !== null) starPointsForwardRef = ref;
-      }}
-      frustumCulled={viewAsBackground}
-    >
+    <points ref={starPointsForwardRef} frustumCulled={viewAsBackground}>
       <bufferGeometry ref={starPointsBufferGeoRef}>
         <bufferAttribute
           attach={"attributes-position"}

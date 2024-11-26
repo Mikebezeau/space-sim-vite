@@ -8,7 +8,7 @@ import ScenePortalLayer from "./ScenePortalLayer";
 //import SpaceFlightPlanetsScene from "./spaceFlight/SpaceFlightPlanetsScene";
 import StarsBackgroundScene from "./spaceFlight/StarsBackgroundScene";
 import BuildMech from "../3d/buildMech/BuildMech";
-import Planets from "../3d/spaceFlight/Planets";
+import Planets from "../3d/planets/Planets";
 import Stations from "../3d/spaceFlight/Stations";
 import { PLAYER } from "../constants/constants";
 

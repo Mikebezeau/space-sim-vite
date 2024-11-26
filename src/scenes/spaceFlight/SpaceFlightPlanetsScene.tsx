@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from "react";
 import { useThree } from "@react-three/fiber";
-import Planets from "../../3d/spaceFlight/Planets";
+import Planets from "../../3d/planets/Planets";
 import Stations from "../../3d/spaceFlight/Stations";
 import PlayerMech from "../../3d/spaceFlight/PlayerMechNew";
 import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
