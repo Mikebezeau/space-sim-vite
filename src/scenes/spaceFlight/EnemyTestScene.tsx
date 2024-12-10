@@ -79,7 +79,7 @@ export default function EnemyTestScene() {
       sceneRenderedRef.current = true;
       setFlightSceneRendered(true);
     }
-    delta = Math.min(delta, 0.1); // cap delta to 500ms
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
     // boid flocking movement
     boidControllerRef.current?.update(delta);
     // non-instanced mechs are updated when their object3d is updated

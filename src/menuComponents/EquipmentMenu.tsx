@@ -51,14 +51,15 @@ const EquipmentMenu = () => {
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
   const [subSelection, setSubSelection] = useState(""); //current sub menu
 
-  const topMenuSelection = [
+  const mainMenuPositionVal = 4;
+  const mainMenuItems = [
     "Save / Load",
     "Mech",
     "Design Parts",
     "Assign Part Locations",
     "Position Servo Shapes",
   ];
-  const subCatagories = [
+  const subMenuItems = [
     {
       saveLoad: {
         buttonLable: "Save / Load",
@@ -140,9 +141,6 @@ const EquipmentMenu = () => {
       },
     },
     {
-      //******************************************** */
-      //design parts
-
       servos: {
         buttonLable: "Servos",
         component: (
@@ -192,9 +190,6 @@ const EquipmentMenu = () => {
       },
     },
     {
-      //********************************* */
-      //asign spaces
-
       /*
     propulsion: { buttonLable: "Propulsion" },
     tech: { buttonLable: "Tech" },
@@ -236,14 +231,14 @@ const EquipmentMenu = () => {
     <div id="equipmentMenu">
       <div className="absolute top-8 left-8 right-8 lg:right-auto lg:w-1/2 h-1/2 lg:h-[90vh]">
         <CyberMenuBorder>
-          <div className="flex flex-col">
+          <div className="flex flex-col w-full h-full">
             <ButtonIcon
               onClick={() => switchScreen(PLAYER.screen.flight)}
               iconSrc={camera}
             />
             <div>
               <hr />
-              {topMenuSelection.map((value, key) => (
+              {mainMenuItems.map((value, key) => (
                 <span
                   key={"topmenu" + key}
                   className={
@@ -259,42 +254,44 @@ const EquipmentMenu = () => {
               ))}
             </div>
             <hr />
-            <div className="grow w-full overflow-auto">
-              {mainMenuSelection === 3 ? (
-                <PositionPartsList editorMechBP={editorMechBP} />
-              ) : (
-                //edit servo/weapon graphical locations
-                //will also load the blueprint design 3d interface
-                Object.entries(subCatagories[mainMenuSelection]).map(
-                  ([key, value]) => {
-                    return (
-                      <span
-                        key={"submenu" + key}
-                        className={
-                          subSelection === key
-                            ? "selectedItem"
-                            : "nonSelectedItem"
-                        }
-                      >
-                        <button onClick={() => setSubSelection(key)}>
-                          {value.buttonLable}
-                        </button>
-                      </span>
-                      //)
-                    );
-                  }
-                )
-              )}
+            <div className="overflow-y-scroll">
+              <div className="grow w-full ">
+                {mainMenuSelection === mainMenuPositionVal ? (
+                  <PositionPartsList editorMechBP={editorMechBP} />
+                ) : (
+                  //edit servo/weapon graphical locations
+                  //will also load the blueprint design 3d interface
+                  Object.entries(subMenuItems[mainMenuSelection]).map(
+                    ([key, value]) => {
+                      return (
+                        <span
+                          key={"submenu" + key}
+                          className={
+                            subSelection === key
+                              ? "selectedItem"
+                              : "nonSelectedItem"
+                          }
+                        >
+                          <button onClick={() => setSubSelection(key)}>
+                            {value.buttonLable}
+                          </button>
+                        </span>
+                        //)
+                      );
+                    }
+                  )
+                )}
 
-              <hr style={{ clear: "both" }} />
-              {mainMenuSelection !== 3 &&
-                subCatagories[mainMenuSelection][subSelection] &&
-                subCatagories[mainMenuSelection][subSelection].component}
+                <hr style={{ clear: "both" }} />
+                {mainMenuSelection !== mainMenuPositionVal &&
+                  subMenuItems[mainMenuSelection][subSelection] &&
+                  subMenuItems[mainMenuSelection][subSelection].component}
+              </div>
             </div>
           </div>
         </CyberMenuBorder>
       </div>
-      {mainMenuSelection === 3 && (
+      {mainMenuSelection === mainMenuPositionVal && (
         <PositionPartEditButtons editorMechBP={editorMechBP} />
       )}
       <div className="absolute bottom-4 right-4">

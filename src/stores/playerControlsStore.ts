@@ -54,8 +54,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
     // testing
-    //playerScreen: PLAYER.screen.newCampaign, //mainMenu,
-    playerScreen: PLAYER.screen.flight,
+    //playerScreen: PLAYER.screen.mainMenu,
+    playerScreen: PLAYER.screen.newCampaign,
+    //playerScreen: PLAYER.screen.flight,
+    //playerScreen: PLAYER.screen.equipmentBuild,
     isResetCamera: true,
     getPlayerState: () => {
       return {
@@ -99,9 +101,11 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
       //changing player screen
       switchScreen(playerScreen) {
-        set(() => ({ loadingPlayerScreen: true }));
-        set(() => ({ isResetCamera: true }));
-        set(() => ({ playerScreen }));
+        if (get().playerScreen !== playerScreen) {
+          set(() => ({ loadingPlayerScreen: true }));
+          set(() => ({ isResetCamera: true }));
+          set(() => ({ playerScreen }));
+        }
       },
 
       setPlayerSpeedSetting(playerSpeedSetting) {
@@ -113,6 +117,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       const player = useStore.getState().player;
       const setSpeed = useStore.getState().actions.setSpeed;
       const mouse = useStore.getState().mutation.mouse;
+      const backgroundSceneCamera = useStore.getState().backgroundSceneCamera;
 
       const devPlayerSpeedX1000 = useDevStore.getState().devPlayerSpeedX1000;
 
@@ -210,7 +215,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           .slerp(finalCameraQuat, resetCameraLerpSpeed || 0.2)
           .normalize()
       );
-
+      //backgroundSceneCamera?.position.copy(camera.position);
+      //backgroundSceneCamera?.rotation.copy(camera.rotation);
       camera.updateProjectionMatrix();
     },
   })

@@ -27,7 +27,7 @@ function transferProperties(mergBP: any, parsedBP: any) {
         key === "landingBayServoLocationId" ||
         key === "passengersLocationServoId" ||
         key === "name" ||
-        key === "color"
+        key === "_color"
           ? String(parsedBP[key])
           : Number(parsedBP[key]);
     } else if (

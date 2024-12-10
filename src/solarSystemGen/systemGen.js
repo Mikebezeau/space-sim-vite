@@ -39,8 +39,8 @@ const systemGen = (
   const rng = seedrandom(starIndex);
   //const rng = seedrandom(starIndex);
   const [star, newSystem] = systemInfoGen(starIndex);
-  console.log("star", star);
-  console.log("newSystem", newSystem);
+  //console.log("star", star);
+  //console.log("newSystem", newSystem);
   const solarRadius = newSystem.radius * SCALE; // * planetScale; //star.size * 700000 * SCALE * planetScale;
   //-------
   let temp = [];
@@ -56,7 +56,7 @@ const systemGen = (
       ecosphereRadius: newSystem.ecosphereRadius,
       greenhouseRadius: newSystem.greenhouseRadius,
     },
-    color: new THREE.Color(star.colorHex),
+    color: star.colorHex, //new THREE.Color(star.colorHex),
     radius: solarRadius * planetScale,
     textureMap: 0,
     object3d: new THREE.Object3D(),
@@ -106,8 +106,9 @@ types:
 
     // 1 AU = 150 million kilometres
     //const orbitRadius = solarRadius * 2 + planet.a * SCALE * systemScale;
-    const orbitRadius = planet.a * 147000000 * SCALE * systemScale;
-    console.log("orbitRadius", orbitRadius);
+    const orbitRadius =
+      solarRadius * planetScale + planet.a * 147000000 * SCALE * systemScale;
+    //console.log("orbitRadius", orbitRadius);
     const angle = rng() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
     const y = 0;
@@ -115,43 +116,50 @@ types:
     const object3d = new THREE.Object3D();
     object3d.position.set(x, y, z);
     object3d.rotation.set(planet.axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
-    let color = new THREE.Color();
+    let color = ""; // new THREE.Color();
     let textureMap = 0;
     switch (planet.planetType) {
       case "Rocky":
-        color.setHex(0x6b6b47);
+        color = "#6b6b47"; //color.setHex(0x6b6b47);
         textureMap = 4;
         break;
       case "Gas":
-        color.setHex(0xffe6b3);
+        color = "#ffe6b3"; //color.setHex(0xffe6b3);
         textureMap = 3;
         break;
       case "Gas Dwarf":
-        color.setHex(0xd5ff80);
+        //color.setHex(0xd5ff80);
+        color = "#d5ff80"; //color.setHex(0xd5ff80);
         textureMap = 2;
         break;
       case "Gas Giant":
-        color.setHex(0xbf8040);
+        //color.setHex(0xbf8040);
+        color = "#bf8040"; //color.setHex(0xbf8040);
         textureMap = 3;
         break;
       case "Venusian":
-        color.setHex(0xd2a679);
+        //color.setHex(0xd2a679);
+        color = "#d2a679"; //color.setHex(0xd2a679);
         textureMap = 6;
         break;
       case "Ice":
-        color.setHex(0xb3ccff);
+        //color.setHex(0xb3ccff);
+        color = "#b3ccff"; //color.setHex(0xb3ccff);
         textureMap = 7;
         break;
       case "Martian":
-        color.setHex(0xb30000);
+        //color.setHex(0xb30000);
+        color = "#b30000"; //color.setHex(0xb30000);
         textureMap = 4;
         break;
       case "Water":
-        color.setHex(0x3399ff);
+        //color.setHex(0x3399ff);
+        color = "#3399ff"; //color.setHex(0x3399ff);
         textureMap = 8;
         break;
       case "Terrestrial":
-        color.setHex(0x3399ff);
+        //color.setHex(0x3399ff);
+        color = "#3399ff"; //color.setHex(0x3399ff);
         textureMap = 1;
         break;
       default:

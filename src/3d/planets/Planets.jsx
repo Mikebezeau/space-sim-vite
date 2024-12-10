@@ -9,7 +9,10 @@ import {
   planetVertShader,
   planetFragShader,
 } from "./shaders/planetShader";
+import PlanetTest from "./PlanetTest";
 import { setCustomData } from "r3f-perf";
+
+const clearColor = new THREE.Color(1, 0, 1);
 
 const planetParams = {
   type: { value: 2 },
@@ -59,7 +62,7 @@ const atmosphereParams = {
   lightDirection: planetParams.lightDirection
 };
 */
-const Planet = ({ planet, textureMaps }) => {
+const Planet = ({ isFullBackgroundRender = true, planet, textureMaps }) => {
   console.log(
     "Planet rendered",
     planet.radius,
@@ -95,8 +98,8 @@ const Planet = ({ planet, textureMaps }) => {
   geometryPlanet.computeTangents();
 
   //planet material
-  const materialPlanet =
-    planet.type === "SUN"
+  const materialPlanet = isFullBackgroundRender
+    ? planet.type === "SUN"
       ? new THREE.MeshBasicMaterial({
           color: planet.color,
           transparent: true,
@@ -105,52 +108,106 @@ const Planet = ({ planet, textureMaps }) => {
       : new THREE.MeshLambertMaterial({
           map: textureMaps[planet.textureMap],
           color: planet.color,
-        });
+          transparent: true,
+        })
+    : new THREE.MeshBasicMaterial({
+        color: clearColor,
+      });
 
-  if (planet.type === "SUN") {
-    materialPlanet.onBeforeCompile = (shader) => {
-      //console.log(shader.fragmentShader);
-      shader.uniforms.u_time = { value: 0.0 };
-      //console.log("shader.uniforms", shader.uniforms);
-      shader.vertexShader =
-        `varying vec2 vUv;\nvarying vec3 vPosition;\nvarying vec3 vNormalView;\n` +
-        shader.vertexShader;
+  if (isFullBackgroundRender) {
+    if (planet.type === "SUN") {
+      materialPlanet.onBeforeCompile = (shader) => {
+        //console.log(shader.fragmentShader);
+        shader.uniforms.u_time = { value: 0.0 };
+        shader.uniforms.u_fpsLimiter = { value: 0.0 };
+        shader.uniforms.u_nMin = { value: 0.0 };
+        //console.log("shader.uniforms", shader.uniforms);
+        shader.vertexShader =
+          `varying vec2 vUv;\nvarying vec3 vPosition;\nvarying vec3 vNormalView;\n` +
+          shader.vertexShader;
 
-      shader.vertexShader = shader.vertexShader.replace(
-        `#include <fog_vertex>`,
-        [
+        shader.vertexShader = shader.vertexShader.replace(
           `#include <fog_vertex>`,
-          `vUv = uv;`,
-          `vPosition = normalize(vec3(modelViewMatrix * vec4(position, 1.0)).xyz);`,
-          `vNormalView = normalize(normalMatrix * normal);`,
-          //`gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);`,
-        ].join("\n")
-      );
+          [
+            `#include <fog_vertex>`,
+            `vUv = uv;`,
+            `vPosition = normalize(vec3(modelViewMatrix * vec4(position, 1.0)).xyz);`,
+            `vNormalView = normalize(normalMatrix * normal);`,
+            //`gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);`,
+          ].join("\n")
+        );
 
-      shader.fragmentShader =
-        `${sunfunctions}\nuniform float u_time;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nvarying vec3 vNormalView;\n` +
-        shader.fragmentShader;
+        shader.fragmentShader =
+          `${sunfunctions}\nuniform float u_time;\nuniform float u_fpsLimiter;\nuniform float u_nMin;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nvarying vec3 vNormalView;\n` +
+          shader.fragmentShader;
 
-      shader.fragmentShader = shader.fragmentShader.replace(
-        `#include <dithering_fragment>`,
-        [
+        shader.fragmentShader = shader.fragmentShader.replace(
           `#include <dithering_fragment>`,
-          sunFragMain,
-          `float fresnelTerm_inner = 0.2 - 0.7 * min( dot( vPosition, vNormalView ), 0.0 );`,
-          `fresnelTerm_inner = pow( fresnelTerm_inner, 5.0 );`,
-          `float fresnelTerm_outer = 1.0 - abs( dot( vPosition, vNormalView ) );`,
-          `fresnelTerm_outer = pow( fresnelTerm_outer, 2.0 );`,
-          `float fresnelTerm = fresnelTerm_inner + fresnelTerm_outer;`,
-          //`gl_FragColor = vec4( gl_FragColor.xyz, fresnelTerm );`,
-          `float outer_fade = abs ( dot( vPosition, vNormalView ) );`,
-          //`outer_fade = pow( outer_fade, 2.0 );`,
-          `gl_FragColor = vec4( gl_FragColor.xyz, outer_fade * 2.0 );`,
-          //`gl_FragColor = vec4( vUv, 0.0, 1.0 );`,
-        ].join("\n")
-      );
-      //console.log(shader.fragmentShader);
-      materialPlanet.userData.shader = shader;
-    };
+          [
+            `#include <dithering_fragment>`,
+            sunFragMain,
+            `float fresnelTerm_inner = 0.2 - 0.7 * min( dot( vPosition, vNormalView ), 0.0 );`,
+            `fresnelTerm_inner = pow( fresnelTerm_inner, 5.0 );`,
+            `float fresnelTerm_outer = 1.0 - abs( dot( vPosition, vNormalView ) );`,
+            `fresnelTerm_outer = pow( fresnelTerm_outer, 2.0 );`,
+            `float fresnelTerm = fresnelTerm_inner + fresnelTerm_outer;`,
+            //`gl_FragColor = vec4( gl_FragColor.xyz, fresnelTerm );`,
+            `float outer_fade = abs ( dot( vPosition, vNormalView ) );`,
+            //`outer_fade = pow( outer_fade, 2.0 );`,
+            `gl_FragColor = vec4( gl_FragColor.xyz, outer_fade * 2.0 );`,
+            //`gl_FragColor = vec4( vUv, 0.0, 1.0 );`,
+          ].join("\n")
+        );
+        //console.log(shader.fragmentShader);
+        materialPlanet.userData.shader = shader;
+      };
+    } else {
+      materialPlanet.onBeforeCompile = (shader) => {
+        //console.log(shader.fragmentShader);
+        shader.uniforms.u_time = { value: 0.0 };
+        shader.uniforms.u_fpsLimiter = { value: 0.0 };
+        shader.uniforms.u_nMin = { value: 0.0 };
+        //console.log("shader.uniforms", shader.uniforms);
+        shader.vertexShader =
+          `varying vec2 vUv;\nvarying vec3 vPosition;\nvarying vec3 vNormalView;\n` +
+          shader.vertexShader;
+
+        shader.vertexShader = shader.vertexShader.replace(
+          `#include <fog_vertex>`,
+          [
+            `#include <fog_vertex>`,
+            `vUv = uv;`,
+            `vPosition = normalize(vec3(modelViewMatrix * vec4(position, 1.0)).xyz);`,
+            `vNormalView = normalize(normalMatrix * normal);`,
+            //`gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);`,
+          ].join("\n")
+        );
+
+        shader.fragmentShader =
+          `${sunfunctions}\nuniform float u_time;\nuniform float u_fpsLimiter;\nuniform float u_nMin;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nvarying vec3 vNormalView;\n` +
+          shader.fragmentShader;
+
+        shader.fragmentShader = shader.fragmentShader.replace(
+          `#include <dithering_fragment>`,
+          [
+            `#include <dithering_fragment>`,
+            sunFragMain,
+            `float fresnelTerm_inner = 0.2 - 0.7 * min( dot( vPosition, vNormalView ), 0.0 );`,
+            `fresnelTerm_inner = pow( fresnelTerm_inner, 5.0 );`,
+            `float fresnelTerm_outer = 1.0 - abs( dot( vPosition, vNormalView ) );`,
+            `fresnelTerm_outer = pow( fresnelTerm_outer, 2.0 );`,
+            `float fresnelTerm = fresnelTerm_inner + fresnelTerm_outer;`,
+            //`gl_FragColor = vec4( gl_FragColor.xyz, fresnelTerm );`,
+            `float outer_fade = abs ( dot( vPosition, vNormalView ) );`,
+            //`outer_fade = pow( outer_fade, 2.0 );`,
+            `gl_FragColor = vec4( gl_FragColor.xyz, outer_fade * 5.0 );`,
+            //`gl_FragColor = vec4( vUv, 0.0, 1.0 );`,
+          ].join("\n")
+        );
+        //console.log(shader.fragmentShader);
+        materialPlanet.userData.shader = shader;
+      };
+    }
   }
   /*
         new THREE.ShaderMaterial({
@@ -226,15 +283,23 @@ const Planet = ({ planet, textureMaps }) => {
     ></mesh>
   );
   */
-  console.log("materialPlanet.uniforms", materialPlanet.uniforms);
+  //console.log("materialPlanet.uniforms", materialPlanet.uniforms);
   useFrame((_, delta) => {
-    if (planetRef.current && planetMeshRef.current) {
+    setCustomData(delta * 1000);
+    if (planetRef.current && planetMeshRef.current && isFullBackgroundRender) {
       delta = Math.min(delta, 0.1); // cap delta to 100ms
       planetRef.current.rotateY(delta / 120);
 
-      //planetRef.current.rotateX(-r * 15);
-      //planetRef.current.rotateY(r * 15);
-      //planetRef.current.rotateZ(-r * 15);
+      const shader = planetMeshRef.current.material.userData.shader;
+      if (shader) {
+        shader.uniforms.u_time.value += delta / 10;
+        shader.uniforms.u_fpsLimiter.value = delta;
+        //setCustomData(shader.uniforms.u_time.value);
+      }
+
+      //planetRef.current.rotateX(-delta / 2);
+      //planetRef.current.rotateY(-delta / 10);
+      //planetRef.current.rotateZ(-delta / 2);
       //planetMeshRef.current.material.uniforms.u_time.value += delta;
       /*
       // scale planet to look smaller from far away
@@ -261,13 +326,6 @@ const Planet = ({ planet, textureMaps }) => {
         
       }
       */
-      if (planet.type === "SUN") {
-        const shader = planetMeshRef.current.material.userData.shader;
-        if (shader) {
-          shader.uniforms.u_time.value += delta / 7.5;
-          //setCustomData(shader.uniforms.u_time.value);
-        }
-      }
     }
   });
 
@@ -281,6 +339,13 @@ const Planet = ({ planet, textureMaps }) => {
       >
         <mesh
           ref={planetMeshRef}
+          layers={1}
+          /*
+            isFullBackgroundRender
+              ? 0 //only full render will recieve light from default layer 0 
+              : 1 // layer 1 has no light
+              */
+
           scale={planet.radius / 10}
           geometry={geometryPlanet}
           material={materialPlanet}
@@ -298,26 +363,42 @@ const Planet = ({ planet, textureMaps }) => {
   );
 };
 
-const Planets = () => {
-  const textureMaps = useLoader(TextureLoader, [
-    "images/maps/sunmap.jpg",
-    "images/maps/earthmap1k.jpg",
-    "images/maps/jupitermap.jpg",
-    "images/maps/jupiter2_1k.jpg",
-    "images/maps/mercurymap.jpg",
-    "images/maps/moonmap1k.jpg",
-    "images/maps/venusmap.jpg",
-    "images/maps/earthcloudmaptrans.jpg",
-    "images/maps/earthcloudmap.jpg",
-  ]);
-
+const Planets = (props) => {
+  const { isFullBackgroundRender = true } = props;
+  /*
+  // load textures will cause rerender on completion
+  const textureMaps = useLoader(
+    TextureLoader,
+    isFullBackgroundRender
+      ? [
+          "images/maps/sunmap.jpg",
+          "images/maps/earthmap1k.jpg",
+          "images/maps/jupitermap.jpg",
+          "images/maps/jupiter2_1k.jpg",
+          "images/maps/mercurymap.jpg",
+          "images/maps/moonmap1k.jpg",
+          "images/maps/venusmap.jpg",
+          "images/maps/earthcloudmaptrans.jpg",
+          "images/maps/earthcloudmap.jpg",
+        ]
+      : []
+  );
+  */
   const planets = useStore((state) => state.planets);
 
+  console.log("Planets rendered", planets);
   return (
     <>
-      {planets?.map((planet, index) => (
-        <Planet key={index} planet={planet} textureMaps={textureMaps} />
-      ))}
+      <group>
+        {planets?.map((planet, index) => (
+          <PlanetTest
+            key={index}
+            //isFullBackgroundRender={isFullBackgroundRender}
+            planet={planet}
+            //textureMaps={textureMaps}
+          />
+        ))}
+      </group>
     </>
   );
 };

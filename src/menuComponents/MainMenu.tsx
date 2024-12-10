@@ -32,11 +32,19 @@ const MainMenu = () => {
       },
     },
     {
-      title: "Continue",
+      title: "Space Flight",
       onClick: () => {
         menuAction("Continue", PLAYER.screen.flight);
       },
     },
+    /*
+    {
+      title: "Battle",
+      onClick: () => {
+        menuAction("Continue", PLAYER.screen.flight);
+      },
+    },
+    */
     {
       title: "Design",
       onClick: () => {

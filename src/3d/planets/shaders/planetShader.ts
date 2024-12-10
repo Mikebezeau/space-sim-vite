@@ -1,3 +1,5 @@
+// https://github.com/dgreenheck/threejs-procedural-planets/
+
 export const noiseFunctions = `
 const float PI = 3.14159265;
 

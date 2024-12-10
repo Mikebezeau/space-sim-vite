@@ -18,9 +18,14 @@ import {
 } from "../constants/constants";
 
 interface storeState {
+  initGameStore: () => void;
+  isGameStoreInit: boolean;
+
+  sound: boolean;
   flightSceneRendered: boolean;
   setFlightSceneRendered: (flightSceneRendered: boolean) => void;
-  sound: boolean;
+  backgroundSceneCamera: THREE.Camera | null;
+  setBackgroundSceneCamera: (camera: THREE.Camera) => void;
   playerCurrentStarIndex: number;
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
@@ -76,6 +81,13 @@ interface storeState {
 //const useStore = create((set, get) => {
 
 const useStore = create<storeState>()((set, get) => ({
+  initGameStore: () => {
+    // set planets, asteroids, stations, etc. for player start location
+    get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
+    set(() => ({ isGameStoreInit: true }));
+  },
+  isGameStoreInit: false,
+
   sound: false,
   flightSceneRendered: false, // used to trigger render
   setFlightSceneRendered: (flightSceneRendered) => {
@@ -83,6 +95,10 @@ const useStore = create<storeState>()((set, get) => ({
       set({ flightSceneRendered });
       console.log("flightSceneRendered", get().flightSceneRendered);
     }
+  },
+  backgroundSceneCamera: null,
+  setBackgroundSceneCamera: (camera) => {
+    set({ backgroundSceneCamera: camera });
   },
   // for galaxy map
   showInfoHoveredStarIndex: null, // used in galaxy map ui
@@ -227,8 +243,6 @@ const useStore = create<storeState>()((set, get) => ({
       const { mutation, actions } = get();
       //clock used for enemy ai
       mutation.clock.start();
-      // set player start position
-      get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
 
       //addEffect will add the following code to what gets run per frame
       //removes exploded emenies and rocks from store data, removes explosions once they have timed out
