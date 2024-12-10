@@ -106,57 +106,73 @@ const get3dCoords = (x, y, width, height) => {
   return { nx, ny, nz };
 };
 
-// Generate points for the circle
-const drawCirclePoints = (
+// Function to compute 3D Cartesian coordinates for a circle in the local frame
+function computeCircleInLocalFrame(numPoints, radius) {
+  const points = [];
+  for (let i = 0; i < numPoints; i++) {
+    const angle = (2 * Math.PI * i) / numPoints;
+    const x = Math.sin(radius) * Math.cos(angle); // X and Y determine the radius
+    const y = Math.sin(radius) * Math.sin(angle);
+    const z = Math.cos(radius); // Z is adjusted to maintain spherical shape
+    points.push([x, y, z]);
+  }
+  return points;
+}
+
+// Function to apply rotations to position the circle on the sphere
+function rotatePointToSphere(point, thetaCenter, phiCenter) {
+  const [x, y, z] = point;
+
+  // Step 1: Rotate around the Y-axis for latitude (thetaCenter)
+  const x1 = x * Math.cos(thetaCenter) - z * Math.sin(thetaCenter);
+  const z1 = x * Math.sin(thetaCenter) + z * Math.cos(thetaCenter);
+  const y1 = y; // Y remains unchanged for latitude rotation
+
+  // Step 2: Rotate around the Z-axis for longitude (phiCenter)
+  const x2 = x1 * Math.cos(phiCenter) - y1 * Math.sin(phiCenter);
+  const y2 = x1 * Math.sin(phiCenter) + y1 * Math.cos(phiCenter);
+  const z2 = z1; // Z remains unchanged for longitude rotation
+
+  return [x2, y2, z2];
+}
+
+// Function to compute the texture coordinates for a geodesic circle
+function drawCirclePoints(
   ctx,
   textureWidth,
   textureHeight,
-  centerLat = Math.PI / 2,
-  centerLong = Math.PI,
+  thetaCenter = Math.PI / 2,
+  phiCenter = Math.PI,
   circleRadius = Math.PI / 16,
   color
-) => {
-  // Sphere circle parameters
-  const numPoints = 100; // Number of points on the circle
-  for (let i = 0; i < numPoints; i++) {
-    const angle = (2 * Math.PI * i) / numPoints;
+) {
+  const numPoints = 300; // Number of points on the circle
+  const textureCoordinates = [];
+  const localFramePoints = computeCircleInLocalFrame(numPoints, circleRadius);
 
-    // Compute 3D Cartesian coordinates of the circle
-    const x =
-      Math.sin(centerLat) * Math.cos(centerLong) +
-      circleRadius * Math.cos(angle) * Math.cos(centerLong) -
-      circleRadius *
-        Math.sin(angle) *
-        Math.sin(centerLat) *
-        Math.sin(centerLong);
-    const y =
-      Math.sin(centerLat) * Math.sin(centerLong) +
-      circleRadius * Math.cos(angle) * Math.sin(centerLong) +
-      circleRadius *
-        Math.sin(angle) *
-        Math.sin(centerLat) *
-        Math.cos(centerLong);
-    const z =
-      Math.cos(centerLat) +
-      circleRadius * Math.sin(angle) * Math.cos(centerLat);
+  localFramePoints.forEach((point) => {
+    const [x, y, z] = rotatePointToSphere(point, thetaCenter, phiCenter);
 
-    // Convert back to spherical coordinates
-    const theta = Math.acos(z / Math.sqrt(x * x + y * y + z * z));
-    const phi = Math.atan2(y, x);
+    // Convert Cartesian to spherical coordinates
+    const radius = Math.sqrt(x * x + y * y + z * z);
+    const theta = Math.acos(z / radius); // Latitude
+    const phi = Math.atan2(y, x); // Longitude
 
-    // Convert spherical coordinates to texture (u, v)
+    // Convert spherical to texture coordinates
     const u = (phi + Math.PI) / (2 * Math.PI);
     const v = 1 - theta / Math.PI;
-
+    //console.log(u, v);
     // Map (u, v) to texture pixel coordinates
     const px = Math.round(u * textureWidth);
     const py = Math.round(v * textureHeight);
 
+    // Store the coordinates
+    textureCoordinates.push([px, py]);
     // paint the coordinates
     ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
     ctx.fillRect(px, py, 1, 1); // Draw a small rectangle to represent the point
-  }
-};
+  });
+}
 
 // Function to generate a seamless planet texture with enhanced noise scaling
 export const generatePlanetTexture = (canvas, options = {}) => {
@@ -238,30 +254,18 @@ export const generatePlanetTexture = (canvas, options = {}) => {
   }
 
   // Draw circles with random positions
-  for (let i = 0; i < 100; i++) {
-    const centerLat = Math.random() * Math.PI;
-    const centerLong = Math.random() * Math.PI * 2;
-    const circleRadius = Math.PI / 16; //(Math.floor(Math.random() * 20) + 10); // Random radius between 10 and 30
+  for (let i = 0; i < 50; i++) {
+    const thetaCenter = Math.random() * Math.PI;
+    const phiCenter = Math.random() * Math.PI * 2;
+    const circleRadius = Math.PI / (Math.floor(Math.random() * 20) + 12); //(Math.floor(Math.random() * 20) + 10); // Random radius between 10 and 30
     let randomColor = { r: 0, g: 0, b: 0 }; //colors[colors.length - 1];
-    /*
-    // if too close to top don't draw
-    if (randomY + randomRadius > height - 20 || randomY - randomRadius < 20)
-      continue;
-    // if circle will go off 1 side, mirror to other side to draw other part of cirlce
-    if (randomX + randomRadius > width || randomX - randomRadius < 0) {
-      const mirroredX =
-        randomX + randomRadius > width
-          ? randomX - width // off left side
-          : width + randomX; // off right side
-    }
-    */
-    //drawCircle(ctx, width, height, randomX, randomY, randomRadius, randomColor);
+
     drawCirclePoints(
       ctx,
       width,
       height,
-      centerLat,
-      centerLong,
+      thetaCenter,
+      phiCenter,
       circleRadius,
       randomColor
     );
