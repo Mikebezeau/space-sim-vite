@@ -58,13 +58,13 @@ vec2 p = vUv;//vec2(vVertPosition.x, vVertPosition.y);
 p.x = abs(p.x - 0.5);
 
 // flip time for half where vUv.x < 0.5 so clouds travel in same direction on both halves
-//float timeAdj = vUv.x < 0.5 ? -u_time : u_time;
+float timeAdj = vUv.x < 0.5 ? -u_time : u_time;
 //p.y =  vUv.x < 0.5 ? 1.0 - p.y : p.y;
 
 //vec2 points = vec2(u, v);
 
 vec2 iResolution = vec2(1.0, 1.0);
-float speed = 1.0;
+float speed = 0.001;
 
 //vec2 fragCoord = points.xy;
 //vec2 p = fragCoord.xy / iResolution.xy;
@@ -84,7 +84,8 @@ for (int i=0; i<8; i++){
 	weight *= 0.7;
 }
 
-	r += abs(weight*noise( uv ));
+r += abs(weight*noise( uv ));
+
 //noise shape
 float f = 0.0;
 uv = p*vec2(iResolution.x/iResolution.y,1.0);

@@ -109,7 +109,7 @@ const NewCampaignScene = () => {
             {/*<FlyControls object={camera} />*/}
             <pointLight castShadow intensity={1} decay={0} />
             {/*<pointLight castShadow intensity={10} decay={0} layers={1} />*/}
-            <ambientLight intensity={0.4} />
+            <ambientLight layers={0} intensity={0.4} />
             <BuildMech
               ref={(mechRef: THREE.Object3D) => {
                 if (mechRef) {

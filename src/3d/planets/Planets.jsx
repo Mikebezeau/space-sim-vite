@@ -8,7 +8,7 @@ import {
   noiseFunctions,
   planetVertShader,
   planetFragShader,
-} from "./shaders/planetShader";
+} from "./shaders/possible/planetShader";
 import PlanetTest from "./PlanetTest";
 import { setCustomData } from "r3f-perf";
 

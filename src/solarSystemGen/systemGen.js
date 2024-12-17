@@ -47,6 +47,7 @@ const systemGen = (
   //create sun
   temp.push({
     type: "SUN",
+    planetType: "Sun",
     data: {
       class: star.starClass,
       age: newSystem.age,
@@ -166,6 +167,7 @@ types:
     }
     temp.push({
       type: "PLANET",
+      planetType: planet.planetType,
       data: planet.toJSONforHud(),
       color: color,
       radius: planet.radius * planetScale,

@@ -75,7 +75,7 @@ const AppCanvas = () => {
             //precision: "mediump", // "highp", "mediump" or "lowp"
             // TODO use "low-power" if mobile device?
             //powerPreference: "default", // "high-performance", "low-power" or "default"
-            antialias: false,
+            antialias: true,
             alpha: true,
           }}
           onCreated={({ gl, camera } /*{gl, camera, scene}*/) => {

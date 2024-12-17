@@ -58,6 +58,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerScreen: PLAYER.screen.newCampaign,
     //playerScreen: PLAYER.screen.flight,
     //playerScreen: PLAYER.screen.equipmentBuild,
+    //playerScreen: PLAYER.screen.galaxyMap,
     isResetCamera: true,
     getPlayerState: () => {
       return {
