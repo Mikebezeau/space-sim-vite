@@ -1,22 +1,26 @@
-export const fresVertHead = `
+const fresnelShader = {
+  vertHead: `
 varying vec3 vFresPosition;
 varying vec3 vFresNormalView;
-`;
+`,
 
-export const fresVertMain = `
+  vertMain: `
 vFresPosition = normalize(vec3(modelViewMatrix * vec4(position, 1.0)).xyz);
 vFresNormalView = normalize(normalMatrix * normal);
-`;
+`,
 
-export const fresFragHead = `
+  fragHead: `
 varying vec3 vFresPosition;
 varying vec3 vFresNormalView;
-`;
+`,
 
-export const fresFragMain = `
+  fragMain: `
 float outer_fade = abs ( dot( vFresPosition, vFresNormalView ) );
 gl_FragColor = vec4( gl_FragColor.xyz, outer_fade * 5.0 );
-`;
+`,
+};
+
+export default fresnelShader;
 
 /*
 export const fresFragMain = `

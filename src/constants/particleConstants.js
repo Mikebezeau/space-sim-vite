@@ -16,7 +16,7 @@ float starShape( vec2 pc, float vTimeElapsed ) {
   return falloff * n * ( 0.1 / vTimeElapsed  / vTimeElapsed );// make star arms longer as time passes
 }
 `;
-
+/*
 const HSL_RBG = `
 vec3 hslRgb( vec3 c ) {
   vec4 K = vec4( 1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0 );
@@ -24,9 +24,11 @@ vec3 hslRgb( vec3 c ) {
   return c.z * mix( K.xxx, clamp( p - K.xxx, 0.0, 1.0 ), c.y );
 }
 `;
-
+*/
 export const GPU_PARTICLE_SHADER = {
   vertexShader: `
+precision highp float;
+
 uniform float uTime;
 uniform float uScale;
 uniform bool reverseTime;

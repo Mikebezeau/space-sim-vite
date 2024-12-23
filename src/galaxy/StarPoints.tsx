@@ -21,8 +21,14 @@ const StarPoints = forwardRef(function StarPoints(
   const starSprite = new TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new TextureLoader().load(featheredSpriteSrc);
   const galaxy = useStore((state) => state.galaxy);
-
-  //addAfterEffect(() => console.log("addAfterEffect"));
+  const starPointsShaderMaterial = useStore(
+    (state) => state.starPointsShaderMaterial
+  );
+  starPointsShaderMaterial.uniforms.uTexture = { value: starSprite };
+  starPointsShaderMaterial.uniforms.uTextureNebula = { value: nebulaSprite };
+  starPointsShaderMaterial.uniforms.uBackground = {
+    value: viewAsBackground ? 1 : 0,
+  };
 
   useLayoutEffect(() => {
     if (viewAsBackground && galaxy.starCoordsBuffer?.array) {
@@ -66,7 +72,12 @@ const StarPoints = forwardRef(function StarPoints(
 
   if (!galaxy.starCoordsBuffer) return null;
   return (
-    <points ref={starPointsForwardRef} frustumCulled={viewAsBackground}>
+    <points
+      //layers={1}
+      ref={starPointsForwardRef}
+      frustumCulled={viewAsBackground}
+      material={starPointsShaderMaterial}
+    >
       <bufferGeometry ref={starPointsBufferGeoRef}>
         <bufferAttribute
           attach={"attributes-position"}
@@ -85,6 +96,7 @@ const StarPoints = forwardRef(function StarPoints(
           {...galaxy.starSelectedBuffer}
         />
       </bufferGeometry>
+      {/*
       <starPointsShaderMaterial
         transparent
         blending={AdditiveBlending}
@@ -95,6 +107,7 @@ const StarPoints = forwardRef(function StarPoints(
         uTextureNebula={nebulaSprite}
         uBackground={viewAsBackground ? 1 : 0}
       />
+      */}
     </points>
   );
 });

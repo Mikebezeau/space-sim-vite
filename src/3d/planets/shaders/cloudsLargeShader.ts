@@ -1,4 +1,4 @@
-const sunShader = {
+const cloudsLargeShader = {
   vertHead: `
 varying vec3 cloudPosition;
 	`,
@@ -14,8 +14,8 @@ const float cloudscale = 5.0;//1.1;
 const float speed = 0.03;
 const float clouddark = 0.5;
 const float cloudlight = 0.3;
-const float cloudcover = 0.7;
-const float cloudalpha = 60.0;
+const float cloudcover = 0.2;
+const float cloudalpha = 18.0;
 const float skytint = 0.5;
 const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
 const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
@@ -86,10 +86,10 @@ vec3 p = cloudPosition;// * rotationMatrix;
 //p = rotateX( p, -PI * 0.2 );
 //p = rotateZ( p, -PI * 1.2 );
 
-//vec3 m = rotateX( vec3(1.0, 1.0, 1.0), 1.8 );
-float m = 1.0;
+vec3 m = rotateX( vec3(1.0, 1.0, 1.0), 1.8 );
+//float m = 1.0;
 
-float speed = 0.2;
+float speed = 0.1;
 
 // vec3 rotatedNormal & rotationMatrix is from rotatedNormalShader
 vec3 uv = p;
@@ -160,9 +160,8 @@ f = cloudcover + cloudalpha*f*r;
 
 vec3 result = mix(gl_FragColor.rgb, u_cloudColor, clamp(f + c, 0.0, 1.0));
 
-// outer_fade is from fresnelShader
-gl_FragColor = vec4( result, outer_fade * 3.0 );
+gl_FragColor =vec4( result, 1.0 );
 `,
 };
 
-export default sunShader;
+export default cloudsLargeShader;

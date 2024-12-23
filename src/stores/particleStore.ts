@@ -27,6 +27,11 @@ interface particleStoreState {
     color?: Color,
     endColor?: Color
   ) => void;
+  addEngineExhaust: (
+    position: Vector3 | { x: number; y: number; z: number },
+    direction: Euler,
+    speed: number
+  ) => void;
   addBullet: (
     position: Vector3 | { x: number; y: number; z: number },
     direction: Euler
@@ -91,7 +96,31 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
       }
     }
   },
-
+  addEngineExhaust: (position, direction, speed) => {
+    if (get().particleController) {
+      const numParticles = 1;
+      const particleSpeed = speed; // - 5;
+      for (let i = 1; i <= numParticles; i++) {
+        get()
+          .vectorTemp.set(0, 0, 1)
+          .applyEuler(direction)
+          .multiplyScalar(particleSpeed);
+        get().particleController.spawnParticle({
+          design: DESIGN_TYPE.circle,
+          position: position,
+          velocity: {
+            x: get().vectorTemp.x,
+            y: get().vectorTemp.y,
+            z: get().vectorTemp.z,
+          },
+          color: get().colors.grey,
+          endColor: get().colors.blue,
+          lifetime: 1,
+          size: 1300,
+        });
+      }
+    }
+  },
   addBullet: (position, direction) => {
     if (get().particleController) {
       const numParticles = 25;

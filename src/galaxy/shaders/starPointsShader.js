@@ -1,14 +1,11 @@
-import * as THREE from "three";
-import { extend } from "@react-three/fiber";
-import { shaderMaterial } from "@react-three/drei";
+const starPointsShader = {
+  uniforms: {
+    uTexture: { value: null },
+    uTextureNebula: { value: null },
+    uBackground: { value: 0.0 }, // if is being displayed as background
+  },
 
-const uniforms = {
-  uTexture: new THREE.Texture(),
-  uTextureNebula: new THREE.Texture(),
-  uBackground: 0, // if is being displayed as background
-};
-
-const vertexShader = `
+  vertShader: `
   uniform float uBackground;
   attribute float aSize;
   attribute vec3 aColor;
@@ -42,9 +39,9 @@ const vertexShader = `
     }
     gl_Position = projectionMatrix * mvPosition;
   }
-  `;
+  `,
 
-const fragmentShader = `
+  fragShader: `
   uniform sampler2D uTexture;
   uniform sampler2D uTextureNebula;
   uniform float uBackground;
@@ -72,12 +69,7 @@ const fragmentShader = `
     gl_FragColor = texture2D( uTexture, gl_PointCoord ) * vec4( vColor, 1.0 );
     }
   }
-`;
+`,
+};
 
-const StarPointsShaderMaterial = shaderMaterial(
-  uniforms,
-  vertexShader,
-  fragmentShader
-);
-
-extend({ StarPointsShaderMaterial });
+export default starPointsShader;

@@ -1,7 +1,11 @@
-export const warpVertMain = `
-`;
+const cloudsLargeShader = {
+  vertHead: `
+	`,
 
-export const warpFunctions = `
+  vertMain: ``,
+
+  fragHead: `
+uniform float u_time;
 const float cloudscale = 1.1;
 const float speed = 0.03;
 const float clouddark = 0.5;
@@ -41,35 +45,20 @@ float fbm(vec2 n) {
 	}
 	return total;
 }
-`;
+`,
 
-export const warpFragMain = `
-// vec3 points = vVertPosition / 2.0 + vec3(0.5);
-//vec3 points = vVertPosition;
+  fragMain: `
 
-// try converting points to vec2 coords
-//vec3 np = vVertPosition;
-//float u = atan(np.x, np.z) / (2.0 * 3.14) + 0.5;
-//float v = asin(np.y) / 3.14 + 0.5;
-//vec2 p = vec2(u, v);
-
-vec2 p = vUv;//vec2(vVertPosition.x, vVertPosition.y);
+vec2 p = vUv;
 // mirror p.x on both halves to remove seam
 p.x = abs(p.x - 0.5);
 
 // flip time for half where vUv.x < 0.5 so clouds travel in same direction on both halves
 float timeAdj = vUv.x < 0.5 ? -u_time : u_time;
-//p.y =  vUv.x < 0.5 ? 1.0 - p.y : p.y;
 
-//vec2 points = vec2(u, v);
+float speed = 0.01;
 
-vec2 iResolution = vec2(1.0, 1.0);
-float speed = 0.001;
-
-//vec2 fragCoord = points.xy;
-//vec2 p = fragCoord.xy / iResolution.xy;
-
-vec2 uv = p*vec2(iResolution.x/iResolution.y,1.0);    
+vec2 uv = p;
 float time = timeAdj * speed;
 float q = fbm(uv * cloudscale * 0.5);
 
@@ -88,7 +77,7 @@ r += abs(weight*noise( uv ));
 
 //noise shape
 float f = 0.0;
-uv = p*vec2(iResolution.x/iResolution.y,1.0);
+uv = p;
 uv *= cloudscale;
 uv -= q - time;
 weight = 0.7;
@@ -103,7 +92,7 @@ f *= r + f;
 //noise colour
 float c = 0.0;
 time = timeAdj * speed * 2.0;
-uv = p*vec2(iResolution.x/iResolution.y,1.0);
+uv = p;
 uv *= cloudscale*2.0;
 uv -= q - time;
 weight = 0.4;
@@ -116,7 +105,7 @@ for (int i=0; i<7; i++){
 //noise ridge colour
 float c1 = 0.0;
 time = timeAdj * speed * 3.0;
-uv = p*vec2(iResolution.x/iResolution.y,1.0);
+uv = p;
 uv *= cloudscale*3.0;
 uv -= q - time;
 weight = 0.4;
@@ -136,4 +125,7 @@ f = cloudcover + cloudalpha*f*r;
 vec3 result = mix(skycolour, clamp(skytint * skycolour + cloudcolour, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
 
 gl_FragColor =vec4( result, 1.0 );
-`;
+`,
+};
+
+export default cloudsLargeShader;

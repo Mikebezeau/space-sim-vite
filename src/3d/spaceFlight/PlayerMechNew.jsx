@@ -3,6 +3,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useDevStore from "../../stores/devStore";
+import useParticleStore from "../../stores/particleStore";
 import PlayerCrosshair from "./PlayerCrosshair";
 import BuildMech from "../buildMech/BuildMech";
 import { setVisible } from "../../util/gameUtil";
@@ -11,15 +12,19 @@ import { SCALE, PLAYER } from "../../constants/constants";
 const PlayerMech = () => {
   console.log("PlayerMech rendered");
   const { camera } = useThree();
-  const getPlayer = useStore((state) => state.getPlayer);
-  const playerMechBP = getPlayer().mechBP;
+  const player = useStore((state) => state.player);
+  const speed = useStore((state) => state.player.speed);
   const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
+
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
   const updatePlayerMechAndCameraFrame = usePlayerControlsStore(
     (state) => state.updatePlayerMechAndCameraFrame
   );
+
+  const addEngineExhaust = useParticleStore((state) => state.addEngineExhaust);
+
   const devEnemyTest = useDevStore((state) => state.devEnemyTest);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
@@ -40,7 +45,9 @@ const PlayerMech = () => {
   //moving camera, ship, altering crosshairs, weapon lights (activates only while flying)
   useFrame(() => {
     if (!playerMechRef.current) return null;
-    const player = getPlayer();
+
+    addEngineExhaust(player.object3d.position, player.object3d.rotation, speed);
+
     if (player.object3d) {
       if (!devEnemyTest || devPlayerPilotMech) {
         updatePlayerMechAndCameraFrame(camera);
@@ -65,10 +72,10 @@ const PlayerMech = () => {
         ref={(mechRef) => {
           if (mechRef) {
             playerMechRef.current = mechRef;
-            getPlayer().initObject3d(mechRef, true);
+            player.initObject3d(mechRef, true);
           }
         }}
-        mechBP={playerMechBP}
+        mechBP={player.mechBP}
         servoHitNames={[]}
       />
       <group ref={secondaryGroupRef} scale={SCALE}>

@@ -1,3 +1,4 @@
+import { CanvasTexture } from "three";
 import { drawCircle, getCirclePoints } from "./drawUtil";
 
 export const genCraterTexture = (
@@ -76,5 +77,5 @@ export const genCraterTexture = (
     // to test bump map
     //ctx.drawImage(canvasBumpMap, 0, 0);
   }
-  return canvasBumpMap;
+  return new CanvasTexture(canvasBumpMap);
 };

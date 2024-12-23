@@ -55,17 +55,14 @@ const NewCampaignScene = () => {
 
     camera.position.copy(player.object3d.position);
     camera.lookAt(targetPlanet.object3d.position); //targetPlanet.object3d.position);
-    camera.translateZ(1500);
+    camera.translateZ(100);
     player.object3d.rotateX(Math.PI / 6);
     player.object3d.rotateY(Math.PI / 2);
     player.object3d.rotateZ(-Math.PI / 2);
     cameraControlsRef.current.target.set(
-      targetPlanet.object3d.position.x,
-      targetPlanet.object3d.position.y,
-      targetPlanet.object3d.position.z
-      //player.object3d.position.x,
-      //player.object3d.position.y,
-      //player.object3d.position.z
+      player.object3d.position.x,
+      player.object3d.position.y,
+      player.object3d.position.z
     );
 
     return () => {
@@ -101,15 +98,13 @@ const NewCampaignScene = () => {
         rotateSpeed={3}
         panSpeed={0.5}
       />
-      {/*<ScenePortalLayer children={<StarsBackgroundScene />} />*/}
+      <ScenePortalLayer children={<StarsBackgroundScene />} />
       <ScenePortalLayer
         autoClear={false}
         children={
           <>
-            {/*<FlyControls object={camera} />*/}
-            <pointLight castShadow intensity={1} decay={0} />
-            {/*<pointLight castShadow intensity={10} decay={0} layers={1} />*/}
-            <ambientLight layers={0} intensity={0.4} />
+            <pointLight intensity={1} decay={0} />
+            <ambientLight intensity={0.4} />
             <BuildMech
               ref={(mechRef: THREE.Object3D) => {
                 if (mechRef) {

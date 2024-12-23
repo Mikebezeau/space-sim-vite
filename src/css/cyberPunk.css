@@ -229,6 +229,10 @@
   animation: glitch 1000ms infinite;
   display: block; /*none;*/
 }
+
+.cybr-btn__glitch.glitch-once {
+  animation: glitch 100ms 1;
+}
 /*
 .cybr-btn:hover .cybr-btn__glitch {
   display: block;

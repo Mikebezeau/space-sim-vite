@@ -1,5 +1,6 @@
-import * as THREE from "three";
-import { createNoise3D } from "simplex-noise";
+import { CanvasTexture } from "three";
+//import { createNoise3D } from "simplex-noise";
+import { makeNoise3D } from "fast-simplex-noise";
 import {
   get3dCoords,
   generateSortedRandomColors,
@@ -21,10 +22,10 @@ export const generatePlanetTextures = (width, height, options = {}) => {
     debug = false,
   } = options;
 
-  const planetMapCanvas = document.createElement("canvas");
-  planetMapCanvas.width = width;
-  planetMapCanvas.height = height;
-  const ctx = planetMapCanvas.getContext("2d");
+  const textureCanvas = document.createElement("canvas");
+  textureCanvas.width = width;
+  textureCanvas.height = height;
+  const ctx = textureCanvas.getContext("2d");
 
   const debugData = {
     //noise: { min: Infinity, max: -Infinity },
@@ -33,17 +34,18 @@ export const generatePlanetTextures = (width, height, options = {}) => {
     colorsSorted: [],
     circles: [],
   };
-  const colors = generateSortedRandomColors(baseColor, 2);
+  const colors = generateSortedRandomColors(planetType, baseColor, 2);
   debugData.colorsSorted = colors;
-  const noise3D = createNoise3D();
+  //const noise3D = createNoise3D();
+  const noise3D = makeNoise3D();
   const noiseValues = [];
   let minNoise = Infinity;
   let maxNoise = -Infinity;
   // set variables for planet type
   const planetTypeMods = { warpX: 1, warpY: 1, warpZ: 1 };
   if (isNoiseMap) {
-    scale = 1;
-    octaves = 6;
+    scale = 3;
+    octaves = 5;
     grayscale = true;
   } else {
     switch (planetType) {
@@ -122,17 +124,14 @@ export const generatePlanetTextures = (width, height, options = {}) => {
     }
   }
 
-  //if (isNoiseMap) return new THREE.CanvasTexture(planetMapCanvas);
-
   const bumpMapTexture = makeCraters
-    ? new THREE.CanvasTexture(
-        genCraterTexture(planetMapCanvas, colors, debugData)
-      )
+    ? genCraterTexture(textureCanvas, colors, debugData)
     : null;
 
   //console.log("generatePlanetTextures", debugData);
   return {
-    planetMapTexture: new THREE.CanvasTexture(planetMapCanvas),
+    texture: isNoiseMap ? null : new CanvasTexture(textureCanvas),
+    noiseTexture: isNoiseMap ? new CanvasTexture(textureCanvas) : null,
     bumpMapTexture,
     colors,
   };

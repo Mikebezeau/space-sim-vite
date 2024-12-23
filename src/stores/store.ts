@@ -5,6 +5,9 @@ import usePlayerControlsStore from "./playerControlsStore";
 import { randomData, genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
 import systemGen from "../solarSystemGen/systemGen";
+import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
+import sunShaderMaterial from "../3d/planets/materials/sunShaderMaterial";
+import planetShaderMaterial from "../3d/planets/materials/planetShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import { addEffect } from "@react-three/fiber";
 import { track } from "../util/track";
@@ -31,6 +34,7 @@ interface storeState {
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
   galaxy: Object;
+  starPointsShaderMaterial: THREE.ShaderMaterial;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
   // therefore do not really need to use getPlayer
@@ -43,6 +47,9 @@ interface storeState {
   selectedPanetIndex: number | null;
   getTargets: () => Object;
   planets: any[];
+  sunShaderMaterial: THREE.ShaderMaterial;
+  planetShaderMaterial: THREE.ShaderMaterial;
+  clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
   stations: any[];
   planetTerrain: any;
   actions: {
@@ -107,6 +114,7 @@ const useStore = create<storeState>()((set, get) => ({
   galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
     set({ galaxy: galaxyData });
   }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+  starPointsShaderMaterial: starPointsShaderMaterial,
   // intial player star
   playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
   player: new PlayerMech(),
@@ -132,6 +140,11 @@ const useStore = create<storeState>()((set, get) => ({
     };
   },
   planets: [], // set in call to setPlayerCurrentStarIndex
+  sunShaderMaterial: sunShaderMaterial,
+  planetShaderMaterial: planetShaderMaterial,
+  clonePlanetShaderMaterial: () => {
+    return get().planetShaderMaterial.clone();
+  },
   asteroidBands: null, // set in call to setPlayerCurrentStarIndex
   stations: [], // set in call to setPlayerCurrentStarIndex
   planetTerrain: cityTerrianGen(PLAYER_START.system, {

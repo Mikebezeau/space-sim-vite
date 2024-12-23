@@ -72,7 +72,7 @@ const AppCanvas = () => {
           gl={{
             //autoClear: false,
             logarithmicDepthBuffer: true,
-            //precision: "mediump", // "highp", "mediump" or "lowp"
+            //precision: "highp", // "highp", "mediump" or "lowp"
             // TODO use "low-power" if mobile device?
             //powerPreference: "default", // "high-performance", "low-power" or "default"
             antialias: true,
@@ -81,7 +81,7 @@ const AppCanvas = () => {
           onCreated={({ gl, camera } /*{gl, camera, scene}*/) => {
             //gl.setClearColor(0x000000, 0);
             //gl.setPixelRatio(window.devicePixelRatio / 2);
-            camera.layers.enable(1); // layer 1 for planet masks
+            //camera.layers.enable(1);
             //---------------------------------------------
             // init ship weapon, clock, and enemy movement
             // old V

@@ -55,8 +55,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerViewMode: PLAYER.view.firstPerson,
     // testing
     //playerScreen: PLAYER.screen.mainMenu,
-    playerScreen: PLAYER.screen.newCampaign,
-    //playerScreen: PLAYER.screen.flight,
+    //playerScreen: PLAYER.screen.newCampaign,
+    playerScreen: PLAYER.screen.flight,
     //playerScreen: PLAYER.screen.equipmentBuild,
     //playerScreen: PLAYER.screen.galaxyMap,
     isResetCamera: true,
@@ -133,9 +133,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         );
         // round speed to integer
         speed = Math.round(speed);
-        // note: using a setter function in Mech class to set speed does not update state correctly
-        // setting player.speed directly does not trigger state subscriptions in react components
-        // so we need to use the setSpeed function from the store
+        // changing player class properties does not trigger state subscriptions
+        // need to use the setSpeed function that triggers setPlayerPropUpdate() flag
         setSpeed(speed);
       }
 

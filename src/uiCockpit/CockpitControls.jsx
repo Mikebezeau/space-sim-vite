@@ -71,16 +71,35 @@ export const ActionWarpToPlanet = () => {
           </span>
         </div>
       ) : (
-        <div
-          className="pointer-events-auto w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
-          onClick={warpToPlanet}
-        >
-          <img
+        <>
+          <div
+            className="pointer-events-auto w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
+            onClick={warpToPlanet}
+          >
+            <div className="w-full cybr-btn" onClick={() => {}}>
+              Engage Warp
+              <span
+                aria-hidden
+                className="cybr-btn__glitch glitch-once pl-[10%]"
+              >
+                Engage Warp
+              </span>
+              <span aria-hidden className="cybr-btn__tag">
+                X12
+              </span>
+            </div>
+          </div>
+          <div className="arrow">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          {/*<img
             src={warp}
             alt="cancel controls icon"
             className="w-full h-full pointer-events-none"
-          />
-        </div>
+          />*/}
+        </>
       )}
     </>
   ) : null;

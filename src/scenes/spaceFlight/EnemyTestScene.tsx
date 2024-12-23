@@ -124,8 +124,8 @@ export default function EnemyTestScene() {
   return (
     <>
       {/*<GlitchEffect />*/}
-      <ambientLight intensity={0.2} />
       <pointLight intensity={1} decay={0} position={[-10000, 10000, 0]} />
+      <ambientLight intensity={0.2} />
       <fog attach="fog" args={["#2A3C47", 100, 1500]} />
       <PlayerMech />
       {/*<SpaceFlightHud />*/}

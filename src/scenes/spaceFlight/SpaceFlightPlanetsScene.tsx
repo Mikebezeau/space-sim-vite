@@ -4,7 +4,7 @@ import Planets from "../../3d/planets/Planets";
 import Stations from "../../3d/spaceFlight/Stations";
 import PlayerMech from "../../3d/spaceFlight/PlayerMechNew";
 import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
-//import Skybox from "../3d/spaceFlight/Skybox";
+import Particles from "../../3d/Particles";
 import useStore from "../../stores/store";
 import { flipRotation } from "../../util/gameUtil";
 
@@ -18,12 +18,24 @@ const SpaceFlightPlanetsScene = () => {
     camera.position.copy(player.object3d.position);
     camera.rotation.setFromQuaternion(flipRotation(player.object3d.quaternion));
   }, []);
+  /*
+if (camera !== undefined)
+{
+    lightGroup.position.x = camera.position.x;
+    lightGroup.position.y = camera.position.y;
+    lightGroup.position.z = camera.position.z;
 
+    lightGroup.lookAt(camera.target);
+
+    lightGroup.updateMatrix();
+    lightGroup.updateMatrixWorld();     
+}
+    */
   return (
     <>
       {/* sun light */}
-      <pointLight castShadow intensity={10} decay={0} />
-      <ambientLight intensity={0.6} />
+      <pointLight castShadow intensity={1} decay={0} />
+      <ambientLight intensity={0.2} />
       {/*<Explosions />*/}
       {/*<Particles />*/}
       <PlayerMech />
@@ -31,7 +43,7 @@ const SpaceFlightPlanetsScene = () => {
       <Planets />
       <Stations />
       <SpaceFlightHud />
-      {/*<Skybox />*/}
+      <Particles />
     </>
   );
 };

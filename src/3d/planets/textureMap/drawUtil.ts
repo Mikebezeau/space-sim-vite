@@ -44,9 +44,11 @@ const sortColorArray = (colors: { r: number; g: number; b: number }[]) => {
 
 // Function to generate a random color within a range
 export const generateSortedRandomColors = (
+  planetType,
   baseColorHex: string /*, factor*/
 ) => {
   const baseColor = parseHexColor(baseColorHex);
+
   const alterLum = (
     color: { r: number; g: number; b: number },
     normfactor: number
@@ -56,6 +58,20 @@ export const generateSortedRandomColors = (
       g: Math.round(71.52 * normfactor + color.g),
       b: Math.round(7.22 * normfactor + color.b),
     };
+  };
+
+  const newColors: { r: number; g: number; b: number }[] = [];
+  // for use when getting colors for a star, ensure that the
+  // brightest color is white, and the other colors are on a range
+  //if (planetType === "Sun") newColors.push({ r: 255, g: 255, b: 255 });
+  // from base to white
+  const getFactorLumWhite = (color: { r: number; g: number; b: number }) => {
+    // Calculate the normfactor needed to achieve pure white color
+    const factorR = (255 - color.r) / 21.26;
+    const factorG = (255 - color.g) / 71.52;
+    const factorB = (255 - color.b) / 7.22;
+    // Return the maximum factor to ensure all components reach 255
+    return Math.max(factorR, factorG, factorB);
   };
 
   const { r, g, b } = baseColor;
@@ -68,7 +84,17 @@ export const generateSortedRandomColors = (
   // Sort the color components by value in descending order
   colorArray.sort((a, b) => b.value - a.value);
 
-  const newColors: { r: number; g: number; b: number }[] = [];
+  // default alterLum factor is -1 to 1
+  // for suns, ensure that the brightest color is white
+  const genAltLumFactor = () => {
+    if (planetType === "Sun") {
+      const maxAltLumFactor = getFactorLumWhite(baseColor) + 0.2;
+      const minAltLumFactor = -0.2;
+      return (
+        Math.random() * (maxAltLumFactor - minAltLumFactor) + minAltLumFactor
+      );
+    } else return Math.random() * 2 - 1;
+  };
 
   for (let j = 0; j < 2; j++) {
     for (let i = 0; i < 6; i++) {
@@ -81,7 +107,7 @@ export const generateSortedRandomColors = (
         Math.max(0, colorComponent.value + adjustment)
       );
       */
-      newColor = alterLum(newColor, (Math.random() - 0.5) * 2);
+      newColor = alterLum(newColor, genAltLumFactor());
       newColors.push(newColor);
     }
   }

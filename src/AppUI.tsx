@@ -19,6 +19,7 @@ import EquipmentMenu from "./menuComponents/EquipmentMenu";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
 import "./css/glitch.css";
+import "./css/arrowsAnimate.css";
 
 import AppScreenTransition from "./AppScreenTransition";
 
