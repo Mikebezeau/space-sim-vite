@@ -382,14 +382,6 @@ const GalaxyMap = () => {
       setHoveredSelectedStar(e);
     });
 
-    /*
-    // incase we want to animate star points
-    useFrame((state) => {
-      //const { clock } = state;
-      //starPointsRef.current.material.uniforms.uTime.value = clock.elapsedTime;
-    });
-    */
-
     return <StarPoints ref={starPointsRef} />;
   };
 

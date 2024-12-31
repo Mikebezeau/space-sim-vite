@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Vector3 } from "three";
 import { useFrame } from "@react-three/fiber";
-//import { setCustomData, getCustomData } from "r3f-perf";
 
 const shiftRightAndUpdatePositions = (vector3Arr, offsetRelativePosition) => {
   for (let i = vector3Arr.length - 1; i > 1; i -= 1) {
@@ -69,8 +68,6 @@ export function useTrailVector3(followObject3d) {
       // origin point at mech position
       vector3Arr[0].set(0, 0, 0);
     }
-    // perf data
-    //setCustomData(vector3Arr[1].x);
   });
   return vector3Arr;
 }

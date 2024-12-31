@@ -1,23 +1,23 @@
-import { useRef } from "react";
+import React, { useRef } from "react";
 import * as THREE from "three";
 import useStore from "../../stores/store";
-import { useThree, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { generatePlanetTextures } from "./textureMap/genTextureMaps";
 
 const Planet = ({ planet /*, textureMaps*/ }) => {
-  console.log("Planet Test rendered");
-  const { camera } = useThree();
+  //console.log("Planet rendered");
   const sunShaderMaterial = useStore((state) => state.sunShaderMaterial);
   const clonePlanetShaderMaterial = useStore(
     (state) => state.clonePlanetShaderMaterial
   );
-  const planetRef = useRef();
-  const planetMeshRef = useRef();
+
+  const planetRef = useRef<THREE.Group | null>(null);
+  const planetMeshRef = useRef<THREE.Mesh | null>(null);
 
   //console.log("getPlanetMaterial", planet.planetType);
   const canvasWidth = 256 * 1;
   const canvasHeight = 256 * 0.5;
-  console.log("getPlanetMaterial generatePlanetTextures");
+
   const { texture, bumpMapTexture, colors } = generatePlanetTextures(
     canvasWidth,
     canvasHeight,
@@ -27,7 +27,6 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
       //makeCraters: false,
     }
   );
-  console.log("generatePlanetTextures end");
   /*
   const { noiseTexture } = generatePlanetTextures(canvasWidth, canvasHeight, {
     isNoiseMap: true,
@@ -53,35 +52,37 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
     planet.planetType === "Sun"
       ? sunShaderMaterial
       : clonePlanetShaderMaterial();
+  planetMaterial.uniforms.u_planetRealPos = { value: planet.object3d.position };
   planetMaterial.uniforms.u_texture = { value: texture };
   planetMaterial.uniforms.u_cloudColor = { value: baseColor };
   planetMaterial.uniforms.u_cloudColorDark = { value: baseColorDark };
 
-  console.log(planetMaterial);
   const geometryPlanet = new THREE.SphereGeometry(1, 64, 64);
 
   useFrame((_, delta) => {
     if (planetRef.current && planetMeshRef.current) {
       delta = Math.min(delta, 0.1); // cap delta to 100ms
       planetRef.current.rotateY(delta / 10);
-      const shaderMat = planetMeshRef.current.material;
-      if (shaderMat?.uniforms) {
-        if (shaderMat.uniforms.u_time) shaderMat.uniforms.u_time.value += delta;
+      //@ts-ignore // shaderMaterial set in mesh
+      const shaderMat: THREE.ShaderMaterial = planetMeshRef.current.material;
 
-        if (shaderMat.uniforms.u_cameraPos)
-          shaderMat.uniforms.u_cameraPos.value = camera.position;
+      if (shaderMat.uniforms.u_time) shaderMat.uniforms.u_time.value += delta;
 
-        if (shaderMat.uniforms.uObjectMatrixWorld)
-          shaderMat.uniforms.uObjectMatrixWorld.value =
-            planetRef.current.matrixWorld;
-      }
+      if (shaderMat.uniforms.uObjectMatrixWorld)
+        shaderMat.uniforms.uObjectMatrixWorld.value =
+          planetRef.current.matrixWorld;
     }
   });
 
   return (
     <>
       <group
-        ref={planetRef}
+        ref={(ref) => {
+          if (ref !== null) {
+            planetRef.current = ref;
+            planet.object3d = ref;
+          }
+        }}
         position={planet.object3d.position}
         rotation={planet.object3d.rotation}
       >

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import useEnemyStore from "../stores/enemyStore";
-import BuildMech from "../3d/buildMech/BuildMech";
+import useEnemyStore from "../../stores/enemyStore";
+import BuildMech from "../buildMech/BuildMech";
 
 interface InstancedMechsInt {
   mechBpId: string;
@@ -10,12 +10,7 @@ interface InstancedMechsInt {
 // not using the forwarded ref for anything atm
 const InstancedMechs = (props: InstancedMechsInt) => {
   const { mechBpId } = props;
-  /*
-    forwardRef(function Enemy(
-    { mechBpId },
-    instancedMeshRef
-    )
-  */
+
   const enemies = useEnemyStore((state) => state.enemies);
   const instancedMechObject3d = useRef<THREE.Object3D | null>(null);
   const instancedEnemies = enemies.filter(
@@ -63,6 +58,8 @@ const InstancedMechs = (props: InstancedMechsInt) => {
     if (instancedMeshRef.current === null) return;
     instancedEnemies.forEach((enemy, i) => {
       enemy.object3d.updateMatrix();
+      // adjust for world relative positioning
+      //
       // @ts-ignore
       instancedMeshRef.current.setMatrixAt(i, enemy.object3d.matrix);
     });
@@ -126,31 +123,5 @@ const InstancedMechs = (props: InstancedMechsInt) => {
     </>
   );
 };
-//);
 
-const InstancedMechGroups = () => {
-  const enemies = useEnemyStore((state) => state.enemies);
-  // using useRef to store unique instancedEnemies mechBP ids
-  // using spread operator to change into an array of ids
-  const instancedEnemiesBpIdListRef = useRef([
-    ...new Set(
-      enemies.map((enemy) => (enemy.useInstancedMesh ? enemy.mechBP.id : null))
-    ),
-  ]);
-
-  console.log(
-    "instancedEnemiesBpIdListRef",
-    instancedEnemiesBpIdListRef.current
-  );
-  return (
-    <>
-      {instancedEnemiesBpIdListRef.current.map((bpId) => {
-        return bpId !== null ? (
-          <InstancedMechs key={bpId} mechBpId={bpId} />
-        ) : null;
-      })}
-    </>
-  );
-};
-
-export default InstancedMechGroups; // InstancedMechs InstancedMechGroups;
+export default InstancedMechs;

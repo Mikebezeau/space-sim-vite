@@ -30,6 +30,7 @@ const AppCanvasScene = () => {
       {true ? ( //playerScreen === PLAYER.screen.flight ? (
         <Perf
           logsPerSecond={5}
+          minimal
           customData={{
             value: 0, // initial value,
             name: "Custom", // name to show

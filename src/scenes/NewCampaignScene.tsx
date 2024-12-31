@@ -15,7 +15,6 @@ import Stations from "../3d/spaceFlight/Stations";
 //import GlitchEffect from "../3d/effects/GlitchEffect";
 
 import { PLAYER } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
 
 const NewCampaignScene = () => {
   console.log("NewCampaignScene rendered");
@@ -85,8 +84,6 @@ const NewCampaignScene = () => {
       player.object3d.rotateZ((Math.PI * delta) / 100);
       camera.translateZ(-delta * 10);
     }
-
-    //setCustomData(window.devicePixelRatio); //sceneTime.current);
   });
 
   return (

@@ -53,7 +53,12 @@ const ActionCancelPilot = () => {
 };
 
 export const ActionWarpToPlanet = () => {
+  const isScanDistanceToPlanet = useStore(
+    (state) => state.isScanDistanceToPlanet
+  );
+  const scanPlanetProgress = useStore((state) => state.scanPlanetProgress);
   const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
+  const scanPlanet = useStore((state) => state.scanPlanet);
   const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
   return focusPlanetIndex ? (
     <>
@@ -74,15 +79,19 @@ export const ActionWarpToPlanet = () => {
         <>
           <div
             className="pointer-events-auto w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
-            onClick={warpToPlanet}
+            onClick={isScanDistanceToPlanet ? scanPlanet : warpToPlanet}
           >
             <div className="w-full cybr-btn" onClick={() => {}}>
-              Engage Warp
+              {isScanDistanceToPlanet ? "Scan Planet" : "Engage Warp"}
               <span
                 aria-hidden
                 className="cybr-btn__glitch glitch-once pl-[10%]"
               >
-                Engage Warp
+                {isScanDistanceToPlanet
+                  ? scanPlanetProgress > 0
+                    ? scanPlanetProgress * 10 + "%"
+                    : "Scan Planet"
+                  : "Engage Warp"}
               </span>
               <span aria-hidden className="cybr-btn__tag">
                 X12
@@ -265,13 +274,9 @@ export const CockpitControlDockStation = () => {
   const stations = useStore((state) => state.stations);
 
   const isStationCloseEnoughToDock = () => {
-    console.log(
-      getPlayer().object3d.position.distanceTo(stations[0].object3d.position),
-      SCALE
-    );
     return (
       getPlayer().object3d.position.distanceTo(stations[0].object3d.position) <
-      50000 * SCALE
+      50000
     );
   };
 

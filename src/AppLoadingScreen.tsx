@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import useStore from "./stores/store";
 import useDevStore from "./stores/devStore";
 
 interface AppScreenTransitionInt {
   children?: React.ReactNode;
 }
-const AppScreenTransition = (props: AppScreenTransitionInt) => {
+const AppLoadingScreen = (props: AppScreenTransitionInt) => {
   const { children = null } = props;
   const flightSceneRendered = useStore((state) => state.flightSceneRendered);
   //const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
@@ -42,4 +42,4 @@ const AppScreenTransition = (props: AppScreenTransitionInt) => {
   );
 };
 
-export default AppScreenTransition;
+export default AppLoadingScreen;

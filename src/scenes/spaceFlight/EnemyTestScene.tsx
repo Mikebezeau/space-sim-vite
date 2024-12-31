@@ -4,17 +4,15 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
-import useParticleStore from "../../stores/particleStore";
 import useDevStore from "../../stores/devStore";
 import PlayerMech from "../../3d/spaceFlight/PlayerMechNew";
 //import SpaceFlightHud from "../3d/spaceFlight/SpaceFlightHud";
 import BuildMech from "../../3d/buildMech/BuildMech";
-import InstancedMechGroups from "../../3d/InstancedMechs";
+import InstancedMechGroups from "../../3d/enemyMechs/InstancedMechGroups";
 import Particles from "../../3d/Particles";
 import BoidController from "../../classes/BoidController";
 import ObbTest from "./dev/ObbTest";
 //import GlitchEffect from "../../3d/effects/GlitchEffect";
-//import { setCustomData } from "r3f-perf";
 
 export default function EnemyTestScene() {
   console.log("EnemyTest Scene rendered");
@@ -25,7 +23,6 @@ export default function EnemyTestScene() {
   );
   const enemies = useEnemyStore((state) => state.enemies);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
-  const addExplosion = useParticleStore((state) => state.addExplosion);
 
   const setFlightSceneRendered = useStore(
     (state) => state.setFlightSceneRendered
@@ -82,43 +79,6 @@ export default function EnemyTestScene() {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     // boid flocking movement
     boidControllerRef.current?.update(delta);
-    // non-instanced mechs are updated when their object3d is updated
-    // check for intersection between obb test boxes
-    for (let i = 0, il = enemies.length; i < il; i++) {
-      // only check each object once
-      for (let j = i + 1, jl = enemies.length; j < jl; j++) {
-        // check distance first to determine if full intersection test is needed
-        const distance = enemies[i].object3d.position.distanceTo(
-          enemies[j].object3d.position
-        );
-        const minCheckDistance =
-          enemies[i].maxHalfWidth + enemies[j].maxHalfWidth;
-        if (distance > minCheckDistance) continue;
-        if (enemies[i].obbNeedsUpdate) enemies[i].updateObb();
-        const obb = enemies[i].obbPositioned;
-        if (enemies[j].obbNeedsUpdate) enemies[j].updateObb();
-        const obbToTest = enemies[j].obbPositioned;
-        // now perform intersection test
-        if (obb.intersectsOBB(obbToTest) === true) {
-          //if (i === 0) console.log("obb collision", i, j);
-          // change color of obb test boxes if colliding
-          // @ts-ignore - material.color exists
-          obbBoxRefs.current[i].material.color.setHex(0xffff00);
-          // @ts-ignore
-          obbBoxRefs.current[j].material.color.setHex(0xffff00);
-
-          // add test explosions
-          if (Math.random() < 0.5) {
-            if (i !== 0) addExplosion(enemies[i].object3d.position);
-          }
-          if (Math.random() < 0.5) {
-            addExplosion(enemies[j].object3d.position);
-          }
-        }
-      }
-      // reset obbNeedsUpdate for next frame
-      enemies[i].obbNeedsUpdate = true;
-    }
   });
 
   return (

@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { GPU_PARTICLE_SHADER } from "../constants/particleConstants";
-//import { setCustomData } from "r3f-perf";
 
 const UPDATEABLE_ATTRIBUTES = [
   "aSprite",
@@ -263,8 +262,8 @@ class ParticleController implements ParticleControllerInt {
       : this.rand[this.i];
   }
 
-  update(ttime: number) {
-    this.time = ttime;
+  update(delta: number) {
+    this.time += delta;
     this.material.uniforms.uTime.value = this.time;
     if (this.onTick) this.onTick(this, this.time);
     this.geometryUpdate();
@@ -287,17 +286,17 @@ class ParticleController implements ParticleControllerInt {
     then count will be 3 and the cursor will have moved by three.
   */
   spawnParticle(options: {
-    position: THREE.Vector3;
-    velocity: THREE.Vector3;
-    acceleration: THREE.Vector3;
-    color: THREE.Color;
-    endColor: THREE.Color;
-    lifetime: number;
-    size: number;
-    sizeRandomness: number;
-    sprite: number;
-    design: number;
-    angle: number;
+    position?: THREE.Vector3 | { x: number; y: number; z: number };
+    velocity?: THREE.Vector3 | { x: number; y: number; z: number };
+    acceleration?: THREE.Vector3 | { x: number; y: number; z: number };
+    color?: THREE.Color;
+    endColor?: THREE.Color;
+    lifetime?: number;
+    size?: number;
+    sizeRandomness?: number;
+    sprite?: number;
+    design?: number;
+    angle?: number;
   }) {
     const spriteAttribute = this.geometry.getAttribute("aSprite");
     const designAttribute = this.geometry.getAttribute("aDesign");

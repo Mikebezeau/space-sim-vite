@@ -8,7 +8,7 @@ import atmosGlowShader from "../shaders/atmosGlowShader";
 
 const planetShaderMaterial = new THREE.ShaderMaterial({
   side: THREE.FrontSide, // using depthWrite: false possible preformance upgrade
-  transparent: true,
+  //transparent: true,
   depthTest: true, // default is true
   depthWrite: false, // must have true for uv mapping unless use THREE.FrontSide
   uniforms: {
@@ -18,6 +18,9 @@ const planetShaderMaterial = new THREE.ShaderMaterial({
       uNoiseTex: {
         value: noiseTexture,
       },*/,
+    u_lightPos: {
+      value: null,
+    },
     u_nMin: {
       // for sunShader
       value: 0.7,

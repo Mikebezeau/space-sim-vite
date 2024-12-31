@@ -1,8 +1,9 @@
+import { Vector3 } from "three";
 import { create } from "zustand";
 import EnemyMechBoid from "../classes/EnemyMechBoid";
+import BoidController from "../classes/BoidController";
 import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
-//import BoidController from "../classes/BoidController";
 
 const numEnemies = 200;
 
@@ -18,6 +19,7 @@ const generateEnemies = async (
       Math.random() * 500 - 250
     );
   });
+  enemies[0].object3d.position.set(0, 0, -100); // set boss enemy to center
   // group enemies into squads, sets leaders and upgrades leader ships
   const groupedEnemies = groupEnemies(enemies);
   return groupedEnemies;
@@ -25,16 +27,19 @@ const generateEnemies = async (
 
 interface enemyStoreState {
   numEnemies: number;
+  enemyWorldPosition: Vector3;
   enemies: EnemyMechBoid[] | Promise<void | EnemyMechBoid[]>;
   boidController: any | null;
 }
 
 const useEnemyStore = create<enemyStoreState>()((set, get) => ({
   numEnemies: numEnemies,
+  enemyWorldPosition: new Vector3(),
   enemies: generateEnemies(numEnemies).then((enemiesData: EnemyMechBoid[]) => {
     set({ enemies: enemiesData });
+    set({ boidController: new BoidController(enemiesData) });
   }),
-  boidController: null, // todo: new BoidController(get().enemies)
+  boidController: null, //new BoidController(get().enemies)
 }));
 
 export default useEnemyStore;

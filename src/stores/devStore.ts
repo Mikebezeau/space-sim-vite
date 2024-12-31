@@ -20,9 +20,9 @@ interface devStoreState {
 const useDevStore = create<devStoreState>()((set, get) => ({
   devEnemyTest: false,
   devPlayerPilotMech: true,
-  devPlayerSpeedX1000: true,
+  devPlayerSpeedX1000: false, //true,
   showLeaders: false,
-  showObbBox: false,
+  showObbBox: true, //false,
   showBoidVectors: false,
   boidAlignmentMod: 0,
   boidSeparationMod: 0,

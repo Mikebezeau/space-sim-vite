@@ -1,23 +1,23 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
-import BuildMech from "../buildMech/BuildMech";
-import { SCALE } from "../../constants/constants";
-
-const servoHitNames = [];
+import Scenery from "./Scenery";
+//import BuildMech from "../buildMech/BuildMech";
 
 const Station = ({ station }) => {
   console.log("Station rendered");
+
   //station rotation
-  const { clock } = useStore((state) => state.mutation);
   const ref = useRef();
-  useFrame(() => {
+
+  useFrame((_, delta) => {
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
     if (ref.current) {
-      const r = clock.getElapsedTime() / 30;
+      const r = ref.current.rotation.y + delta / 30;
       ref.current.rotation.set(0, r, 0);
     }
   });
-  //const texture_map = useLoader(TextureLoader, ["images/maps/?.jpg"]);
+
   return (
     <group
       ref={ref}
@@ -31,17 +31,9 @@ const Station = ({ station }) => {
         station.object3d.rotation.y,
         station.object3d.rotation.z,
       ]}
-      scale={SCALE}
     >
-      <BuildMech mechBP={station.stationBP} servoHitNames={servoHitNames} />
-      {/*
-      <pointLight
-        position={[175, 0, 0]}
-        distance={200}
-        decay={0.5}
-        intensity={1}
-        color="blue"
-      />*/}
+      {/*<BuildMech mechBP={station.stationBP} servoHitNames={servoHitNames} />*/}
+      <Scenery />
     </group>
   );
 };

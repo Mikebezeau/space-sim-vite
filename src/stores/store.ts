@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import PlayerMech from "../classes/PlayerMech";
+import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
 import { randomData, genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
@@ -27,8 +28,6 @@ interface storeState {
   sound: boolean;
   flightSceneRendered: boolean;
   setFlightSceneRendered: (flightSceneRendered: boolean) => void;
-  backgroundSceneCamera: THREE.Camera | null;
-  setBackgroundSceneCamera: (camera: THREE.Camera) => void;
   playerCurrentStarIndex: number;
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
@@ -41,12 +40,25 @@ interface storeState {
   getPlayer: () => Object;
   playerPropUpdate: boolean; // used to re-render player prop based menu components
   setPlayerPropUpdate: () => void;
+  // used to shift positions over large distances to a local space
+  playerWorldPosition: THREE.Vector3;
+  // maximum local distances should be less than 65500 units for float accuracy
+  playerWorldOffsetPosition: THREE.Vector3;
+  setNewPlayerPosition: (
+    newPosition: THREE.Vector3 | { x: number; y: number; z: number }
+  ) => void;
+  playerPositionUpdated: () => void;
   focusTargetIndex: number | null;
   selectedTargetIndex: number | null;
   focusPlanetIndex: number | null;
   selectedPanetIndex: number | null;
   getTargets: () => Object;
   planets: any[];
+  checkScanDistanceToPlanet: (planetIndex: number) => void;
+  scanningPlanetId: number;
+  isScanDistanceToPlanet: boolean;
+  scanPlanet: () => void;
+  scanPlanetProgress: number;
   sunShaderMaterial: THREE.ShaderMaterial;
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
@@ -72,7 +84,6 @@ interface storeState {
   };
   mutation: {
     particles: Object;
-    clock: THREE.Clock;
     mouse: THREE.Vector2;
     mouseScreen: THREE.Vector2;
   };
@@ -103,10 +114,6 @@ const useStore = create<storeState>()((set, get) => ({
       console.log("flightSceneRendered", get().flightSceneRendered);
     }
   },
-  backgroundSceneCamera: null,
-  setBackgroundSceneCamera: (camera) => {
-    set({ backgroundSceneCamera: camera });
-  },
   // for galaxy map
   showInfoHoveredStarIndex: null, // used in galaxy map ui
   showInfoTargetStarIndex: null,
@@ -126,6 +133,42 @@ const useStore = create<storeState>()((set, get) => ({
       playerPropUpdate: !get().playerPropUpdate,
     });
   },
+  playerWorldPosition: new THREE.Vector3(),
+  playerWorldOffsetPosition: new THREE.Vector3(),
+  setNewPlayerPosition: (worldPosition) => {
+    // local space position (always keep within 65000 of (0,0,0))
+    get().player.object3d.position.set(0, 0, 0);
+    // player world space offset position for placing other objects relative to player object3d
+    get().playerWorldOffsetPosition.set(
+      worldPosition.x,
+      worldPosition.y,
+      worldPosition.z
+    );
+    get().playerWorldPosition.copy(get().playerWorldOffsetPosition);
+  },
+  playerPositionUpdated: () => {
+    // if player.object3d.position grows to far from (0,0,0)
+    if (
+      Math.abs(get().player.object3d.position.x) > 65000 ||
+      Math.abs(get().player.object3d.position.y) > 65000 ||
+      Math.abs(get().player.object3d.position.z) > 65000
+    ) {
+      // playerWorldOffsetPosition for placing other objects relative to player object3d
+      get().playerWorldOffsetPosition.set(
+        get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
+        get().playerWorldOffsetPosition.y + get().player.object3d.position.y,
+        get().playerWorldOffsetPosition.z + get().player.object3d.position.z
+      );
+      get().playerWorldPosition.copy(get().playerWorldOffsetPosition);
+      get().player.object3d.position.set(0, 0, 0);
+    } else {
+      get().playerWorldPosition.set(
+        get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
+        get().playerWorldOffsetPosition.y + get().player.object3d.position.y,
+        get().playerWorldOffsetPosition.z + get().player.object3d.position.z
+      );
+    }
+  },
   // targeting
   focusTargetIndex: null,
   selectedTargetIndex: null,
@@ -140,6 +183,38 @@ const useStore = create<storeState>()((set, get) => ({
     };
   },
   planets: [], // set in call to setPlayerCurrentStarIndex
+  checkScanDistanceToPlanet: (planetIndex) => {
+    if (get().scanningPlanetId !== planetIndex) {
+      set({ scanningPlanetId: planetIndex });
+      set({ scanPlanetProgress: 0 });
+    }
+    const playerWorldPosition = get().playerWorldPosition;
+    const planet = get().planets[planetIndex];
+    if (planet) {
+      // warp to planet distance is planet.radius / 3
+      const isScanDistanceToPlanet =
+        planet.object3d.position.distanceTo(playerWorldPosition) <
+        planet.radius / 2;
+      if (isScanDistanceToPlanet !== get().isScanDistanceToPlanet) {
+        set({ isScanDistanceToPlanet });
+      }
+    }
+  },
+  scanningPlanetId: -1,
+  isScanDistanceToPlanet: false,
+  scanPlanet: () => {
+    const incrementScanProgress = () => {
+      set((state) => ({
+        scanPlanetProgress: state.scanPlanetProgress + 0.5,
+      }));
+      if (get().scanPlanetProgress < 10) {
+        setTimeout(incrementScanProgress, 100);
+      }
+    };
+    incrementScanProgress();
+  },
+  scanPlanetProgress: 0,
+
   sunShaderMaterial: sunShaderMaterial,
   planetShaderMaterial: planetShaderMaterial,
   clonePlanetShaderMaterial: () => {
@@ -163,7 +238,6 @@ const useStore = create<storeState>()((set, get) => ({
       1000,
       () => 0.5 + Math.random() * 0.5
     ),
-    clock: new THREE.Clock(false), //used to make enemies rotate
     mouse: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
     mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
   },
@@ -234,19 +308,34 @@ const useStore = create<storeState>()((set, get) => ({
       if (get().stations.length > 0) {
         let player = get().player;
         const targetStation = get().stations[0];
+        console.log(get().planets[1].object3d.position);
+        console.log(targetStation.object3d.position);
         player.object3d.position.copy(targetStation.object3d.position);
-        player.object3d.translateZ(-30 * SCALE);
+        player.object3d.translateZ(-30);
         player.object3d.lookAt(targetStation.object3d.position);
+        const targetWarpPosition = {
+          x: player.object3d.position.x,
+          y: player.object3d.position.y,
+          z: player.object3d.position.z,
+        };
+        get().setNewPlayerPosition(targetWarpPosition);
       }
     },
     warpToPlanet() {
       let player = get().player;
       const focusPlanetIndex = get().focusPlanetIndex || -1;
-      console.log("warpToPlanet", focusPlanetIndex);
       if (focusPlanetIndex > -1 && get().planets[focusPlanetIndex]) {
         const targetPlanet = get().planets[focusPlanetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
-        player.object3d.translateZ(-targetPlanet.radius * 1.5);
+        // current mesh scale is planet.radius / 10
+        // warp to distance of planet.radius / 3
+        player.object3d.translateZ(-targetPlanet.radius / 3);
+        const targetWarpPosition = {
+          x: player.object3d.position.x,
+          y: player.object3d.position.y,
+          z: player.object3d.position.z,
+        };
+        get().setNewPlayerPosition(targetWarpPosition);
       }
     },
   },
@@ -254,8 +343,6 @@ const useStore = create<storeState>()((set, get) => ({
   actions: {
     beginSpaceFlightSceneLoop() {
       const { mutation, actions } = get();
-      //clock used for enemy ai
-      mutation.clock.start();
 
       //addEffect will add the following code to what gets run per frame
       //removes exploded emenies and rocks from store data, removes explosions once they have timed out
@@ -276,7 +363,7 @@ const useStore = create<storeState>()((set, get) => ({
           player,
           localEnemies,
           enemyBoids,
-          mutation.clock,
+          mutation.clock,//using useFrame delta now
           useWeaponFireStore.getState().actions.shoot
         );
         */
@@ -344,11 +431,19 @@ const useStore = create<storeState>()((set, get) => ({
       set(() => ({
         planets: systemGen(playerCurrentStarIndex),
       }));
-      const player = get().player;
-      player.object3d.position.setX(0);
-      player.object3d.position.setY(0);
-      player.object3d.position.setZ(get().planets[0].radius * 1.5);
-      player.object3d.lookAt(0, 0, 0);
+      // setting new local position for player
+      get().setNewPlayerPosition({
+        x: 0,
+        y: 0,
+        z: get().planets[0].radius * 1.5,
+      });
+      // setting enemy world position relative to player test
+      useEnemyStore
+        .getState()
+        .enemyWorldPosition.set(0, 0, get().planets[0].radius * 1.5);
+
+      // just to get player looking right direction (at displaced sun)
+      get().player.object3d.lookAt(0, 0, -100);
       //clear variables
       set(() => ({
         focusPlanetIndex: null,
@@ -365,7 +460,7 @@ const useStore = create<storeState>()((set, get) => ({
           stationOrbitPlanet.object3d.position.x,
           stationOrbitPlanet.object3d.position.y,
           stationOrbitPlanet.object3d.position.z +
-            stationOrbitPlanet.radius * 1.5
+            (stationOrbitPlanet.radius / 10) * 1.5
         );
         set(() => ({
           stations,

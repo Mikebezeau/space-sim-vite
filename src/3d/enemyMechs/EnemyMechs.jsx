@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import useEnemyStore from "../stores/enemyStore";
-import BuildMech from "./BuildMech";
-import { MeshLineTrail } from "./Trail";
-import { SCALE } from "../constants/constants";
+import useEnemyStore from "../../stores/enemyStore";
+import BuildMech from "../buildMech/BuildMech";
+import { MeshLineTrail } from "../Trail";
+import { SCALE } from "../../constants/constants";
 
 export default function EnemyMechs() {
   console.log("EnemyMechs rendered");

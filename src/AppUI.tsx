@@ -21,7 +21,8 @@ import "./css/cyberPunk.css";
 import "./css/glitch.css";
 import "./css/arrowsAnimate.css";
 
-import AppScreenTransition from "./AppScreenTransition";
+import AppLoadingManager from "./AppLoadingManager";
+import AppLoadingScreen from "./AppLoadingScreen";
 
 const AppUI = () => {
   console.log("AppUI render");
@@ -35,9 +36,10 @@ const AppUI = () => {
 
   return (
     <div className="pointer-events-none touch-none">
+      <AppLoadingManager />
       {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
       {(playerScreen === PLAYER.screen.flight ||
-        playerScreen === PLAYER.screen.newCampaign) && <AppScreenTransition />}
+        playerScreen === PLAYER.screen.newCampaign) && <AppLoadingScreen />}
       {playerScreen === PLAYER.screen.flight &&
         (devEnemyTest ? devPlayerPilotMech : true) && (
           <>

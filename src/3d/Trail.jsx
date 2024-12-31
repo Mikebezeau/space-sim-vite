@@ -1,16 +1,9 @@
 import { forwardRef, useEffect, useRef } from "react";
-import {
-  BufferAttribute,
-  Color,
-  DoubleSide,
-  DynamicDrawUsage,
-  Vector3,
-} from "three";
+import { BufferAttribute, Color, DoubleSide, DynamicDrawUsage } from "three";
 import { extend, useFrame } from "@react-three/fiber";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import { useTrailVector3 } from "../hooks/useTrailVector3";
 import { useTrailFloat32Array } from "../hooks/useTrailFloat32Array";
-//import { setCustomData } from "r3f-perf";
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 

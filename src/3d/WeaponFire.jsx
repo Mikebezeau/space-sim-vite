@@ -4,8 +4,6 @@ import { useFrame } from "@react-three/fiber";
 import useWeaponFireStore from "../stores/weaponFireStore";
 import PropTypes from "prop-types";
 
-// import { setCustomData, getCustomData } from "r3f-perf";
-
 const red = new THREE.Color("red");
 const purple = new THREE.Color("purple");
 //const yellow = new THREE.Color("yellow");
@@ -65,8 +63,6 @@ const WeaponFire = ({ scale }) => {
       weaponFire.hitBox.max.copy(position);
       weaponFire.hitBox.expandByScalar(scale);
     });
-    // perf data
-    //setCustomData(weaponFireList.length);
   });
   return (
     <>

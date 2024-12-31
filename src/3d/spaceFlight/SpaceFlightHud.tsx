@@ -1,5 +1,6 @@
+import React from "react";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
-import SystemMap from "./SystemMap";
+//import SystemMap from "./SystemMap";
 import ScannerReadout from "./ScannerReadout";
 import { PLAYER } from "../../constants/constants";
 

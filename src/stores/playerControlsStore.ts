@@ -3,7 +3,8 @@ import useStore from "./store";
 import useDevStore from "./devStore";
 import * as THREE from "three";
 import { flipRotation, lerp } from "../util/gameUtil";
-import { PLAYER, SCALE, SPEED_VALUES } from "../constants/constants";
+import { PLAYER, FPS, SCALE, SPEED_VALUES } from "../constants/constants";
+import { setCustomData } from "r3f-perf";
 
 interface playerControlStoreState {
   playerActionMode: number;
@@ -32,12 +33,13 @@ interface playerControlStoreState {
     setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
   };
   updatePlayerMechAndCameraFrame: (
-    camera: THREE.PerspectiveCamera,
-    main: any
+    delta: number,
+    camera: THREE.PerspectiveCamera
   ) => void;
 }
 
-const cameraLerpToObj = new THREE.Object3D();
+const cameraMoveToObj = new THREE.Object3D();
+const playerPosObject3d = new THREE.Object3D();
 const direction = new THREE.Vector3();
 
 // forship and camera rotation
@@ -114,14 +116,16 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       },
     },
 
-    updatePlayerMechAndCameraFrame: (camera) => {
+    updatePlayerMechAndCameraFrame: (delta, camera) => {
       const player = useStore.getState().player;
+      // must call function to calc relative world position
+      const playerPositionUpdated = useStore.getState().playerPositionUpdated;
       const setSpeed = useStore.getState().actions.setSpeed;
       const mouse = useStore.getState().mutation.mouse;
-      const backgroundSceneCamera = useStore.getState().backgroundSceneCamera;
 
       const devPlayerSpeedX1000 = useDevStore.getState().devPlayerSpeedX1000;
 
+      const deltaNormal = delta / (1 / FPS);
       //set speed
       if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
         let speed = lerp(
@@ -129,10 +133,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           SPEED_VALUES[get().playerSpeedSetting] *
             // increase speed by 100x for testing
             (devPlayerSpeedX1000 ? 1000 : 1),
-          0.6
+          0.6 * deltaNormal
         );
         // round speed to integer
-        speed = Math.round(speed);
+        speed = Math.round(speed); // * 10) / 10;
         // changing player class properties does not trigger state subscriptions
         // need to use the setSpeed function that triggers setPlayerPropUpdate() flag
         setSpeed(speed);
@@ -174,32 +178,37 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       //current ship rotation
       currentShipQuat.setFromEuler(player.object3d.rotation);
       //update ship rotation
-      finalShipQuat.multiplyQuaternions(currentShipQuat, rotateShipQuat);
-      player.object3d.rotation.setFromQuaternion(finalShipQuat.normalize());
-      //move ship forward
-
-      player.object3d.translateZ(player.speed * SCALE);
-
+      finalShipQuat
+        .multiplyQuaternions(currentShipQuat, rotateShipQuat)
+        .normalize();
+      player.object3d.rotation.setFromQuaternion(finalShipQuat);
+      player.object3d.translateZ(player.speed * deltaNormal * SCALE);
+      // must call function to calc relative world position
+      playerPositionUpdated();
       //CAMERA
       //flip the ship rotation, since camera is behind the ship
       finalCameraQuat.copy(flipRotation(finalShipQuat));
-      //set cameraLerpToObj to be behind ship
-      cameraLerpToObj.position.copy(player.object3d.position);
-      cameraLerpToObj.rotation.copy(player.object3d.rotation);
+      //set cameraMoveToObj to be behind ship
+      cameraMoveToObj.position.copy(player.object3d.position);
+      cameraMoveToObj.rotation.copy(player.object3d.rotation);
       // camera position changes based on player view mode
       if (get().playerViewMode === PLAYER.view.firstPerson) {
         // todo find a way to set camera position based on mech cockpit servo position
-        cameraLerpToObj.translateY(0.5 * SCALE * player.mechBP.scale);
-        camera.position.copy(cameraLerpToObj.position);
+        cameraMoveToObj.translateY(0.5 * SCALE * player.mechBP.scale);
+        camera.position.copy(cameraMoveToObj.position);
       }
       if (get().playerViewMode === PLAYER.view.thirdPerson) {
-        cameraLerpToObj.translateZ(-8 * SCALE * player.mechBP.scale);
-        cameraLerpToObj.translateY(2 * SCALE * player.mechBP.scale);
-        const thirdPersonCameraLerpSpeed = resetCameraLerpSpeed || 0.95; //distance(state.camera.position, camDummy.position) / 0.8;
+        cameraMoveToObj.translateZ(-8 * SCALE * player.mechBP.scale);
+        cameraMoveToObj.translateY(2 * SCALE * player.mechBP.scale);
+        /*const thirdPersonCameraLerpSpeed = resetCameraLerpSpeed || 0.95; //distance(state.camera.position, camDummy.position) / 0.8;
         camera.position.lerp(
-          cameraLerpToObj.position,
+          cameraMoveToObj.position,
           thirdPersonCameraLerpSpeed
         );
+        */
+        // just set camera position to cameraMoveToObj position to avoid lerp jitter
+        // due to variable deltaNormal effecting lerp position
+        camera.position.copy(cameraMoveToObj.position);
       }
       // additional camera rotation based on mouse position (looking around)
       adjustCameraViewQuat.setFromAxisAngle(
@@ -215,9 +224,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           .slerp(finalCameraQuat, resetCameraLerpSpeed || 0.2)
           .normalize()
       );
-      //backgroundSceneCamera?.position.copy(camera.position);
-      //backgroundSceneCamera?.rotation.copy(camera.rotation);
-      camera.updateProjectionMatrix();
+      // don't need this in r3f
+      //camera.updateProjectionMatrix();
     },
   })
 );

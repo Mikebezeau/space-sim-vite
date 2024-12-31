@@ -10,13 +10,17 @@ cameraVector = cameraPosition - vGlowWorldPosition;
 `,
 
   fragHead: `
+uniform vec3 u_planetRealPos;
 varying vec3 vGlowWorldPosition;
 varying vec3 cameraVector;
 `,
 
   fragMain: `
 // rotatedNormal set in rotatedNormalShader
-vec3 lightDir = normalize(-vGlowWorldPosition);
+
+// lightDir not pointing to (0, 0, 0) due to relative position of sun and planets
+//vec3 lightDir = normalize(-vGlowWorldPosition);
+vec3 lightDir = normalize(-u_planetRealPos);
 vec3 cameraDir = normalize(cameraVector);
 
 // making the light shine more on the sides of planet: + 0.2
@@ -58,7 +62,7 @@ glowIntensity *= ( ( 1.0 - outer_fade ) * 0.25 );
 vec3 shadedColor = gl_FragColor.rgb * lightAngle;
 
 gl_FragColor = vec4( shadedColor + glowIntensity, 1.0 );
-//gl_FragColor = vec4( vec3( glowIntensity ), 1.0 );
+//gl_FragColor = vec4( vec3( lightAngle ), 1.0 );
 `,
 };
 

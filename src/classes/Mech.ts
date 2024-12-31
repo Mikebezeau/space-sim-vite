@@ -11,7 +11,6 @@ import {
   getMergedBufferGeomColor,
 } from "../util/gameUtil";
 import { equipData } from "../equipment/data/equipData";
-//import { setCustomData } from "r3f-perf";
 
 interface MechInt {
   buildObject3d: () => void;
@@ -101,7 +100,7 @@ class Mech implements MechInt {
   }
 
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
-  initObject3d = (object3d: THREE.Object3D, isPlayer: boolean = false) => {
+  initObject3d = (object3d: THREE.Object3D) => {
     if (object3d) {
       // keeping position and rotation of original object3d
       const keepPosition = new THREE.Vector3();
@@ -223,15 +222,15 @@ class Mech implements MechInt {
           if (weapon.weaponType === equipData.weaponType.beam) {
             useParticleStore
               .getState()
-              .addLaser(weaponWorldPositionVec, mechRefObj.rotation);
+              .effects.addLaser(weaponWorldPositionVec, mechRefObj.rotation);
           } else if (weapon.weaponType === equipData.weaponType.projectile) {
             useParticleStore
               .getState()
-              .addBullet(weaponWorldPositionVec, mechRefObj.rotation);
+              .effects.addBullet(weaponWorldPositionVec, mechRefObj.rotation);
           } else if (weapon.weaponType === equipData.weaponType.missile) {
             useParticleStore
               .getState()
-              .addMissile(weaponWorldPositionVec, mechRefObj.rotation);
+              .effects.addMissile(weaponWorldPositionVec, mechRefObj.rotation);
           }
         } else {
           console.log("servoOffset not found for weapon", weapon);

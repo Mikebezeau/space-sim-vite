@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import EnemyMech from "./EnemyMech";
 import { FPS } from "../constants/constants";
-//import { setCustomData } from "r3f-perf";
 
 export interface EnemyMechBoidInt {
   resetVectors: () => void;
@@ -70,7 +69,8 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
 
   // Boid apply force
   applyForce(fVec3: THREE.Vector3) {
-    if (!this.isBossMech) this.acceleration.add(fVec3.clone());
+    //if (!this.isBossMech) this.acceleration.add(fVec3.clone());
+    if (!this.isBossMech) this.acceleration.add(fVec3);
   }
 
   // update Boid movement

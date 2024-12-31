@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { BoxGeometry, FrontSide, Object3D, ShaderMaterial } from "three";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
@@ -6,14 +7,15 @@ import useDevStore from "../../stores/devStore";
 import useParticleStore from "../../stores/particleStore";
 import PlayerCrosshair from "./PlayerCrosshair";
 import BuildMech from "../buildMech/BuildMech";
+import Particles from "../../3d/Particles";
 import { setVisible } from "../../util/gameUtil";
-import { SCALE, PLAYER } from "../../constants/constants";
+import { PLAYER } from "../../constants/constants";
+//import { setCustomData } from "r3f-perf";
 
 const PlayerMech = () => {
   console.log("PlayerMech rendered");
   const { camera } = useThree();
   const player = useStore((state) => state.player);
-  const speed = useStore((state) => state.player.speed);
   const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
 
   const playerViewMode = usePlayerControlsStore(
@@ -23,7 +25,9 @@ const PlayerMech = () => {
     (state) => state.updatePlayerMechAndCameraFrame
   );
 
-  const addEngineExhaust = useParticleStore((state) => state.addEngineExhaust);
+  const addEngineExhaust = useParticleStore(
+    (state) => state.playerEffects.addEngineExhaust
+  );
 
   const devEnemyTest = useDevStore((state) => state.devEnemyTest);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
@@ -31,6 +35,51 @@ const PlayerMech = () => {
   const playerMechRef = useRef(null);
   const secondaryGroupRef = useRef(null);
   const weaponFireLight = useRef(null);
+
+  const tempEngineObject = new Object3D();
+
+  const engineShaderMaterial = new ShaderMaterial({
+    side: FrontSide, // using depthWrite: false possible preformance upgrade
+    transparent: true,
+    depthTest: true, // default is true
+    depthWrite: false, // must have true for uv mapping unless use THREE.FrontSide
+    uniforms: {
+      u_time: {
+        value: 0.0,
+      },
+    },
+    //blending: THREE.AdditiveBlending,
+    vertexShader: `
+  
+  #include <common>
+  #include <logdepthbuf_pars_vertex>
+  
+  varying vec2 vUv;
+  varying vec3 vPosition;
+  
+  void main() {
+    vUv = uv;
+    vPosition = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    #include <logdepthbuf_vertex>
+  }
+  `,
+    fragmentShader: `  
+  uniform sampler2D u_texture;
+  
+  varying vec2 vUv;
+  varying vec3 vPosition;
+
+  #include <common>
+  #include <logdepthbuf_pars_fragment>
+  
+  void main() {
+    #include <logdepthbuf_fragment>
+  
+    gl_FragColor = vec4( vec3( 1.0 ), 0.3 - abs( vPosition.x ) );
+  }
+  `,
+  });
 
   // set mech to invisible in cockpit view
   useEffect(() => {
@@ -43,14 +92,22 @@ const PlayerMech = () => {
   }, [playerViewMode]);
 
   //moving camera, ship, altering crosshairs, weapon lights (activates only while flying)
-  useFrame(() => {
-    if (!playerMechRef.current) return null;
+  useFrame((_, delta) => {
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
 
-    addEngineExhaust(player.object3d.position, player.object3d.rotation, speed);
+    if (!playerMechRef.current) return null;
+    tempEngineObject.position.copy(player.object3d.position);
+    tempEngineObject.rotation.copy(player.object3d.rotation);
+    tempEngineObject.translateZ(-4);
+    addEngineExhaust(
+      tempEngineObject.position,
+      tempEngineObject.rotation,
+      player.speed
+    );
 
     if (player.object3d) {
       if (!devEnemyTest || devPlayerPilotMech) {
-        updatePlayerMechAndCameraFrame(camera);
+        updatePlayerMechAndCameraFrame(delta, camera);
       }
       // player mech object3d directly linked to Buildmech ref: playerMechRef.current
       // update secondary group (crosshair, weapon light)
@@ -64,7 +121,8 @@ const PlayerMech = () => {
           weaponFireLight.current.intensity) *
         0.3;
     }
-  });
+    // ordering sequence of useFrames so that Particles useFrame runs last
+  }, -2);
 
   return (
     <>
@@ -72,20 +130,26 @@ const PlayerMech = () => {
         ref={(mechRef) => {
           if (mechRef) {
             playerMechRef.current = mechRef;
-            player.initObject3d(mechRef, true);
+            player.initObject3d(mechRef);
           }
         }}
         mechBP={player.mechBP}
         servoHitNames={[]}
       />
-      <group ref={secondaryGroupRef} scale={SCALE}>
+      <group ref={secondaryGroupRef}>
+        <Particles isPlayerParticles />
         <PlayerCrosshair />
         <pointLight
           ref={weaponFireLight}
           position={[0, 0, 0.2]}
-          distance={3 * SCALE}
+          distance={3}
           intensity={0}
           color="lightgreen"
+        />
+        <mesh
+          position={[0, 0.4, -6]}
+          geometry={new BoxGeometry(0.6, 0.6, 3)}
+          material={engineShaderMaterial}
         />
       </group>
     </>

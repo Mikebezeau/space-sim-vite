@@ -8,54 +8,11 @@ import { PLAYER_START } from "./constants/constants";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
-  const setBackgroundSceneCamera = useStore(
-    (state) => state.setBackgroundSceneCamera
-  );
   const beginSpaceFlightSceneLoop = useStore(
     (state) => state.actions.beginSpaceFlightSceneLoop
   );
-  const backgroundSeceneRenderer = useRef<WebGLRenderer | null>(null);
-  const rendererReference = useRef<WebGLRenderer | null>(null);
-
   return (
     <>
-      {/*}
-      <div className="absolute right-0 bottom-0 top-0 left-0">
-        <Canvas
-          camera={{
-            // setting camera position to player start position
-            position: [PLAYER_START.x, PLAYER_START.y, PLAYER_START.z],
-            // giving rotation to camera to match player ship
-            rotation: [0, -Math.PI, 0],
-            near: 0.001,
-            far: 100000000,
-            fov: 40,
-          }}
-          shadows={false}
-          resize={{ debounce: 1000 }}
-          onResize={() => {
-            if (backgroundSeceneRenderer.current) {
-              backgroundSeceneRenderer.current.setSize(
-                window.innerWidth / 2,
-                window.innerHeight / 2,
-                false
-              );
-            }
-          }}
-          gl={{
-            logarithmicDepthBuffer: true,
-            antialias: false,
-          }}
-          onCreated={({ gl, camera }) => {
-            gl.setSize(window.innerWidth / 2, window.innerHeight / 2, false);
-            backgroundSeceneRenderer.current = gl;
-            setBackgroundSceneCamera(camera);
-          }}
-        >
-          <AppBackgroundCanvasScene />
-        </Canvas>
-      </div>
-      */}
       <div className="absolute right-0 bottom-0 top-0 left-0">
         <Canvas
           camera={{

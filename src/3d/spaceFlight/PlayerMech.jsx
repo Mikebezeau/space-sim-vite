@@ -14,7 +14,6 @@ const PlayerMech = () => {
   const getPlayer = useStore((state) => state.getPlayer);
   const playerMechBP = getPlayer().mechBP;
   const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
-  //const clock = useStore((state) => state.mutation.clock);
 
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
@@ -63,9 +62,10 @@ const PlayerMech = () => {
   }, [playerViewMode]);
 
   //moving camera, ship, altering crosshairs, weapon lights (activates only while flying)
-  useFrame(() => {
+  useFrame((_, delta) => {
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
     if (!playerMechGroupRef.current) return null;
-    updatePlayerMechAndCameraFrame(camera);
+    updatePlayerMechAndCameraFrame(delta, camera);
     const player = getPlayer();
     // update trail position (trail is relative to player mech)
     trailPositionRef.current.position.copy(player.object3d.position);

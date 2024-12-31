@@ -7,8 +7,8 @@ import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { PLAYER, SCALE } from "../../constants/constants";
-//import { setCustomData } from "r3f-perf";
 
+const worldPosition = new THREE.Vector3();
 const dummyObj = new THREE.Object3D(),
   targetDummyObj = new THREE.Object3D(),
   arrowDummyObj = new THREE.Object3D();
@@ -77,16 +77,20 @@ const ScannerReadout = () => {
   console.log("ScannerReadout rendered");
   const { camera } = useThree();
   const player = useStore((state) => state.player);
-  const getPlayerState = usePlayerControlsStore(
-    (state) => state.getPlayerState
-  );
-  const getTargets = useStore((state) => state.getTargets);
   const planets = useStore((state) => state.planets);
-  const enemies = useEnemyStore((state) => state.enemies);
-
+  const getTargets = useStore((state) => state.getTargets);
+  const checkScanDistanceToPlanet = useStore(
+    (state) => state.checkScanDistanceToPlanet
+  );
   const { setFocusPlanetIndex, setFocusTargetIndex } = useStore(
     (state) => state.actions
   );
+
+  const getPlayerState = usePlayerControlsStore(
+    (state) => state.getPlayerState
+  );
+
+  const enemies = useEnemyStore((state) => state.enemies);
 
   const planetTargetGroupRef = useRef();
   const enemyTargetGroupRef = useRef();
@@ -107,8 +111,12 @@ const ScannerReadout = () => {
         for (let i = 1; i < planets.length; i++) {
           //planets.forEach((planet, i) => {
           const planet = planets[i];
+          //worldPosition.copy(planet.object3d.position);
+          //worldPosition.add(playerWorldOffsetPosition);
+          planet.object3d.getWorldPosition(worldPosition);
           dummyObj.position.copy(camera.position);
-          dummyObj.lookAt(planet.object3d.position);
+          dummyObj.lookAt(worldPosition);
+          // can delete this line
           const flipRotation = new THREE.Quaternion();
           dummyObj.getWorldQuaternion(targetQuat);
           //flip the opposite direction
@@ -134,11 +142,16 @@ const ScannerReadout = () => {
       }
       // placing targets over planets
       for (let i = 1; i < planets.length; i++) {
+        const planet = planets[i];
+        planet.object3d.getWorldPosition(worldPosition);
         const mesh = planetTargetGroupRef.current.children[i];
         dummyObj.position.copy(camera.position);
-        dummyObj.lookAt(planets[i].object3d.position);
+        dummyObj.lookAt(worldPosition);
         const highlight = tempFocusPlanetIndex === i || focusPlanetIndex === i;
         placeTarget(dummyObj, camera, mesh, highlight, 0, i, 1);
+        if (highlight) {
+          checkScanDistanceToPlanet(i);
+        }
       }
     }
     //save enemy nearest to direction player is facing
@@ -165,7 +178,6 @@ const ScannerReadout = () => {
 
         // find target enemy closest to direction player mech is pointing
         const angleDiff = targetQuat.angleTo(camera.quaternion);
-        //if (i === 0) setCustomData(angleDiff);
         if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
           smallestTargetAngle = angleDiff;
           tempFocusTargetIndex = i;
