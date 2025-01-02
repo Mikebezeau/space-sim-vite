@@ -1,38 +1,49 @@
 import React, { useEffect, useState } from "react";
-import useStore from "./stores/store";
-import useDevStore from "./stores/devStore";
+import usePlayerControlsStore from "./stores/playerControlsStore";
 
 interface AppScreenTransitionInt {
   children?: React.ReactNode;
 }
 const AppLoadingScreen = (props: AppScreenTransitionInt) => {
   const { children = null } = props;
-  const flightSceneRendered = useStore((state) => state.flightSceneRendered);
-  //const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
-  const devEnemyTest = useDevStore((state) => state.devEnemyTest);
-  //const [currentScreen, setCurrentScreen] = useState(playerScreen);
-  const [fadeToggle, setfadeToggle] = useState(true);
-  const [transitionFadeTO, setTransitionFadeTO] = useState<number | null>(null);
+
+  const isSwitchingPlayerScreen = usePlayerControlsStore(
+    (state) => state.isSwitchingPlayerScreen
+  );
+  const canvasSceneRendered = usePlayerControlsStore(
+    (state) => state.canvasSceneRendered
+  );
+  const setIsSwitchingPlayerScreen = usePlayerControlsStore(
+    (state) => state.setIsSwitchingPlayerScreen
+  );
+
+  const [fadeOut, setFadeOut] = useState<boolean>(false);
 
   useEffect(() => {
-    if (flightSceneRendered) {
-      setfadeToggle(false);
-      // alow time to fade away before removing
-      setTransitionFadeTO(
+    if (isSwitchingPlayerScreen) {
+      if (canvasSceneRendered) {
+        setFadeOut(true);
+        // alow time to fade away before removing
         setTimeout(() => {
-          setTransitionFadeTO(null);
-          console.log("null transitionTO");
-        }, 1000)
-      );
+          setIsSwitchingPlayerScreen(false);
+          setFadeOut(false);
+          console.log("Timeout");
+        }, 1000);
+      } else {
+        setFadeOut(false);
+      }
+      console.log("isSwitchingPlayerScreen", isSwitchingPlayerScreen);
+      console.log("canvasSceneRendered", canvasSceneRendered);
+      console.log("fadeOut", fadeOut);
     }
-  }, [flightSceneRendered]);
+  }, [canvasSceneRendered, isSwitchingPlayerScreen]);
 
   return (
     <>
-      {(transitionFadeTO || devEnemyTest) && ( // TODO devEnemyTest is temporary
+      {isSwitchingPlayerScreen && (
         <div
-          className={`absolute top-0 right-0 bottom-0 left-0 bg-black z-50 transition-opacity duration-1000 ${
-            fadeToggle ? "opacity-100" : "opacity-0"
+          className={`absolute top-0 right-0 bottom-0 left-0 bg-black z-50 opacity-100 ${
+            fadeOut && "transition-opacity duration-1000 opacity-40"
           }`}
         >
           {children}

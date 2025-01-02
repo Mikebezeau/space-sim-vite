@@ -1,16 +1,18 @@
-import React, { useRef } from "react";
-import { WebGLRenderer } from "three";
+import React from "react";
+import { Perf } from "r3f-perf";
 import { Canvas } from "@react-three/fiber";
-import useStore from "./stores/store";
-import AppBackgroundCanvasScene from "./AppBackgroundCanvasScene";
+//import useStore from "./stores/store";
+import AppCanvasLoadTrigger from "./AppCanvasLoadTrigger";
 import AppCanvasScene from "./AppCanvasScene";
 import { PLAYER_START } from "./constants/constants";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
+  /*
   const beginSpaceFlightSceneLoop = useStore(
     (state) => state.actions.beginSpaceFlightSceneLoop
   );
+  */
   return (
     <>
       <div className="absolute right-0 bottom-0 top-0 left-0">
@@ -49,6 +51,17 @@ const AppCanvas = () => {
             //gl.setClearColor(new THREE.Color("#020207"));
           }}
         >
+          <Perf
+            logsPerSecond={5}
+            minimal
+            customData={{
+              value: 0, // initial value,
+              name: "Custom", // name to show
+              round: 2, // precision of the float
+              info: "", // additional information about the data (fps/ms for instance)
+            }}
+          />
+          <AppCanvasLoadTrigger />
           <AppCanvasScene />
         </Canvas>
       </div>

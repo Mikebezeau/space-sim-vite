@@ -26,8 +26,6 @@ interface storeState {
   isGameStoreInit: boolean;
 
   sound: boolean;
-  flightSceneRendered: boolean;
-  setFlightSceneRendered: (flightSceneRendered: boolean) => void;
   playerCurrentStarIndex: number;
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
@@ -107,13 +105,6 @@ const useStore = create<storeState>()((set, get) => ({
   isGameStoreInit: false,
 
   sound: false,
-  flightSceneRendered: false, // used to trigger render
-  setFlightSceneRendered: (flightSceneRendered) => {
-    if (flightSceneRendered !== get().flightSceneRendered) {
-      set({ flightSceneRendered });
-      console.log("flightSceneRendered", get().flightSceneRendered);
-    }
-  },
   // for galaxy map
   showInfoHoveredStarIndex: null, // used in galaxy map ui
   showInfoTargetStarIndex: null,

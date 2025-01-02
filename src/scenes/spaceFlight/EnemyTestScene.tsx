@@ -24,8 +24,8 @@ export default function EnemyTestScene() {
   const enemies = useEnemyStore((state) => state.enemies);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
-  const setFlightSceneRendered = useStore(
-    (state) => state.setFlightSceneRendered
+  const setCanvasSceneRendered = useStore(
+    (state) => state.setCanvasSceneRendered
   );
   const sceneRenderedRef = useRef(false);
 
@@ -65,7 +65,7 @@ export default function EnemyTestScene() {
     return () => {
       console.log("unmounting EnemyTestScene");
       sceneRenderedRef.current = false;
-      setFlightSceneRendered(false);
+      setCanvasSceneRendered(false);
     };
   }, [enemies]);
 
@@ -74,7 +74,7 @@ export default function EnemyTestScene() {
     // set sceneRenderedRef to make more efficient, propbably don't need this
     if (!sceneRenderedRef.current && delta < 0.1) {
       sceneRenderedRef.current = true;
-      setFlightSceneRendered(true);
+      setCanvasSceneRendered(true);
     }
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     // boid flocking movement

@@ -64,11 +64,11 @@ export default class StarSystem {
   }
 
   create() {
-    let i = 0;
+    //let i = 0;
     while (this.matter.hasDust) {
       this.injectNucleus();
       this.planets = this.checkCollisions(this.planets);
-      i += 1;
+      //i += 1;
     }
     /*
     console.log(

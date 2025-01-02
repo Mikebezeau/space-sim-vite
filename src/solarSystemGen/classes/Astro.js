@@ -819,19 +819,18 @@ export const breathable = (planet) => {
   if (planet.atmosphere.length === 0) return false;
 
   for (index = 0; index < planet.atmosphere.length; index++) {
-    let n;
-    let gas_no = 0;
+    //let n;
+    //let gas_no = 0;
     let ipp = inspired_partial_pressure(
       planet.surfacePressure,
       planet.atmosphere[index].surfacePressure
     );
-
+    /*
     for (n = 0; n < gases.length; n++) {
       if (gases[n].num === planet.atmosphere[index].num) gas_no = n;
     }
-
-    //if (ipp > gases[gas_no].max_ipp) return C.POISONOUS;
-
+    if (ipp > gases[gas_no].max_ipp) return C.POISONOUS;
+*/
     if (planet.atmosphere[index].num === C.AN_O)
       oxygen_ok = ipp >= C.MIN_O2_IPP && ipp <= C.MAX_O2_IPP;
   }
@@ -1062,7 +1061,7 @@ const gases = [
   },
 ];
 
-export function calculate_gases(sun, planet, planet_id) {
+export function calculate_gases(sun, planet /*, planet_id*/) {
   if (planet.surfacePressure <= 0) return [];
 
   let amount = new Array(gases.length);

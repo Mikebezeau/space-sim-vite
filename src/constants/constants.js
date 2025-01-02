@@ -1,7 +1,7 @@
 export const FPS = 60;
-export const SCALE = 1; //=0.001
-// SCALE todo: stationDockScene buildMech is not scaled
-export const SCALE_PLANET_WALK = 2;
+export const SCALE = 1;
+
+export const SCALE_PLANET_WALK = 1;
 export const SYSTEM_SCALE = 0.001;
 export const PLANET_SCALE = 1;
 
@@ -20,13 +20,13 @@ export const PLAYER_START = {
 
 export const PLAYER = {
   screen: {
-    mainMenu: 0,
-    newCampaign: 1,
-    flight: 2,
-    landedPlanet: 3,
-    galaxyMap: 4,
-    dockedStation: 5,
-    equipmentBuild: 6,
+    mainMenu: 1,
+    newCampaign: 2,
+    flight: 3,
+    landedPlanet: 4,
+    galaxyMap: 5,
+    dockedStation: 6,
+    equipmentBuild: 7,
   },
   action: { inspect: 1, manualControl: 2, autoControl: 3 },
   view: {

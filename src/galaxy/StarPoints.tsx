@@ -96,18 +96,6 @@ const StarPoints = forwardRef(function StarPoints(
           {...galaxy.starSelectedBuffer}
         />
       </bufferGeometry>
-      {/*
-      <starPointsShaderMaterial
-        transparent
-        blending={AdditiveBlending}
-        depthTest={false}
-        depthWrite={false}
-        vertexColors
-        uTexture={starSprite}
-        uTextureNebula={nebulaSprite}
-        uBackground={viewAsBackground ? 1 : 0}
-      />
-      */}
     </points>
   );
 });

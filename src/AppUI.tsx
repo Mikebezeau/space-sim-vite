@@ -36,10 +36,9 @@ const AppUI = () => {
 
   return (
     <div className="pointer-events-none touch-none">
+      <AppLoadingScreen />
       <AppLoadingManager />
       {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
-      {(playerScreen === PLAYER.screen.flight ||
-        playerScreen === PLAYER.screen.newCampaign) && <AppLoadingScreen />}
       {playerScreen === PLAYER.screen.flight &&
         (devEnemyTest ? devPlayerPilotMech : true) && (
           <>

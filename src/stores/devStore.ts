@@ -22,7 +22,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   devPlayerPilotMech: true,
   devPlayerSpeedX1000: false, //true,
   showLeaders: false,
-  showObbBox: true, //false,
+  showObbBox: false,
   showBoidVectors: false,
   boidAlignmentMod: 0,
   boidSeparationMod: 0,

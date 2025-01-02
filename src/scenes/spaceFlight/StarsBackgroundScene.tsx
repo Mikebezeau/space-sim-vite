@@ -38,7 +38,6 @@ const StarsBackgroundScene = () => {
 
   return (
     <>
-      {/*<GlitchEffect />*/}
       <group
         ref={starPointsRef}
         position={[0, 0, 0]}
@@ -46,6 +45,7 @@ const StarsBackgroundScene = () => {
       >
         <StarPoints viewAsBackground={true} />
       </group>
+      {/*<GlitchEffect />*/}
     </>
   );
 };

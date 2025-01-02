@@ -29,8 +29,8 @@ const NewCampaignScene = () => {
 
   const planets = useStore((state) => state.planets);
 
-  const setFlightSceneRendered = useStore(
-    (state) => state.setFlightSceneRendered
+  const setCanvasSceneRendered = useStore(
+    (state) => state.setCanvasSceneRendered
   );
 
   const sceneRenderedRef = useRef<boolean>(false);
@@ -66,7 +66,7 @@ const NewCampaignScene = () => {
 
     return () => {
       sceneRenderedRef.current = false;
-      setFlightSceneRendered(false);
+      setCanvasSceneRendered(false);
     };
   }, [playerMechRef.current, setPlayerPosition]);
 
@@ -76,7 +76,7 @@ const NewCampaignScene = () => {
     // set sceneRenderedRef to make more efficient, propbably don't need this
     if (!sceneRenderedRef.current && delta < 0.1) {
       sceneRenderedRef.current = true;
-      setFlightSceneRendered(true);
+      setCanvasSceneRendered(true);
     }
     delta = Math.min(delta, 0.1); // cap delta to 100ms
 

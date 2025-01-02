@@ -38,6 +38,12 @@ const StarInfoCard = () => {
     if (starIndex) {
       setViewStarIndex(starIndex);
       [starInfoRef.current, systemInfoRef.current] = systemInfoGen(starIndex);
+      console.log(
+        systemInfoRef.current.planets.length,
+        systemInfoRef.current.planets.filter(
+          (planet) => planet.isGasGiant === true
+        ).length
+      );
     } else {
       setViewStarIndex(null);
     }

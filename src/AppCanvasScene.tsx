@@ -1,5 +1,4 @@
 import React, { useLayoutEffect } from "react";
-import { Perf } from "r3f-perf";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import NewCampaignScene from "./scenes/NewCampaignScene";
@@ -27,18 +26,6 @@ const AppCanvasScene = () => {
 
   return (
     <>
-      {true ? ( //playerScreen === PLAYER.screen.flight ? (
-        <Perf
-          logsPerSecond={5}
-          minimal
-          customData={{
-            value: 0, // initial value,
-            name: "Custom", // name to show
-            round: 2, // precision of the float
-            info: "", // additional information about the data (fps/ms for instance)
-          }}
-        />
-      ) : null}
       {isGameStoreInit ? (
         <>
           {playerScreen === PLAYER.screen.newCampaign ? (

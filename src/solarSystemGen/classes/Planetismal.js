@@ -4,7 +4,7 @@ import {
   PROTOPLANET_MASS,
   EARTH_ALBEDO,
   GAS_GIANT_ALBEDO,
-  FREEZING_POINT_OF_WATER,
+  //FREEZING_POINT_OF_WATER,
   KM_EARTH_RADIUS,
   CM_PER_KM,
 } from "../constants";
@@ -266,8 +266,8 @@ export default class Planetismal {
       //Class III: Cloudless
       //Class IV: Alkali metals
       if (c.temp(this.temperature.avg) > 1100) return "IV";
-      return null;
     }
+    return null;
   }
 
   get planetType() {
@@ -368,7 +368,7 @@ export default class Planetismal {
   };
 
   addMass = (m) => {
-    let isGasGiant = this.isGasGiant;
+    //let isGasGiant = this.isGasGiant;
     // Invalidate memoized props
     this._surfaceGravity =
       this._surfacePressure =
@@ -386,7 +386,7 @@ export default class Planetismal {
   };
   toJSONforHud = (units = "metric", precision = 2) => {
     const c = convert[units];
-    const gases = this.gasComposition;
+    //const gases = this.gasComposition;
     //console.log(gases, this.atmosphere);
     return {
       type: this.planetType,

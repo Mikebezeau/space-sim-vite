@@ -3,12 +3,12 @@ const band = (lower, upper, dust = true, gas = true) => ({
   upper,
   gas,
   dust,
-  width: upper - lower
+  width: upper - lower,
 });
 
 export default class DustCloud {
   get hasDust() {
-    return this.bands.filter(b => b.dust && b.gas).length > 0;
+    return this.bands.filter((b) => b.dust && b.gas).length > 0;
   }
 
   constructor(system, radius = 50) {
@@ -24,18 +24,18 @@ export default class DustCloud {
     return (C * (A * Math.exp(-α * Math.pow(radialDistance, 1 / N)))) / d;
   };
 
-  containsDust = p => {
+  containsDust = (p) => {
     const l = p.rp - p.xp;
     const u = p.ra + p.xa;
 
     return this.bands.reduce(
       (hasDust, b) =>
-        hasDust || (b.dust && (u > b.upper - p.xa && l < b.lower + p.xp)),
+        hasDust || (b.dust && u > b.upper - p.xa && l < b.lower + p.xp),
       false
     );
   };
 
-  sweep = p => {
+  sweep = (p) => {
     let dustDensity = 0;
 
     const includeGas = p.isGasGiant;
@@ -56,7 +56,7 @@ export default class DustCloud {
 
           return bands.concat([
             band(b.lower, l, b.dust, b.gas),
-            band(l, b.upper, false, !(b.gas && includeGas))
+            band(l, b.upper, false, !(b.gas && includeGas)),
           ]);
         }
         // Partial inntersection [    (  ]  )
@@ -70,7 +70,7 @@ export default class DustCloud {
 
           return bands.concat([
             band(b.lower, u, false, !(b.gas && includeGas)),
-            band(u, b.upper, b.dust, b.gas)
+            band(u, b.upper, b.dust, b.gas),
           ]);
         }
         // Complete intersection of planet/band [ (  ) ]
@@ -84,7 +84,7 @@ export default class DustCloud {
           return bands.concat([
             band(b.lower, l, b.dust, b.gas),
             band(l, u, false, !(b.gas && includeGas)),
-            band(u, b.upper, b.dust, b.gas)
+            band(u, b.upper, b.dust, b.gas),
           ]);
         }
         // Complete intersection of band/planet (  [  ]  )

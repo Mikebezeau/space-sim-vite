@@ -4,13 +4,17 @@ import useDevStore from "./devStore";
 import * as THREE from "three";
 import { flipRotation, lerp } from "../util/gameUtil";
 import { PLAYER, FPS, SCALE, SPEED_VALUES } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
+//import { setCustomData } from "r3f-perf";
 
 interface playerControlStoreState {
   playerActionMode: number;
   playerControlMode: number;
   playerViewMode: number;
   playerScreen: number;
+  isSwitchingPlayerScreen: boolean;
+  setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
+  canvasSceneRendered: boolean;
+  setCanvasSceneRendered: (canvasSceneRendered: boolean) => void;
   isResetCamera: boolean;
   getPlayerState: () => {
     playerActionMode: number;
@@ -23,8 +27,6 @@ interface playerControlStoreState {
   getPlayerSpeedSetting: () => number;
   isPlayerPilotControl: () => boolean;
   isReverseSideTouchControls: boolean;
-  loadingPlayerScreen: boolean;
-  setPlayerScreenLoaded: (isLoaded: boolean) => void;
   actions: {
     actionModeSelect: (playerActionMode: number) => void;
     controlModeSelect: (playerControlMode: number) => void;
@@ -39,7 +41,6 @@ interface playerControlStoreState {
 }
 
 const cameraMoveToObj = new THREE.Object3D();
-const playerPosObject3d = new THREE.Object3D();
 const direction = new THREE.Vector3();
 
 // forship and camera rotation
@@ -58,9 +59,24 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     // testing
     //playerScreen: PLAYER.screen.mainMenu,
     //playerScreen: PLAYER.screen.newCampaign,
-    playerScreen: PLAYER.screen.flight,
+    //playerScreen: PLAYER.screen.flight,
     //playerScreen: PLAYER.screen.equipmentBuild,
-    //playerScreen: PLAYER.screen.galaxyMap,
+    playerScreen: PLAYER.screen.galaxyMap,
+    // isSwitchingPlayerScreen used in AppLoadingScreen to fade in screen
+    isSwitchingPlayerScreen: true, // initally set to true to fade in screen
+    setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen) => {
+      if (isSwitchingPlayerScreen !== get().isSwitchingPlayerScreen) {
+        set({ isSwitchingPlayerScreen });
+        console.log("isSwitchingPlayerScreen", get().isSwitchingPlayerScreen);
+      }
+    },
+    canvasSceneRendered: false, // used to trigger render
+    setCanvasSceneRendered: (canvasSceneRendered) => {
+      if (canvasSceneRendered !== get().canvasSceneRendered) {
+        set({ canvasSceneRendered });
+        console.log("canvasSceneRendered", get().canvasSceneRendered);
+      }
+    },
     isResetCamera: true,
     getPlayerState: () => {
       return {
@@ -81,10 +97,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         : false;
     },
     isReverseSideTouchControls: true,
-    loadingPlayerScreen: true,
-    setPlayerScreenLoaded(isLoaded = true) {
-      set(() => ({ loadingPlayerScreen: isLoaded }));
-    },
 
     actions: {
       actionModeSelect(playerActionMode) {
@@ -105,7 +117,22 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       //changing player screen
       switchScreen(playerScreen) {
         if (get().playerScreen !== playerScreen) {
-          set(() => ({ loadingPlayerScreen: true }));
+          /*if (
+            [
+              PLAYER.screen.flight,
+              PLAYER.screen.landedPlanet,
+              PLAYER.screen.galaxyMap,
+              PLAYER.screen.dockedStation,
+              PLAYER.screen.equipmentBuild,
+            ].includes(playerScreen)
+          ) {
+            // wait for canvas to respond to scene change with useFrame
+            get().setCanvasSceneRendered(false);
+          } else {*/
+          // no canvas scene to render
+          get().setCanvasSceneRendered(true);
+          //}
+          set(() => ({ isSwitchingPlayerScreen: true })); // set flag to trigger useEffect in AppLoadingScreen
           set(() => ({ isResetCamera: true }));
           set(() => ({ playerScreen }));
         }
