@@ -15,16 +15,17 @@ const starPointsShader = {
   varying float vSelected;
 
   void main() {
+    float sqrtSize = sqrt(aSize);
     vColor = aColor;
     vSelected = aSelected;
-    vSize = aSize;
+    vSize = sqrtSize;
     //gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 
     if( round( vSelected ) == 2.0 ){
-      vSize = aSize * 30.0;
+      vSize = sqrtSize * 30.0;
     }
     else if( round( vSelected ) == 1.0 ){
-      vSize = aSize * 34.0;
+      vSize = sqrtSize * 34.0;
     }
 
     vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
@@ -35,7 +36,7 @@ const starPointsShader = {
       else vColor = vColor + 0.5;
     }
     else{
-      gl_PointSize = min( vSize * 30.0 / -mvPosition.z, aSize * 8.0 );
+      gl_PointSize = min( vSize * 30.0 / -mvPosition.z, sqrtSize * 8.0 );
     }
     gl_Position = projectionMatrix * mvPosition;
   }

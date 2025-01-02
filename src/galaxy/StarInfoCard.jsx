@@ -3,6 +3,7 @@ import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { systemInfoGen } from "../solarSystemGen/systemGen";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
+//import CyberMenuBorder from "../menuComponents/common/CyberMenuBorder";
 
 export const isMouseOverStarInfoCard = (e) => {
   const starInfoCard = document.querySelector("#star-info-card");
@@ -38,12 +39,7 @@ const StarInfoCard = () => {
     if (starIndex) {
       setViewStarIndex(starIndex);
       [starInfoRef.current, systemInfoRef.current] = systemInfoGen(starIndex);
-      console.log(
-        systemInfoRef.current.planets.length,
-        systemInfoRef.current.planets.filter(
-          (planet) => planet.isGasGiant === true
-        ).length
-      );
+      console.log(starInfoRef, systemInfoRef);
     } else {
       setViewStarIndex(null);
     }
@@ -64,18 +60,17 @@ const StarInfoCard = () => {
     <div
       ref={systemInfoCardRef}
       id="star-info-card"
-      className={`button-cyber w-48 sm:w-64 h-40 ${
+      className={`w-48 sm:w-64 clip-path-cyber bg-white ${
         /*showInfo &&*/ viewStarIndex ? "absolute" : "hidden"
       }`}
     >
-      <div
-        className="button-cyber-content flex flex-col bg-black hover:bg-black text-white"
-        style={{
-          clipPath: "polygon(92% 0, 100% 25%, 100% 100%, 8% 100%, 0% 75%, 0 0)",
-        }}
-      >
-        <h1>System: {viewStarIndex}</h1>
+      <div className="clip-path-cyber-inner bg-black p-8 text-white">
+        <h2>System: {viewStarIndex}</h2>
         <p>Star class: {starInfoRef.current?.starClass}</p>
+
+        {systemInfoRef.current?.planets.map((planet, i) => (
+          <p key={i}>{planet.planetType}</p>
+        ))}
         {
           // display 'Set warp target' button if viewing target star
           viewStarIndex === showInfoTargetStarIndex && (
@@ -93,13 +88,6 @@ const StarInfoCard = () => {
           )
         }
       </div>
-      {/*}
-      <div
-        className="absolute top-2 right-4 bg-white px-1"
-        onClick={() => setShowInfo(false)}
-      >
-        X
-      </div>*/}
     </div>
   );
 };

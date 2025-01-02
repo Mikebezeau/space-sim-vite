@@ -6,7 +6,6 @@ import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
 import useStore from "../stores/store";
-import "./shaders/starPointsShaderMaterial";
 
 interface StarPointsInt {
   viewAsBackground?: boolean;

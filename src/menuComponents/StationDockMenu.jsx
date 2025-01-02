@@ -8,7 +8,7 @@ const StationDockMenu = () => {
   return (
     <>
       <div className="absolute top-0 left-0 bottom-0 right-0 text-white uppercase">
-        <h1 style={{ fontSize: "50px" }}>Docked</h1>
+        <h1>Docked</h1>
         <div className="hudData">
           <button
             className="border-2 border-white w-40 h-10 pt-2"

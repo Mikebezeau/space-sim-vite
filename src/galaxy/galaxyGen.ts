@@ -26,6 +26,18 @@ export const starTypeGen = (starIndex) => {
   return star;
 };
 
+/*
+const galaxyInterface: {
+  const: (starsInGalaxy?: number, galaxySize?: number, galaxyScale?: number, onlyCore?: boolean, onlyArms?: boolean) => Promise<{
+      starCoordsBuffer: THREE.BufferAttribute;
+      starColorBuffer: THREE.BufferAttribute;
+      starSizeBuffer: THREE.BufferAttribute;
+      starSelectedBuffer: THREE.BufferAttribute;
+  }>;
+  export: any;
+  default: any;
+}
+*/
 const galaxyGen = async (
   starsInGalaxy = 1000,
   galaxySize = 40, // not effecting anything
@@ -35,9 +47,9 @@ const galaxyGen = async (
 ) => {
   const galaxySeed = 123456;
   const rng = seedrandom(galaxySeed);
-  const starCoords = [];
-  const starColors = [];
-  const starSizes = [];
+  const starCoords: number[] = [];
+  const starColors: number[] = [];
+  const starSizes: number[] = [];
   const calaxyCoreSizeFactor = 0.15;
   const numGalaxyArms = 2;
   // placement in core is determined as star count i increases, higher probability to be placed in core

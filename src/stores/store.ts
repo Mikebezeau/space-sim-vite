@@ -14,7 +14,6 @@ import { addEffect } from "@react-three/fiber";
 import { track } from "../util/track";
 
 import {
-  SCALE,
   STARS_IN_GALAXY,
   GALAXY_SIZE,
   PLAYER,

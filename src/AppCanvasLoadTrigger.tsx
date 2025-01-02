@@ -13,7 +13,7 @@ const AppCanvasLoadTrigger = () => {
     if (!sceneRenderedRef.current && delta < 0.1) {
       sceneRenderedRef.current = true;
       setCanvasSceneRendered(true);
-      console.log("AppCanvasLoadTrigger rendered");
+      //console.log("AppCanvasLoadTrigger rendered");
     } else if (sceneRenderedRef.current && delta >= 0.1) {
       sceneRenderedRef.current = false;
       // setting canvasSceneRendered in playerControlsStore when switching screens

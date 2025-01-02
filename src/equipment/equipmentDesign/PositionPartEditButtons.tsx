@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import ColorPicker from "../ColorPicker";
 import EditorMechBP from "../../classes/mechBP/EditorMechBP";
 import MechServo from "../../classes/mechBP/MechServo";
-import MechServoShape from "../../classes/mechBP/MechServoShape";
 import useEquipStore, { EDIT_MENU_SELECT } from "../../stores/equipStore";
 //import { useKBControls } from "../../hooks/controls/useMouseKBControls";
 import { servoShapeDesigns } from "../data/servoShapeDesigns";
@@ -11,6 +10,7 @@ import { GEO_SHAPE_TYPE } from "../../constants/geometryConstants";
 interface MechServoInt {
   editorMechBP: EditorMechBP;
 }
+
 const PositionPartEditButtons = (props: MechServoInt) => {
   const { editorMechBP } = props;
 

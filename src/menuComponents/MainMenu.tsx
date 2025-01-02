@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import CyberMenuBorder from "./common/CyberMenuBorder";
-import ButtonIcon from "./ButtonIcon";
+import CyberButton from "./common/CyberButton";
+//import ButtonIcon from "./ButtonIcon";
 import { PLAYER } from "../constants/constants";
 // @ts-ignore
 import titleDeath from "/images/titleDeath2.png";
@@ -12,50 +13,42 @@ import robot from "/images/robot2.jpg";
 // @ts-ignore
 import stationSrc from "/images/station.jpg";
 // @ts-ignore
-import camera from "../assets/icons/camera-change.svg";
+//import camera from "../assets/icons/camera-change.svg";
 
 const MainMenu = () => {
-  const [menuSelection, setMenuSelection] = useState("");
-
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
-
-  const menuAction = (menuTitle, screen) => {
-    setMenuSelection(menuTitle);
-    setTimeout(() => switchScreen(screen), 250);
-  };
 
   const menuItems = [
     {
       title: "New Campaign",
       onClick: () => {
-        menuAction("New Campaign", PLAYER.screen.newCampaign);
+        switchScreen(PLAYER.screen.newCampaign);
       },
     },
     {
       title: "Space Flight",
       onClick: () => {
-        menuAction("Continue", PLAYER.screen.flight);
+        switchScreen(PLAYER.screen.flight);
       },
     },
     /*
     {
       title: "Battle",
       onClick: () => {
-        menuAction("Continue", PLAYER.screen.flight);
+        switchScreen(PLAYER.screen.flight);
       },
     },
     */
     {
       title: "Design",
       onClick: () => {
-        menuAction("Design", PLAYER.screen.equipmentBuild);
+        switchScreen(PLAYER.screen.equipmentBuild);
       },
     },
   ];
 
   const [isInitLoaded, setIsInitLoaded] = useState(false);
   const [isTitleImgLoaded, setisTitleImgLoaded] = useState(false);
-  const [isStartClciked, setIsStartClciked] = useState(false);
   const [isShowMenu, setIsShowMenu] = useState(false);
 
   useEffect(() => {
@@ -100,26 +93,12 @@ const MainMenu = () => {
             }}
             className="absolute top-[40%] -mt-[200px] sm:-mt-[60px] sm:top-20 left-[5%] sm:left-[50%] sm:-ml-[37vh] w-[90%] sm:w-[75vh] transition-opacity duration-1000"
           />
-          <div className="clip-path-cyber-inner w-80 h-40 absolute p-10 bottom-[5%] left-1/2 -ml-40">
-            <div
-              className="w-full text-center cybr-btn"
-              onClick={() => {
-                setIsStartClciked(true);
-                setTimeout(() => {
-                  setIsShowMenu(true);
-                }, 250);
-              }}
-            >
-              Start
-              {isStartClciked && (
-                <span aria-hidden className="cybr-btn__glitch">
-                  Start
-                </span>
-              )}
-              <span aria-hidden className="cybr-btn__tag text-black">
-                X11
-              </span>
-            </div>
+          <div className="absolute w-80 bottom-[15%] left-1/2 -ml-40">
+            <CyberButton
+              title={"Start"}
+              tagClassName={"text-black"}
+              onClick={() => setIsShowMenu(true)}
+            />
           </div>
         </div>
       </div>
@@ -141,21 +120,13 @@ const MainMenu = () => {
             <CyberMenuBorder>
               <div className="px-3 relative">
                 {menuItems.map((menuItem, index) => (
-                  <div
+                  <CyberButton
                     key={menuItem.title}
-                    className="w-full pl-[10%] mb-6 cybr-btn"
+                    title={menuItem.title}
+                    mainClassName="mb-6"
+                    index={index}
                     onClick={menuItem.onClick}
-                  >
-                    {menuItem.title}
-                    {menuSelection === menuItem.title && (
-                      <span aria-hidden className="cybr-btn__glitch">
-                        {menuItem.title}
-                      </span>
-                    )}
-                    <span aria-hidden className="cybr-btn__tag">
-                      X{index + 12}
-                    </span>
-                  </div>
+                  />
                 ))}
               </div>
               <div className="relative text-slate-700 align-top bottom-[2px] -left-3 bg-slate-900">

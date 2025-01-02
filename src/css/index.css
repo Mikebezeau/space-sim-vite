@@ -9,6 +9,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "audiowide";
+  src: url("../assets/fonts/audiowide/Audiowide-Regular.ttf");
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -38,6 +45,20 @@ body {
     helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   color: black;
   cursor: move !important;
+}
+
+h1 {
+  font-family: audiowide;
+  font-size: 3rem;
+  color: lightblue;
+  /*text-align: center;*/
+}
+
+h2 {
+  font-family: audiowide;
+  font-size: 1.1rem;
+  color: lightblue;
+  /*text-align: center;*/
 }
 
 .lil-gui {
