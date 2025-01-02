@@ -33,6 +33,8 @@ const galaxyGen = async (
   onlyCore = false,
   onlyArms = false
 ) => {
+  const galaxySeed = 123456;
+  const rng = seedrandom(galaxySeed);
   const starCoords = [];
   const starColors = [];
   const starSizes = [];
@@ -50,9 +52,9 @@ const galaxyGen = async (
 
   const placeCoreStar = (i) => {
     // position stars in spherical coordinates in core of galaxy
-    const phi = Math.acos(2 * Math.random() - 1);
+    const phi = Math.acos(2 * rng() - 1);
     const coreRadius =
-      ((Math.cbrt(Math.random()) * galaxySize) / 2) * calaxyCoreSizeFactor;
+      ((Math.cbrt(rng()) * galaxySize) / 2) * calaxyCoreSizeFactor;
 
     let x = coreRadius * Math.sin(phi) * Math.cos(i * 2);
     let y = coreRadius * Math.sin(phi) * Math.sin(i * 2);
@@ -68,7 +70,7 @@ const galaxyGen = async (
     // Adjust x, y, and z positions to be more likely to be nearer to the center
     const distanceFromCenterNormalized = distanceFromCenterXY / galaxySize;
     const distanceFactor = Math.exp(-distanceFromCenterNormalized);
-    const positionFactor = Math.random() * distanceFactor;
+    const positionFactor = rng() * distanceFactor;
     x *= positionFactor;
     y *= positionFactor;
     z *= positionFactor;
@@ -95,8 +97,8 @@ const galaxyGen = async (
     const baseX = distance * Math.cos(armAngle);
     const baseY = distance * Math.sin(armAngle);
 
-    const randomOffsetX = Math.random() * offsetFactor - offsetFactor / 2;
-    const randomOffsetY = Math.random() * offsetFactor - offsetFactor / 2;
+    const randomOffsetX = rng() * offsetFactor - offsetFactor / 2;
+    const randomOffsetY = rng() * offsetFactor - offsetFactor / 2;
 
     let x = baseX + randomOffsetX;
     let y = baseY + randomOffsetY;
@@ -118,14 +120,14 @@ const galaxyGen = async (
     const distanceFromCenterXY = Math.sqrt(x * x + y * y);
     const distanceFromCenterNormalized = distanceFromCenterXY / galaxySize;
     const zDistanceFactor = Math.exp(-distanceFromCenterNormalized);
-    const zPositionFactor = Math.random() * zDistanceFactor;
+    const zPositionFactor = rng() * zDistanceFactor;
     /*
-    const u = 1 - Math.random();
-    const v = Math.random();
+    const u = 1 - rng();
+    const v = rng();
     let z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     //return z * stdev + mean
     */
-    let z = Math.random();
+    let z = rng();
     z =
       (z * offsetFactor - offsetFactor / 2) *
       Math.sqrt(zPositionFactor * flattenFactor);
@@ -141,7 +143,7 @@ const galaxyGen = async (
     const starSize = star.size;
     // As i increases, distancePlacementFactor will decrease from 1 to 0
     const distancePlacementFactor = (starsInGalaxy - i) / starsInGalaxy;
-    const starPlacement = Math.random();
+    const starPlacement = rng();
     // stars are more likely placed in center sphere as i increases
     if (
       starPlacement * placeStarInCoreProbabilityFactor >

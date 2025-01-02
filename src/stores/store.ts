@@ -30,7 +30,19 @@ interface storeState {
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
-  galaxy: Object;
+  galaxy:
+    | {
+        starCoordsBuffer: THREE.BufferAttribute;
+        starColorBuffer: THREE.BufferAttribute;
+        starSizeBuffer: THREE.BufferAttribute;
+        starSelectedBuffer: THREE.BufferAttribute;
+      }
+    | Promise<void | {
+        starCoordsBuffer: THREE.BufferAttribute;
+        starColorBuffer: THREE.BufferAttribute;
+        starSizeBuffer: THREE.BufferAttribute;
+        starSelectedBuffer: THREE.BufferAttribute;
+      }>;
   starPointsShaderMaterial: THREE.ShaderMaterial;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
