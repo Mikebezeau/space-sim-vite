@@ -20,6 +20,13 @@ import {
   PLAYER_START,
 } from "../constants/constants";
 
+export type TypeGalaxy = {
+  starCoordsBuffer: THREE.BufferAttribute;
+  starColorBuffer: THREE.BufferAttribute;
+  starSizeBuffer: THREE.BufferAttribute;
+  starSelectedBuffer: THREE.BufferAttribute;
+};
+
 interface storeState {
   initGameStore: () => void;
   isGameStoreInit: boolean;
@@ -29,19 +36,7 @@ interface storeState {
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
-  galaxy:
-    | {
-        starCoordsBuffer: THREE.BufferAttribute;
-        starColorBuffer: THREE.BufferAttribute;
-        starSizeBuffer: THREE.BufferAttribute;
-        starSelectedBuffer: THREE.BufferAttribute;
-      }
-    | Promise<void | {
-        starCoordsBuffer: THREE.BufferAttribute;
-        starColorBuffer: THREE.BufferAttribute;
-        starSizeBuffer: THREE.BufferAttribute;
-        starSelectedBuffer: THREE.BufferAttribute;
-      }>;
+  galaxy: TypeGalaxy | Promise<void | TypeGalaxy>;
   starPointsShaderMaterial: THREE.ShaderMaterial;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
@@ -193,10 +188,10 @@ const useStore = create<storeState>()((set, get) => ({
     const playerWorldPosition = get().playerWorldPosition;
     const planet = get().planets[planetIndex];
     if (planet) {
-      // warp to planet distance is planet.radius / 3
+      // warp to planet distance is planet.radius * 2
       const isScanDistanceToPlanet =
         planet.object3d.position.distanceTo(playerWorldPosition) <
-        planet.radius / 2;
+        planet.radius * 3;
       if (isScanDistanceToPlanet !== get().isScanDistanceToPlanet) {
         set({ isScanDistanceToPlanet });
       }
@@ -278,7 +273,6 @@ const useStore = create<storeState>()((set, get) => ({
     changeLocationSpace() {
       //set player location
       get().player.resetSpaceLocation();
-      console.log(get().player.object3d.position);
       usePlayerControlsStore
         .getState()
         .actions.switchScreen(PLAYER.screen.flight);
@@ -310,8 +304,6 @@ const useStore = create<storeState>()((set, get) => ({
       if (get().stations.length > 0) {
         let player = get().player;
         const targetStation = get().stations[0];
-        console.log(get().planets[1].object3d.position);
-        console.log(targetStation.object3d.position);
         player.object3d.position.copy(targetStation.object3d.position);
         player.object3d.translateZ(-30);
         player.object3d.lookAt(targetStation.object3d.position);
@@ -329,9 +321,7 @@ const useStore = create<storeState>()((set, get) => ({
       if (focusPlanetIndex > -1 && get().planets[focusPlanetIndex]) {
         const targetPlanet = get().planets[focusPlanetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
-        // current mesh scale is planet.radius / 10
-        // warp to distance of planet.radius / 3
-        player.object3d.translateZ(-targetPlanet.radius / 3);
+        player.object3d.translateZ(-targetPlanet.radius * 2);
         const targetWarpPosition = {
           x: player.object3d.position.x,
           y: player.object3d.position.y,
@@ -462,7 +452,7 @@ const useStore = create<storeState>()((set, get) => ({
           stationOrbitPlanet.object3d.position.x,
           stationOrbitPlanet.object3d.position.y,
           stationOrbitPlanet.object3d.position.z +
-            (stationOrbitPlanet.radius / 10) * 1.5
+            stationOrbitPlanet.radius * 1.5
         );
         set(() => ({
           stations,

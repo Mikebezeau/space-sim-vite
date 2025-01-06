@@ -22,7 +22,8 @@ export default class StarSystem {
       (this._age = msl >= 6 ? rand(1, 6, this.rng) : rand(1, msl, this.rng))
     );
   }
-
+  /*
+// using provided luminosity now
   get luminosity() {
     const n =
       this.mass < 1
@@ -31,7 +32,7 @@ export default class StarSystem {
 
     return Math.pow(this.mass, n);
   }
-
+*/
   get radius() {
     return 696340 * Math.pow(this.mass, 0.74);
   }
@@ -59,6 +60,8 @@ export default class StarSystem {
     */
     this.rng = rng;
     this.mass = config.mass || 1;
+    this.luminosity = config.luminosity || 1;
+
     this.matter = new DustCloud(this);
     this.planets = [];
   }

@@ -40,7 +40,7 @@ const AppCanvas = () => {
           onCreated={({ gl, camera } /*{gl, camera, scene}*/) => {
             //gl.setClearColor(0x000000, 0);
             //gl.setPixelRatio(window.devicePixelRatio / 2);
-            //camera.layers.enable(1);
+            camera.layers.enable(1);
             //---------------------------------------------
             // init ship weapon, clock, and enemy movement
             // old V

@@ -27,8 +27,6 @@ vec3 hslRgb( vec3 c ) {
 */
 export const GPU_PARTICLE_SHADER = {
   vertexShader: `
-precision highp float;
-
 uniform float uTime;
 uniform float uScale;
 uniform bool reverseTime;

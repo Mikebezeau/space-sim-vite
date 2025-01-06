@@ -7,6 +7,7 @@ import {
   mapToColor,
 } from "./drawUtil";
 import { genCraterTexture } from "./genCraterTexture";
+import { PLANET_TYPE } from "../../../solarSystemGen/genPlanet";
 
 // Function to generate a seamless planet texture with enhanced noise scaling
 export const generatePlanetTextures = (width, height, options = {}) => {
@@ -16,7 +17,7 @@ export const generatePlanetTextures = (width, height, options = {}) => {
     persistence = 0.5,
     grayscale = false,
     isNoiseMap = false,
-    planetType = "Rocky",
+    planetType = PLANET_TYPE.terrestrial,
     baseColor = "#102A44",
     makeCraters = false,
     debug = false,
@@ -34,7 +35,7 @@ export const generatePlanetTextures = (width, height, options = {}) => {
     colorsSorted: [],
     circles: [],
   };
-  const colors = generateSortedRandomColors(planetType, baseColor, 2);
+  const colors = generateSortedRandomColors(planetType === "Sun", baseColor, 2);
   debugData.colorsSorted = colors;
   //const noise3D = createNoise3D();
   const noise3D = makeNoise3D();
@@ -53,27 +54,33 @@ export const generatePlanetTextures = (width, height, options = {}) => {
         scale = 5;
         octaves = 1;
         break;
-      case "Rocky":
+      case PLANET_TYPE.dwarf: //"Rocky":
         octaves = 2;
         break;
-      case "Venusian":
-        scale = 0.5;
-        planetTypeMods.warpZ = 20;
+      case PLANET_TYPE.terrestrial: //"Venusian":
+        scale = 1.5;
+        //planetTypeMods.warpZ = 20;
         break;
-      case "Gas Giant":
+      case PLANET_TYPE.gasGiant:
         scale = 0.1;
         planetTypeMods.warpZ = 20; //2
         break;
-      case "Gas":
+      /*
+      case PLANET_TYPE.gas:
         scale = 0.2;
         planetTypeMods.warpZ = 20; //2
         break;
+        */
+      /*
       case "Gas Dwarf":
         scale = 0.3; //1
         planetTypeMods.warpZ = 20; //2
         break;
-      case "Ice":
-      case "Water":
+        */
+      /*
+      case PLANET_TYPE.ice:
+      case PLANET_TYPE.iceGiant:
+        //case "Water":
         scale = 0.1;
         octaves = 2;
         break;
@@ -81,6 +88,7 @@ export const generatePlanetTextures = (width, height, options = {}) => {
         break;
       case "Terrestrial":
         break;
+        */
       default:
     }
   }

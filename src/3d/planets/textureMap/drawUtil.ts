@@ -44,7 +44,7 @@ const sortColorArray = (colors: { r: number; g: number; b: number }[]) => {
 
 // Function to generate a random color within a range
 export const generateSortedRandomColors = (
-  planetType,
+  isSun: boolean,
   baseColorHex: string /*, factor*/
 ) => {
   const baseColor = parseHexColor(baseColorHex);
@@ -63,7 +63,7 @@ export const generateSortedRandomColors = (
   const newColors: { r: number; g: number; b: number }[] = [];
   // for use when getting colors for a star, ensure that the
   // brightest color is white, and the other colors are on a range
-  //if (planetType === "Sun") newColors.push({ r: 255, g: 255, b: 255 });
+  //if (isSun) newColors.push({ r: 255, g: 255, b: 255 });
   // from base to white
   const getFactorLumWhite = (color: { r: number; g: number; b: number }) => {
     // Calculate the normfactor needed to achieve pure white color
@@ -87,7 +87,7 @@ export const generateSortedRandomColors = (
   // default alterLum factor is -1 to 1
   // for suns, ensure that the brightest color is white
   const genAltLumFactor = () => {
-    if (planetType === "Sun") {
+    if (isSun) {
       const maxAltLumFactor = getFactorLumWhite(baseColor) + 0.2;
       const minAltLumFactor = -0.2;
       return (

@@ -5,7 +5,6 @@ import { useFrame } from "@react-three/fiber";
 import { generatePlanetTextures } from "./textureMap/genTextureMaps";
 
 const Planet = ({ planet /*, textureMaps*/ }) => {
-  //console.log("Planet rendered");
   const sunShaderMaterial = useStore((state) => state.sunShaderMaterial);
   const clonePlanetShaderMaterial = useStore(
     (state) => state.clonePlanetShaderMaterial
@@ -14,7 +13,6 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
   const planetRef = useRef<THREE.Group | null>(null);
   const planetMeshRef = useRef<THREE.Mesh | null>(null);
 
-  //console.log("getPlanetMaterial", planet.planetType);
   const canvasWidth = 256 * 1;
   const canvasHeight = 256 * 0.5;
 
@@ -32,6 +30,7 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
     isNoiseMap: true,
   });
 */
+
   // for clouds
   const baseColorRBG = colors[colors.length - 1]; //parseHexColor(planet.color);
   const baseColor = new THREE.Vector3(
@@ -52,7 +51,10 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
     planet.planetType === "Sun"
       ? sunShaderMaterial
       : clonePlanetShaderMaterial();
-  planetMaterial.uniforms.u_planetRealPos = { value: planet.object3d.position };
+  planetMaterial.uniforms.u_planetRealPos = { value: planet.object3d.position }; // atmos shader
+  planetMaterial.uniforms.uObjectMatrixWorld = {
+    value: planet.object3d.matrixWorld,
+  };
   planetMaterial.uniforms.u_texture = { value: texture };
   planetMaterial.uniforms.u_cloudColor = { value: baseColor };
   planetMaterial.uniforms.u_cloudColorDark = { value: baseColorDark };
@@ -66,9 +68,9 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
       //@ts-ignore // shaderMaterial set in mesh
       const shaderMat: THREE.ShaderMaterial = planetMeshRef.current.material;
 
-      if (shaderMat.uniforms.u_time) shaderMat.uniforms.u_time.value += delta;
+      if (shaderMat.uniforms?.u_time) shaderMat.uniforms.u_time.value += delta;
 
-      if (shaderMat.uniforms.uObjectMatrixWorld)
+      if (shaderMat.uniforms?.uObjectMatrixWorld)
         shaderMat.uniforms.uObjectMatrixWorld.value =
           planetRef.current.matrixWorld;
     }
@@ -84,11 +86,11 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
           }
         }}
         position={planet.object3d.position}
-        rotation={planet.object3d.rotation}
+        //rotation={planet.object3d.rotation}
       >
         <mesh
           ref={planetMeshRef}
-          scale={planet.radius / 10}
+          scale={planet.radius}
           geometry={geometryPlanet}
           material={planetMaterial}
         />

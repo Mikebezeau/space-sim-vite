@@ -19,9 +19,6 @@ const sunShaderMaterial = new ShaderMaterial({
   },
   //blending: THREE.AdditiveBlending,
   vertexShader: `
-precision highp float;
-precision highp int;
-
 #include <common>
 #include <logdepthbuf_pars_vertex>
 
@@ -39,9 +36,6 @@ void main() {
 }
 `,
   fragmentShader: `
-precision highp float;
-precision highp int;
-
 uniform sampler2D u_texture;
 
 varying vec2 vUv;

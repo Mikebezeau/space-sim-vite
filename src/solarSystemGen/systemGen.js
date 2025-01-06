@@ -1,34 +1,22 @@
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
-import { SCALE, SYSTEM_SCALE } from "../constants/constants";
-import { starTypeGen } from "../galaxy/galaxyGen";
-import StarSystem from "./classes/StarSystem"; //ACCRETE
+import { SYSTEM_SCALE } from "../constants/constants";
+import genRandomStarData from "./genRandomStarData";
+import genSolarSystemData from "./genSolarSystemData";
+import genPlanet from "./genPlanet";
+//import genPlanetData from "./genPlanetData";
 
 // used in galaxy map
 export const systemInfoGen = (starIndex) => {
-  const rng = seedrandom(starIndex);
   //15% of stars have a system like earths (with gas giants)
-  //ACCRETE
-  const star = starTypeGen(starIndex); // rng is used in starTypeGen
+  const star = genRandomStarData(starIndex);
   //Only one in about five hundred thousand stars has more than twenty times the mass of the Sun.
-  let solarMass = star.solarMass;
-  //15% of stars have a system like earths (with gas giants)
-  //ACCRETE
-  const system = new StarSystem(
-    {
-      //A: getRandomArbitrary(0.00125, 0.0015) * solarMass,
-      //B: getRandomArbitrary(0.000005, 0.000012) * solarMass,
-      //K: getRandomArbitrary(50, 100),
-      //N: 3,
-      //Q: 0.77,
-      //W: getRandomArbitrary(0.15, 0.25),
-      //ALPHA: 5, //getRandomArbitrary(2, 7),
-      mass: solarMass,
-    },
-    rng
-  ); //ACCRETE
-  const newSystem = system.create();
-  return [star, newSystem];
+  const solarSysData = genSolarSystemData(star);
+  const planetData = [];
+  for (let i = 0; i < star.planetsIsInnerZone.length; i++)
+    planetData.push(genPlanet(star, solarSysData, star.planetsIsInnerZone[i]));
+  //planetData.sort((a, b) => a.distanceFromStar - b.distanceFromStar);
+  return [star, solarSysData, planetData];
 };
 
 const systemGen = (
@@ -37,12 +25,9 @@ const systemGen = (
   planetScale = 1
 ) => {
   const rng = seedrandom(starIndex);
-  //const rng = seedrandom(starIndex);
-  const [star, newSystem] = systemInfoGen(starIndex);
-  //console.log("star", star);
-  //console.log("newSystem", newSystem);
-  const solarRadius = newSystem.radius * SCALE; // * planetScale; //star.size * 700000 * SCALE * planetScale;
-  //-------
+  const [star, systemData, planetData] = systemInfoGen(starIndex);
+  const solarRadius = star.size * 696340; //km
+  const earthRadius = 6378; //km
   let temp = [];
   //create sun
   temp.push({
@@ -50,12 +35,17 @@ const systemGen = (
     planetType: "Sun",
     data: {
       class: star.starClass,
-      age: newSystem.age,
-      mass: newSystem.mass,
-      radius: newSystem.radius,
-      luminosity: newSystem.luminosity,
-      ecosphereRadius: newSystem.ecosphereRadius,
-      greenhouseRadius: newSystem.greenhouseRadius,
+      age: star.age,
+      mass: star.solarMass.toFixed(2),
+      size: star.size.toFixed(2),
+      luminosity: star.luminosity.toFixed(2),
+      temperature: star.temperature.toFixed(2) + "K",
+      habitableZone: systemData.habitableZone
+        ? systemData.habitableZone.radiusStart.toFixed(2) +
+          " - " +
+          systemData.habitableZone.radiusEnd.toFixed(2) +
+          " AU"
+        : "N/A",
     },
     color: star.colorHex, //new THREE.Color(star.colorHex),
     radius: solarRadius * planetScale,
@@ -77,9 +67,8 @@ types:
     white dwarf
     
 */
-  newSystem.planets.forEach((planet) => {
+  planetData.forEach((planet) => {
     //console.log(planet.radius, planet.planetType);
-    //planet.radius = planet.radius * SCALE * planetScale;
     /*
     Rocky
 
@@ -108,7 +97,8 @@ types:
     // 1 AU = 150 million kilometres
     //const orbitRadius = solarRadius * 2 + planet.a * SCALE * systemScale;
     const orbitRadius =
-      solarRadius * planetScale + planet.a * 147000000 * SCALE * systemScale;
+      solarRadius * planetScale +
+      planet.distanceFromStar * 147000000 * systemScale;
     //console.log("orbitRadius", orbitRadius);
     const angle = rng() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
@@ -117,61 +107,14 @@ types:
     const object3d = new THREE.Object3D();
     object3d.position.set(x, y, z);
     object3d.rotation.set(planet.axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
-    let color = ""; // new THREE.Color();
-    let textureMap = 0;
-    switch (planet.planetType) {
-      case "Rocky":
-        color = "#6b6b47"; //color.setHex(0x6b6b47);
-        textureMap = 4;
-        break;
-      case "Gas":
-        color = "#ffe6b3"; //color.setHex(0xffe6b3);
-        textureMap = 3;
-        break;
-      case "Gas Dwarf":
-        //color.setHex(0xd5ff80);
-        color = "#d5ff80"; //color.setHex(0xd5ff80);
-        textureMap = 2;
-        break;
-      case "Gas Giant":
-        //color.setHex(0xbf8040);
-        color = "#bf8040"; //color.setHex(0xbf8040);
-        textureMap = 3;
-        break;
-      case "Venusian":
-        //color.setHex(0xd2a679);
-        color = "#d2a679"; //color.setHex(0xd2a679);
-        textureMap = 6;
-        break;
-      case "Ice":
-        //color.setHex(0xb3ccff);
-        color = "#b3ccff"; //color.setHex(0xb3ccff);
-        textureMap = 7;
-        break;
-      case "Martian":
-        //color.setHex(0xb30000);
-        color = "#b30000"; //color.setHex(0xb30000);
-        textureMap = 4;
-        break;
-      case "Water":
-        //color.setHex(0x3399ff);
-        color = "#3399ff"; //color.setHex(0x3399ff);
-        textureMap = 8;
-        break;
-      case "Terrestrial":
-        //color.setHex(0x3399ff);
-        color = "#3399ff"; //color.setHex(0x3399ff);
-        textureMap = 1;
-        break;
-      default:
-    }
+
     temp.push({
       type: "PLANET",
       planetType: planet.planetType,
-      data: planet.toJSONforHud(),
-      color: color,
-      radius: planet.radius * planetScale,
-      textureMap: textureMap,
+      color: planet.planetSubType.color,
+      data: planet.planetSubType, //planet.toJSONforHud(),
+      radius: 1.5 * earthRadius * planetScale,
+      //((planet.size[0] + planet.size[1]) / 2) * earthRadius * planetScale,
       object3d: object3d,
     });
   });

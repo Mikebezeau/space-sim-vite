@@ -3,6 +3,7 @@ import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { systemInfoGen } from "../solarSystemGen/systemGen";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
+import { PLANET_TYPE_LABEL } from "../solarSystemGen/genPlanet";
 //import CyberMenuBorder from "../menuComponents/common/CyberMenuBorder";
 
 export const isMouseOverStarInfoCard = (e) => {
@@ -32,14 +33,15 @@ const StarInfoCard = () => {
   const [viewStarIndex, setViewStarIndex] = useState(null);
   const systemInfoCardRef = useRef(null);
   const starInfoRef = useRef(null);
-  const systemInfoRef = useRef(null);
+  const systemDataRef = useRef(null);
+  const planetDataRef = useRef(null);
 
   useEffect(() => {
     const starIndex = showInfoHoveredStarIndex || showInfoTargetStarIndex;
     if (starIndex) {
       setViewStarIndex(starIndex);
-      [starInfoRef.current, systemInfoRef.current] = systemInfoGen(starIndex);
-      console.log(starInfoRef, systemInfoRef);
+      [starInfoRef.current, systemDataRef.current, planetDataRef.current] =
+        systemInfoGen(starIndex);
     } else {
       setViewStarIndex(null);
     }
@@ -60,16 +62,48 @@ const StarInfoCard = () => {
     <div
       ref={systemInfoCardRef}
       id="star-info-card"
-      className={`w-48 sm:w-64 clip-path-cyber bg-white ${
+      className={`w-60 sm:w-80 clip-path-cyber bg-white ${
         /*showInfo &&*/ viewStarIndex ? "absolute" : "hidden"
       }`}
     >
       <div className="clip-path-cyber-inner bg-black p-8 text-white">
         <h2>System: {viewStarIndex}</h2>
         <p>Star class: {starInfoRef.current?.starClass}</p>
-
-        {systemInfoRef.current?.planets.map((planet, i) => (
-          <p key={i}>{planet.planetType}</p>
+        <p>Mass: {starInfoRef.current?.solarMass.toFixed(2)}</p>
+        <p>Size: {starInfoRef.current?.size.toFixed(2)}</p>
+        <p>Lum: {starInfoRef.current?.luminosity.toFixed(2)}</p>
+        <p>TmpK: {starInfoRef.current?.temperature.toFixed(2)}</p>
+        <p>
+          inner:{" "}
+          {systemDataRef.current?.innerSolarSystem.radiusStart.toFixed(2)}-
+          {systemDataRef.current?.innerSolarSystem.radiusEnd.toFixed(2)}
+        </p>
+        {systemDataRef.current?.habitableZone && (
+          <p>
+            habitable:{" "}
+            {systemDataRef.current?.habitableZone.radiusStart.toFixed(2)}-
+            {systemDataRef.current?.habitableZone.radiusEnd.toFixed(2)}
+          </p>
+        )}
+        <p>
+          outer:{" "}
+          {systemDataRef.current?.outerSolarSystem.radiusStart.toFixed(2)}-
+          {systemDataRef.current?.outerSolarSystem.radiusEnd.toFixed(2)}
+        </p>
+        {systemDataRef.current?.kuiperBelt && (
+          <p>
+            kuiper: {systemDataRef.current?.kuiperBelt.radiusStart.toFixed(2)}-
+            {systemDataRef.current?.kuiperBelt.radiusEnd.toFixed(2)}
+          </p>
+        )}
+        <p>asteroidBelts: {systemDataRef.current?.asteroidBelts.length}</p>
+        <p>planets: {planetDataRef.current?.length}</p>
+        {planetDataRef.current?.map((planet, i) => (
+          <p key={i}>
+            {planet.planetSubType.label} Dst:
+            {planet.distanceFromStar.toFixed(2)} Tmp:
+            {planet.temperatureC.average.toFixed(2)}
+          </p>
         ))}
         {
           // display 'Set warp target' button if viewing target star

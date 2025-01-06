@@ -8,7 +8,7 @@ import atmosGlowShader from "../shaders/atmosGlowShader";
 
 const planetShaderMaterial = new THREE.ShaderMaterial({
   side: THREE.FrontSide, // using depthWrite: false possible preformance upgrade
-  //transparent: true,
+  transparent: true,
   depthTest: true, // default is true
   depthWrite: false, // must have true for uv mapping unless use THREE.FrontSide
   uniforms: {
@@ -36,9 +36,6 @@ const planetShaderMaterial = new THREE.ShaderMaterial({
   },
   //blending: THREE.AdditiveBlending,
   vertexShader: `
-precision highp float;
-precision highp int;
-
 #include <common>
 #include <logdepthbuf_pars_vertex>
 
@@ -60,9 +57,6 @@ void main() {
 }
 `,
   fragmentShader: `
-precision highp float;
-precision highp int;
-
 uniform sampler2D u_texture;
 
 varying vec2 vUv;

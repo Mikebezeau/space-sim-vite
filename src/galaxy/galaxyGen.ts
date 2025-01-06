@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
 import { starTypes } from "./galaxyConstants";
+import genRandomStarData from "../solarSystemGen/genRandomStarData";
 
 export const starTypeGen = (starIndex) => {
   const rng = seedrandom(starIndex);
@@ -15,11 +16,11 @@ export const starTypeGen = (starIndex) => {
     }
   }
   const starClass = starTypes.class[starTypeIndex];
+  const massSizeRng = rng();
   const massRange = starTypes.mass[starTypeIndex];
-  const solarMass = rng() * (massRange[1] - massRange[0]) + massRange[0];
-  //const sizeRange = starTypes.size[starTypeIndex];
-  //const size = rng() * (sizeRange[1] - sizeRange[0]) + sizeRange[0];
-  const size = Math.pow(solarMass, 0.74);
+  const solarMass = massSizeRng * (massRange[1] - massRange[0]) + massRange[0];
+  const sizeRange = starTypes.size[starTypeIndex];
+  const size = massSizeRng * (sizeRange[1] - sizeRange[0]) + sizeRange[0];
   const colorHex = starTypes.colorHex[starTypeIndex];
   const colorRGB = starTypes.colorRGB[starTypeIndex];
   const star = { starClass, solarMass, size, colorHex, colorRGB };
@@ -150,7 +151,7 @@ const galaxyGen = async (
     y = 0,
     z = 0;
   for (let i = 0; i < starsInGalaxy; i++) {
-    const star = starTypeGen(i);
+    const star = genRandomStarData(i); //starTypeGen(i);
     const starColor = star.colorRGB;
     const starSize = star.size;
     // As i increases, distancePlacementFactor will decrease from 1 to 0
