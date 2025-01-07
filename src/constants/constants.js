@@ -2,7 +2,7 @@ export const FPS = 60;
 export const SCALE = 1;
 
 export const SCALE_PLANET_WALK = 1;
-export const SYSTEM_SCALE = 0.001;
+export const SYSTEM_SCALE = 0.1;
 export const PLANET_SCALE = 1;
 
 export const STARS_IN_GALAXY = 150000;
@@ -11,7 +11,7 @@ export const GALAXY_SIZE = 40;
 export const IS_MOBILE = /Mobi|Android/i.test(navigator.userAgent);
 
 export const PLAYER_START = {
-  system: 31232,
+  system: 30420,
   mechBPindex: 0,
   x: 0, // position set in store.actions.init()
   y: 0,

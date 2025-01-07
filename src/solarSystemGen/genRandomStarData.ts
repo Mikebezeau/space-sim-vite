@@ -1,6 +1,6 @@
 import { default as seedrandom } from "seedrandom";
 
-export type typeStar = {
+export type typeStarData = {
   starClass: string;
   size: number;
   solarMass: number;
@@ -9,12 +9,19 @@ export type typeStar = {
   age: number;
   colorHex: string;
   colorRGB: number[];
+  numPlanets: number;
+  planetInnerZoneProb: number;
 };
-
-export type typeStarData = {
-  primaryStar: typeStar;
+/*
+export type typeStars = {
+  primaryStar: typeStarData;
   isBinary: boolean;
-  secondaryStar: typeStar | null;
+  secondaryStar: typeStarData | null;
+};
+*/
+// value within a range
+export const getFromRange = (rangeRandom: number, [min, max]) => {
+  return rangeRandom * (max - min) + min;
 };
 
 const genRandomStarData = (starIndex: number) => {
@@ -127,11 +134,6 @@ const genRandomStarData = (starIndex: number) => {
     return -1;
   }
 
-  // Random value within a range
-  function getFromRange(fixedRangeRandom: number, [min, max]) {
-    return fixedRangeRandom * (max - min) + min;
-  }
-
   // Generate star data
   function generateStar() {
     const classIndex = weightedRandom(percentages);
@@ -141,12 +143,8 @@ const genRandomStarData = (starIndex: number) => {
     for (let i = 0; i < props.createPlanetAttempts; i++) {
       if (rng() < props.planetCreateChance) numPlanets++;
     }
-    const planetsIsInnerZone = [...Array(numPlanets)].map(
-      (_, i) => rng() < props.planetInnerZoneProb
-    );
-
     const fixedRangeRandom = Math.random();
-    return {
+    const starData: typeStarData = {
       starClass,
       size: getFromRange(fixedRangeRandom, props.size),
       solarMass: getFromRange(fixedRangeRandom, props.mass),
@@ -158,13 +156,15 @@ const genRandomStarData = (starIndex: number) => {
       age: getFromRange(1 - fixedRangeRandom, props.age).toExponential(2),
       colorHex: colorHex[classIndex],
       colorRGB: colorRGB[classIndex],
-      planetsIsInnerZone,
+      numPlanets,
+      planetInnerZoneProb: props.planetInnerZoneProb,
     };
+    return starData;
   }
 
   // Generate binary system
   // half of exoplanet host stars have a companion star, usually within 100AU
-  const isBinary = rng() < 0.3;
+  const isBinary = rng() < 0.5;
   const primaryStar = generateStar();
 
   return primaryStar;

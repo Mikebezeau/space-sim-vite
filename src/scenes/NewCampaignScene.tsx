@@ -9,7 +9,7 @@ import ScenePortalLayer from "./ScenePortalLayer";
 //import SpaceFlightPlanetsScene from "./spaceFlight/SpaceFlightPlanetsScene";
 import StarsBackgroundScene from "./spaceFlight/StarsBackgroundScene";
 import BuildMech from "../3d/buildMech/BuildMech";
-import Planets from "../3d/planets/Planets";
+import SolarSystem from "../3d/solarSystem/SolarSystem";
 import Stations from "../3d/spaceFlight/Stations";
 //import TransparentEffect from "../3d/effects/TransparentEffect";
 //import GlitchEffect from "../3d/effects/GlitchEffect";
@@ -27,13 +27,9 @@ const NewCampaignScene = () => {
     (state) => state.actions.viewModeSelect
   );
 
+  const stars = useStore((state) => state.stars);
   const planets = useStore((state) => state.planets);
 
-  const setCanvasSceneRendered = useStore(
-    (state) => state.setCanvasSceneRendered
-  );
-
-  const sceneRenderedRef = useRef<boolean>(false);
   const playerMechRef = useRef<THREE.Object3D | null>(null);
   const cameraControlsRef = useRef<any>(null);
 
@@ -43,11 +39,10 @@ const NewCampaignScene = () => {
     if (!playerMechRef.current || !cameraControlsRef.current) return;
     viewModeSelect(PLAYER.view.thirdPerson); // just in case we start using main control loop
     //setPlayerCurrentStarIndex(666);
-    const planetSun = planets[0];
     let targetPlanet =
       planets.find((planet) => planet.data.type === "Gas Giant") || planets[1];
     player.object3d.position.copy(targetPlanet.object3d.position);
-    player.object3d.lookAt(planetSun.object3d.position);
+    player.object3d.lookAt(stars[0].object3d.position);
     player.object3d.translateY(-targetPlanet.radius * 0.1);
     player.object3d.translateX(targetPlanet.radius * 0.1);
     player.object3d.lookAt(targetPlanet.object3d.position);
@@ -63,21 +58,12 @@ const NewCampaignScene = () => {
       player.object3d.position.y,
       player.object3d.position.z
     );
-
-    return () => {
-      sceneRenderedRef.current = false;
-      setCanvasSceneRendered(false);
-    };
   }, [playerMechRef.current, setPlayerPosition]);
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     sceneTime.current += delta;
-    // set sceneRenderedRef to make more efficient, propbably don't need this
-    if (!sceneRenderedRef.current && delta < 0.1) {
-      sceneRenderedRef.current = true;
-      setCanvasSceneRendered(true);
-    }
+
     delta = Math.min(delta, 0.1); // cap delta to 100ms
 
     if (sceneTime.current < 7) {
@@ -106,12 +92,12 @@ const NewCampaignScene = () => {
               ref={(mechRef: THREE.Object3D) => {
                 if (mechRef) {
                   playerMechRef.current = mechRef;
-                  player.initObject3d(mechRef, true);
+                  player.initObject3d(mechRef);
                 }
               }}
               mechBP={player.mechBP}
             />
-            <Planets />
+            <SolarSystem />
             <Stations />
             {/*}
             <EffectComposer autoClear={false}>

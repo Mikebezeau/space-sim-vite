@@ -86,7 +86,7 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
           }
         }}
         position={planet.object3d.position}
-        //rotation={planet.object3d.rotation}
+        rotation={planet.object3d.rotation}
       >
         <mesh
           ref={planetMeshRef}

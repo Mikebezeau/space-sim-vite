@@ -7,7 +7,7 @@ import {
   mapToColor,
 } from "./drawUtil";
 import { genCraterTexture } from "./genCraterTexture";
-import { PLANET_TYPE } from "../../../solarSystemGen/genPlanet";
+import { PLANET_CLASS } from "../../../constants/solarSystemConstants";
 
 // Function to generate a seamless planet texture with enhanced noise scaling
 export const generatePlanetTextures = (width, height, options = {}) => {
@@ -17,7 +17,7 @@ export const generatePlanetTextures = (width, height, options = {}) => {
     persistence = 0.5,
     grayscale = false,
     isNoiseMap = false,
-    planetType = PLANET_TYPE.terrestrial,
+    planetType = PLANET_CLASS.terrestrial,
     baseColor = "#102A44",
     makeCraters = false,
     debug = false,
@@ -54,19 +54,19 @@ export const generatePlanetTextures = (width, height, options = {}) => {
         scale = 5;
         octaves = 1;
         break;
-      case PLANET_TYPE.dwarf: //"Rocky":
+      case PLANET_CLASS.dwarf: //"Rocky":
         octaves = 2;
         break;
-      case PLANET_TYPE.terrestrial: //"Venusian":
+      case PLANET_CLASS.terrestrial: //"Venusian":
         scale = 1.5;
         //planetTypeMods.warpZ = 20;
         break;
-      case PLANET_TYPE.gasGiant:
+      case PLANET_CLASS.gasGiant:
         scale = 0.1;
         planetTypeMods.warpZ = 20; //2
         break;
       /*
-      case PLANET_TYPE.gas:
+      case PLANET_CLASS.gas:
         scale = 0.2;
         planetTypeMods.warpZ = 20; //2
         break;
@@ -78,8 +78,8 @@ export const generatePlanetTextures = (width, height, options = {}) => {
         break;
         */
       /*
-      case PLANET_TYPE.ice:
-      case PLANET_TYPE.iceGiant:
+      case PLANET_CLASS.ice:
+      case PLANET_CLASS.iceGiant:
         //case "Water":
         scale = 0.1;
         octaves = 2;

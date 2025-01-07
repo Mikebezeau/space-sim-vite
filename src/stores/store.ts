@@ -7,9 +7,11 @@ import { randomData, genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
 import systemGen from "../solarSystemGen/systemGen";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
-import sunShaderMaterial from "../3d/planets/materials/sunShaderMaterial";
-import planetShaderMaterial from "../3d/planets/materials/planetShaderMaterial";
+import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
+import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
+import Star from "../classes/solarSystem/Star";
+import Planet from "../classes/solarSystem/Planet";
 import { addEffect } from "@react-three/fiber";
 import { track } from "../util/track";
 
@@ -57,7 +59,8 @@ interface storeState {
   focusPlanetIndex: number | null;
   selectedPanetIndex: number | null;
   getTargets: () => Object;
-  planets: any[];
+  stars: Star[];
+  planets: Planet[];
   checkScanDistanceToPlanet: (planetIndex: number) => void;
   scanningPlanetId: number;
   isScanDistanceToPlanet: boolean;
@@ -179,6 +182,7 @@ const useStore = create<storeState>()((set, get) => ({
       focusTargetIndex: get().focusTargetIndex,
     };
   },
+  stars: [], // set in call to setPlayerCurrentStarIndex
   planets: [], // set in call to setPlayerCurrentStarIndex
   checkScanDistanceToPlanet: (planetIndex) => {
     if (get().scanningPlanetId !== planetIndex) {
@@ -248,7 +252,7 @@ const useStore = create<storeState>()((set, get) => ({
         let galaxyMapData = [];
         for (let i = 0; i < STARS_IN_GALAXY; i++) {
           const systemSeed = i;
-          const planets = systemInfoGen(systemSeed);
+          const planets = systemInfoGen(systemSeed);//TODO update this
           let hasTerrestrial = false;
           planets.forEach((planet) => {
             if (planet.data.type === "Terrestrial") hasTerrestrial = true;
@@ -420,19 +424,23 @@ const useStore = create<storeState>()((set, get) => ({
     // slecting star in galaxy map
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
       set(() => ({ playerCurrentStarIndex }));
+      const [stars, planets] = systemGen(playerCurrentStarIndex);
       set(() => ({
-        planets: systemGen(playerCurrentStarIndex),
+        stars,
+      }));
+      set(() => ({
+        planets,
       }));
       // setting new local position for player
       get().setNewPlayerPosition({
         x: 0,
         y: 0,
-        z: get().planets[0].radius * 1.5,
+        z: get().stars[0].radius * 3,
       });
       // setting enemy world position relative to player test
       useEnemyStore
         .getState()
-        .enemyWorldPosition.set(0, 0, get().planets[0].radius * 1.5);
+        .enemyWorldPosition.set(0, 0, get().stars[0].radius * 1.5);
 
       // just to get player looking right direction (at displaced sun)
       get().player.object3d.lookAt(0, 0, -100);
@@ -446,7 +454,7 @@ const useStore = create<storeState>()((set, get) => ({
       }));
       // set position of space station near a planet
       const stations = genStations();
-      const stationOrbitPlanet = get().planets[1] || get().planets[0];
+      const stationOrbitPlanet = get().planets[1] || get().stars[0];
       if (stations[0]) {
         stations[0].object3d.position.set(
           stationOrbitPlanet.object3d.position.x,

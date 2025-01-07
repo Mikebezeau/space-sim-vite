@@ -1,122 +1,35 @@
-import * as THREE from "three";
 import { default as seedrandom } from "seedrandom";
-import { SYSTEM_SCALE } from "../constants/constants";
-import genRandomStarData from "./genRandomStarData";
-import genSolarSystemData from "./genSolarSystemData";
-import genPlanet from "./genPlanet";
-//import genPlanetData from "./genPlanetData";
+import genPlanetData from "./genPlanetData";
+import Star from "../classes/solarSystem/Star";
+import Planet from "../classes/solarSystem/Planet";
 
-// used in galaxy map
 export const systemInfoGen = (starIndex) => {
-  //15% of stars have a system like earths (with gas giants)
-  const star = genRandomStarData(starIndex);
-  //Only one in about five hundred thousand stars has more than twenty times the mass of the Sun.
-  const solarSysData = genSolarSystemData(star);
-  const planetData = [];
-  for (let i = 0; i < star.planetsIsInnerZone.length; i++)
-    planetData.push(genPlanet(star, solarSysData, star.planetsIsInnerZone[i]));
-  //planetData.sort((a, b) => a.distanceFromStar - b.distanceFromStar);
-  return [star, solarSysData, planetData];
+  const star = new Star(starIndex);
+  const planets = [];
+  for (let i = 0; i < star.data.numPlanets; i++) {
+    planets.push(genPlanetData(star, star.data.planetInnerZoneProb));
+  }
+  planets.sort((a, b) => a.distanceFromStar - b.distanceFromStar);
+
+  return [star, planets];
 };
 
-const systemGen = (
-  starIndex,
-  systemScale = SYSTEM_SCALE, // systemScale and planetScale used for mini system map
-  planetScale = 1
-) => {
+const systemGen = (starIndex) => {
   const rng = seedrandom(starIndex);
-  const [star, systemData, planetData] = systemInfoGen(starIndex);
-  const solarRadius = star.size * 696340; //km
-  const earthRadius = 6378; //km
-  let temp = [];
-  //create sun
-  temp.push({
-    type: "SUN",
-    planetType: "Sun",
-    data: {
-      class: star.starClass,
-      age: star.age,
-      mass: star.solarMass.toFixed(2),
-      size: star.size.toFixed(2),
-      luminosity: star.luminosity.toFixed(2),
-      temperature: star.temperature.toFixed(2) + "K",
-      habitableZone: systemData.habitableZone
-        ? systemData.habitableZone.radiusStart.toFixed(2) +
-          " - " +
-          systemData.habitableZone.radiusEnd.toFixed(2) +
-          " AU"
-        : "N/A",
-    },
-    color: star.colorHex, //new THREE.Color(star.colorHex),
-    radius: solarRadius * planetScale,
-    textureMap: 0,
-    object3d: new THREE.Object3D(),
-  });
-  /*
-Sun
-age: millions - billions
-mass: 
-    low (average)
-    13 jupiter = 1 sol
+  // @ts-ignore
+  const [star, planetData] = systemInfoGen(starIndex);
+  let stars = [star];
+  let planets = [];
 
-types:
-    cloud: hydrogen / helium
-    few million years gererate yellow/red main sequense star last billions using almost all hydrogen
-    rest of hyrdogen used star expands becomes red giant a few billion years
-    helium flash occurs start pulsats becaomes smaller and bluer
-    white dwarf
-    
-*/
   planetData.forEach((planet) => {
-    //console.log(planet.radius, planet.planetType);
-    /*
-    Rocky
-
-    Gas
-      Gas Dwarf
-      Jovian
-    
-    temperature.max > this.boilingPoint
-      Venusian
-
-    temperature.day < FREEZING_POINT_OF_WATER
-      Ice
-    iceCover >= 0.95
-      Ice
-
-    surfacePressure <= 250.0
-      Martian
-
-    waterCover >= 0.95
-      Water
-
-    waterCover > 0.05
-      Terrestrial
-    */
-
-    // 1 AU = 150 million kilometres
-    //const orbitRadius = solarRadius * 2 + planet.a * SCALE * systemScale;
-    const orbitRadius =
-      solarRadius * planetScale +
-      planet.distanceFromStar * 147000000 * systemScale;
-    //console.log("orbitRadius", orbitRadius);
-    const angle = rng() * 2 * Math.PI;
-    const x = Math.cos(angle) * orbitRadius;
-    const y = 0;
-    const z = Math.sin(angle) * orbitRadius;
-    const object3d = new THREE.Object3D();
-    object3d.position.set(x, y, z);
-    object3d.rotation.set(planet.axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
-
-    temp.push({
-      type: "PLANET",
-      planetType: planet.planetType,
-      color: planet.planetSubType.color,
-      data: planet.planetSubType, //planet.toJSONforHud(),
-      radius: 1.5 * earthRadius * planetScale,
-      //((planet.size[0] + planet.size[1]) / 2) * earthRadius * planetScale,
-      object3d: object3d,
-    });
+    planets.push(
+      new Planet(
+        rng,
+        planet.planetSubType,
+        planet.distanceFromStar,
+        planet.temperature
+      )
+    );
   });
 
   /*
@@ -136,9 +49,9 @@ types:
     //const b = (Math.floor(rng() * 250) + 875) * SCALE * systemScale;
     const b = Math.floor(rng() * 500) * SCALE * systemScale;
     const angle = 20 * i * systemScale;
-    const x = (a + b * angle) * Math.cos(angle) + temp[0].radius / 3;
-    const z = (a + b * angle) * Math.sin(angle) + temp[0].radius / 3;
-    temp.push({
+    const x = (a + b * angle) * Math.cos(angle) + planets[0].radius / 3;
+    const z = (a + b * angle) * Math.sin(angle) + planets[0].radius / 3;
+    planets.push({
       type: "PLANET",
       roughness: 1,
       metalness: 0,
@@ -154,12 +67,12 @@ types:
     });
   }
   */
-  return temp;
+  return [stars, planets];
 };
 
 /*
 function randomRings(count, track) {
-  let temp = [];
+  let planets = [];
   let t = 0.4;
   for (let i = 0; i < count; i++) {
     t += 0.003;
@@ -176,9 +89,9 @@ function randomRings(count, track) {
       lookAt,
       track.binormals[pick]
     );
-    temp.push([pos.toArray(), matrix]);
+    planets.push([pos.toArray(), matrix]);
   }
-  return temp;
+  return planets;
 }
 */
 

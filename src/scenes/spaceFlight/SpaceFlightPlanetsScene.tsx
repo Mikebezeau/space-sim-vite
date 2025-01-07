@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { Group, Mesh } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import Planets from "../../3d/planets/Planets";
+import SolarSystem from "../../3d/solarSystem/SolarSystem";
 import Stations from "../../3d/spaceFlight/Stations";
 import PlayerMech from "../../3d/spaceFlight/PlayerMechNew";
 import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
@@ -64,7 +64,7 @@ const SpaceFlightPlanetsScene = () => {
       <group ref={relativePlayerGroupRef}>
         <pointLight /*castShadow*/ intensity={1} decay={0} />
         <Stations />
-        <Planets />
+        <SolarSystem />
       </group>
       <group ref={enemyRelativePlayerGroupRef}>
         <EnemyMechs />

@@ -1,11 +1,11 @@
-import { typeStar } from "./genRandomStarData";
+import { typeStarData } from "./genRandomStarData";
 
 export type typeZone = {
   radiusStart: number;
   radiusEnd: number;
 };
 
-export type typeSolarSystemData = {
+export type typeObitalZonesData = {
   innerSolarSystem: typeZone;
   outerSolarSystem: typeZone;
   habitableZone: typeZone;
@@ -13,7 +13,7 @@ export type typeSolarSystemData = {
   kuiperBelt: typeZone | null;
 };
 
-function genSolarSystemData(star: typeStar): typeSolarSystemData {
+function genObitalZonesData(star: typeStarData): typeObitalZonesData {
   // Helper function to calculate the orbital radius for a given temperature
   function calculateHabitableZone(luminosity: number): typeZone {
     // Approximate formula for the habitable zone:
@@ -86,4 +86,4 @@ function genSolarSystemData(star: typeStar): typeSolarSystemData {
   };
 }
 
-export default genSolarSystemData;
+export default genObitalZonesData;

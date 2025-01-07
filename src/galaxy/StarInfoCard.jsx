@@ -3,7 +3,6 @@ import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { systemInfoGen } from "../solarSystemGen/systemGen";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
-import { PLANET_TYPE_LABEL } from "../solarSystemGen/genPlanet";
 //import CyberMenuBorder from "../menuComponents/common/CyberMenuBorder";
 
 export const isMouseOverStarInfoCard = (e) => {
@@ -33,15 +32,13 @@ const StarInfoCard = () => {
   const [viewStarIndex, setViewStarIndex] = useState(null);
   const systemInfoCardRef = useRef(null);
   const starInfoRef = useRef(null);
-  const systemDataRef = useRef(null);
   const planetDataRef = useRef(null);
 
   useEffect(() => {
     const starIndex = showInfoHoveredStarIndex || showInfoTargetStarIndex;
     if (starIndex) {
       setViewStarIndex(starIndex);
-      [starInfoRef.current, systemDataRef.current, planetDataRef.current] =
-        systemInfoGen(starIndex);
+      [starInfoRef.current, planetDataRef.current] = systemInfoGen(starIndex);
     } else {
       setViewStarIndex(null);
     }
@@ -68,41 +65,63 @@ const StarInfoCard = () => {
     >
       <div className="clip-path-cyber-inner bg-black p-8 text-white">
         <h2>System: {viewStarIndex}</h2>
-        <p>Star class: {starInfoRef.current?.starClass}</p>
-        <p>Mass: {starInfoRef.current?.solarMass.toFixed(2)}</p>
-        <p>Size: {starInfoRef.current?.size.toFixed(2)}</p>
-        <p>Lum: {starInfoRef.current?.luminosity.toFixed(2)}</p>
-        <p>TmpK: {starInfoRef.current?.temperature.toFixed(2)}</p>
+        <p>Star class: {starInfoRef.current?.data.starClass}</p>
+        <p>Mass: {starInfoRef.current?.data.solarMass.toFixed(2)}</p>
+        <p>Size: {starInfoRef.current?.data.size.toFixed(2)}</p>
+        <p>Lum: {starInfoRef.current?.data.luminosity.toFixed(2)}</p>
+        <p>TmpK: {starInfoRef.current?.data.temperature.toFixed(2)}</p>
         <p>
           inner:{" "}
-          {systemDataRef.current?.innerSolarSystem.radiusStart.toFixed(2)}-
-          {systemDataRef.current?.innerSolarSystem.radiusEnd.toFixed(2)}
+          {starInfoRef.current?.orbitalZonesData.innerSolarSystem.radiusStart.toFixed(
+            2
+          )}
+          -
+          {starInfoRef.current?.orbitalZonesData.innerSolarSystem.radiusEnd.toFixed(
+            2
+          )}
         </p>
-        {systemDataRef.current?.habitableZone && (
+        <p>
+          habitable:{" "}
+          {starInfoRef.current?.orbitalZonesData.habitableZone.radiusStart.toFixed(
+            2
+          )}
+          -
+          {starInfoRef.current?.orbitalZonesData.habitableZone.radiusEnd.toFixed(
+            2
+          )}
+        </p>
+        <p>
+          outer:{" "}
+          {starInfoRef.current?.orbitalZonesData.outerSolarSystem.radiusStart.toFixed(
+            2
+          )}
+          -
+          {starInfoRef.current?.orbitalZonesData.outerSolarSystem.radiusEnd.toFixed(
+            2
+          )}
+        </p>
+        {starInfoRef.current?.orbitalZonesData.kuiperBelt && (
           <p>
-            habitable:{" "}
-            {systemDataRef.current?.habitableZone.radiusStart.toFixed(2)}-
-            {systemDataRef.current?.habitableZone.radiusEnd.toFixed(2)}
+            kuiper:{" "}
+            {starInfoRef.current?.orbitalZonesData.kuiperBelt.radiusStart.toFixed(
+              2
+            )}
+            -
+            {starInfoRef.current?.orbitalZonesData.kuiperBelt.radiusEnd.toFixed(
+              2
+            )}
           </p>
         )}
         <p>
-          outer:{" "}
-          {systemDataRef.current?.outerSolarSystem.radiusStart.toFixed(2)}-
-          {systemDataRef.current?.outerSolarSystem.radiusEnd.toFixed(2)}
+          asteroidBelts:{" "}
+          {starInfoRef.current?.orbitalZonesData.asteroidBelts.length}
         </p>
-        {systemDataRef.current?.kuiperBelt && (
-          <p>
-            kuiper: {systemDataRef.current?.kuiperBelt.radiusStart.toFixed(2)}-
-            {systemDataRef.current?.kuiperBelt.radiusEnd.toFixed(2)}
-          </p>
-        )}
-        <p>asteroidBelts: {systemDataRef.current?.asteroidBelts.length}</p>
         <p>planets: {planetDataRef.current?.length}</p>
         {planetDataRef.current?.map((planet, i) => (
           <p key={i}>
             {planet.planetSubType.label} Dst:
-            {planet.distanceFromStar.toFixed(2)} Tmp:
-            {planet.temperatureC.average.toFixed(2)}
+            {planet.distanceFromStar.toFixed(2)} Tmp K:
+            {planet.temperature.average.toFixed(2)}
           </p>
         ))}
         {

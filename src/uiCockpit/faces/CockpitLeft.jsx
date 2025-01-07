@@ -4,11 +4,12 @@ import screenBImage from "../images/screenB.png";
 
 const CockpitLeft = () => {
   //console.log("CockpitLeft rendered");
+  const stars = useStore((state) => state.stars);
   const planets = useStore((state) => state.planets);
 
   const sunScanData = useMemo(
-    () => (planets.length > 0 && planets[0].data ? planets[0].data : []),
-    [planets]
+    () => (stars.length > 0 && stars[0].data ? stars[0].data : []),
+    [stars]
   );
 
   const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
