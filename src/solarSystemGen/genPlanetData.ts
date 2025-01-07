@@ -1,4 +1,4 @@
-import { typeStarData, getFromRange } from "./genRandomStarData";
+import { typeStarData } from "./genStarData";
 import { typeObitalZonesData } from "./genObitalZonesData";
 import Star from "../classes/solarSystem/Star";
 import {
@@ -7,8 +7,8 @@ import {
 } from "../constants/solarSystemConstants";
 
 export type typePlanetData = {
-  type: number;
-  subType: number;
+  planetClass: number;
+  planetType: number;
   label: string;
   description: string;
   size: [number, number];
@@ -71,10 +71,10 @@ const determinePlanetType = (
   } // else if (orbitalZonesData.oortCloud && distanceFromStar > orbitalZonesData.kuiperBelt.radiusEnd) {
   // zoneType = PLANET_ZONES.oortCloud;
   //}
-  const possibleSubTypes = Object.values(PLANET_TYPE_DATA).filter((subType) =>
+  const possibleTypes = Object.values(PLANET_TYPE_DATA).filter((subType) =>
     subType.zones.includes(zoneType)
   );
-  const temperatureFilteredSubTypes = possibleSubTypes.filter((subType) => {
+  const temperatureFilteredTypes = possibleTypes.filter((subType) => {
     const temperature = calculateTemperature(
       starData.luminosity,
       distanceFromStar,
@@ -85,21 +85,21 @@ const determinePlanetType = (
     if (subType.maxTemp && temperature.average > subType.maxTemp) return false;
     return true;
   });
-  const finalSubTypes =
-    temperatureFilteredSubTypes.length > 0
-      ? temperatureFilteredSubTypes
-      : possibleSubTypes;
-  if (temperatureFilteredSubTypes.length === 0)
+  const finalTypes =
+    temperatureFilteredTypes.length > 0
+      ? temperatureFilteredTypes
+      : possibleTypes;
+  if (temperatureFilteredTypes.length === 0)
     console.error(
-      "empty temperatureFilteredSubTypes result",
-      possibleSubTypes,
-      temperatureFilteredSubTypes
+      "empty temperatureFilteredTypes result",
+      possibleTypes,
+      temperatureFilteredTypes
     );
 
-  if (finalSubTypes.length > 0) {
-    const randomIndex = Math.floor(Math.random() * finalSubTypes.length);
-    const planetSubType: typePlanetData = finalSubTypes[randomIndex];
-    return planetSubType;
+  if (finalTypes.length > 0) {
+    const randomIndex = Math.floor(Math.random() * finalTypes.length);
+    const planetType: typePlanetData = finalTypes[randomIndex];
+    return planetType;
   }
 };
 
@@ -117,27 +117,23 @@ const genPlanetData = (star: Star) => {
   const distanceFromStar =
     Math.random() * (zone.radiusEnd - zone.radiusStart) + zone.radiusStart;
 
-  const planetSubType: typePlanetData | undefined = determinePlanetType(
+  const planetType: typePlanetData | undefined = determinePlanetType(
     starData,
     orbitalZonesData,
     distanceFromStar
   );
-  if (planetSubType) {
+  if (planetType) {
     const temperature = calculateTemperature(
       starData.luminosity,
       distanceFromStar,
-      planetSubType.albedo,
-      planetSubType.greenhouse
+      planetType.albedo,
+      planetType.greenhouse
     );
-    const planetType = planetSubType.type;
-
     return {
       planetType,
-      planetSubType,
       subClasses: [],
       distanceFromStar,
       temperature,
-      radius: getFromRange(Math.random(), planetSubType.size),
     };
   }
 };

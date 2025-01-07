@@ -5,7 +5,6 @@ import { useFrame } from "@react-three/fiber";
 import { generatePlanetTextures } from "./textureMap/genTextureMaps";
 
 const Planet = ({ planet /*, textureMaps*/ }) => {
-  const sunShaderMaterial = useStore((state) => state.sunShaderMaterial);
   const clonePlanetShaderMaterial = useStore(
     (state) => state.clonePlanetShaderMaterial
   );
@@ -16,14 +15,11 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
   const canvasWidth = 256 * 1;
   const canvasHeight = 256 * 0.5;
 
+  const textureOptions = planet.getTextureOptions();
   const { texture, bumpMapTexture, colors } = generatePlanetTextures(
     canvasWidth,
     canvasHeight,
-    {
-      planetType: planet.planetType,
-      baseColor: planet.color,
-      //makeCraters: false,
-    }
+    textureOptions
   );
   /*
   const { noiseTexture } = generatePlanetTextures(canvasWidth, canvasHeight, {
@@ -47,16 +43,17 @@ const Planet = ({ planet /*, textureMaps*/ }) => {
     baseColorDarkRBG.b / 255
   );
 
-  const planetMaterial =
-    planet.planetType === "Sun"
-      ? sunShaderMaterial
-      : clonePlanetShaderMaterial();
+  const planetMaterial = clonePlanetShaderMaterial();
   planetMaterial.uniforms.u_planetRealPos = { value: planet.object3d.position }; // atmos shader
   planetMaterial.uniforms.uObjectMatrixWorld = {
     value: planet.object3d.matrixWorld,
   };
   planetMaterial.uniforms.u_texture = { value: texture };
-  planetMaterial.uniforms.u_cloudColor = { value: baseColor };
+  planetMaterial.uniforms.u_cloudColor = {
+    value: textureOptions.isCloudColorWhite
+      ? new THREE.Vector3(1, 1, 1)
+      : baseColor,
+  };
   planetMaterial.uniforms.u_cloudColorDark = { value: baseColorDark };
 
   const geometryPlanet = new THREE.SphereGeometry(1, 64, 64);

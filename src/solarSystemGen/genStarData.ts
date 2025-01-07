@@ -24,7 +24,7 @@ export const getFromRange = (rangeRandom: number, [min, max]) => {
   return rangeRandom * (max - min) + min;
 };
 
-const genRandomStarData = (starIndex: number) => {
+const genStarData = (starIndex: number) => {
   const rng = seedrandom(starIndex.toString());
   // Percentages and classifications for star types
   const percentages = [76.45, 12.1, 7.6, 3.1, 0.61, 0.13, 0.01];
@@ -178,4 +178,4 @@ const genRandomStarData = (starIndex: number) => {
   return starData;*/
 };
 
-export default genRandomStarData;
+export default genStarData;

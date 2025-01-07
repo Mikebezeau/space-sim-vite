@@ -77,7 +77,7 @@ void main() {
 
   ${rotatedNormalShader.fragMain}
   ${fresnelShader.fragMain}
-  ${cloudsLargeShader.fragMain}
+  ${/*cloudsLargeShader.fragMain*/ ""}
   ${atmosGlowShader.fragMain}
 }
 `,

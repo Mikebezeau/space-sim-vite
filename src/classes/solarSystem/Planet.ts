@@ -1,24 +1,27 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
-import { getFromRange } from "../../solarSystemGen/genRandomStarData";
+import { getFromRange } from "../../solarSystemGen/genStarData";
 import { typePlanetData } from "../../solarSystemGen/genPlanetData";
 import { SYSTEM_SCALE, PLANET_SCALE } from "../../constants/constants";
+import {
+  typeTextureMapOptions,
+  PLANET_CLASS_TEXTURE_MAP,
+  PLANET_TYPE_TEXTURE_MAP,
+} from "../../constants/solarSystemConstants";
 
 interface PlanetInt {
   initObject3d(object3d: THREE.Object3D): void;
+  getTextureOptions(): any;
 }
 
 class Planet implements PlanetInt {
   id: string;
-  type: string;
-  planetType: number;
   color: string;
   _data: typePlanetData;
   axialTilt: number;
   radius: number;
   object3d: THREE.Object3D;
 
-  planetSubType: number;
   subClasses: number[];
   distanceFromStar: number;
   temperature: { min: number; max: number; average: number };
@@ -45,15 +48,12 @@ class Planet implements PlanetInt {
     const massEarth = getFromRange(fixedRangeRandom, planetData.mass);
 
     this.id = uuidv4();
-    this.type = "PLANET";
-    this.planetType = planetData.type;
     this.color = planetData.color;
     this.data = planetData; //planet.toJSONforHud();
     this.axialTilt = 0;
     this.radius = radiusEarth * earthRadius * PLANET_SCALE;
     this.object3d = object3d;
 
-    this.planetSubType = 0;
     this.subClasses = [];
     this.distanceFromStar = distanceFromStar;
     this.temperature = temperature;
@@ -93,6 +93,17 @@ class Planet implements PlanetInt {
       this.object3d.position.copy(keepPosition);
       this.object3d.rotation.copy(keepRotation);
     }
+  };
+
+  getTextureOptions = (): typeTextureMapOptions => {
+    const classOptions = PLANET_CLASS_TEXTURE_MAP[this.data.planetClass];
+    const typeOptions = PLANET_TYPE_TEXTURE_MAP[this.data.planetType];
+    if (!typeOptions) return classOptions;
+    const textureOptions = {
+      ...classOptions,
+      ...typeOptions, //type options override class options
+    };
+    return textureOptions;
   };
 }
 

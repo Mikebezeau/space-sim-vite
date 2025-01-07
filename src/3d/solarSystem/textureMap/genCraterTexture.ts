@@ -4,7 +4,7 @@ import { drawCircle, getCirclePoints } from "./drawUtil";
 export const genCraterTexture = (
   canvas: HTMLCanvasElement,
   colors: { r: number; g: number; b: number }[],
-  debugData: any
+  craterIntensity: number
 ) => {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -23,7 +23,7 @@ export const genCraterTexture = (
     phiCenter: number;
     circleRadius: number;
   }[] = [];
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 100 * craterIntensity; i++) {
     const crater = {
       //thetaCenter: Math.random() * Math.PI,
       thetaCenter: Math.acos(1 - 2 * Math.random()),

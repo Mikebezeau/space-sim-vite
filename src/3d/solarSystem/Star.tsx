@@ -16,11 +16,7 @@ const Star = ({ star /*, textureMaps*/ }) => {
   const { texture, bumpMapTexture, colors } = generatePlanetTextures(
     canvasWidth,
     canvasHeight,
-    {
-      planetType: "Sun",
-      baseColor: star.color,
-      //makeCraters: false,
-    }
+    { scale: 5, octaves: 1, baseColor: star.color }
   );
   /*
   const { noiseTexture } = generatePlanetTextures(canvasWidth, canvasHeight, {

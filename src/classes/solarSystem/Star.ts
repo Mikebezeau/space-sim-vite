@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import genRandomStarData from "../../solarSystemGen/genRandomStarData";
+import genStarData from "../../solarSystemGen/genStarData";
 import genObitalZonesData, {
   typeObitalZonesData,
 } from "../../solarSystemGen/genObitalZonesData";
@@ -12,7 +12,6 @@ interface StarInt {
 class Star implements StarInt {
   index: number;
   type: string;
-  planetType: string;
   _data: any;
   orbitalZonesData: typeObitalZonesData;
   color: string;
@@ -21,7 +20,7 @@ class Star implements StarInt {
   object3d: THREE.Object3D;
 
   constructor(starIndex: number) {
-    const starData = genRandomStarData(starIndex);
+    const starData = genStarData(starIndex);
 
     this.index = starIndex;
     this._data = starData;

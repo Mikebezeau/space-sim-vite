@@ -35,11 +35,57 @@ export const PLANET_TYPE = {
 
   dwarf: 40,
 };
+/*
+  const compositions = [
+    "Chthonian",
+    "Carbon",
+    "Coreless",
+    "Desert",
+    "Gas Dwarf",
+    "Gas Giant",
+    "Helium",
+    "Hycean",
+    "Ice Giant",
+    "Ice",
+    "Iron",
+    "Lava",
+    "Martian",
+    "Ocean",
+    "Protoplanet",
+    "Puffy",
+    "Rocky",
+    "Super-Puff",
+    "Silicate",
+    "Terrestrial",
+    "Water",
+  ];
 
+  const additionalThemes = [
+    "Living Planet",
+    "Shattered World",
+    "Dyson Sphere",
+    "Ethereal World",
+    "Haunted World",
+  ];
+
+  const culturalClassifications = [
+    "Ruins",
+    "Ancient Structures",
+    "Post-Apocalypse",
+    "New Colony",
+    "Megacity",
+    "Entire Surface Urbanized",
+    "Mining/Resource ",
+    "Heavily Exploited",
+    "Religious/Spiritual",
+    "Pilgrimage Site",
+    "Trade Hub",
+  ];
+*/
 export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.mterran]: {
-    type: PLANET_CLASS.terrestrial,
-    subType: PLANET_TYPE.mterran,
+    planetClass: PLANET_CLASS.terrestrial,
+    planetType: PLANET_TYPE.mterran,
     label: "Mini Terran",
     description: "Mini Terran planets are the smallest rocky worlds.",
     size: [0.03, 0.4],
@@ -57,8 +103,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     craterIntensity: 3,
   },
   [PLANET_TYPE.sterran]: {
-    type: PLANET_CLASS.terrestrial,
-    subType: PLANET_TYPE.sterran,
+    planetClass: PLANET_CLASS.terrestrial,
+    planetType: PLANET_TYPE.sterran,
     label: "Sub Terran",
     description: "Sub Terran planets are small rocky worlds.",
     size: [0.4, 0.8],
@@ -70,8 +116,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     craterIntensity: 3,
   },
   [PLANET_TYPE.terran]: {
-    type: PLANET_CLASS.terrestrial,
-    subType: PLANET_TYPE.terran,
+    planetClass: PLANET_CLASS.terrestrial,
+    planetType: PLANET_TYPE.terran,
     label: "Terran",
     description: "Terran planets are rocky worlds.",
     size: [0.8, 1.5],
@@ -83,8 +129,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     craterIntensity: 2,
   },
   [PLANET_TYPE.earthLike]: {
-    type: PLANET_CLASS.terrestrial,
-    subType: PLANET_TYPE.earthLike,
+    planetClass: PLANET_CLASS.terrestrial,
+    planetType: PLANET_TYPE.earthLike,
     label: "Earth Like",
     description:
       "Earth Like planets are rocky worlds where liquid water exists, located in the habitable zone.",
@@ -98,8 +144,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     maxTemp: 388.15, // 115 celcius
   },
   [PLANET_TYPE.suTerran]: {
-    type: PLANET_CLASS.terrestrial,
-    subType: PLANET_TYPE.suTerran,
+    planetClass: PLANET_CLASS.terrestrial,
+    planetType: PLANET_TYPE.suTerran,
     label: "Super Terran",
     description: "Super Terran planets are large rocky worlds.",
     size: [1.5, 2.5],
@@ -111,8 +157,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     craterIntensity: 1,
   },
   [PLANET_TYPE.venusian]: {
-    type: PLANET_CLASS.terrestrial,
-    subType: PLANET_TYPE.venusian,
+    planetClass: PLANET_CLASS.terrestrial,
+    planetType: PLANET_TYPE.venusian,
     label: "Venusian",
     description:
       "Venusian planets are rocky worlds with an extremely thick atmosphere.",
@@ -139,8 +185,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   // rather than a planet.
 
   [PLANET_TYPE.neptunian]: {
-    type: PLANET_CLASS.gasGiant,
-    subType: PLANET_TYPE.neptunian,
+    planetClass: PLANET_CLASS.gasGiant,
+    planetType: PLANET_TYPE.neptunian,
     label: "Neptunian",
     description:
       "Neptunian planets are gas giants, the most common type of planet to form in the icy outer regions of planetary systems.",
@@ -152,8 +198,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     color: "#dd7755",
   },
   [PLANET_TYPE.jovian]: {
-    type: PLANET_CLASS.gasGiant,
-    subType: PLANET_TYPE.jovian,
+    planetClass: PLANET_CLASS.gasGiant,
+    planetType: PLANET_TYPE.jovian,
     label: "Jovian",
     description:
       "Jovian planets are gas giants, primarily composed of hydrogen and helium gas.",
@@ -165,8 +211,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     color: "#dd7755",
   },
   [PLANET_TYPE.hotJovian]: {
-    type: PLANET_CLASS.gasGiant,
-    subType: PLANET_TYPE.hotJovian,
+    planetClass: PLANET_CLASS.gasGiant,
+    planetType: PLANET_TYPE.hotJovian,
     label: "Hot Jovian",
     description:
       "Hot Jovian planets are gas giants located very close to their host star.",
@@ -181,8 +227,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   // diameter of a self-gravitating sphere is 400 km; for a body mainly made of rock,
   // the minimum diameter is 600 km. This is what constitutes a dwarf planet
   [PLANET_TYPE.dwarf]: {
-    type: PLANET_CLASS.dwarf,
-    subType: PLANET_TYPE.dwarf,
+    planetClass: PLANET_CLASS.dwarf,
+    planetType: PLANET_TYPE.dwarf,
     label: "Dwarf",
     description: "Dwarf planets are small rocky worlds.",
     size: [0.6, 0.8],
@@ -196,15 +242,41 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
 };
 
 export type typeTextureMapOptions = {
-  scale: number;
-  octaves: number;
-  persistence: number;
-  baseColor: string;
-  makeCraters?: boolean;
+  scale?: number;
+  octaves?: number;
+  persistence?: number;
+  baseColor?: string;
+  isCloudColorWhite?: boolean;
+  planetTypeMods?: { warpX: number; warpY: number; warpZ: number };
+  craterIntensity?: number;
   grayscale?: boolean;
   isNoiseMap?: boolean;
   debug?: boolean;
 };
+
+export const PLANET_CLASS_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
+  {
+    [PLANET_CLASS.terrestrial]: {
+      scale: 1, // Adjust for finer detail
+      octaves: 6,
+      persistence: 0.5,
+      baseColor: "#AA4444",
+      isCloudColorWhite: true,
+    },
+    [PLANET_CLASS.gasGiant]: {
+      scale: 0.1,
+      octaves: 1,
+      persistence: 0.5,
+      baseColor: "#DD44DD",
+      planetTypeMods: { warpX: 1, warpY: 1, warpZ: 20 },
+    },
+    [PLANET_CLASS.dwarf]: {
+      scale: 1,
+      octaves: 2,
+      persistence: 0.5,
+      baseColor: "#444444",
+    },
+  };
 
 export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
   {
@@ -212,9 +284,48 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       scale: 1, // Adjust for finer detail
       octaves: 6,
       persistence: 0.5,
-      baseColor: "#102A44",
-      makeCraters: PLANET_TYPE_DATA[PLANET_TYPE.mterran].craterIntensity
-        ? true
-        : false,
+      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.mterran].color,
+      craterIntensity:
+        PLANET_TYPE_DATA[PLANET_TYPE.mterran].craterIntensity || 0,
+    },
+    [PLANET_TYPE.sterran]: {
+      scale: 1, // Adjust for finer detail
+      octaves: 6,
+      persistence: 0.5,
+      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.sterran].color,
+      craterIntensity:
+        PLANET_TYPE_DATA[PLANET_TYPE.sterran].craterIntensity || 0,
+    },
+    [PLANET_TYPE.terran]: {
+      scale: 1, // Adjust for finer detail
+      octaves: 6,
+      persistence: 0.5,
+      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.terran].color,
+      craterIntensity:
+        PLANET_TYPE_DATA[PLANET_TYPE.terran].craterIntensity || 0,
+    },
+    [PLANET_TYPE.earthLike]: {
+      scale: 1, // Adjust for finer detail
+      octaves: 6,
+      persistence: 0.5,
+      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.earthLike].color,
+      craterIntensity:
+        PLANET_TYPE_DATA[PLANET_TYPE.earthLike].craterIntensity || 0,
+    },
+    [PLANET_TYPE.suTerran]: {
+      scale: 1, // Adjust for finer detail
+      octaves: 6,
+      persistence: 0.5,
+      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.suTerran].color,
+      craterIntensity:
+        PLANET_TYPE_DATA[PLANET_TYPE.suTerran].craterIntensity || 0,
+    },
+    [PLANET_TYPE.venusian]: {
+      scale: 1, // Adjust for finer detail
+      octaves: 6,
+      persistence: 0.5,
+      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.venusian].color,
+      craterIntensity:
+        PLANET_TYPE_DATA[PLANET_TYPE.venusian].craterIntensity || 0,
     },
   };

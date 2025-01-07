@@ -25,7 +25,7 @@ const systemGen = (starIndex) => {
     planets.push(
       new Planet(
         rng,
-        planet.planetSubType,
+        planet.planetType,
         planet.distanceFromStar,
         planet.temperature
       )

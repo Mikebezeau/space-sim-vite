@@ -119,7 +119,7 @@ const StarInfoCard = () => {
         <p>planets: {planetDataRef.current?.length}</p>
         {planetDataRef.current?.map((planet, i) => (
           <p key={i}>
-            {planet.planetSubType.label} Dst:
+            {planet.planetType.label} Dst:
             {planet.distanceFromStar.toFixed(2)} Tmp K:
             {planet.temperature.average.toFixed(2)}
           </p>

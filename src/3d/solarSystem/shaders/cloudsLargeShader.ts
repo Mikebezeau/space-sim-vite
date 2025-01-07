@@ -15,13 +15,12 @@ const float speed = 0.03;
 const float clouddark = 0.5;
 const float cloudlight = 0.3;
 const float cloudcover = 0.2;
-const float cloudalpha = 18.0;
+const float cloudalpha = 10.0;
 const float skytint = 0.5;
 const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
 const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
 
 //const mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 );
-//const mat3 m = mat3( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 );
 
 float hash(float n) {
     return fract(sin(n) * 43758.5453123);

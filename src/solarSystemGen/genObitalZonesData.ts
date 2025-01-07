@@ -1,4 +1,4 @@
-import { typeStarData } from "./genRandomStarData";
+import { typeStarData } from "./genStarData";
 
 export type typeZone = {
   radiusStart: number;
