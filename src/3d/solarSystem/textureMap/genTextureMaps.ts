@@ -19,6 +19,7 @@ export const generatePlanetTextures = (
   let octaves = options.octaves ? options.octaves : 6;
   let persistence = options.persistence ? options.persistence : 0.5;
   let baseColor = options.baseColor ? options.baseColor : "#102A44";
+  let optionColors = options.colors ? options.colors : null;
   let planetTypeMods = options.planetTypeMods
     ? options.planetTypeMods
     : { warpX: 1, warpY: 1, warpZ: 1 };
@@ -27,10 +28,16 @@ export const generatePlanetTextures = (
   let isNoiseMap = options.isNoiseMap ? options.isNoiseMap : false;
   let debug = options.debug ? options.debug : false;
 
-  const textureCanvas = document.createElement("canvas");
-  textureCanvas.width = width;
-  textureCanvas.height = height;
-  const ctx = textureCanvas.getContext("2d");
+  // scale down the canvas to speed up noise generation
+  // copy to full sized canvas after
+  const SCALE_DOWN_FACTOR = 1;
+  const scaleDownWidth = Math.floor(width / SCALE_DOWN_FACTOR);
+  const scaleDownHeight = Math.floor(height / SCALE_DOWN_FACTOR);
+
+  const smallScaleCanvas = document.createElement("canvas");
+  smallScaleCanvas.width = scaleDownWidth;
+  smallScaleCanvas.height = scaleDownHeight;
+  const ctx = smallScaleCanvas.getContext("2d");
 
   const debugData: {
     //noise: { min: number; max: number };
@@ -45,7 +52,9 @@ export const generatePlanetTextures = (
     colorsSorted: [],
     circles: [],
   };
-  const colors = generateSortedRandomColors(false, baseColor);
+  const colors = optionColors
+    ? optionColors
+    : generateSortedRandomColors(false, baseColor);
   debugData.colorsSorted = colors;
   //const noise3D = createNoise3D();
   const noise3D = makeNoise3D();
@@ -59,9 +68,9 @@ export const generatePlanetTextures = (
     grayscale = true;
   }
   // First pass: Calculate noise and track min/max
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const { nx, ny, nz } = get3dCoords(x, y, width, height);
+  for (let y = 0; y < scaleDownHeight; y++) {
+    for (let x = 0; x < scaleDownWidth; x++) {
+      const { nx, ny, nz } = get3dCoords(x, y, scaleDownWidth, scaleDownHeight);
       let noiseValue = 0;
       let amplitude = 1;
       let frequency = scale;
@@ -83,9 +92,9 @@ export const generatePlanetTextures = (
 
   // Second pass: Normalize and apply colors
   if (ctx !== null) {
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const noiseValue = noiseValues[y * width + x];
+    for (let y = 0; y < scaleDownHeight; y++) {
+      for (let x = 0; x < scaleDownWidth; x++) {
+        const noiseValue = noiseValues[y * scaleDownWidth + x];
         const normalizedValue = (noiseValue - minNoise) / (maxNoise - minNoise);
 
         if (debug || grayscale) {
@@ -100,12 +109,22 @@ export const generatePlanetTextures = (
     }
   }
 
+  const textureCanvas = document.createElement("canvas");
+  textureCanvas.width = width;
+  textureCanvas.height = height;
+  const ctxTex = textureCanvas.getContext("2d");
+  if (ctxTex !== null) {
+    const blurAmount = Math.ceil(width / 600);
+    //ctxTex.filter = "blur(" + blurAmount + "px)";
+    ctxTex.drawImage(smallScaleCanvas, 0, 0, width, height);
+    //ctxTex.filter = "none";
+  }
+
   const bumpMapTexture =
     craterIntensity > 0
       ? genCraterTexture(textureCanvas, colors, craterIntensity)
       : null;
 
-  console.log("generatePlanetTextures", craterIntensity);
   return {
     texture: isNoiseMap ? null : new CanvasTexture(textureCanvas),
     noiseTexture: isNoiseMap ? new CanvasTexture(textureCanvas) : null,

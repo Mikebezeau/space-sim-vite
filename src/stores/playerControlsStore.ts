@@ -59,9 +59,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     // testing
     //playerScreen: PLAYER.screen.mainMenu,
     //playerScreen: PLAYER.screen.newCampaign,
-    //playerScreen: PLAYER.screen.flight,
+    playerScreen: PLAYER.screen.flight,
     //playerScreen: PLAYER.screen.equipmentBuild,
-    playerScreen: PLAYER.screen.galaxyMap,
+    //playerScreen: PLAYER.screen.galaxyMap,
     // isSwitchingPlayerScreen used in AppLoadingScreen to fade in screen
     isSwitchingPlayerScreen: true, // initally set to true to fade in screen
     setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen) => {

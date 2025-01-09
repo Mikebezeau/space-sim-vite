@@ -16,7 +16,8 @@ export const genCraterTexture = (
 
   const ctxBuffer = canvasBuffer.getContext("2d");
   if (!ctxBuffer) return;
-  ctxBuffer.filter = "blur(2px)";
+  const blurAmount = Math.ceil(width / 600);
+  ctxBuffer.filter = "blur(" + blurAmount + "px)";
   // Draw circles with random positions
   const craters: {
     thetaCenter: number;
@@ -74,7 +75,7 @@ export const genCraterTexture = (
     ctxBumpMap.fillStyle = `rgb(${neutralColor.r}, ${neutralColor.g}, ${neutralColor.b})`;
     ctxBumpMap.fillRect(0, 0, width, height);
     ctxBumpMap.drawImage(canvasBuffer, 0, 0);
-    // to test bump map
+    // to test bump map, draws bump map on main texture canvas
     //ctx.drawImage(canvasBumpMap, 0, 0);
   }
   return new CanvasTexture(canvasBumpMap);

@@ -7,7 +7,7 @@ export const systemInfoGen = (starIndex) => {
   const star = new Star(starIndex);
   const planets = [];
   for (let i = 0; i < star.data.numPlanets; i++) {
-    planets.push(genPlanetData(star, star.data.planetInnerZoneProb));
+    planets.push(genPlanetData(star));
   }
   planets.sort((a, b) => a.distanceFromStar - b.distanceFromStar);
 

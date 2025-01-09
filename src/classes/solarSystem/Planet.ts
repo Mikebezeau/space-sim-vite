@@ -17,7 +17,7 @@ interface PlanetInt {
 class Planet implements PlanetInt {
   id: string;
   color: string;
-  _data: typePlanetData;
+  data: typePlanetData;
   axialTilt: number;
   radius: number;
   object3d: THREE.Object3D;
@@ -25,16 +25,20 @@ class Planet implements PlanetInt {
   subClasses: number[];
   distanceFromStar: number;
   temperature: { min: number; max: number; average: number };
-  radiusEarth: number;
-  massEarth: number;
+  earthRadii: number;
+  earthMasses: number;
 
   constructor(
-    rng: any,
+    rng: any = Math.random,
     planetData: typePlanetData,
-    distanceFromStar: number,
-    temperature: { min: number; max: number; average: number }
+    distanceFromStar: number = 0,
+    temperature: { min: number; max: number; average: number } = {
+      min: 0,
+      max: 0,
+      average: 0,
+    }
   ) {
-    const earthRadius = 6378; //km
+    const earthRadiusKm = 6378; //km
     const orbitRadius = distanceFromStar * 147000000 * SYSTEM_SCALE;
     const angle = Math.random() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
@@ -44,23 +48,23 @@ class Planet implements PlanetInt {
     object3d.position.set(x, y, z);
     //object3d.rotation.set(axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
     const fixedRangeRandom = rng();
-    const radiusEarth = getFromRange(fixedRangeRandom, planetData.size);
-    const massEarth = getFromRange(fixedRangeRandom, planetData.mass);
+    const earthRadii = getFromRange(fixedRangeRandom, planetData.size);
+    const earthMasses = getFromRange(fixedRangeRandom, planetData.mass);
 
     this.id = uuidv4();
     this.color = planetData.color;
     this.data = planetData; //planet.toJSONforHud();
     this.axialTilt = 0;
-    this.radius = radiusEarth * earthRadius * PLANET_SCALE;
+    this.radius = earthRadii * earthRadiusKm * PLANET_SCALE;
     this.object3d = object3d;
 
     this.subClasses = [];
     this.distanceFromStar = distanceFromStar;
     this.temperature = temperature;
-    this.radiusEarth = radiusEarth;
-    this.massEarth = massEarth;
+    this.earthRadii = earthRadii;
+    this.earthMasses = earthMasses;
   }
-
+  /*
   public get data() {
     //toJSONforHud(),
     return this._data;
@@ -69,7 +73,7 @@ class Planet implements PlanetInt {
   public set data(data: any) {
     this._data = data;
   }
-
+*/
   public get temperatureC() {
     //toJSONforHud(),
     return {

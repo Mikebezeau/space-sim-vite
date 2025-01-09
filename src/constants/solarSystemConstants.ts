@@ -168,7 +168,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     albedo: 0.8,
     greenhouse: 3.3,
     color: "#dd77cc",
-    craterIntensity: 1,
+    craterIntensity: 0,
   },
   // maximum diameter of a terrestrial planet is around 2 Earth radii, or 25,484 km.
   // planets between one and two times the diameter of Earth may well be rocky and,
@@ -246,6 +246,7 @@ export type typeTextureMapOptions = {
   octaves?: number;
   persistence?: number;
   baseColor?: string;
+  colors?: { r: number; g: number; b: number }[];
   isCloudColorWhite?: boolean;
   planetTypeMods?: { warpX: number; warpY: number; warpZ: number };
   craterIntensity?: number;
@@ -259,7 +260,7 @@ export const PLANET_CLASS_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
     [PLANET_CLASS.terrestrial]: {
       scale: 1, // Adjust for finer detail
       octaves: 6,
-      persistence: 0.5,
+      persistence: 0.8,
       baseColor: "#AA4444",
       isCloudColorWhite: true,
     },
@@ -307,8 +308,31 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
     [PLANET_TYPE.earthLike]: {
       scale: 1, // Adjust for finer detail
       octaves: 6,
-      persistence: 0.5,
-      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.earthLike].color,
+      persistence: 0.8,
+      colors: [
+        // Water colors (dark to light)
+        { r: 0, g: 25, b: 51 }, // Deep ocean
+        { r: 0, g: 38, b: 76 }, // Dark blue ocean
+        { r: 0, g: 51, b: 102 }, // Ocean blue
+        { r: 0, g: 64, b: 128 }, // Lighter ocean
+        { r: 0, g: 77, b: 153 }, // Medium blue
+        { r: 0, g: 102, b: 179 }, // Light blue ocean
+        { r: 51, g: 153, b: 204 }, // Tropical water
+        { r: 102, g: 178, b: 229 }, // Shallow water
+        { r: 153, g: 204, b: 255 }, // Near-shore water
+
+        // Elevation colors (low to high)
+        { r: 34, g: 139, b: 34 }, // Coastal green (low elevations)
+        { r: 85, g: 170, b: 85 }, // Lowlands green
+        { r: 139, g: 195, b: 74 }, // Grasslands
+        { r: 222, g: 184, b: 135 }, // Light brown (hills)
+        { r: 205, g: 133, b: 63 }, // Brown (higher terrain)
+        { r: 139, g: 69, b: 19 }, // Dark brown (mountains)
+        { r: 169, g: 169, b: 169 }, // Gray (rocky peaks)
+        { r: 192, g: 192, b: 192 }, // Light gray (higher peaks)
+        { r: 240, g: 248, b: 255 }, // Icy blue white
+        { r: 255, g: 255, b: 255 }, // Snowy white (highest peaks)
+      ],
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.earthLike].craterIntensity || 0,
     },

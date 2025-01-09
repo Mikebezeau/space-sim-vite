@@ -108,7 +108,7 @@ const ScannerReadout = () => {
       // selecting the targeted planet
       // only change target planet if player is in pilot control mode (not just looking around)
       if (getPlayerState().playerActionMode === PLAYER.action.manualControl) {
-        for (let i = 1; i < planets.length; i++) {
+        for (let i = 0; i < planets.length; i++) {
           //planets.forEach((planet, i) => {
           const planet = planets[i];
           //worldPosition.copy(planet.object3d.position);
@@ -141,7 +141,7 @@ const ScannerReadout = () => {
         setFocusPlanetIndex(tempFocusPlanetIndex);
       }
       // placing targets over planets
-      for (let i = 1; i < planets.length; i++) {
+      for (let i = 0; i < planets.length; i++) {
         const planet = planets[i];
         planet.object3d.getWorldPosition(worldPosition);
         const mesh = planetTargetGroupRef.current.children[i];

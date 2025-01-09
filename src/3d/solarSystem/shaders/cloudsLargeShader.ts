@@ -1,4 +1,36 @@
+import { ShaderMaterial, Vector3 } from "three";
+
 const cloudsLargeShader = {
+  //updateUniforms: (material: ShaderMaterial) => {},
+
+  uniforms: {
+    u_time: {
+      value: 0.0,
+    },
+    u_speed: {
+      value: 0.0075,
+    },
+    u_cloudscale: {
+      value: 6.7,
+    },
+    u_cloudColor: {
+      value: new Vector3(1.0, 1.0, 1.0),
+    },
+    u_cloudDark: {
+      value: 0.5,
+    },
+    u_cloudCover: {
+      value: 0.0,
+    },
+    u_cloudAlpha: {
+      value: 100.0,
+    },
+    u_rotateX: {
+      value: 1.7,
+    },
+    //u_cloudColorDark: { value: new Vector3(0.0, 0.0, 0.0) },
+  },
+
   vertHead: `
 varying vec3 cloudPosition;
 	`,
@@ -8,17 +40,15 @@ cloudPosition = position;`,
 
   fragHead: `
 uniform float u_time;
+uniform float u_speed;
+uniform float u_cloudscale;
 uniform vec3 u_cloudColor;
+uniform float u_cloudDark;
+uniform float u_cloudCover;
+uniform float u_cloudAlpha;
+uniform float u_rotateX;
 varying vec3 cloudPosition;
-const float cloudscale = 5.0;//1.1;
-const float speed = 0.03;
-const float clouddark = 0.5;
 const float cloudlight = 0.3;
-const float cloudcover = 0.2;
-const float cloudalpha = 10.0;
-const float skytint = 0.5;
-const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
-const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
 
 //const mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 );
 
@@ -85,19 +115,19 @@ vec3 p = cloudPosition;// * rotationMatrix;
 //p = rotateX( p, -PI * 0.2 );
 //p = rotateZ( p, -PI * 1.2 );
 
-vec3 m = rotateX( vec3(1.0, 1.0, 1.0), 1.8 );
+vec3 m = rotateX( vec3(1.0, 1.0, 1.0), u_rotateX );
 //float m = 1.0;
 
-float speed = 0.1;
+//float u_speed = 0.1;
 
 // vec3 rotatedNormal & rotationMatrix is from rotatedNormalShader
 vec3 uv = p;
-float time = u_time * speed;
-float q = fractalNoise(uv * cloudscale * 0.5);
+float time = u_time * u_speed;
+float q = fractalNoise(uv * u_cloudscale * 0.5);
 
 //ridged perlinNoise shape
 float r = 0.0;
-uv *= cloudscale;
+uv *= u_cloudscale;
 uv -= q - time;
 float weight = 0.8;
 for (int i=0; i<8; i++){
@@ -111,7 +141,7 @@ r += abs(weight*perlinNoise( uv ));
 //perlinNoise shape
 float f = 0.0;
 uv = p;
-uv *= cloudscale;
+uv *= u_cloudscale;
 uv -= q - time;
 weight = 0.7;
 for (int i=0; i<8; i++){
@@ -124,9 +154,9 @@ f *= r + f;
 
 //perlinNoise colour
 float c = 0.0;
-time = u_time * speed * 2.0;
+time = u_time * u_speed * 2.0;
 uv = p;
-uv *= cloudscale*2.0;
+uv *= u_cloudscale*2.0;
 uv -= q - time;
 weight = 0.4;
 for (int i=0; i<7; i++){
@@ -137,9 +167,9 @@ for (int i=0; i<7; i++){
 
 //perlinNoise ridge colour
 float c1 = 0.0;
-time = u_time * speed * 3.0;
+time = u_time * u_speed * 3.0;
 uv = p;
-uv *= cloudscale*3.0;
+uv *= u_cloudscale*3.0;
 uv -= q - time;
 weight = 0.4;
 for (int i=0; i<7; i++){
@@ -150,12 +180,9 @@ for (int i=0; i<7; i++){
 
 c += c1;
 
-//vec3 skycolour = mix(skycolour2, skycolour1, p.y);
-//vec3 cloudcolour = vec3(1.1, 1.1, 0.9) * clamp((clouddark + cloudlight*c), 0.0, 1.0);
+//vec3 cloudcolour = vec3(1.1, 1.1, 0.9) * clamp((u_cloudDark + cloudlight*c), 0.0, 1.0);
 
-f = cloudcover + cloudalpha*f*r;
-
-//vec3 result = mix(skycolour, clamp(skytint * skycolour + cloudcolour, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
+f = u_cloudCover + u_cloudAlpha*f*r;
 
 vec3 result = mix(gl_FragColor.rgb, u_cloudColor, clamp(f + c, 0.0, 1.0));
 

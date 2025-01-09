@@ -10,8 +10,8 @@ const Star = ({ star /*, textureMaps*/ }) => {
   const sunRef = useRef<THREE.Group | null>(null);
   const sunMeshRef = useRef<THREE.Mesh | null>(null);
 
-  const canvasWidth = 256 * 1;
-  const canvasHeight = 256 * 0.5;
+  const canvasWidth = 400 * 1;
+  const canvasHeight = 400 * 0.5;
 
   const { texture, bumpMapTexture, colors } = generatePlanetTextures(
     canvasWidth,

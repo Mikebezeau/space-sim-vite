@@ -9,6 +9,8 @@ import BuildMechEquipment from "./3d/buildMech/BuildMechEquipment";
 import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER } from "./constants/constants";
 
+import TestPlanetScene from "./scenes/TestPlanetScene";
+
 const AppCanvasScene = () => {
   const initGameStore = useStore((state) => state.initGameStore);
   const isGameStoreInit = useStore((state) => state.isGameStoreInit);
@@ -26,7 +28,8 @@ const AppCanvasScene = () => {
 
   return (
     <>
-      {isGameStoreInit ? (
+      <TestPlanetScene />
+      {false && isGameStoreInit ? (
         <>
           {playerScreen === PLAYER.screen.newCampaign ? (
             <NewCampaignScene />
