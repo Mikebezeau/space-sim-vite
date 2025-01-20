@@ -325,8 +325,8 @@ const useStore = create<storeState>()((set, get) => ({
     },
     warpToPlanet() {
       let player = get().player;
-      const focusPlanetIndex = get().focusPlanetIndex || -1;
-      if (focusPlanetIndex > -1 && get().planets[focusPlanetIndex]) {
+      const focusPlanetIndex = get().focusPlanetIndex;
+      if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
         const targetPlanet = get().planets[focusPlanetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
         player.object3d.translateZ(-targetPlanet.radius * 2);
@@ -444,7 +444,7 @@ const useStore = create<storeState>()((set, get) => ({
       // setting enemy world position relative to player test
       useEnemyStore
         .getState()
-        .enemyWorldPosition.set(0, 0, get().stars[0].radius * 1.5);
+        .enemyWorldPosition.set(0, 0, get().stars[0].radius * 3);
 
       // just to get player looking right direction (at displaced sun)
       get().player.object3d.lookAt(0, 0, -100);
@@ -458,7 +458,7 @@ const useStore = create<storeState>()((set, get) => ({
       }));
       // set position of space station near a planet
       const stations = genStations();
-      const stationOrbitPlanet = get().planets[1] || get().stars[0];
+      const stationOrbitPlanet = get().planets[0] || get().stars[0];
       if (stations[0]) {
         stations[0].object3d.position.set(
           stationOrbitPlanet.object3d.position.x,

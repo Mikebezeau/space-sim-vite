@@ -51,8 +51,6 @@ uniform float u_rotateX;
 varying vec3 cloudPosition;
 const float cloudlight = 0.3;
 
-  //const mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 );
-
   float hash(float n) {
       return fract(sin(n) * 43758.5453123);
   }

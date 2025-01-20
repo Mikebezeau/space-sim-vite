@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import useStore from "../../../stores/store";
 import useEnemyStore from "../../../stores/enemyStore";
 import useParticleStore from "../../../stores/particleStore";
 import useDevStore from "../../../stores/devStore";
@@ -10,9 +11,15 @@ const ObbTest = forwardRef(function ObbTest(
   obbTestForwardRef: any
 ) {
   console.log("obbTest rendered");
+  const playerWorldOffsetPosition = useStore(
+    (state) => state.playerWorldOffsetPosition
+  );
   const enemies = useEnemyStore((state) => state.enemies);
+  const enemyWorldPosition = useEnemyStore((state) => state.enemyWorldPosition);
   const addExplosion = useParticleStore((state) => state.effects.addExplosion);
   const showObbBox = useDevStore((state) => state.showObbBox);
+
+  const tempEnemyWorldPosition = new THREE.Vector3();
 
   // show hide obb boxes
   useEffect(() => {
@@ -72,12 +79,24 @@ const ObbTest = forwardRef(function ObbTest(
           // @ts-ignore
           obbTestForwardRef.current[j].material.color.setHex(0xffff00);
 
+          tempEnemyWorldPosition.set(
+            enemies[i].object3d.position.x +
+              enemyWorldPosition.x -
+              playerWorldOffsetPosition.x,
+
+            enemies[i].object3d.position.y +
+              enemyWorldPosition.y -
+              playerWorldOffsetPosition.y,
+
+            enemies[i].object3d.position.z +
+              enemyWorldPosition.z -
+              playerWorldOffsetPosition.z
+          );
+
+          enemies[i].object3d.position;
           // add test explosions
-          if (Math.random() < 0.5) {
-            if (i !== 0) addExplosion(enemies[i].object3d.position);
-          }
-          if (Math.random() < 0.5) {
-            addExplosion(enemies[j].object3d.position);
+          if (Math.random() < 0.75) {
+            if (i !== 0) addExplosion(tempEnemyWorldPosition);
           }
         }
       }

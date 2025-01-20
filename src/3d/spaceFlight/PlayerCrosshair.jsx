@@ -12,7 +12,7 @@ const crossMaterial = new THREE.MeshBasicMaterial({
 });
 
 const PlayerCrossHair = () => {
-  console.log("PlayerCrossHair rendered");
+  //console.log("PlayerCrossHair rendered");
   const playerActionMode = usePlayerControlsStore(
     (state) => state.playerActionMode
   );

@@ -137,6 +137,7 @@ const ScannerReadout = () => {
             smallestTargetAngle = angleDiff;
             tempFocusPlanetIndex = i;
           }
+          //if (i === 0) testVal = worldPosition.x;
         }
         setFocusPlanetIndex(tempFocusPlanetIndex);
       }
@@ -148,7 +149,17 @@ const ScannerReadout = () => {
         dummyObj.position.copy(camera.position);
         dummyObj.lookAt(worldPosition);
         const highlight = tempFocusPlanetIndex === i || focusPlanetIndex === i;
-        placeTarget(dummyObj, camera, mesh, highlight, 0, i, 1);
+        /*
+        dummyObj,
+        camera,
+        mesh,
+        highlight,
+        selectedTargetIndex,
+        enemyIndex,
+        distanceNormalized,
+        isPlanet
+        */
+        placeTarget(dummyObj, camera, mesh, highlight, -1, i, 1);
         if (highlight) {
           checkScanDistanceToPlanet(i);
         }

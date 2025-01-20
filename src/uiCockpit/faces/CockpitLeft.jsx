@@ -51,7 +51,7 @@ const CockpitLeft = () => {
       style={{ backgroundImage: `url(${screenBImage})` }}
     >
       <div className="absolute w-[200px] right-12 top-20 text-right text-xs">
-        {sunScanData?.length > 0 && !focusPlanetIndex && (
+        {sunScanData?.length > 0 && focusPlanetIndex === null && (
           <>
             <p className="">System</p>
             {sunScanData.map(([key, value]) => {

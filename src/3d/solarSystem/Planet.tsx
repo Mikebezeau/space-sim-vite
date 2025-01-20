@@ -6,12 +6,11 @@ import { updatePlanetShaderUniform } from "./materials/planetShaderMaterial";
 
 interface PlanetInt {
   planet: PlanetClass;
-  isTestScreen?: boolean;
 }
 
 const Planet = (props: PlanetInt) => {
-  const { planet, isTestScreen = false } = props;
-  console.log("Planet rendered", planet);
+  const { planet } = props;
+  //console.log("Planet rendered");
 
   const planetRef = useRef<THREE.Mesh | null>(null);
 
@@ -21,7 +20,7 @@ const Planet = (props: PlanetInt) => {
     if (planetRef.current) {
       delta = Math.min(delta, 0.1); // cap delta to 100ms
 
-      planetRef.current.rotateY(delta / 10);
+      planetRef.current.rotateY(delta / 500);
 
       //@ts-ignore // shaderMaterial set in mesh
       const shaderMat: THREE.ShaderMaterial = planetRef.current.material;
@@ -50,7 +49,7 @@ const Planet = (props: PlanetInt) => {
             planet.initObject3d(ref);
           }
         }}
-        position={isTestScreen ? [0, 0, 0] : planet.object3d.position}
+        position={planet.object3d.position}
         rotation={planet.object3d.rotation}
         material={planet.material}
       >

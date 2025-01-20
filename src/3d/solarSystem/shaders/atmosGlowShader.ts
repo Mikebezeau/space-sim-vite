@@ -69,9 +69,11 @@ if( u_atmos ) {
   glowIntensity *= ( ( 1.0 - outer_fade ) * 0.25 );
 
   vec3 shadedColor = gl_FragColor.rgb * lightAngle;
+  // keep alpha value from fresnel shader
+  float alpha = gl_FragColor.a;
 
-  gl_FragColor = vec4( shadedColor + glowIntensity, 1.0 );
-  //gl_FragColor = vec4( vec3( lightAngle ), 1.0 );
+  gl_FragColor = vec4( shadedColor + glowIntensity, alpha );
+  //gl_FragColor = vec4( vec3( lightAngle ), 1.0 );// testing light angle
 }
 `,
 };

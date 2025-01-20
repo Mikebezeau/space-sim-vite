@@ -9,7 +9,7 @@ import radarDish from "../assets/icons/radarDish.svg";
 import sword from "../assets/icons/sword.svg";
 import stars from "../assets/icons/stars.svg";
 import camera from "../assets/icons/camera-change.svg";
-import { SCALE, IS_MOBILE, PLAYER } from "../constants/constants";
+import { IS_MOBILE, PLAYER } from "../constants/constants";
 
 // for mouse users, click to enter manual control mode of piloting
 const ActionControlPilot = () => {
@@ -60,7 +60,7 @@ export const ActionWarpToPlanet = () => {
   const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
   const scanPlanet = useStore((state) => state.scanPlanet);
   const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
-  return focusPlanetIndex ? (
+  return focusPlanetIndex !== null ? (
     <>
       {IS_MOBILE ? (
         <div
