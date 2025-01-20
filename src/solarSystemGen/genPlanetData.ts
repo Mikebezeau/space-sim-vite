@@ -1,6 +1,6 @@
+import { default as seedrandom } from "seedrandom";
 import { typeStarData } from "./genStarData";
 import { typeObitalZonesData } from "./genObitalZonesData";
-import Star from "../classes/solarSystem/Star";
 import {
   PLANET_ZONES,
   PLANET_TYPE_DATA,
@@ -20,6 +20,14 @@ export type typePlanetData = {
   minTemp?: number;
   maxTemp?: number;
   craterIntensity?: number;
+};
+
+export type typeGenPlanetData = {
+  rngSeed: string;
+  planetType: typePlanetData;
+  subClasses: number[];
+  distanceFromStar: number;
+  temperature: { min: number; max: number; average: number };
 };
 
 // Helper function to calculate planet temperature based on distance and star's temperature
@@ -46,6 +54,7 @@ const calculateTemperature = (
 
 // Helper function to determine likely planet class based star data
 const determinePlanetType = (
+  rng: any,
   starData: typeStarData,
   orbitalZonesData: typeObitalZonesData,
   distanceFromStar: number
@@ -97,31 +106,34 @@ const determinePlanetType = (
     );
 
   if (finalTypes.length > 0) {
-    const randomIndex = Math.floor(Math.random() * finalTypes.length);
+    const randomIndex = Math.floor(rng() * finalTypes.length);
     const planetType: typePlanetData = finalTypes[randomIndex];
     return planetType;
   }
 };
 
 // Main function to generate a random planet
-const genPlanetData = (star: Star) => {
-  const starData = star.data;
-  const orbitalZonesData = star.orbitalZonesData;
+const genPlanetData = (starData: typeStarData, index: number = 0) => {
+  const rngSeed = starData.index.toString() + "-" + index.toString();
+  const rng = seedrandom(rngSeed);
+  const orbitalZonesData = starData.orbitalZonesData;
 
-  const planetIsInnerZone = Math.random() < starData.planetInnerZoneProb; //rng() < starData.planetInnerZoneProb;
+  const planetIsInnerZone = rng() < starData.planetInnerZoneProb; //rng() < starData.planetInnerZoneProb;
 
   const zone = planetIsInnerZone
     ? orbitalZonesData.innerSolarSystem
     : orbitalZonesData.outerSolarSystem;
 
   const distanceFromStar =
-    Math.random() * (zone.radiusEnd - zone.radiusStart) + zone.radiusStart;
+    rng() * (zone.radiusEnd - zone.radiusStart) + zone.radiusStart;
 
   const planetType: typePlanetData | undefined = determinePlanetType(
+    rng,
     starData,
     orbitalZonesData,
     distanceFromStar
   );
+
   if (planetType) {
     const temperature = calculateTemperature(
       starData.luminosity,
@@ -129,13 +141,18 @@ const genPlanetData = (star: Star) => {
       planetType.albedo,
       planetType.greenhouse
     );
-    return {
+
+    const planetData: typeGenPlanetData = {
+      rngSeed,
       planetType,
       subClasses: [],
       distanceFromStar,
       temperature,
     };
+
+    return planetData;
   }
+  return null;
 };
 
 export default genPlanetData;

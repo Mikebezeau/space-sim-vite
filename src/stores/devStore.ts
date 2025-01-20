@@ -1,59 +1,25 @@
 import { create } from "zustand";
 import * as THREE from "three";
-import useStore from "./store";
-import useEnemyStore from "./enemyStore";
+//import useStore from "./store";
+//import useEnemyStore from "./enemyStore";
+import {
+  PLANET_TYPE,
+  PLANET_TYPE_DATA,
+} from "../constants/solarSystemConstants";
 
-import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 
-import genPlanetData, { typePlanetData } from "../solarSystemGen/genPlanetData";
-import getPlanetTestShaderMaterial, {
-  typePlanetShaderOptions,
-} from "../3d/solarSystem/materials/planetTestShaderMaterial";
-import { typeTextureMapOptions } from "../constants/solarSystemConstants";
-import { SCALE } from "../constants/constants";
-
-const defaultTestShaderOptions: typePlanetShaderOptions = {
-  clouds: true,
-  atmos: false,
-};
-
-export const defaultTestShaderUniforms = {
-  u_speed: {
-    value: 0.0075,
-  },
-  u_cloudscale: {
-    value: 6.7,
-  } /*
-  u_cloudDark: {
-    value: 0.5,
-  },*/,
-  u_cloudCover: {
-    value: 0.0,
-  },
-  u_cloudAlpha: {
-    value: 100.0,
-  },
-  u_rotateX: {
-    value: 1.7,
-  },
-};
+import { typePlanetData } from "../solarSystemGen/genPlanetData";
 
 interface devStoreState {
-  test: boolean;
+  testScreen: { [id: string]: boolean };
+  setPlanetTest: () => void;
+  getIsTestScreen: () => boolean;
   //
   testPlanet: Planet | null;
-  testTextureOptions: typeTextureMapOptions | null;
-  genTestPlanet: () => void;
+  getTestPlanet: () => Planet | null;
+  genTestPlanet: (renderer: THREE.WebGLRenderer | null) => void;
   setPlanetType: (planetTypeData: typePlanetData) => void;
-  genPlanetTextureOptions: () => void;
-  updateTestTextureOptions: (propName: string, value: any) => void;
-  planetTestShaderMaterial: THREE.ShaderMaterial;
-  testShaderOptions: typePlanetShaderOptions;
-  updateTestShaderOptions: (propName: string, value: number | boolean) => void;
-  testShaderUniforms: any;
-  updateTestShaderUniforms: (propName: string, value: number | boolean) => void;
-  getTestShaderUniforms: () => any;
   //
   devEnemyTest: boolean;
   devPlayerPilotMech: boolean;
@@ -65,85 +31,72 @@ interface devStoreState {
   boidSeparationMod: number;
   boidCohesionMod: number;
   setProp: (propName: string, value: number) => void;
-  summonEnemy: () => void;
+  //summonEnemy: () => void;
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
-  test: true,
+  testScreen: { planetTest: false },
+  setPlanetTest: () =>
+    set((state) => ({
+      testScreen: {
+        ...state.testScreen,
+        planetTest: !state.testScreen.planetTest,
+      },
+    })),
+  getIsTestScreen: () =>
+    Object.values(get().testScreen).find(
+      (isTestScreen) => isTestScreen === true
+    )
+      ? true
+      : false,
   // planet testing
   testPlanet: null,
-  testTextureOptions: null,
-  genTestPlanet: () => {
-    const star = new Star(666);
-    const planetData = genPlanetData(star);
-    console.log();
-    if (planetData) {
+  getTestPlanet: () => get().testPlanet,
+  genTestPlanet: (renderer: THREE.WebGLRenderer | null) => {
+    const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
+      (planetTypeData) => planetTypeData.planetType === PLANET_TYPE.earthLike
+    );
+    if (planetTypeData) {
+      const isTestPlanet = true;
       const testPlanet = new Planet(
-        Math.random,
-        planetData.planetType,
-        planetData.distanceFromStar,
-        planetData.temperature
+        {
+          rngSeed: "666-0",
+          planetType: planetTypeData,
+          subClasses: [],
+          distanceFromStar: 0,
+          temperature: { min: 0, max: 0, average: 0 },
+        },
+        renderer,
+        isTestPlanet
       );
       set(() => ({
         testPlanet,
       }));
     }
   },
-  genPlanetTextureOptions: () => {
-    set(() => ({
-      testTextureOptions: get().testPlanet?.getTextureOptions(),
-    }));
-  },
   setPlanetType: (planetTypeData) => {
-    const testPlanet = new Planet(Math.random, planetTypeData);
+    get().testPlanet?.disposeResources();
+
+    set(() => ({
+      testPlanet: null,
+    }));
+
+    const testPlanet = new Planet(
+      {
+        rngSeed: "666-0",
+        planetType: planetTypeData,
+        subClasses: [],
+        distanceFromStar: 0,
+        temperature: { min: 0, max: 0, average: 0 },
+      },
+      null,
+      true
+    );
     set(() => ({
       testPlanet,
     }));
-    set(() => ({
-      testTextureOptions: testPlanet.getTextureOptions(),
-    }));
+    console.log(testPlanet);
   },
-  updateTestTextureOptions: (propName: string, value: any) => {
-    const testTextureOptions = get().testTextureOptions;
-    if (testTextureOptions !== null) {
-      testTextureOptions[propName] = value;
-      set(() => ({
-        testTextureOptions,
-      }));
-      console.log(
-        "updateTestTextureOptions",
-        propName,
-        value,
-        get().testTextureOptions
-      );
-      set(() => ({
-        test: !get().test,
-      }));
-    }
-  },
-  planetTestShaderMaterial: getPlanetTestShaderMaterial(
-    defaultTestShaderOptions
-  ),
-  testShaderOptions: defaultTestShaderOptions,
-  updateTestShaderOptions: (propName: string, value: number | boolean) => {
-    const testShaderOptions = get().testShaderOptions;
-    testShaderOptions[propName] = value;
-    set(() => ({
-      testShaderOptions,
-    }));
-    set(() => ({
-      planetTestShaderMaterial: getPlanetTestShaderMaterial(testShaderOptions),
-    }));
-  },
-  testShaderUniforms: defaultTestShaderUniforms,
-  updateTestShaderUniforms: (propName: string, value: number | boolean) => {
-    const testShaderUniforms = get().testShaderUniforms;
-    testShaderUniforms[propName].value = value;
-    set(() => ({
-      testShaderUniforms,
-    }));
-  },
-  getTestShaderUniforms: () => get().testShaderUniforms,
   // dev
   devEnemyTest: false,
   devPlayerPilotMech: true,
@@ -156,6 +109,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   boidCohesionMod: 0,
   setProp: (propName: string, value: number | boolean) =>
     set(() => ({ [propName]: value })),
+  /*
   summonEnemy() {
     const playerPosition = useStore.getState().player.object3d.position;
     useEnemyStore.getState().enemies.map((enemy) => {
@@ -165,6 +119,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       enemy.object3d.translateZ(-1000 * SCALE);
     });
   },
+  */
 }));
 
 export default useDevStore;

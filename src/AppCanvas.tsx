@@ -1,10 +1,10 @@
 import React from "react";
-import { Perf } from "r3f-perf";
 import { Canvas } from "@react-three/fiber";
 //import useStore from "./stores/store";
 import AppCanvasLoadTrigger from "./AppCanvasLoadTrigger";
 import AppCanvasScene from "./AppCanvasScene";
 import { PLAYER_START } from "./constants/constants";
+import { Perf } from "r3f-perf";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
@@ -53,12 +53,12 @@ const AppCanvas = () => {
         >
           <Perf
             logsPerSecond={5}
-            minimal
+            //minimal
             customData={{
               value: 0, // initial value,
-              name: "Custom", // name to show
+              name: 1, //"Custom", // name to show
               round: 2, // precision of the float
-              info: "", // additional information about the data (fps/ms for instance)
+              info: 1, //"", // additional information about the data (fps/ms for instance)
             }}
           />
           <AppCanvasLoadTrigger />

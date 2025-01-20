@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import PlayerMech from "../classes/PlayerMech";
+import useGenFboTextureStore from "./genFboTextureStore";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
 import { randomData, genStations } from "../util/initGameUtil";
@@ -30,7 +31,7 @@ export type TypeGalaxy = {
 };
 
 interface storeState {
-  initGameStore: () => void;
+  initGameStore: (renderer: THREE.WebGLRenderer) => void;
   isGameStoreInit: boolean;
 
   sound: boolean;
@@ -106,7 +107,9 @@ interface storeState {
 //const useStore = create((set, get) => {
 
 const useStore = create<storeState>()((set, get) => ({
-  initGameStore: () => {
+  initGameStore: (renderer) => {
+    // set planet texture map renderer
+    useGenFboTextureStore.getState().initComputeRenderer(renderer);
     // set planets, asteroids, stations, etc. for player start location
     get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
     set(() => ({ isGameStoreInit: true }));
@@ -121,6 +124,7 @@ const useStore = create<storeState>()((set, get) => ({
   galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
     set({ galaxy: galaxyData });
   }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+
   starPointsShaderMaterial: starPointsShaderMaterial,
   // intial player star
   playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
@@ -424,7 +428,7 @@ const useStore = create<storeState>()((set, get) => ({
     // slecting star in galaxy map
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
       set(() => ({ playerCurrentStarIndex }));
-      const [stars, planets] = systemGen(playerCurrentStarIndex);
+      const { stars, planets } = systemGen(playerCurrentStarIndex);
       set(() => ({
         stars,
       }));

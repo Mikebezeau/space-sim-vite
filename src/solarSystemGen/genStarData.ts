@@ -1,11 +1,16 @@
 import { default as seedrandom } from "seedrandom";
+import genObitalZonesData, {
+  typeObitalZonesData,
+} from "../solarSystemGen/genObitalZonesData";
 
 export type typeStarData = {
+  index: number;
   starClass: string;
   size: number;
   solarMass: number;
   luminosity: number;
   temperature: number;
+  orbitalZonesData: typeObitalZonesData;
   age: number;
   colorHex: string;
   colorRGB: number[];
@@ -144,14 +149,21 @@ const genStarData = (starIndex: number) => {
       if (rng() < props.planetCreateChance) numPlanets++;
     }
     const fixedRangeRandom = Math.random();
+
+    const solarMass = getFromRange(fixedRangeRandom, props.mass);
+    const luminosity = getFromRange(fixedRangeRandom, props.luminosity);
+    const orbitalZonesData = genObitalZonesData(solarMass, luminosity);
+
     const starData: typeStarData = {
+      index: starIndex,
       starClass,
       size: getFromRange(fixedRangeRandom, props.size),
-      solarMass: getFromRange(fixedRangeRandom, props.mass),
-      luminosity: getFromRange(fixedRangeRandom, props.luminosity), //.toExponential(2),
+      solarMass,
+      luminosity,
       temperature: Math.round(
         getFromRange(fixedRangeRandom, props.temperature)
       ),
+      orbitalZonesData,
       // As stars age they get cooler, so flip the range random
       age: getFromRange(1 - fixedRangeRandom, props.age).toExponential(2),
       colorHex: colorHex[classIndex],
@@ -159,6 +171,7 @@ const genStarData = (starIndex: number) => {
       numPlanets,
       planetInnerZoneProb: props.planetInnerZoneProb,
     };
+
     return starData;
   }
 

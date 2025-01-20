@@ -1,35 +1,27 @@
-import { default as seedrandom } from "seedrandom";
-import genPlanetData from "./genPlanetData";
+import genStarData from "./genStarData";
+import genPlanetData, { typeGenPlanetData } from "./genPlanetData";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 
-export const systemInfoGen = (starIndex) => {
-  const star = new Star(starIndex);
-  const planets = [];
-  for (let i = 0; i < star.data.numPlanets; i++) {
-    planets.push(genPlanetData(star));
+export const systemInfoGen = (starIndex: number) => {
+  const starData = genStarData(starIndex);
+  const planetsData: typeGenPlanetData[] = [];
+  for (let i = 0; i < starData.numPlanets; i++) {
+    const planetData = genPlanetData(starData, i);
+    if (planetData !== null) planetsData.push(planetData);
   }
-  planets.sort((a, b) => a.distanceFromStar - b.distanceFromStar);
+  planetsData.sort((a, b) => a.distanceFromStar - b.distanceFromStar);
 
-  return [star, planets];
+  return { starData, planetsData };
 };
 
-const systemGen = (starIndex) => {
-  const rng = seedrandom(starIndex);
-  // @ts-ignore
-  const [star, planetData] = systemInfoGen(starIndex);
-  let stars = [star];
-  let planets = [];
-
-  planetData.forEach((planet) => {
-    planets.push(
-      new Planet(
-        rng,
-        planet.planetType,
-        planet.distanceFromStar,
-        planet.temperature
-      )
-    );
+const systemGen = (starIndex: number) => {
+  const { starData, planetsData } = systemInfoGen(starIndex);
+  let stars = [new Star(starData)];
+  let planets: Planet[] = [];
+  planetsData.forEach((planetData) => {
+    console.log(planetData);
+    planets.push(new Planet(planetData));
   });
 
   /*
@@ -67,7 +59,7 @@ const systemGen = (starIndex) => {
     });
   }
   */
-  return [stars, planets];
+  return { stars, planets };
 };
 
 /*

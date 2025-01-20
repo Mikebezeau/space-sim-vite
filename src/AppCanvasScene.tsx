@@ -1,6 +1,8 @@
 import React, { useLayoutEffect } from "react";
+import { useThree } from "@react-three/fiber";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
+import useDevStore from "./stores/devStore";
 import NewCampaignScene from "./scenes/NewCampaignScene";
 import SpaceFlightScene from "./scenes/SpaceFlightScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
@@ -17,36 +19,47 @@ const AppCanvasScene = () => {
 
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
 
+  const testScreen = useDevStore((state) => state.testScreen);
+
+  const { gl } = useThree();
+
   console.log("AppCanvasScene rendered", isGameStoreInit, playerScreen);
 
   // init game
   useLayoutEffect(() => {
-    if (!isGameStoreInit) {
-      initGameStore();
+    if (!testScreen.planetTest && !isGameStoreInit) {
+      initGameStore(gl);
     }
-  }, [isGameStoreInit, initGameStore]);
+  }, [testScreen, isGameStoreInit, initGameStore]);
 
   return (
     <>
-      <TestPlanetScene />
-      {false && isGameStoreInit ? (
+      {testScreen.planetTest ? (
+        <TestPlanetScene />
+      ) : (
         <>
-          {playerScreen === PLAYER.screen.newCampaign ? (
-            <NewCampaignScene />
-          ) : null}
-          {playerScreen === PLAYER.screen.flight ? <SpaceFlightScene /> : null}
-          {playerScreen === PLAYER.screen.landedPlanet ? (
-            <PlanetExploreScene />
-          ) : null}
-          {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMap />}
-          {playerScreen === PLAYER.screen.dockedStation ? (
-            <StationDockScene />
-          ) : null}
-          {playerScreen === PLAYER.screen.equipmentBuild ? (
-            <BuildMechEquipment />
+          {isGameStoreInit ? (
+            <>
+              {playerScreen === PLAYER.screen.newCampaign ? (
+                <NewCampaignScene />
+              ) : null}
+              {playerScreen === PLAYER.screen.flight ? (
+                <SpaceFlightScene />
+              ) : null}
+              {playerScreen === PLAYER.screen.landedPlanet ? (
+                <PlanetExploreScene />
+              ) : null}
+              {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMap />}
+              {playerScreen === PLAYER.screen.dockedStation ? (
+                <StationDockScene />
+              ) : null}
+              {playerScreen === PLAYER.screen.equipmentBuild ? (
+                <BuildMechEquipment />
+              ) : null}
+            </>
           ) : null}
         </>
-      ) : null}
+      )}
     </>
   );
 };

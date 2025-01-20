@@ -1,3 +1,4 @@
+import { Vector3 } from "three";
 import { typePlanetData } from "../solarSystemGen/genPlanetData";
 
 export const PLANET_ZONES = {
@@ -99,8 +100,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     Gas Jupiter 0.70
     */
     greenhouse: 1,
-    color: "#775555",
-    craterIntensity: 3,
+    color: "#998844",
+    craterIntensity: 2,
   },
   [PLANET_TYPE.sterran]: {
     planetClass: PLANET_CLASS.terrestrial,
@@ -112,8 +113,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     zones: [PLANET_ZONES.inner],
     albedo: 0.16,
     greenhouse: 1,
-    color: "#cc7777",
-    craterIntensity: 3,
+    color: "#888844",
+    craterIntensity: 2.5,
   },
   [PLANET_TYPE.terran]: {
     planetClass: PLANET_CLASS.terrestrial,
@@ -125,8 +126,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     zones: [PLANET_ZONES.inner, PLANET_ZONES.habitable],
     albedo: 0.16,
     greenhouse: 1,
-    color: "#dd5555",
-    craterIntensity: 2,
+    color: "#88aa33",
+    craterIntensity: 3,
   },
   [PLANET_TYPE.earthLike]: {
     planetClass: PLANET_CLASS.terrestrial,
@@ -153,8 +154,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     zones: [PLANET_ZONES.inner, PLANET_ZONES.habitable],
     albedo: 0.16,
     greenhouse: 1,
-    color: "#dd7755",
-    craterIntensity: 1,
+    color: "#775533",
+    craterIntensity: 2,
   },
   [PLANET_TYPE.venusian]: {
     planetClass: PLANET_CLASS.terrestrial,
@@ -242,39 +243,48 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
 };
 
 export type typeTextureMapOptions = {
+  amplitude?: number;
   scale?: number;
   octaves?: number;
   persistence?: number;
+  lacunarity?: number;
   baseColor?: string;
   colors?: { r: number; g: number; b: number }[];
+  shaderColors?: Vector3[];
+  isClouds?: boolean;
   isCloudColorWhite?: boolean;
   planetTypeMods?: { warpX: number; warpY: number; warpZ: number };
   craterIntensity?: number;
   grayscale?: boolean;
-  isNoiseMap?: boolean;
   debug?: boolean;
 };
 
 export const PLANET_CLASS_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
   {
     [PLANET_CLASS.terrestrial]: {
-      scale: 1, // Adjust for finer detail
-      octaves: 6,
-      persistence: 0.8,
+      scale: 2, // Adjust for finer detail
+      octaves: 10,
+      amplitude: 0.3,
+      persistence: 0.9,
+      lacunarity: 1.4,
       baseColor: "#AA4444",
-      isCloudColorWhite: true,
+      isClouds: false,
     },
     [PLANET_CLASS.gasGiant]: {
-      scale: 0.1,
-      octaves: 1,
+      scale: 4,
+      octaves: 4,
+      amplitude: 0.5,
       persistence: 0.5,
+      lacunarity: 1.5,
       baseColor: "#DD44DD",
       planetTypeMods: { warpX: 1, warpY: 1, warpZ: 20 },
     },
     [PLANET_CLASS.dwarf]: {
       scale: 1,
-      octaves: 2,
+      octaves: 5,
+      amplitude: 0.5,
       persistence: 0.5,
+      lacunarity: 1.5,
       baseColor: "#444444",
     },
   };
@@ -283,32 +293,40 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
   {
     [PLANET_TYPE.mterran]: {
       scale: 1, // Adjust for finer detail
-      octaves: 6,
-      persistence: 0.5,
+      octaves: 7,
+      amplitude: 0.7,
+      persistence: 0.7,
+      lacunarity: 1.6,
       baseColor: PLANET_TYPE_DATA[PLANET_TYPE.mterran].color,
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.mterran].craterIntensity || 0,
     },
     [PLANET_TYPE.sterran]: {
-      scale: 1, // Adjust for finer detail
-      octaves: 6,
-      persistence: 0.5,
+      scale: 2, // Adjust for finer detail
+      octaves: 10,
+      amplitude: 0.3,
+      persistence: 0.9,
+      lacunarity: 1.2,
       baseColor: PLANET_TYPE_DATA[PLANET_TYPE.sterran].color,
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.sterran].craterIntensity || 0,
     },
     [PLANET_TYPE.terran]: {
       scale: 1, // Adjust for finer detail
-      octaves: 6,
-      persistence: 0.5,
+      octaves: 15,
+      amplitude: 0.1,
+      persistence: 1.0,
+      lacunarity: 1.2,
       baseColor: PLANET_TYPE_DATA[PLANET_TYPE.terran].color,
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.terran].craterIntensity || 0,
     },
     [PLANET_TYPE.earthLike]: {
       scale: 1, // Adjust for finer detail
-      octaves: 6,
+      octaves: 19,
+      amplitude: 1.0,
       persistence: 0.8,
+      lacunarity: 1.3,
       colors: [
         // Water colors (dark to light)
         { r: 0, g: 25, b: 51 }, // Deep ocean
@@ -333,21 +351,35 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
         { r: 240, g: 248, b: 255 }, // Icy blue white
         { r: 255, g: 255, b: 255 }, // Snowy white (highest peaks)
       ],
+      isClouds: true,
+      isCloudColorWhite: true,
+      /*
+      cloudsUniforms: {
+        u_cloudscale: { value: 0.003 },
+        u_cloudCover: { value: 0.0 },
+        u_cloudAlpha: { value: 20 },
+        u_rotateX: { value: 1.7 },
+      },
+      */
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.earthLike].craterIntensity || 0,
     },
     [PLANET_TYPE.suTerran]: {
-      scale: 1, // Adjust for finer detail
-      octaves: 6,
-      persistence: 0.5,
+      scale: 2, // Adjust for finer detail
+      octaves: 13,
+      amplitude: 0.9,
+      persistence: 0.3,
+      lacunarity: 5.0,
       baseColor: PLANET_TYPE_DATA[PLANET_TYPE.suTerran].color,
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.suTerran].craterIntensity || 0,
     },
     [PLANET_TYPE.venusian]: {
-      scale: 1, // Adjust for finer detail
-      octaves: 6,
-      persistence: 0.5,
+      scale: 5, // Adjust for finer detail
+      octaves: 15,
+      amplitude: 0.4,
+      persistence: 0.4,
+      lacunarity: 5.0,
       baseColor: PLANET_TYPE_DATA[PLANET_TYPE.venusian].color,
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.venusian].craterIntensity || 0,

@@ -38,7 +38,9 @@ const StarInfoCard = () => {
     const starIndex = showInfoHoveredStarIndex || showInfoTargetStarIndex;
     if (starIndex) {
       setViewStarIndex(starIndex);
-      [starInfoRef.current, planetDataRef.current] = systemInfoGen(starIndex);
+      const { starData, planetsData } = systemInfoGen(starIndex);
+      starInfoRef.current = starData;
+      planetDataRef.current = planetsData;
     } else {
       setViewStarIndex(null);
     }
@@ -65,11 +67,11 @@ const StarInfoCard = () => {
     >
       <div className="clip-path-cyber-inner bg-black p-8 text-white">
         <h2>System: {viewStarIndex}</h2>
-        <p>Star class: {starInfoRef.current?.data.starClass}</p>
-        <p>Mass: {starInfoRef.current?.data.solarMass.toFixed(2)}</p>
-        <p>Size: {starInfoRef.current?.data.size.toFixed(2)}</p>
-        <p>Lum: {starInfoRef.current?.data.luminosity.toFixed(2)}</p>
-        <p>TmpK: {starInfoRef.current?.data.temperature.toFixed(2)}</p>
+        <p>Star class: {starInfoRef.current?.starClass}</p>
+        <p>Mass: {starInfoRef.current?.solarMass.toFixed(2)}</p>
+        <p>Size: {starInfoRef.current?.size.toFixed(2)}</p>
+        <p>Lum: {starInfoRef.current?.luminosity.toFixed(2)}</p>
+        <p>TmpK: {starInfoRef.current?.temperature.toFixed(2)}</p>
         <p>
           inner:{" "}
           {starInfoRef.current?.orbitalZonesData.innerSolarSystem.radiusStart.toFixed(

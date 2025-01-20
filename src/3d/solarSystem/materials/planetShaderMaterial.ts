@@ -6,33 +6,48 @@ import cloudsLargeShader from "../shaders/cloudsLargeShader";
 import fresnelShader from "../shaders/fresnelShader";
 import atmosGlowShader from "../shaders/atmosGlowShader";
 
-const planetShaderMaterial = new THREE.ShaderMaterial({
+export type typePlanetShaderOptions = {
+  clouds: boolean;
+  atmos: boolean;
+};
+
+type uniformType = { name: string; value: any };
+
+export const updatePlanetShaderUniform = (
+  shaderMat: THREE.ShaderMaterial,
+  uniform: uniformType
+) => {
+  //cloudsLargeShader.updateUniforms(material);
+  if (shaderMat.uniforms[uniform.name])
+    shaderMat.uniforms[uniform.name].value = uniform.value;
+};
+
+export const updatePlanetShaderUniforms = (
+  shaderMat: THREE.ShaderMaterial,
+  uniforms: { uniform: uniformType }
+) => {
+  //cloudsLargeShader.updateUniforms(material);
+  Object.entries(uniforms).forEach(([name, uniform]) => {
+    if (shaderMat.uniforms[name])
+      shaderMat.uniforms[name].value = uniform.value;
+  });
+};
+
+const planetTestShaderMaterial = new THREE.ShaderMaterial({
   side: THREE.FrontSide, // using depthWrite: false possible preformance upgrade
   transparent: true,
   depthTest: true, // default is true
   depthWrite: false, // must have true for uv mapping unless use THREE.FrontSide
   uniforms: {
-    u_time: {
-      value: 0.0,
-    } /*
-      uNoiseTex: {
-        value: noiseTexture,
-      },*/,
-    u_lightPos: {
-      value: null,
-    },
-    u_nMin: {
-      // for sunShader
-      value: 0.7,
-    },
-    uObjectMatrixWorld: {
-      value: null,
-    },
     u_texture: {
       value: null,
     },
-    u_cloudColor: { value: null },
-    u_cloudColorDark: { value: null },
+    u_craterTexture: {
+      value: null,
+    },
+    ...rotatedNormalShader.uniforms,
+    ...cloudsLargeShader.uniforms,
+    ...atmosGlowShader.uniforms,
   },
   //blending: THREE.AdditiveBlending,
   vertexShader: `
@@ -56,8 +71,10 @@ void main() {
   #include <logdepthbuf_vertex>
 }
 `,
+
   fragmentShader: `
 uniform sampler2D u_texture;
+uniform sampler2D u_craterTexture;
 
 varying vec2 vUv;
 
@@ -73,14 +90,13 @@ void main() {
   #include <logdepthbuf_fragment>
 
   gl_FragColor = texture2D( u_texture, vUv );
-  //gl_FragColor = texture2D( uNoiseTex, vUv );
 
   ${rotatedNormalShader.fragMain}
   ${fresnelShader.fragMain}
-  ${/*cloudsLargeShader.fragMain*/ ""}
+  ${cloudsLargeShader.fragMain}
   ${atmosGlowShader.fragMain}
 }
 `,
 });
 
-export default planetShaderMaterial;
+export default planetTestShaderMaterial;

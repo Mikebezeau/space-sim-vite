@@ -1,4 +1,5 @@
-import React from "react";
+import React /*, { useLayoutEffect, useRef }*/ from "react";
+import LilGui from "./dev/LilGui";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
@@ -31,50 +32,75 @@ const AppUI = () => {
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
+  //const getIsTestScreen = useDevStore((state) => state.getIsTestScreen);
+  const testScreen = useDevStore((state) => state.testScreen);
   const devEnemyTest = useDevStore((state) => state.devEnemyTest);
   const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
-  return (
-    <div className="pointer-events-none touch-none">
-      <AppLoadingScreen />
-      <AppLoadingManager />
-      {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
-      {playerScreen === PLAYER.screen.flight &&
-        (devEnemyTest ? devPlayerPilotMech : true) && (
-          <>
-            {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
-            {playerViewMode === PLAYER.view.thirdPerson && (
-              <>
-                <Cockpit3rdPersonControls />
-                <ActionModeControls />
-                <div className="absolute top-20 left-10">
-                  <SpeedReadout />
-                </div>
-              </>
-            )}
-            <div className="absolute top-72 right-11">
-              <ShieldsReadout />
-              <WeaponsReadout />
-            </div>
-          </>
-        )}
-      {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
-      {playerScreen === PLAYER.screen.dockedStation && <StationDockMenu />}
-      {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
+  /*
+  const isTestScreen = useRef<boolean>(false);
 
-      {(playerScreen === PLAYER.screen.flight ||
-        playerScreen === PLAYER.screen.landedPlanet) &&
-        (devEnemyTest ? devPlayerPilotMech : true) && (
-          <>
-            {IS_MOBILE ? (
-              <SpaceFlightControlsTouch />
-            ) : (
-              <SpaceFlightControlsMouseKB />
+  useLayoutEffect(() => {
+    isTestScreen.current = getIsTestScreen();
+    console.log(
+      "isTestScreen.current testScreen.planetTest",
+      isTestScreen.current,
+      testScreen.planetTest
+    );
+  }, [testScreen]);
+*/
+  return (
+    <>
+      {testScreen.planetTest ? (
+        <></>
+      ) : (
+        <>
+          <LilGui />
+          <div className="pointer-events-none touch-none">
+            <AppLoadingScreen />
+            <AppLoadingManager />
+            {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
+            {playerScreen === PLAYER.screen.flight &&
+              (devEnemyTest ? devPlayerPilotMech : true) && (
+                <>
+                  {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
+                  {playerViewMode === PLAYER.view.thirdPerson && (
+                    <>
+                      <Cockpit3rdPersonControls />
+                      <ActionModeControls />
+                      <div className="absolute top-20 left-10">
+                        <SpeedReadout />
+                      </div>
+                    </>
+                  )}
+                  <div className="absolute top-72 right-11">
+                    <ShieldsReadout />
+                    <WeaponsReadout />
+                  </div>
+                </>
+              )}
+            {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
+            {playerScreen === PLAYER.screen.dockedStation && (
+              <StationDockMenu />
             )}
-          </>
-        )}
-      {/*<CustomCursor />*/}
-    </div>
+            {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
+
+            {(playerScreen === PLAYER.screen.flight ||
+              playerScreen === PLAYER.screen.landedPlanet) &&
+              (devEnemyTest ? devPlayerPilotMech : true) && (
+                <>
+                  {IS_MOBILE ? (
+                    <SpaceFlightControlsTouch />
+                  ) : (
+                    <SpaceFlightControlsMouseKB />
+                  )}
+                </>
+              )}
+            {/*<CustomCursor />*/}
+          </div>
+        </>
+      )}
+    </>
   );
 };
 

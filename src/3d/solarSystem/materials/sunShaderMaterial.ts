@@ -15,7 +15,6 @@ const sunShaderMaterial = new ShaderMaterial({
       value: null,
     },
     u_cloudColor: { value: null },
-    u_cloudColorDark: { value: null },
   },
   //blending: THREE.AdditiveBlending,
   vertexShader: `
@@ -50,7 +49,6 @@ void main() {
   #include <logdepthbuf_fragment>
 
   gl_FragColor = texture2D( u_texture, vUv );
-  //gl_FragColor = texture2D( uNoiseTex, vUv );
 
   ${fresnelShader.fragMain}
   ${sunShader.fragMain}

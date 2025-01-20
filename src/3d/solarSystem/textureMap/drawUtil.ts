@@ -89,11 +89,11 @@ export const generateSortedRandomColors = (
   const genAltLumFactor = () => {
     if (isSun) {
       const maxAltLumFactor = getFactorLumWhite(baseColor) + 0.2;
-      const minAltLumFactor = -0.2;
+      const minAltLumFactor = -0.4;
       return (
         Math.random() * (maxAltLumFactor - minAltLumFactor) + minAltLumFactor
       );
-    } else return Math.random() * 2 - 1;
+    } else return Math.random() * 4 - 2;
   };
 
   for (let j = 0; j < 2; j++) {
@@ -209,7 +209,7 @@ export const getCirclePoints = (
   phiCenter: number = Math.PI,
   circleRadius: number = Math.PI / 16
 ) => {
-  const numPoints = 20; // Number of points on the circle
+  const numPoints = 8; // Number of main points on the circle, 3 looks like triangle
   const textureCoordinates: [number, number][] = [];
   const localFramePoints = computeCircleInLocalFrame(numPoints, circleRadius);
 
@@ -236,9 +236,9 @@ export const getCirclePoints = (
 
 const getCurvePoints = (
   points: [number, number][],
-  tension = 0.5,
+  tension = 0.75, // higher value for more curvyz
   isClosed = true,
-  numOfSegments = 32
+  numOfSegments = 2 // works well with a low number for the circle
 ) => {
   var _pts: number[] = [],
     res: number[] = [], // clone array

@@ -1,5 +1,3 @@
-import { typeStarData } from "./genStarData";
-
 export type typeZone = {
   radiusStart: number;
   radiusEnd: number;
@@ -13,7 +11,10 @@ export type typeObitalZonesData = {
   kuiperBelt: typeZone | null;
 };
 
-function genObitalZonesData(star: typeStarData): typeObitalZonesData {
+function genObitalZonesData(
+  solarMass: number,
+  luminosity: number
+): typeObitalZonesData {
   // Helper function to calculate the orbital radius for a given temperature
   function calculateHabitableZone(luminosity: number): typeZone {
     // Approximate formula for the habitable zone:
@@ -26,17 +27,17 @@ function genObitalZonesData(star: typeStarData): typeObitalZonesData {
   }
 
   // Calculate habitable zone
-  const habitableZone = calculateHabitableZone(star.luminosity);
+  const habitableZone = calculateHabitableZone(luminosity);
 
   // Generate inner and outer solar system radii
   const innerSolarSystem: typeZone = {
-    radiusStart: 0.1 * star.solarMass, // Closest stable orbit
-    radiusEnd: habitableZone ? habitableZone.radiusEnd : 2 * star.solarMass, // Arbitrary boundary for inner system
+    radiusStart: 0.1 * solarMass, // Closest stable orbit
+    radiusEnd: habitableZone ? habitableZone.radiusEnd : 2 * solarMass, // Arbitrary boundary for inner system
   };
 
   const outerSolarSystem: typeZone = {
     radiusStart: innerSolarSystem.radiusEnd,
-    radiusEnd: (Math.random() * 3 + 2) * 10 * star.solarMass, // Arbitrary boundary for outer system
+    radiusEnd: (Math.random() * 3 + 2) * 10 * solarMass, // Arbitrary boundary for outer system
   };
 
   // Asteroid belt(s) probability and placement

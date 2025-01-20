@@ -1,8 +1,6 @@
 import * as THREE from "three";
-import genStarData from "../../solarSystemGen/genStarData";
-import genObitalZonesData, {
-  typeObitalZonesData,
-} from "../../solarSystemGen/genObitalZonesData";
+//import genStarData from "../../solarSystemGen/genStarData";
+import { typeObitalZonesData } from "../../solarSystemGen/genObitalZonesData";
 import { PLANET_SCALE } from "../../constants/constants";
 
 interface StarInt {
@@ -10,6 +8,7 @@ interface StarInt {
 }
 
 class Star implements StarInt {
+  rngSeed: string;
   index: number;
   type: string;
   _data: any;
@@ -19,12 +18,11 @@ class Star implements StarInt {
   textureMap: number;
   object3d: THREE.Object3D;
 
-  constructor(starIndex: number) {
-    const starData = genStarData(starIndex);
-
-    this.index = starIndex;
+  constructor(starData: any) {
+    this.rngSeed = starData.index.toFixed(0);
+    this.index = starData.index;
     this._data = starData;
-    this.orbitalZonesData = genObitalZonesData(starData);
+    this.orbitalZonesData = starData.orbitalZonesData;
     this.color = starData.colorHex; //new THREE.Color(star.colorHex);
     this.radius = starData.size * 696340 * PLANET_SCALE; //km
     this.textureMap = 0;

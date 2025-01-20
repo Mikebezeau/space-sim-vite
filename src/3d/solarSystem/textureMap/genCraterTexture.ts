@@ -4,7 +4,8 @@ import { drawCircle, getCirclePoints } from "./drawUtil";
 export const genCraterTexture = (
   canvas: HTMLCanvasElement,
   colors: { r: number; g: number; b: number }[],
-  craterIntensity: number
+  craterIntensity: number,
+  scale: number = 1
 ) => {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -16,7 +17,7 @@ export const genCraterTexture = (
 
   const ctxBuffer = canvasBuffer.getContext("2d");
   if (!ctxBuffer) return;
-  const blurAmount = Math.ceil(width / 600);
+  const blurAmount = Math.ceil(width / 1000);
   ctxBuffer.filter = "blur(" + blurAmount + "px)";
   // Draw circles with random positions
   const craters: {
@@ -29,7 +30,7 @@ export const genCraterTexture = (
       //thetaCenter: Math.random() * Math.PI,
       thetaCenter: Math.acos(1 - 2 * Math.random()),
       phiCenter: Math.random() * Math.PI * 2,
-      circleRadius: Math.PI / (Math.floor(Math.random() * 40) + 30),
+      circleRadius: Math.PI / ((Math.floor(Math.random() * 100) + 30) * scale),
     };
     // do not include if close to poles
     if (
@@ -61,7 +62,7 @@ export const genCraterTexture = (
       );
     });
   }
-  ctx.globalAlpha = 0.5;
+  ctx.globalAlpha = 0.3;
   ctx.drawImage(canvasBuffer, 0, 0);
   ctx.globalAlpha = 1;
 

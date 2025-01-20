@@ -1,54 +1,34 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
 import useStore from "../../stores/store";
+import StarClass from "../../classes/solarSystem/Star";
 import { useFrame } from "@react-three/fiber";
-import { generatePlanetTextures } from "./textureMap/genTextureMaps";
+import { generateSortedRandomColors } from "../../3d/solarSystem/textureMap/drawUtil";
 
-const Star = ({ star /*, textureMaps*/ }) => {
+interface StarInt {
+  star: StarClass;
+}
+
+const Star = (props: StarInt) => {
+  const { star } = props;
   const sunShaderMaterial = useStore((state) => state.sunShaderMaterial);
 
   const sunRef = useRef<THREE.Group | null>(null);
   const sunMeshRef = useRef<THREE.Mesh | null>(null);
 
-  const canvasWidth = 400 * 1;
-  const canvasHeight = 400 * 0.5;
-
-  const { texture, bumpMapTexture, colors } = generatePlanetTextures(
-    canvasWidth,
-    canvasHeight,
-    { scale: 5, octaves: 1, baseColor: star.color }
-  );
-  /*
-  const { noiseTexture } = generatePlanetTextures(canvasWidth, canvasHeight, {
-    isNoiseMap: true,
-  });
-*/
+  const isSun = true;
+  const colors = generateSortedRandomColors(isSun, star.color);
 
   // for clouds
-  const baseColorRBG = colors[colors.length - 1]; //parseHexColor(star.color);
+  const baseColorRBG = colors[Math.floor(colors.length / 2)]; //parseHexColor(star.color);
   const baseColor = new THREE.Vector3(
     baseColorRBG.r / 255,
     baseColorRBG.g / 255,
     baseColorRBG.b / 255
   );
 
-  // for clouds
-  const baseColorDarkRBG = colors[Math.floor(colors.length / 2)]; //parseHexColor(star.color);
-  const baseColorDark = new THREE.Vector3(
-    baseColorDarkRBG.r / 255,
-    baseColorDarkRBG.g / 255,
-    baseColorDarkRBG.b / 255
-  );
-
-  sunShaderMaterial.uniforms.u_planetRealPos = {
-    value: star.object3d.position,
-  }; // atmos shader
-  sunShaderMaterial.uniforms.uObjectMatrixWorld = {
-    value: star.object3d.matrixWorld,
-  };
-  sunShaderMaterial.uniforms.u_texture = { value: texture };
+  //sunShaderMaterial.uniforms.u_texture = { value: texture };
   sunShaderMaterial.uniforms.u_cloudColor = { value: baseColor };
-  sunShaderMaterial.uniforms.u_cloudColorDark = { value: baseColorDark };
 
   const geometrySun = new THREE.SphereGeometry(1, 64, 64);
 
@@ -61,8 +41,8 @@ const Star = ({ star /*, textureMaps*/ }) => {
 
       if (shaderMat.uniforms?.u_time) shaderMat.uniforms.u_time.value += delta;
 
-      if (shaderMat.uniforms?.uObjectMatrixWorld)
-        shaderMat.uniforms.uObjectMatrixWorld.value =
+      if (shaderMat.uniforms?.u_objectMatrixWorld)
+        shaderMat.uniforms.u_objectMatrixWorld.value =
           sunRef.current.matrixWorld;
     }
   });
