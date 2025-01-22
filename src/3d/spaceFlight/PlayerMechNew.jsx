@@ -76,7 +76,7 @@ const PlayerMech = () => {
   void main() {
     #include <logdepthbuf_fragment>
   
-    gl_FragColor = vec4( vec3( 1.0 ), 0.3 - abs( vPosition.x ) );
+    gl_FragColor = vec4( vec3( 1.0 ), 0.3 - abs( vPosition.x ) - abs( vPosition.z / 2.0 ) );
   }
   `,
   });

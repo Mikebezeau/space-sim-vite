@@ -95,7 +95,6 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     set(() => ({
       testPlanet,
     }));
-    console.log(testPlanet);
   },
   // dev
   devEnemyTest: false,

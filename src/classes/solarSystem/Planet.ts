@@ -4,13 +4,17 @@ import { v4 as uuidv4 } from "uuid";
 import useStore from "../../stores/store";
 import useGenFboTextureStore from "../../stores/genFboTextureStore";
 import { getFromRange } from "../../solarSystemGen/genStarData";
-import { generateSortedRandomColors } from "../../3d/solarSystem/textureMap/drawUtil";
+import {
+  generateSortedRandomColors,
+  parseHexColor,
+} from "../../3d/solarSystem/textureMap/drawUtil";
 import {
   typePlanetData,
   typeGenPlanetData,
 } from "../../solarSystemGen/genPlanetData";
 import { SYSTEM_SCALE, PLANET_SCALE } from "../../constants/constants";
 import {
+  typeCloudShaderUniforms,
   typeTextureMapOptions,
   PLANET_CLASS_TEXTURE_MAP,
   PLANET_TYPE_TEXTURE_MAP,
@@ -50,7 +54,7 @@ class Planet implements PlanetInt {
   bumpMapTexture: THREE.Texture | null;
   colors: THREE.Vector3[];
 
-  cloudShaderUniforms: any;
+  cloudShaderUniforms: typeCloudShaderUniforms;
 
   constructor(
     genPlanetData: typeGenPlanetData,
@@ -92,6 +96,14 @@ class Planet implements PlanetInt {
 
     // set default textureOptions and colors
     this.setTextureOptions();
+    this.cloudShaderUniforms = {
+      u_isClouds: true,
+      u_cloudscale: 1.0,
+      u_cloudColor: new THREE.Vector3(1.0, 1.0, 1.0),
+      u_cloudCover: 0.0,
+      u_cloudAlpha: 20.0,
+      u_rotateX: 1.0,
+    };
     // generate terrian texture map
     this.genTexture(renderer);
     // TODO generate crater texture map
@@ -99,8 +111,6 @@ class Planet implements PlanetInt {
 
     this.material = useStore.getState().clonePlanetShaderMaterial();
     this.updateUniforms();
-
-    this.cloudShaderUniforms = { u_rotateX: { value: 1.7 } };
   }
   /*
   public get data() {
@@ -142,16 +152,19 @@ class Planet implements PlanetInt {
     if (this.textureMapOptions.colors) {
       colors = this.textureMapOptions.colors;
     } else {
-      const isSun = false;
-      colors = generateSortedRandomColors(
+      //const isSun = false;
+      colors = [
+        parseHexColor(this.textureMapOptions.baseColor || "#000000"),
+        parseHexColor(this.textureMapOptions.secondColor || "#FFFFFF"),
+      ];
+      /*generateSortedRandomColors(
         isSun,
         this.textureMapOptions.baseColor || "#102A44"
-      );
+      );*/
     }
     const shaderColors = colors.map(
       (color) => new THREE.Vector3(color.r / 255, color.g / 255, color.b / 255)
     );
-    console.log(shaderColors[6].x, shaderColors[6].y, shaderColors[6].z);
     this.textureMapOptions.shaderColors = shaderColors;
   };
 
@@ -180,11 +193,13 @@ class Planet implements PlanetInt {
     this.disposeTextures();
     // if renderer provided will initComputeRenderer
     // othwise will generate the texture if already initialized
-
-    console.log("Planet genTexture", this.textureMapOptions);
     this.texture = useGenFboTextureStore
       .getState()
-      .generatePlanetTexture(renderer, this.textureMapOptions);
+      .generatePlanetTexture(
+        renderer,
+        this.textureMapOptions,
+        this.cloudShaderUniforms
+      );
   };
 
   disposeTextures = () => {
@@ -198,7 +213,6 @@ class Planet implements PlanetInt {
   };
 
   updateUniforms = () => {
-    console.log("Planet updateUniforms");
     this.material.uniforms.u_texture = { value: this.texture };
     // rotation matrix
     this.material.uniforms.u_objectMatrixWorld = {
@@ -206,10 +220,10 @@ class Planet implements PlanetInt {
     };
     // clouds shader
     this.material.uniforms.u_clouds = {
-      value: this.textureMapOptions.isClouds ? 1 : 0,
+      value: this.cloudShaderUniforms.u_isClouds ? 1 : 0,
     };
     this.material.uniforms.u_cloudColor = {
-      value: new THREE.Vector3(1, 1, 1),
+      value: this.cloudShaderUniforms.u_cloudColor,
     };
     // atmos shader
     this.material.uniforms.u_atmos = { value: this.isTestPlanet ? 0 : 1 }; // show atmosphere?
@@ -226,12 +240,17 @@ class Planet implements PlanetInt {
     };
     this.setShaderColors();
     this.genTexture();
+    //for original planet material shader (inc. animated clouds)
     this.updateUniforms();
   };
 
   updateCloudShaderUniform = (uniform: any) => {
+    // animated planet material clouds shader
     this.material.uniforms[uniform.name] = { value: uniform.value };
-    console.log(this.material.uniforms);
+    // FBO static clouds shader
+    this.cloudShaderUniforms[uniform.name] = uniform.value;
+    // update the planet texture
+    this.genTexture();
   };
 }
 

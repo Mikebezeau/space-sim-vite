@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { Vector3 } from "three";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useDevStore from "../stores/devStore";
@@ -23,6 +24,8 @@ const TestPlanetScene = () => {
   const { camera, gl } = useThree();
 
   const guiRef = useRef<any>(null);
+  const folderLayer1ref = useRef<any>(null);
+  const folderLayer2ref = useRef<any>(null);
   const cameraControlsRef = useRef<any>(null);
   const testPlanetRef = useRef<PlanetClass | null>(null);
 
@@ -43,7 +46,12 @@ const TestPlanetScene = () => {
     amplitude: 0.0,
     persistence: 0.0,
     lacunarity: 0.0,
+    isRigid: false,
+    stretchX: 1.0,
+    stretchY: 1.0,
+    isWarp: false,
     baseColor: "#000000",
+    secondColor: "#ffffff",
     isClouds: false,
   };
 
@@ -52,13 +60,16 @@ const TestPlanetScene = () => {
   };
 
   const effectUniformControllerOptions: any = {
-    u_cloudscale: 0.001,
+    u_isClouds: true,
+    u_cloudscale: 1.0,
+    u_cloudColor: new Vector3(1.0, 1.0, 1.0),
     u_cloudCover: 0.0,
     u_cloudAlpha: 20.0,
-    u_rotateX: 1.7,
+    u_rotateX: 0.0,
   };
 
   const valuesUniformChanger = function (uniform: any) {
+    // gets updated in 2 places (animated shader material uniforms & FBO shader uniforms)
     getTestPlanet()?.updateCloudShaderUniform(uniform);
   };
 
@@ -81,15 +92,45 @@ const TestPlanetScene = () => {
         testPlanetRef.current.textureMapOptions.persistence || 0.5;
       effectControllerOptions.lacunarity =
         testPlanetRef.current.textureMapOptions.lacunarity || 0.5;
+
+      effectControllerOptions.isRigid =
+        testPlanetRef.current.textureMapOptions.isRigid || false;
+
+      effectControllerOptions.stretchX =
+        testPlanetRef.current.textureMapOptions.stretchX || 1.0;
+
+      effectControllerOptions.stretchY =
+        testPlanetRef.current.textureMapOptions.stretchY || 1.0;
+
+      effectControllerOptions.isWarp =
+        testPlanetRef.current.textureMapOptions.isWarp || false;
+
       effectControllerOptions.baseColor =
-        testPlanetRef.current.textureMapOptions.baseColor || "#102A44";
+        testPlanetRef.current.textureMapOptions.baseColor || "#000000";
+
+      effectControllerOptions.secondColor =
+        testPlanetRef.current.textureMapOptions.secondColor || "#ffffff";
 
       effectControllerOptions.isClouds =
         testPlanetRef.current.textureMapOptions.isClouds || false;
+
+      // TODO effectUniformControllerOptions
     }
     // if need to update current controls
     if (guiRef.current?.controllers) {
       guiRef.current.controllers.forEach((controller: any) => {
+        controller.updateDisplay();
+      });
+    }
+    // if need to update current folder controls
+    if (folderLayer1ref.current?.controllers) {
+      folderLayer1ref.current.controllers.forEach((controller: any) => {
+        controller.updateDisplay();
+      });
+    }
+    // if need to update current folder controls
+    if (folderLayer2ref.current?.controllers) {
+      folderLayer2ref.current.controllers.forEach((controller: any) => {
         controller.updateDisplay();
       });
     }
@@ -129,36 +170,67 @@ const TestPlanetScene = () => {
           }
         });
 
-      guiRef.current
-        .add(effectControllerOptions, "scale", 1.0, 5.0, 1.0)
+      folderLayer1ref.current = guiRef.current.addFolder("Layer 1");
+
+      folderLayer1ref.current
+        .add(effectControllerOptions, "scale", 1.0, 15.0, 1.0)
         .onChange(valuesChanger);
 
-      guiRef.current
+      folderLayer1ref.current
         .add(effectControllerOptions, "octaves", 5.0, 25.0, 1.0)
         .onChange(valuesChanger);
 
-      guiRef.current
+      folderLayer1ref.current
         .add(effectControllerOptions, "amplitude", 0.1, 5.0, 0.1)
         .onChange(valuesChanger);
 
-      guiRef.current
+      folderLayer1ref.current
         .add(effectControllerOptions, "persistence", 0.1, 2.0, 0.1)
         .onChange(valuesChanger);
 
-      guiRef.current
-        .add(effectControllerOptions, "lacunarity", 0.1, 5.0, 0.1)
+      folderLayer1ref.current
+        .add(effectControllerOptions, "lacunarity", 0.1, 4.0, 0.1)
         .onChange(valuesChanger);
 
-      guiRef.current.add(effectControllerOptions, "baseColor").onChange(() => {
-        if (effectControllerOptions.baseColor?.length === 7) valuesChanger();
-      });
+      folderLayer1ref.current
+        .add(effectControllerOptions, "isRigid")
+        .onChange(valuesChanger);
+
+      folderLayer1ref.current
+        .add(effectControllerOptions, "stretchX", 1.0, 5.0, 1.0)
+        .onChange(valuesChanger);
+
+      folderLayer1ref.current
+        .add(effectControllerOptions, "stretchY", 1.0, 5.0, 1.0)
+        .onChange(valuesChanger);
+
+      folderLayer1ref.current
+        .add(effectControllerOptions, "isWarp")
+        .onChange(valuesChanger);
+
+      folderLayer1ref.current
+        .addColor(effectControllerOptions, "baseColor")
+        .onChange(valuesChanger);
+
+      folderLayer1ref.current
+        .addColor(effectControllerOptions, "secondColor")
+        .onChange(valuesChanger);
+
+      const folderLayer2 = guiRef.current.addFolder("Layer 2");
+      folderLayer2.open(false); // close
 
       guiRef.current
         .add(effectControllerOptions, "isClouds")
         .onChange(valuesChanger);
 
       guiRef.current
-        .add(effectUniformControllerOptions, "u_cloudscale", 0.001, 1.0, 0.001)
+        .add(effectUniformControllerOptions, "u_isClouds")
+        .onChange((value: boolean) => {
+          valuesUniformChanger({ name: "u_isClouds", value });
+        });
+
+      guiRef.current
+        .add(effectUniformControllerOptions, "u_cloudscale", 0.1, 5.0, 0.1)
         .onChange((value: number) => {
           valuesUniformChanger({ name: "u_cloudscale", value });
         });
@@ -176,7 +248,7 @@ const TestPlanetScene = () => {
         });
 
       guiRef.current
-        .add(effectUniformControllerOptions, "u_rotateX", 0.1, 3.2, 0.1)
+        .add(effectUniformControllerOptions, "u_rotateX", 0.1, 3.4, 0.1)
         .onChange((value: number) => {
           valuesUniformChanger({ name: "u_rotateX", value });
         });

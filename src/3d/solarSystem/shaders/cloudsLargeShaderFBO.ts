@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 
-const cloudsLargeShader = {
+const cloudsLargeShaderFBO = {
   //updateUniforms: (material: ShaderMaterial) => {},
 
   uniforms: {
@@ -31,13 +31,6 @@ const cloudsLargeShader = {
     },
   },
 
-  vertHead: `
-varying vec3 cloudPosition;
-	`,
-
-  vertMain: `
-cloudPosition = position;`,
-
   fragHead: `
 uniform bool u_clouds;
 uniform float u_time;
@@ -48,15 +41,15 @@ uniform float u_cloudDark;
 uniform float u_cloudCover;
 uniform float u_cloudAlpha;
 uniform float u_rotateX;
-varying vec3 cloudPosition;
+
 const float cloudlight = 0.3;
 
   float hash(float n) {
       return fract(sin(n) * 43758.5453123);
   }
 
-  // 3D Perlin perlinNoise function
-  float perlinNoise(vec3 p) {
+  // 3D Perlin coudPerlinNoise function
+  float coudPerlinNoise(vec3 p) {
       vec3 i = floor(p);
       vec3 f = fract(p);
       vec3 u = f * f * (3.0 - 2.0 * f);
@@ -71,12 +64,12 @@ const float cloudlight = 0.3;
       return res * res;
   }
 
-  float fractalNoise(vec3 p) {
+  float coudFractalNoise(vec3 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 2.0;
-      for (int i = 0; i < 5; i++) { // 5 layers of perlinNoise
-          value += amplitude * perlinNoise(p * frequency);
+      for (int i = 0; i < 5; i++) { // 5 layers of coudPerlinNoise
+          value += amplitude * coudPerlinNoise(p * frequency);
           frequency *= 2.0;
           amplitude *= 0.5;
       }
@@ -110,7 +103,7 @@ const float cloudlight = 0.3;
 
   fragMain: `
 if( u_clouds ){
-  vec3 p = cloudPosition * 0.001;
+  vec3 p = coords * u_cloudscale;
 
   // finiky wat to get distortion origin at top pole
   vec3 m = rotateX( vec3(1.0, 1.0, 1.0), u_rotateX );
@@ -118,36 +111,36 @@ if( u_clouds ){
   // vec3 rotatedNormal & rotationMatrix is from rotatedNormalShader
   vec3 uv = p;
   float time = u_time * u_speed;
-  float q = fractalNoise(uv * u_cloudscale * 0.5);
+  float q = coudFractalNoise(uv * u_cloudscale * 0.5);
 
-  //ridged perlinNoise shape
+  //ridged coudPerlinNoise shape
   float r = 0.0;
   uv *= u_cloudscale;
   uv -= q - time;
   float weight = 0.8;
   for (int i=0; i<8; i++){
-    //r += abs(weight*perlinNoise( uv ));
-    uv = m*uv + time;
+    //r += abs(weight*coudPerlinNoise( uv ));
+    //uv = m*uv + time;
     weight *= 0.7;
   }
 
-  r += abs(weight*perlinNoise( uv ));
+  r += abs(weight*coudPerlinNoise( uv ));
 
-  //perlinNoise shape
+  //coudPerlinNoise shape
   float f = 0.0;
   uv = p;
   uv *= u_cloudscale;
   uv -= q - time;
   weight = 0.7;
   for (int i=0; i<8; i++){
-    f += weight*perlinNoise( uv );
-    uv = m*uv + time;
+    f += weight*coudPerlinNoise( uv );
+    //uv = m*uv + time;
     weight *= 0.6;
   }
 
   f *= r + f;
 
-  //perlinNoise colour
+  //coudPerlinNoise colour
   float c = 0.0;
   time = u_time * u_speed * 2.0;
   uv = p;
@@ -155,12 +148,12 @@ if( u_clouds ){
   uv -= q - time;
   weight = 0.4;
   for (int i=0; i<7; i++){
-    //c += weight*perlinNoise( uv );
+    //c += weight*coudPerlinNoise( uv );
     uv = m*uv + time;
     weight *= 0.6;
   }
 
-  //perlinNoise ridge colour
+  //coudPerlinNoise ridge colour
   float c1 = 0.0;
   time = u_time * u_speed * 3.0;
   uv = p;
@@ -168,7 +161,7 @@ if( u_clouds ){
   uv -= q - time;
   weight = 0.4;
   for (int i=0; i<7; i++){
-    //c1 += abs(weight*perlinNoise( uv ));
+    //c1 += abs(weight*coudPerlinNoise( uv ));
     uv = m*uv + time;
     weight *= 0.6;
   }
@@ -180,10 +173,10 @@ if( u_clouds ){
   f = u_cloudCover + u_cloudAlpha*f*r;
 
   vec3 result = mix(gl_FragColor.rgb, u_cloudColor, clamp(f + c, 0.0, 1.0));
-
+ 
   gl_FragColor =vec4( result, 1.0 );
 }
 `,
 };
 
-export default cloudsLargeShader;
+export default cloudsLargeShaderFBO;

@@ -54,9 +54,9 @@ export const generateSortedRandomColors = (
     normfactor: number
   ) => {
     return {
-      r: Math.round(21.26 * normfactor + color.r),
-      g: Math.round(71.52 * normfactor + color.g),
-      b: Math.round(7.22 * normfactor + color.b),
+      r: Math.max(Math.round(21.26 * normfactor + color.r), 1),
+      g: Math.max(Math.round(71.52 * normfactor + color.g), 1),
+      b: Math.max(Math.round(7.22 * normfactor + color.b), 1),
     };
   };
 
@@ -121,9 +121,6 @@ const interpolateColor = (
   color2: { r: number; g: number; b: number },
   factor: number
 ) => {
-  //const r = Math.round(color1.r + factor * (color2.r - color1.r));
-  //const g = Math.round(color1.g + factor * (color2.g - color1.g));
-  //const b = Math.round(color1.b + factor * (color2.b - color1.b));
   const r = Math.round(color1.r + (color2.r - color1.r) * factor);
   const g = Math.round(color1.g + (color2.g - color1.g) * factor);
   const b = Math.round(color1.b + (color2.b - color1.b) * factor);

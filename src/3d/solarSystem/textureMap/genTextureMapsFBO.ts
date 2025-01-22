@@ -24,6 +24,7 @@ export const generatePlanetTexturesFBO = (
   let octaves = options.octaves ? options.octaves : 10;
   let persistence = options.persistence ? options.persistence : 0.5;
   let baseColor = options.baseColor ? options.baseColor : "#102A44";
+  let secondColor = options.secondColor ? options.secondColor : "#102A44";
   let optionColors = options.colors ? options.colors : null;
   let planetTypeMods = options.planetTypeMods
     ? options.planetTypeMods
@@ -46,8 +47,8 @@ export const generatePlanetTexturesFBO = (
     circles: [],
   };
   const colors = optionColors
-    ? optionColors
-    : generateSortedRandomColors(false, baseColor);
+    ? [optionColors[0], optionColors[7]]
+    : [baseColor, secondColor]; //generateSortedRandomColors(false, baseColor);
   debugData.colorsSorted = colors;
 
   // set variables for planet type
