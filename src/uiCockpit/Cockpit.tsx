@@ -14,12 +14,12 @@ import {
 } from "../hooks/controls/useTouchControls";
 
 import { lerp } from "../util/gameUtil";
-import "./cockpit.css";
 import {
   ActionModeControls,
   Cockpit1stPersonControls,
 } from "./CockpitControls";
 import { PLAYER } from "../constants/constants";
+import "./uiCockpitBlue.css";
 
 const Cockpit = () => {
   console.log("Cockpit rendered");

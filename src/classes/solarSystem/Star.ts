@@ -1,17 +1,15 @@
 import CelestialBody from "./CelestialBody";
 import * as THREE from "three";
 import useStore from "../../stores/store";
-import useGenFboSunTextureStore from "../../stores/genFboSunTextureStore";
 import { typeStarData } from "../../solarSystemGen/genStarData";
 import { typeObitalZonesData } from "../../solarSystemGen/genObitalZonesData";
 import { PLANET_SCALE } from "../../constants/constants";
 
+/*
 interface StarInt {
-  genTextureSun(renderer?: THREE.WebGLRenderer | null | undefined): void;
-  getMaterial(): THREE.ShaderMaterial;
 }
-
-class Star extends CelestialBody implements StarInt {
+*/
+class Star extends CelestialBody {
   type: string;
   data: typeStarData;
   orbitalZonesData: typeObitalZonesData;
@@ -53,28 +51,6 @@ class Star extends CelestialBody implements StarInt {
     this.material = useStore.getState().sunShaderMaterial;
     this.updateUniforms();
   }
-
-  genTextureSun = (renderer?: THREE.WebGLRenderer | null | undefined) => {
-    this.disposeTextures();
-    // if renderer provided will initComputeRenderer
-    // othwise will generate the texture if already initialized
-    const texture = useGenFboSunTextureStore
-      .getState()
-      .generateSunTexture(
-        renderer,
-        this.textureMapOptions,
-        this.cloudShaderUniforms
-      );
-    if (texture) {
-      this.texture = texture;
-      this.material.uniforms.u_texture = { value: this.texture };
-    }
-  };
-
-  getMaterial = () => {
-    this.genTextureSun();
-    return this.material;
-  };
 }
 
 export default Star;

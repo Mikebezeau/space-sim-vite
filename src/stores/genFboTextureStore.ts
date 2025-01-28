@@ -1,119 +1,16 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-//import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
 } from "../constants/solarSystemConstants";
 import { wlslTexture } from "./wlslTexture";
-import cloudsLargeShaderFBO from "../3d/solarSystem/shaders/cloudsLargeShaderFBO";
+import cloudsLargeShaderGPU from "../3d/solarSystem/shaders/cloudsLargeShaderGPU";
 import { IS_MOBILE } from "../constants/constants";
 
-const sunTextureFS = `
-uniform vec3 u_colors[2];
-uniform vec3 u_color;
-uniform float u_octaves;
-uniform float u_frequency;
-uniform float u_amplitude;
-uniform float u_persistence;
-uniform float u_lacunarity;
-uniform int u_isDoubleNoise;
-uniform int u_isRigid;
-uniform float u_stretchX;
-uniform float u_stretchY;
-uniform int u_isWarp;
-
-${cloudsLargeShaderFBO.fragHead}
-
-${wlslTexture.get3dCoords}
-
-${wlslTexture.cnoise}
-
-float fractalNoise(vec3 p, int isDoubleNoise, int isRigid, float frequency, float octaves, float amplitude, float persistence, float lacunarity) {
-
-  float total = 0.0; // Accumulates the total noise value from all octaves.
-
-  float maxValue = 0.0; // Used for normalizing the result to the range [0, 1].
-
-  // Iterate through each octave to layer the noise.
-  for (float i = 0.0; i < octaves; i++) {
-
-    // Apply an offset to each octave to vary the noise pattern.
-    float offset = i * 2.0; 
-    
-    // Add the noise value, scaled by the current amplitude and frequency, to the total.
-    total += cnoise(
-      vec3( (p.x + offset) * frequency, (p.y + offset) * frequency, p.z * frequency )
-      ) * amplitude;
-    
-    // if double noise
-    if( isDoubleNoise == 1){
-      total = abs( total );
-    }
-
-    // if rigid noise
-    if( isRigid == 1){
-      total = abs( ( total - 0.5 ) * 2.0 );
-    }
-
-    // Accumulate the maximum possible value to normalize the result later.
-    maxValue += amplitude;
-
-    // Decrease the amplitude by the persistence factor for each subsequent octave.
-    amplitude *= persistence;
-
-    // Increase the frequency by the lacunarity factor for each subsequent octave.
-    frequency *= lacunarity;
-  }
-
-  // Normalize the total noise value to fall within the range [0, 1] before returning it.
-  return total;// / maxValue;
-}
-
-void main() {
-  // This isn't needed, but resolution is a built-in uniform of the width and height of the render target
-  //vec2 uv = vec2( gl_FragCoord.x / resolution.x, gl_FragCoord.y / resolution.y );
-  // use this if supplying data with a texture
-  //vec2 texturePoint = texture2D( u_textureData, uv ).xy;
-
-  vec2 texturePoint = vec2( gl_FragCoord.x * u_stretchX, gl_FragCoord.y * u_stretchY );
-  
-  vec3 coords = get3dCoords( texturePoint, WIDTH, HEIGHT );
-  
-  // Use the noise function
-  float noise = fractalNoise( coords, u_isDoubleNoise, u_isRigid, u_frequency, u_octaves, u_amplitude, u_persistence, u_lacunarity );
-  
-  // warp the noise
-  if( u_isWarp == 1){
-    float warpFrequency = 0.1;
-    float warpAmplitude = 0.5;
-    float pX = coords.x + ( cnoise(
-        vec3( ( coords.x + 20.0 ) * warpFrequency, coords.y * warpFrequency, coords.z * warpFrequency )
-      ) - 0.5 ) * warpAmplitude;
-    float pY = coords.y + ( cnoise(
-        vec3( coords.x * warpFrequency, ( coords.y + 20.0 ) * warpFrequency, coords.z * warpFrequency )
-      ) - 0.5 ) * warpAmplitude;
-    float pZ = coords.z + ( cnoise(
-        vec3( coords.x * warpFrequency, coords.y * warpFrequency, ( coords.z + 20.0 ) * warpFrequency )
-      ) - 0.5 ) * warpAmplitude;
-    float warpValue = cnoise( vec3( pX * u_frequency, pY * u_frequency, pZ * u_frequency ) );
-    noise *= warpValue;
-  }
-
-  noise = clamp( noise, 0.0, 1.0 );
-
-  // Assign a color based on the noise value
-  //vec3 color = mix( u_colors[0], u_colors[1], noise );
-  vec3 color = mix( vec3( 1.0, 0.65, 0.06 ), vec3( 1.0, 1.0, 1.0 ), noise );
-
-  gl_FragColor = vec4( color, 1.0 );
-  //gl_FragColor = vec4( vec3( noise ), 1.0 );
-
-  // add clouds
-  ${cloudsLargeShaderFBO.fragMain}
-}
-`;
+export const WIDTH = IS_MOBILE ? 1024 : 2048; //4096;
+export const HEIGHT = WIDTH / 2;
 
 const textureFS = `
 uniform vec3 u_colors[2];
@@ -129,7 +26,7 @@ uniform float u_stretchX;
 uniform float u_stretchY;
 uniform int u_isWarp;
 
-${cloudsLargeShaderFBO.fragHead}
+${cloudsLargeShaderGPU.fragHead}
 
 ${wlslTexture.get3dCoords}
 
@@ -215,7 +112,7 @@ void main() {
   //gl_FragColor = vec4( vec3( noise ), 1.0 );
 
   // add clouds
-  ${cloudsLargeShaderFBO.fragMain}
+  ${cloudsLargeShaderGPU.fragMain}
 }
 `;
 /*
@@ -318,8 +215,6 @@ const mapToColor = (
   return interpolateColor(colors[index], colors[index + 1], normFactor);
 };
 
-const WIDTH = IS_MOBILE ? 1024 : 2048; //4096;
-const HEIGHT = WIDTH / 2;
 /*
 // used to store data to send to shader
 const fillTexturePosition = (texture: any) => {
@@ -347,7 +242,6 @@ interface genFboTextureStoreState {
   readImageArray: Uint8Array;
   */
   gpuCompute: GPUComputationRenderer | null;
-  sunShaderDataVariable: any;
   shaderDataVariable: any;
   initShaderVariable: (
     gpuCompute: GPUComputationRenderer,
@@ -360,17 +254,12 @@ interface genFboTextureStoreState {
     options: typeTextureMapOptions,
     cloudShaderUniforms: typeCloudShaderUniforms
   ) => void;
-  generateTexture: (shaderVariable: any) => THREE.Texture | null;
-  generateSunTexture: (
+  generateTextureGPU: (
     renderer: THREE.WebGLRenderer | null | undefined,
+    renderTargetGPU: any,
     textureMapOptions: typeTextureMapOptions,
     cloudShaderUniforms: typeCloudShaderUniforms
-  ) => THREE.Texture | null;
-  generatePlanetTexture: (
-    renderer: THREE.WebGLRenderer | null | undefined,
-    textureMapOptions: typeTextureMapOptions,
-    cloudShaderUniforms: typeCloudShaderUniforms
-  ) => THREE.Texture | null;
+  ) => void;
 }
 
 const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
@@ -388,8 +277,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
   readImageArray: new Uint8Array(4 * 1 * 4),
   */
   gpuCompute: null,
-  //textureData: null,
-  sunShaderDataVariable: null,
   shaderDataVariable: null,
 
   initShaderVariable: (gpuCompute: GPUComputationRenderer, fragmentShader) => {
@@ -417,7 +304,7 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
 
     //TODO incorporate clouds
 
-    shaderVariable.material.uniforms["u_clouds"] = { value: 1 };
+    shaderVariable.material.uniforms["u_isCloudsAnimated"] = { value: 1 };
     shaderVariable.material.uniforms["u_time"] = {
       value: 1.0,
     };
@@ -456,9 +343,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     const gpuCompute = new GPUComputationRenderer(WIDTH, HEIGHT, renderer);
 
     set({
-      sunShaderDataVariable: get().initShaderVariable(gpuCompute, sunTextureFS),
-    });
-    set({
       shaderDataVariable: get().initShaderVariable(gpuCompute, textureFS),
     });
 
@@ -466,66 +350,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
       "shaderDataVariable.material.uniforms",
       get().shaderDataVariable.material.uniforms
     );
-    /*
-    const textureData = gpuCompute.createTexture();
-    //fillTexturePosition(textureData);//call to fill texture with data to send to shader
-    // don't need the u_textureData: textureData, but not sure how to set this up without
-    const shaderDataVariable = gpuCompute.addVariable(
-      "u_textureData",
-      textureFS,
-      textureData
-    );
-    gpuCompute.setVariableDependencies(shaderDataVariable, [
-      shaderDataVariable,
-    ]);
-
-    // u_frequency / scale
-    shaderDataVariable.material.uniforms["u_frequency"] = { value: 2.0 };
-    shaderDataVariable.material.uniforms["u_octaves"] = { value: 10.0 };
-    shaderDataVariable.material.uniforms["u_amplitude"] = { value: 0.5 };
-    shaderDataVariable.material.uniforms["u_persistence"] = { value: 0.5 };
-    shaderDataVariable.material.uniforms["u_lacunarity"] = { value: 1.5 };
-    shaderDataVariable.material.uniforms["u_isDoubleNoise"] = { value: 0 };
-    shaderDataVariable.material.uniforms["u_stretchX"] = { value: 1.0 };
-    shaderDataVariable.material.uniforms["u_stretchY"] = { value: 1.0 };
-    shaderDataVariable.material.uniforms["u_isWarp"] = { value: 0 };
-    //shaderDataVariable.material.uniforms["u_colors"] = { value: [] };
-
-    //TODO incorporate clouds
-
-    shaderDataVariable.material.uniforms["u_clouds"] = { value: 1 };
-    shaderDataVariable.material.uniforms["u_time"] = {
-      value: 1.0,
-    };
-    shaderDataVariable.material.uniforms["u_speed"] = {
-      value: 0.0075,
-    };
-    shaderDataVariable.material.uniforms["u_cloudscale"] = {
-      value: 0.865,
-    };
-    shaderDataVariable.material.uniforms["u_cloudColor"] = {
-      value: new THREE.Vector3(1.0, 1.0, 1.0),
-    };
-    shaderDataVariable.material.uniforms["u_cloudDark"] = {
-      value: 0.5,
-    };
-    shaderDataVariable.material.uniforms["u_cloudCover"] = {
-      value: 0.0,
-    };
-    shaderDataVariable.material.uniforms["u_cloudAlpha"] = {
-      value: 60.0,
-    };
-    shaderDataVariable.material.uniforms["u_rotateX"] = {
-      value: 0.0,
-    };
-
-    shaderDataVariable.material.defines.WIDTH = WIDTH.toFixed(1);
-    shaderDataVariable.material.defines.HEIGHT = HEIGHT.toFixed(1);
-
-    shaderDataVariable.wrapS = THREE.RepeatWrapping;
-    shaderDataVariable.wrapT = THREE.RepeatWrapping;
-*/
-
     /*
     // Create compute shader to read water level
     const readShader = gpuCompute.createShaderMaterial(readFragmentShader, {
@@ -564,27 +388,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
       // @ts-ignore
       get().gpuCompute.dispose();
     }
-  },
-
-  generateTexture: (shaderVariable) => {
-    if (get().gpuCompute !== null) {
-      // @ts-ignore
-      get().gpuCompute.compute();
-      // copy texture
-      /*
-      const data = new Uint8Array(WIDTH * HEIGHT * 4);
-      const dataTexture = new THREE.DataTexture(data, WIDTH, HEIGHT);
-      get().gpuCompute.copyTextureToTexture(
-        position,
-        dataTexture,
-        get().gpuCompute.getCurrentRenderTarget(shaderVariable).texture
-      );
-      return dataTexture;
-      */
-      // @ts-ignore
-      return get().gpuCompute.getCurrentRenderTarget(shaderVariable).texture;
-    }
-    return null;
   },
 
   setUniforms: (
@@ -646,31 +449,9 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     //console.log(uniforms);
   },
 
-  generateSunTexture: (
+  generateTextureGPU: (
     renderer,
-    textureMapOptions,
-    cloudShaderUniforms = { u_isClouds: false }
-  ) => {
-    if (get().gpuCompute === null && renderer) {
-      get().initComputeRenderer(renderer);
-    }
-    if (get().gpuCompute !== null) {
-      get().setUniforms(
-        get().sunShaderDataVariable,
-        textureMapOptions,
-        cloudShaderUniforms
-      );
-      console.log(
-        "sunShaderDataVariable",
-        get().sunShaderDataVariable.material.uniforms.u_colors
-      );
-      return get().generateTexture(get().sunShaderDataVariable);
-    }
-    return null;
-  },
-
-  generatePlanetTexture: (
-    renderer,
+    renderTargetGPU,
     textureMapOptions,
     cloudShaderUniforms = { u_isClouds: false }
   ) => {
@@ -683,13 +464,14 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
         textureMapOptions,
         cloudShaderUniforms
       );
-      console.log(
-        "shaderDataVariable",
-        get().shaderDataVariable.material.uniforms.u_colors
+      // @ts-ignore
+      get().gpuCompute.doRenderTarget(
+        get().shaderDataVariable.material,
+        renderTargetGPU
       );
-      return get().generateTexture(get().shaderDataVariable);
+      // @ts-ignore
+      get().gpuCompute.compute();
     }
-    return null;
   },
 }));
 

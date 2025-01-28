@@ -2,15 +2,17 @@ import { CanvasTexture } from "three";
 import { drawCircle, getCirclePoints } from "./drawUtil";
 
 export const genCraterTexture = (
-  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
   colors: { r: number; g: number; b: number }[],
   craterIntensity: number,
   scale: number = 1
 ) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const width = canvas.width;
-  const height = canvas.height;
   const canvasBuffer = document.createElement("canvas");
   canvasBuffer.width = width;
   canvasBuffer.height = height;
@@ -79,5 +81,11 @@ export const genCraterTexture = (
     // to test bump map, draws bump map on main texture canvas
     //ctx.drawImage(canvasBumpMap, 0, 0);
   }
-  return new CanvasTexture(canvasBumpMap);
+  const craterTextureCanvas = new CanvasTexture(canvas);
+  const craterBumpMapCanvas = new CanvasTexture(canvasBumpMap);
+
+  return {
+    craterTextureCanvas,
+    craterBumpMapCanvas,
+  };
 };

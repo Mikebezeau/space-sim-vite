@@ -1,0 +1,6 @@
+.right {
+  width: 30vh;
+  height: 65vh;
+  transform: translateX(48.5vh) translateY(4.6vh) translateZ(13vh)
+    rotateX(25deg) rotateY(-45deg) rotateZ(25deg);
+}

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import PlayerMech from "../classes/PlayerMech";
-import useGenFboSunTextureStore from "./genFboSunTextureStore";
 import useGenFboTextureStore from "./genFboTextureStore";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
@@ -15,7 +14,6 @@ import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import CelestialBody from "../classes/solarSystem/CelestialBody";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
-import { addEffect } from "@react-three/fiber";
 //import { track } from "../util/track";
 import {
   STARS_IN_GALAXY,
@@ -76,7 +74,6 @@ interface storeState {
   stations: any[];
   planetTerrain: any;
   actions: {
-    beginSpaceFlightSceneLoop: () => void;
     setSpeed: (speed: number) => void;
     setPlayerPosition: (positionVec3: THREE.Vector3) => void;
     setFocusPlanetIndex: (focusPlanetIndex: number | null) => void;
@@ -113,14 +110,12 @@ interface storeState {
 const useStore = create<storeState>()((set, get) => ({
   initGameStore: (renderer) => {
     // set planet texture map renderer
-    useGenFboSunTextureStore.getState().initComputeRenderer(renderer);
     useGenFboTextureStore.getState().initComputeRenderer(renderer);
     // set planets, asteroids, stations, etc. for player start location
     get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
     set(() => ({ isGameStoreInit: true }));
   },
   disposeGameStore: () => {
-    useGenFboSunTextureStore.getState().disposeGpuCompute();
     useGenFboTextureStore.getState().disposeGpuCompute();
   },
   isGameStoreInit: false,
@@ -355,36 +350,6 @@ const useStore = create<storeState>()((set, get) => ({
   },
 
   actions: {
-    beginSpaceFlightSceneLoop() {
-      const { mutation, actions } = get();
-
-      //addEffect will add the following code to what gets run per frame
-      //removes exploded emenies and rocks from store data, removes explosions once they have timed out
-      addEffect(() => {
-        if (
-          usePlayerControlsStore.getState().playerScreen !==
-          PLAYER.screen.flight
-        )
-          return;
-
-        /*
-        const { player, mutation } = get();
-        const { enemies, enemyBoids } = useEnemyStore.getState();
-        //run enemy AI routine
-        //TODO: find enemies in area of player
-        const localEnemies = enemies;
-        loopAI(
-          player,
-          localEnemies,
-          enemyBoids,
-          mutation.clock,//using useFrame delta now
-          useWeaponFireStore.getState().actions.shoot
-        );
-        */
-        //useWeaponFireStore.getState().weaponFireUpdateFrame();
-      });
-    },
-
     // updating speed of player through state to trigger rerenders in components (i.e SpeedReadout)
     setSpeed(speedValue) {
       get().player.speed = speedValue;

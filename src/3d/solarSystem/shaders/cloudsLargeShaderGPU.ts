@@ -1,12 +1,12 @@
 import { Vector3 } from "three";
 
-const cloudsLargeShaderFBO = {
+const cloudsLargeShaderGPU = {
   //updateUniforms: (material: ShaderMaterial) => {},
 
   uniforms: {
-    u_clouds: { value: 0 },
+    u_isCloudsAnimated: { value: 0 },
     u_time: {
-      value: 0.0,
+      value: 1.0,
     },
     u_speed: {
       value: 0.0075,
@@ -32,7 +32,7 @@ const cloudsLargeShaderFBO = {
   },
 
   fragHead: `
-uniform bool u_clouds;
+uniform bool u_isCloudsAnimated;
 uniform float u_time;
 uniform float u_speed;
 uniform float u_cloudscale;
@@ -102,7 +102,7 @@ const float cloudlight = 0.3;
   `,
 
   fragMain: `
-if( u_clouds ){
+if( u_isCloudsAnimated ){
   vec3 p = coords * u_cloudscale;
 
   // finiky wat to get distortion origin at top pole
@@ -179,4 +179,4 @@ if( u_clouds ){
 `,
 };
 
-export default cloudsLargeShaderFBO;
+export default cloudsLargeShaderGPU;

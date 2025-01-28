@@ -1,10 +1,14 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
-import useGenFboTextureStore from "../../stores/genFboTextureStore";
+import useGenFboTextureStore, {
+  WIDTH,
+  HEIGHT,
+} from "../../stores/genFboTextureStore";
 import {
   //generateSortedRandomColors,
   parseHexColor,
-} from "../../3d/solarSystem/textureMap/drawUtil";
+} from "../../util/drawUtil";
+import { genCraterTexture } from "../../util/genCraterTexture";
 import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
@@ -37,6 +41,7 @@ class CelestialBody implements CelestialBodyInt {
 
   textureMapOptions: typeTextureMapOptions;
   cloudShaderUniforms: typeCloudShaderUniforms;
+  renderTargetGPU: any | null;
   texture: THREE.Texture | null;
   bumpMapTexture: THREE.Texture | null;
   uTime: number;
@@ -53,6 +58,16 @@ class CelestialBody implements CelestialBodyInt {
       u_cloudAlpha: 20.0,
       u_rotateX: 1.0,
     };
+    this.renderTargetGPU = useGenFboTextureStore
+      .getState()
+      .gpuCompute?.createRenderTarget(
+        WIDTH,
+        HEIGHT,
+        THREE.ClampToEdgeWrapping,
+        THREE.ClampToEdgeWrapping,
+        THREE.NearestFilter,
+        THREE.NearestFilter
+      );
   }
 
   public get temperatureC() {
@@ -105,16 +120,40 @@ class CelestialBody implements CelestialBodyInt {
     this.disposeTextures();
     // if renderer provided will initComputeRenderer
     // othwise will generate the texture if already initialized
-    const texture = useGenFboTextureStore
+    //const texture =
+    useGenFboTextureStore
       .getState()
-      .generatePlanetTexture(
+      .generateTextureGPU(
         renderer,
+        this.renderTargetGPU,
         this.textureMapOptions,
         this.cloudShaderUniforms
       );
-    if (texture) {
-      this.texture = texture;
-      this.material.uniforms.u_texture = { value: this.texture };
+    if (this.renderTargetGPU.texture) {
+      this.material.uniforms.u_texture = {
+        value: this.renderTargetGPU.texture,
+      };
+    } else {
+      console.log("no GPU texture generated");
+    }
+    // craters
+    if (this.textureMapOptions.craterIntensity) {
+      const { craterTextureCanvas, craterBumpMapCanvas } = genCraterTexture(
+        WIDTH,
+        HEIGHT,
+        [
+          parseHexColor(this.textureMapOptions.baseColor || "#0000FF"),
+          parseHexColor(this.textureMapOptions.secondColor || "#FF0000"),
+        ],
+        this.textureMapOptions.craterIntensity || 1,
+        this.earthRadii
+      ) || { craterTextureCanvas: null, craterBumpMapCanvas: null };
+      if (craterTextureCanvas) {
+        this.material.uniforms.u_craterTexture = { value: craterTextureCanvas };
+        this.material.uniforms.u_craterTBumpMap = {
+          value: craterBumpMapCanvas,
+        };
+      }
     }
   };
 
@@ -129,13 +168,12 @@ class CelestialBody implements CelestialBodyInt {
   };
 
   updateUniforms = () => {
-    this.material.uniforms.u_texture = { value: this.texture };
     // rotation matrix
     this.material.uniforms.u_objectMatrixWorld = {
       value: this.object3d.matrixWorld,
     };
     // clouds shader
-    this.material.uniforms.u_clouds = {
+    this.material.uniforms.u_isCloudsAnimated = {
       value: this.cloudShaderUniforms.u_isClouds ? 1 : 0,
     };
     this.material.uniforms.u_cloudColor = {

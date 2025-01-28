@@ -23,7 +23,7 @@
     "react-dom": "^18.2.0",
     "seedrandom": "^3.0.5",
     "simplex-noise": "^4.0.1",
-    "three": "^0.168.0",
+    "three": "^0.172.0",
     "three-csg-ts": "^3.1.14",
     "use-sound": "^4.0.3",
     "uuid": "^10.0.0",

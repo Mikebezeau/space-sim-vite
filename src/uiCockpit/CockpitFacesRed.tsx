@@ -1,6 +1,8 @@
 import React from "react";
 import CockpitMiddleRed from "./faces/red/CockpitMiddleRed";
+import CockpitRightRed from "./faces/red/CockpitRightRed";
 import CockpitConsoleRed from "./faces/red/CockpitConsoleRed";
+import "./uiCockpitRed.css";
 
 const CockpitFacesTest = () => {
   return (
@@ -69,11 +71,13 @@ const CockpitFacesTest = () => {
         </div>
       </div>
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
-        <div className="face middle test">
+        <div className="face middle">
           <CockpitMiddleRed />
         </div>
         <div className="face left test">{/*<CockpitLeft />*/}</div>
-        <div className="face right test">{/*<CockpitRight />*/}</div>
+        <div className="face right test">
+          <CockpitRightRed />
+        </div>
         {/*<CockpitConsoleRed />*/}
         <div className="face bottom test" />
       </div>

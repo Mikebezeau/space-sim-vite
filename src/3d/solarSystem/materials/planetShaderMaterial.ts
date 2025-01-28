@@ -1,36 +1,11 @@
 import * as THREE from "three";
-//import { default as seedrandom } from "seedrandom";
 import rotatedNormalShader from "../shaders/rotatedNormalShader";
-//import cloudsShader from "../shaders/cloudsShader";
-import cloudsLargeShader from "../shaders/cloudsLargeShader";
 import fresnelShader from "../shaders/fresnelShader";
 import atmosGlowShader from "../shaders/atmosGlowShader";
 
 export type typePlanetShaderOptions = {
   clouds: boolean;
   atmos: boolean;
-};
-
-type uniformType = { name: string; value: any };
-
-export const updatePlanetShaderUniform = (
-  shaderMat: THREE.ShaderMaterial,
-  uniform: uniformType
-) => {
-  //cloudsLargeShader.updateUniforms(material);
-  if (shaderMat.uniforms[uniform.name])
-    shaderMat.uniforms[uniform.name].value = uniform.value;
-};
-
-export const updatePlanetShaderUniforms = (
-  shaderMat: THREE.ShaderMaterial,
-  uniforms: { uniform: uniformType }
-) => {
-  //cloudsLargeShader.updateUniforms(material);
-  Object.entries(uniforms).forEach(([name, uniform]) => {
-    if (shaderMat.uniforms[name])
-      shaderMat.uniforms[name].value = uniform.value;
-  });
 };
 
 const planetTestShaderMaterial = new THREE.ShaderMaterial({
@@ -46,7 +21,6 @@ const planetTestShaderMaterial = new THREE.ShaderMaterial({
       value: null,
     },
     ...rotatedNormalShader.uniforms,
-    ...cloudsLargeShader.uniforms,
     ...atmosGlowShader.uniforms,
   },
   //blending: THREE.AdditiveBlending,
@@ -57,14 +31,12 @@ const planetTestShaderMaterial = new THREE.ShaderMaterial({
 varying vec2 vUv;
 ${rotatedNormalShader.vertHead}
 ${fresnelShader.vertHead}
-${cloudsLargeShader.vertHead}
 ${atmosGlowShader.vertHead}
 
 
 void main() {
   ${rotatedNormalShader.vertMain}
   ${fresnelShader.vertMain}
-  ${cloudsLargeShader.vertMain}
   ${atmosGlowShader.vertMain}
   vUv = uv;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
@@ -80,7 +52,6 @@ varying vec2 vUv;
 
 ${rotatedNormalShader.fragHead}
 ${fresnelShader.fragHead}
-${cloudsLargeShader.fragHead}
 ${atmosGlowShader.fragHead}
 
 #include <common>
@@ -93,7 +64,6 @@ void main() {
 
   ${rotatedNormalShader.fragMain}
   ${fresnelShader.fragMain}
-  ${/*cloudsLargeShader.fragMain*/ ""}
   ${atmosGlowShader.fragMain}
 }
 `,

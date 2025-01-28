@@ -7,11 +7,7 @@ import { Perf } from "r3f-perf";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
-  /*
-  const beginSpaceFlightSceneLoop = useStore(
-    (state) => state.actions.beginSpaceFlightSceneLoop
-  );
-  */
+
   return (
     <>
       <div className="absolute right-0 bottom-0 top-0 left-0">
@@ -35,17 +31,10 @@ const AppCanvas = () => {
             alpha: true,
           }}
           onCreated={({ gl, camera } /*{gl, camera, scene}*/) => {
-            //gl.setClearColor(0x000000, 0);
-            //gl.setPixelRatio(window.devicePixelRatio / 2);
             camera.layers.enable(1);
-            //---------------------------------------------
-            // init ship weapon, clock, and enemy movement
-            // old V
-            //beginSpaceFlightSceneLoop();
-            //---------------------------------------------
+            //gl.setPixelRatio(window.devicePixelRatio / 2);
             //gl.gammaInput = true;
             //gl.toneMapping = THREE.Uncharted2ToneMapping;
-            //gl.setClearColor(new THREE.Color("#020207"));
           }}
         >
           <Perf

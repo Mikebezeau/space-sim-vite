@@ -10,13 +10,6 @@ const Planet = (props: PlanetInt) => {
   const { planet } = props;
   //console.log("Planet rendered");
 
-  /*
-  setTimeout(() => {
-    planet.genTexture();
-    planet.material.uniforms.u_texture = { value: planet.texture };
-    console.log("planet.genTexture");
-  }, 300 * (planet.index + 1));
-*/
   useFrame((_, delta) => {
     planet.useFrameUpdateUniforms(delta);
   });
@@ -31,7 +24,7 @@ const Planet = (props: PlanetInt) => {
         }}
         material={planet.getMaterial()}
       >
-        <sphereGeometry args={[planet.radius, 64, 64]} />
+        <sphereGeometry args={[planet.radius, 128, 128]} />
       </mesh>
     </>
   );

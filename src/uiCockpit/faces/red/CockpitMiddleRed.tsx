@@ -1,21 +1,18 @@
 import React from "react";
 import SpeedReadout from "../../SpeedReadout";
-import { IS_MOBILE } from "../../../constants/constants";
 //@ts-ignore
 import cockpitImage from "../../images/red/cockpitRed.png";
-//import controls from "../../icons/controls.svg";
+//import { IS_MOBILE } from "../../../constants/constants";
 
 const CockpitMiddle = () => {
   return (
     <div
-      className="w-full h-full bg-cover bg-center mt-4"
+      className="w-[140%] h-[140%] bg-center mt-[-20%] mr-[-20%] ml-[-20%] bg-no-repeat"
       style={{ backgroundImage: `url(${cockpitImage})` }}
     >
-      {!IS_MOBILE && (
-        <div className="absolute top-[7vh] left-[32vh]">
-          <SpeedReadout />
-        </div>
-      )}
+      <div className="absolute top-[7vh] left-[32vh]">
+        <SpeedReadout />
+      </div>
     </div>
   );
 };
