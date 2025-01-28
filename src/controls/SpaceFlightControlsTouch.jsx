@@ -108,14 +108,7 @@ const SpaceFlightControlsTouch = () => {
   function handleMoveShip(event) {
     // if touching move control, then move ship
     if (moveControl.current) {
-      const rect = moveControl.current.getBoundingClientRect();
-      if (
-        event.changedTouches[0].clientX >= rect.left &&
-        event.changedTouches[0].clientX <= rect.right &&
-        event.changedTouches[0].clientY >= rect.top &&
-        event.changedTouches[0].clientY <= rect.bottom
-      )
-        actions.updateTouchMobileMoveShip(event);
+      actions.updateTouchMobileMoveShip(event);
     }
   }
   useTouchMoveControls("btn-ship-move", handleMoveShip);
@@ -133,6 +126,7 @@ const SpaceFlightControlsTouch = () => {
   useTouchStartControls("throttle-control", handleTrottleStart);
 
   function handleThrottleMove(event) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events#example
     // if touching move control, then move ship
     if (throttleControl.current) {
       const rect = throttleControl.current.getBoundingClientRect();

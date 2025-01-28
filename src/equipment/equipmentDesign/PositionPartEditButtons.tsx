@@ -33,7 +33,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
   const AXIS_DIRECTION = { positive: 1, negative: -1 };
 
   // COLOR PICKER
-  const setPartColor = (color: string) => {
+  const setPartColor = (color: string | null) => {
     if (part) {
       part.color = color;
       toggleUpdateState();
@@ -126,7 +126,7 @@ const PositionPartEditButtons = (props: MechServoInt) => {
 
   if (part === undefined) return null;
   return (
-    <div className="fixed top-[5%] right-[5%] clip-path-cyber bg-white">
+    <div className="fixed top-[5%] left-[15%] w-[45%] clip-path-cyber bg-white">
       <div className="clip-path-cyber-inner bg-black p-8">
         <span className="text-2xl">Editing: {part.label()}</span>
         <div>

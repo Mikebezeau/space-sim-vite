@@ -20,7 +20,7 @@ const Servos = (props: ServosInt) => {
     toggleUpdateState();
   };
 
-  const setServoColor = (servo: MechServo, color: string) => {
+  const setServoColor = (servo: MechServo, color: string | null) => {
     servo.color = color;
   };
 

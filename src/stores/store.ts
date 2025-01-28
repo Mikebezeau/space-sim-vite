@@ -1,27 +1,29 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import PlayerMech from "../classes/PlayerMech";
+import useGenFboSunTextureStore from "./genFboSunTextureStore";
 import useGenFboTextureStore from "./genFboTextureStore";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
-import { randomData, genStations } from "../util/initGameUtil";
+import { /*randomData,*/ genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
 import systemGen from "../solarSystemGen/systemGen";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
+import CelestialBody from "../classes/solarSystem/CelestialBody";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 import { addEffect } from "@react-three/fiber";
-import { track } from "../util/track";
-
+//import { track } from "../util/track";
 import {
   STARS_IN_GALAXY,
   GALAXY_SIZE,
   PLAYER,
   PLAYER_START,
 } from "../constants/constants";
+import { PLANET_TYPE } from "../constants/solarSystemConstants";
 
 export type TypeGalaxy = {
   starCoordsBuffer: THREE.BufferAttribute;
@@ -32,6 +34,7 @@ export type TypeGalaxy = {
 
 interface storeState {
   initGameStore: (renderer: THREE.WebGLRenderer) => void;
+  disposeGameStore: () => void;
   isGameStoreInit: boolean;
 
   sound: boolean;
@@ -39,14 +42,14 @@ interface storeState {
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
-  galaxy: TypeGalaxy | Promise<void | TypeGalaxy>;
+  galaxy: TypeGalaxy | Promise<void | TypeGalaxy> | null;
   starPointsShaderMaterial: THREE.ShaderMaterial;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
   // therefore do not really need to use getPlayer
-  getPlayer: () => Object;
+  getPlayer: () => PlayerMech;
   playerPropUpdate: boolean; // used to re-render player prop based menu components
-  setPlayerPropUpdate: () => void;
+  togglePlayerPropUpdate: () => void;
   // used to shift positions over large distances to a local space
   playerWorldPosition: THREE.Vector3;
   // maximum local distances should be less than 65500 units for float accuracy
@@ -76,24 +79,25 @@ interface storeState {
     beginSpaceFlightSceneLoop: () => void;
     setSpeed: (speed: number) => void;
     setPlayerPosition: (positionVec3: THREE.Vector3) => void;
-    setFocusPlanetIndex: (focusPlanetIndex: number) => void;
-    setFocusTargetIndex: (focusTargetIndex: number) => void;
+    setFocusPlanetIndex: (focusPlanetIndex: number | null) => void;
+    setFocusTargetIndex: (focusTargetIndex: number | null) => void;
     setSelectedTargetIndex: () => void;
     getPlayerCurrentStarIndex: () => number;
     setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
     setShowInfoHoveredStarIndex: (showInfoHoveredStarIndex: number) => void;
     getShowInfoTargetStarIndex: () => number | null;
     setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
-    setSelectedWarpStar: (selectedWarpStar: number) => void;
-    setSelectedPanetIndex: (planetIndex: number) => void;
+    setSelectedWarpStar: (selectedWarpStar: number | null) => void;
+    setSelectedPanetIndex: (planetIndex: number | null) => void;
     toggleSound: (sound?: boolean) => void;
     updateMouse: (event: MouseEvent) => void;
     updateTouchMobileMoveShip: (event: TouchEvent) => void;
   };
   mutation: {
-    particles: Object;
+    //particles_old: any;
     mouse: THREE.Vector2;
     mouseScreen: THREE.Vector2;
+    //ongoingTouches: any[];
   };
   testing: {
     changeLocationSpace: () => void;
@@ -109,10 +113,15 @@ interface storeState {
 const useStore = create<storeState>()((set, get) => ({
   initGameStore: (renderer) => {
     // set planet texture map renderer
+    useGenFboSunTextureStore.getState().initComputeRenderer(renderer);
     useGenFboTextureStore.getState().initComputeRenderer(renderer);
     // set planets, asteroids, stations, etc. for player start location
     get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
     set(() => ({ isGameStoreInit: true }));
+  },
+  disposeGameStore: () => {
+    useGenFboSunTextureStore.getState().disposeGpuCompute();
+    useGenFboTextureStore.getState().disposeGpuCompute();
   },
   isGameStoreInit: false,
 
@@ -121,6 +130,7 @@ const useStore = create<storeState>()((set, get) => ({
   showInfoHoveredStarIndex: null, // used in galaxy map ui
   showInfoTargetStarIndex: null,
   selectedWarpStar: null,
+
   galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
     set({ galaxy: galaxyData });
   }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
@@ -132,7 +142,7 @@ const useStore = create<storeState>()((set, get) => ({
   getPlayer: () => get().player, // getting state to avoid rerenders in components when necessary
   //playerMechBP: initPlayerMechBP(),
   playerPropUpdate: false, // currently used for speed updates
-  setPlayerPropUpdate: () => {
+  togglePlayerPropUpdate: () => {
     set({
       playerPropUpdate: !get().playerPropUpdate,
     });
@@ -208,15 +218,17 @@ const useStore = create<storeState>()((set, get) => ({
   scanningPlanetId: -1,
   isScanDistanceToPlanet: false,
   scanPlanet: () => {
-    const incrementScanProgress = () => {
-      set((state) => ({
-        scanPlanetProgress: state.scanPlanetProgress + 0.5,
-      }));
-      if (get().scanPlanetProgress < 10) {
-        setTimeout(incrementScanProgress, 100);
-      }
-    };
-    incrementScanProgress();
+    if (get().scanPlanetProgress < 10) {
+      const incrementScanProgress = () => {
+        set((state) => ({
+          scanPlanetProgress: state.scanPlanetProgress + 0.5,
+        }));
+        if (get().scanPlanetProgress < 10) {
+          setTimeout(incrementScanProgress, 100);
+        }
+      };
+      incrementScanProgress();
+    }
   },
   scanPlanetProgress: 0,
 
@@ -236,13 +248,15 @@ const useStore = create<storeState>()((set, get) => ({
   //galaxyMapDataOutput: "", // used with mapGalaxyDataToJSON function to collect galaxy map data
 
   mutation: {
-    particles: randomData(
+    /*
+    particles_old: randomData(
       3000,
       track,
       50,
       1000,
       () => 0.5 + Math.random() * 0.5
     ),
+    */
     mouse: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
     mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
   },
@@ -374,7 +388,7 @@ const useStore = create<storeState>()((set, get) => ({
     // updating speed of player through state to trigger rerenders in components (i.e SpeedReadout)
     setSpeed(speedValue) {
       get().player.speed = speedValue;
-      get().setPlayerPropUpdate();
+      get().togglePlayerPropUpdate();
     },
 
     setPlayerPosition(positionVec3) {
@@ -427,7 +441,17 @@ const useStore = create<storeState>()((set, get) => ({
 
     // slecting star in galaxy map
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
+      const dispose = (celestialBody: CelestialBody) => {
+        celestialBody.disposeResources();
+      };
+
       set(() => ({ playerCurrentStarIndex }));
+      get().stars.forEach((star) => {
+        dispose(star);
+      });
+      get().planets.forEach((planet) => {
+        dispose(planet);
+      });
       const { stars, planets } = systemGen(playerCurrentStarIndex);
       set(() => ({
         stars,
@@ -435,19 +459,57 @@ const useStore = create<storeState>()((set, get) => ({
       set(() => ({
         planets,
       }));
-      // setting new local position for player
-      get().setNewPlayerPosition({
-        x: 0,
-        y: 0,
-        z: get().stars[0].radius * 3,
-      });
-      // setting enemy world position relative to player test
-      useEnemyStore
-        .getState()
-        .enemyWorldPosition.set(0, 0, get().stars[0].radius * 3);
+      // select first star or planet as starting position
+      let startPosCelestialBody: Star | Planet =
+        get().planets.find(
+          (planet) => planet.data.planetType === PLANET_TYPE.earthLike
+        ) || get().planets[0];
 
-      // just to get player looking right direction (at displaced sun)
-      get().player.object3d.lookAt(0, 0, -100);
+      const startPosition = new THREE.Vector3();
+      const enemyStartPosition = new THREE.Vector3();
+      const stationStartPosition = new THREE.Vector3();
+
+      if (startPosCelestialBody) {
+        // position of planet to start at
+        startPosition.copy(startPosCelestialBody.object3d.position);
+        // direction towards (0,0,0)
+        const offsetDirection = new THREE.Vector3()
+          .copy(startPosition)
+          .normalize();
+        // multiply offsetDirection by distance away from planet
+        const offsetDistance = new THREE.Vector3()
+          .copy(offsetDirection)
+          .multiplyScalar(startPosCelestialBody.radius * 3);
+        // set player position at this distance away from planet
+        startPosition.sub(offsetDistance);
+        // set enemy position at player position + x units
+        enemyStartPosition.copy(startPosition);
+        enemyStartPosition.add(offsetDirection.multiplyScalar(30));
+        // set station position at player position + x units
+        stationStartPosition.copy(startPosition);
+        stationStartPosition.add(offsetDirection.multiplyScalar(60));
+      } else {
+        startPosCelestialBody = stars[0];
+        startPosition.set(
+          stars[0].object3d.position.x,
+          stars[0].object3d.position.y,
+          stars[0].object3d.position.z + stars[0].radius * 5
+        );
+        stationStartPosition.set(
+          stars[0].object3d.position.x,
+          stars[0].object3d.position.y,
+          stars[0].object3d.position.z + stars[0].radius * 5 - 10
+        );
+      }
+
+      // setting new local position for player
+      get().setNewPlayerPosition(startPosition);
+      // set player looking direction
+      get().player.object3d.lookAt(startPosCelestialBody.object3d.position);
+
+      // setting enemy world position relative to player test
+      useEnemyStore.getState().enemyWorldPosition.copy(enemyStartPosition);
+
       //clear variables
       set(() => ({
         focusPlanetIndex: null,
@@ -458,14 +520,8 @@ const useStore = create<storeState>()((set, get) => ({
       }));
       // set position of space station near a planet
       const stations = genStations();
-      const stationOrbitPlanet = get().planets[0] || get().stars[0];
       if (stations[0]) {
-        stations[0].object3d.position.set(
-          stationOrbitPlanet.object3d.position.x,
-          stationOrbitPlanet.object3d.position.y,
-          stationOrbitPlanet.object3d.position.z +
-            stationOrbitPlanet.radius * 1.5
-        );
+        stations[0].object3d.position.copy(stationStartPosition);
         set(() => ({
           stations,
         }));
@@ -495,10 +551,33 @@ const useStore = create<storeState>()((set, get) => ({
 
     updateMouse({ clientX: x, clientY: y }) {
       // save mouse position (-0.5 to 0.5) based on location on screen
-      get().mutation.mouse.set(
-        (x - window.innerWidth / 2) / window.innerWidth,
-        (y - window.innerHeight / 2) / window.innerHeight
+      // limiting the clinetX and clientY to center HUD circle area (80% verticle height)
+      const hudTargetingCircleRadiusPx =
+        window.innerWidth > window.innerHeight
+          ? window.innerHeight * 0.8
+          : window.innerWidth * 0.9;
+      // limit x
+      let mouseX = Math.min(
+        Math.max(
+          (x - window.innerWidth / 2) / hudTargetingCircleRadiusPx,
+          -0.5
+        ),
+        0.5
       );
+      let mouseY = Math.min(
+        Math.max(
+          (y - window.innerHeight / 2) / hudTargetingCircleRadiusPx,
+          -0.5
+        ),
+        0.5
+      );
+      // adjust x and y to be within circle
+      if (Math.sqrt(mouseX * mouseX + mouseY * mouseY) > 0.5) {
+        const angle = Math.atan2(mouseY, mouseX);
+        mouseX = 0.5 * Math.cos(angle);
+        mouseY = 0.5 * Math.sin(angle);
+      }
+      get().mutation.mouse.set(mouseX, mouseY);
       // save x, y pixel position on screen
       get().mutation.mouseScreen.set(x, y);
     },
@@ -507,13 +586,27 @@ const useStore = create<storeState>()((set, get) => ({
     // triggering event.target (mobile movement control circle)
     updateTouchMobileMoveShip(event: TouchEvent) {
       if (event.target) {
+        /*
+        // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events#example
+        const touches = event.changedTouches;
+        for (let i = 0; i < touches.length; i++) {
+          get().ongoingTouches.push(copyTouch(touches[i]));
+        }
+        */
         // @ts-ignore
         var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
         const x = event.changedTouches[0].clientX - bounds.left;
         const y = event.changedTouches[0].clientY - bounds.top;
         const radius = bounds.width / 2;
-        const setX = Math.min(1, Math.max(-1, (x - radius) / bounds.width));
-        const setY = Math.min(1, Math.max(-1, (y - radius) / bounds.width));
+        let setX = Math.min(1, Math.max(-1, (x - radius) / bounds.width));
+        let setY = Math.min(1, Math.max(-1, (y - radius) / bounds.width));
+
+        // adjust x and y to be within circle
+        if (Math.sqrt(setX * setX + setY * setY) > 0.5) {
+          const angle = Math.atan2(setY, setX);
+          setX = 0.5 * Math.cos(angle);
+          setY = 0.5 * Math.sin(angle);
+        }
         get().mutation.mouse.set(setX, setY);
       }
     },

@@ -39,7 +39,7 @@ const BuildMech = forwardRef(function BuildMech(
         <Fragment key={index}>
           <ServoShapes
             servo={servo}
-            color={mechBP.color}
+            color={mechBP.color || "#FFFFFF"}
             texture={texture}
             flatShading={flatShading}
             damageReadoutMode={damageReadoutMode}
@@ -51,7 +51,7 @@ const BuildMech = forwardRef(function BuildMech(
             <Fragment key={weapon.id}>
               <ServoShapes
                 servo={weapon}
-                color={mechBP.color}
+                color={mechBP.color || "#FFFFFF"}
                 texture={texture}
                 flatShading={flatShading}
                 damageReadoutMode={damageReadoutMode}

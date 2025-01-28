@@ -1,57 +1,79 @@
+import CelestialBody from "./CelestialBody";
 import * as THREE from "three";
-//import genStarData from "../../solarSystemGen/genStarData";
+import useStore from "../../stores/store";
+import useGenFboSunTextureStore from "../../stores/genFboSunTextureStore";
+import { typeStarData } from "../../solarSystemGen/genStarData";
 import { typeObitalZonesData } from "../../solarSystemGen/genObitalZonesData";
 import { PLANET_SCALE } from "../../constants/constants";
 
 interface StarInt {
-  initObject3d(object3d: THREE.Object3D): void;
+  genTextureSun(renderer?: THREE.WebGLRenderer | null | undefined): void;
+  getMaterial(): THREE.ShaderMaterial;
 }
 
-class Star implements StarInt {
-  rngSeed: string;
-  index: number;
+class Star extends CelestialBody implements StarInt {
   type: string;
-  _data: any;
+  data: typeStarData;
   orbitalZonesData: typeObitalZonesData;
-  color: string;
-  radius: number;
-  textureMap: number;
-  object3d: THREE.Object3D;
 
-  constructor(starData: any) {
+  constructor(
+    starData: any,
+    renderer?: THREE.WebGLRenderer | null | undefined,
+    isTestCelestial?: boolean
+  ) {
+    super(isTestCelestial);
     this.rngSeed = starData.index.toFixed(0);
     this.index = starData.index;
-    this._data = starData;
+    this.data = starData;
     this.orbitalZonesData = starData.orbitalZonesData;
-    this.color = starData.colorHex; //new THREE.Color(star.colorHex);
     this.radius = starData.size * 696340 * PLANET_SCALE; //km
-    this.textureMap = 0;
     this.object3d = new THREE.Object3D();
+
+    this.textureMapOptions = {
+      scale: 3,
+      octaves: 7,
+      amplitude: 0.4,
+      persistence: 0.6,
+      lacunarity: 1.7,
+      isDoubleNoise: true,
+      baseColor: "#ffa70f", //starData.colorHex,
+      secondColor: "#FFFFFF",
+      craterIntensity: 0,
+      shaderColors: [
+        new THREE.Vector3(1, 167 / 255, 15 / 255),
+        new THREE.Vector3(1, 1, 1),
+      ],
+    };
+    //this.setShaderColors();
+
+    // generate terrian texture map
+    // not working when called from genSystem in rapid succession stars, planets...
+    //this.genTexture(renderer);
+
+    this.material = useStore.getState().sunShaderMaterial;
+    this.updateUniforms();
   }
 
-  public get data() {
-    //toJSONforHud(),
-    return this._data;
-  }
-
-  public set data(data: any) {
-    this._data = data;
-  }
-
-  // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
-  initObject3d = (object3d: THREE.Object3D) => {
-    if (object3d) {
-      // keeping position and rotation of original object3d
-      const keepPosition = new THREE.Vector3();
-      keepPosition.copy(this.object3d.position);
-      const keepRotation = new THREE.Euler();
-      keepRotation.copy(this.object3d.rotation);
-      // directly assigned object ref
-      // changes to this.object3d will update the object on screen
-      this.object3d = object3d;
-      this.object3d.position.copy(keepPosition);
-      this.object3d.rotation.copy(keepRotation);
+  genTextureSun = (renderer?: THREE.WebGLRenderer | null | undefined) => {
+    this.disposeTextures();
+    // if renderer provided will initComputeRenderer
+    // othwise will generate the texture if already initialized
+    const texture = useGenFboSunTextureStore
+      .getState()
+      .generateSunTexture(
+        renderer,
+        this.textureMapOptions,
+        this.cloudShaderUniforms
+      );
+    if (texture) {
+      this.texture = texture;
+      this.material.uniforms.u_texture = { value: this.texture };
     }
+  };
+
+  getMaterial = () => {
+    this.genTextureSun();
+    return this.material;
   };
 }
 

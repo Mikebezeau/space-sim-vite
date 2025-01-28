@@ -1,13 +1,23 @@
+import React from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
+//@ts-ignore
 import controls from "../assets/icons/controls.svg";
+//@ts-ignore
 import rightClick from "../assets/icons/mouse/right-click-1.svg";
+//@ts-ignore
 import warp from "../assets/icons/warp-galaxy.svg";
+//@ts-ignore
 import gear from "../assets/icons/gear.svg";
+//@ts-ignore
 import satellite from "../assets/icons/space/satellite.svg";
+//@ts-ignore
 import radarDish from "../assets/icons/radarDish.svg";
+//@ts-ignore
 import sword from "../assets/icons/sword.svg";
+//@ts-ignore
 import stars from "../assets/icons/stars.svg";
+//@ts-ignore
 import camera from "../assets/icons/camera-change.svg";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
 

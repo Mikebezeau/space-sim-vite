@@ -1,0 +1,38 @@
+import React from "react";
+import useStore from "../stores/store";
+
+const SunScanData = () => {
+  console.log("SunScanData rendered");
+  const stars = useStore((state) => state.stars);
+  const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
+
+  //console.log("PlanetScanData rendered");
+  const data =
+    stars && focusPlanetIndex === null && stars[0]
+      ? Object.entries(stars[0].data)
+      : null;
+
+  return data ? (
+    <>
+      <p>Star Scan</p>
+      {data.map(
+        ([key, value]) =>
+          ![
+            "index",
+            "orbitalZonesData",
+            "colorHex",
+            "colorRGB",
+            "planetInnerZoneProb",
+          ].includes(key) &&
+          !(typeof value === "object") && ( // filtering out keys
+            <span key={key}>
+              <span className="floatLeft">{key}:</span> {value}
+              <br />
+            </span>
+          )
+      )}
+    </>
+  ) : null;
+};
+
+export default SunScanData;

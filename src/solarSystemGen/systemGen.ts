@@ -20,7 +20,6 @@ const systemGen = (starIndex: number) => {
   let stars = [new Star(starData)];
   let planets: Planet[] = [];
   planetsData.forEach((planetData) => {
-    console.log(planetData);
     planets.push(new Planet(planetData));
   });
 

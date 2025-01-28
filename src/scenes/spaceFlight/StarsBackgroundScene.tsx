@@ -14,7 +14,7 @@ import left from "/images/skybox/purple/left.png";
 import right from "/images/skybox/purple/right.png";
 //@ts-ignore
 import top from "/images/skybox/purple/top.png";
-import GlitchEffect from "../../3d/effects/GlitchEffect";
+//import GlitchEffect from "../../3d/effects/GlitchEffect";
 
 const StarsBackgroundScene = () => {
   console.log("StarsBackgroundScene rendered");

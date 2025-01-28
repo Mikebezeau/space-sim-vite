@@ -1,6 +1,5 @@
 import React, { forwardRef, useRef, useLayoutEffect } from "react";
-//import { Points } from "three";
-import { BufferAttribute, AdditiveBlending, TextureLoader } from "three";
+import * as THREE from "three";
 // @ts-ignore
 import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
@@ -16,9 +15,9 @@ const StarPoints = forwardRef(function StarPoints(
 ) {
   console.log("StarPoints rendered");
   const { viewAsBackground = false } = props;
-  const starPointsBufferGeoRef = useRef();
-  const starSprite = new TextureLoader().load(starSpriteSrc);
-  const nebulaSprite = new TextureLoader().load(featheredSpriteSrc);
+  const starPointsBufferGeoRef = useRef<THREE.BufferGeometry | null>(null);
+  const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
+  const nebulaSprite = new THREE.TextureLoader().load(featheredSpriteSrc);
   const galaxy = useStore((state) => state.galaxy);
   const starPointsShaderMaterial = useStore(
     (state) => state.starPointsShaderMaterial
@@ -30,10 +29,17 @@ const StarPoints = forwardRef(function StarPoints(
   };
 
   useLayoutEffect(() => {
-    if (viewAsBackground && galaxy.starCoordsBuffer?.array) {
+    if (
+      viewAsBackground &&
+      typeof galaxy === "object" &&
+      galaxy !== null &&
+      galaxy.hasOwnProperty("starCoordsBuffer") &&
+      starPointsBufferGeoRef.current !== null
+    ) {
+      // @ts-ignore - starCoordsBuffer is checked for in if above
       const { starCoordsBuffer } = galaxy;
-      const pushedAwayCoordsArray = [];
-      const nebulaSelectedArray = [];
+      const pushedAwayCoordsArray: number[] = [];
+      const nebulaSelectedArray: number[] = [];
       //let errorShown = false;
       for (let i = 0; i < starCoordsBuffer.array.length / 3; i += 1) {
         const x = starCoordsBuffer.array[i * 3];
@@ -48,7 +54,7 @@ const StarPoints = forwardRef(function StarPoints(
         const newZ = z * scaleFactor;
         pushedAwayCoordsArray.push(newX, newY, newZ);
       }
-      const usingStarCoordsBuffer = new BufferAttribute(
+      const usingStarCoordsBuffer = new THREE.BufferAttribute(
         new Float32Array(pushedAwayCoordsArray),
         3 // x, y, z values
       );
@@ -56,7 +62,7 @@ const StarPoints = forwardRef(function StarPoints(
         "position",
         usingStarCoordsBuffer
       );
-      const nebulaSelectedBuffer = new BufferAttribute(
+      const nebulaSelectedBuffer = new THREE.BufferAttribute(
         new Int8Array(nebulaSelectedArray),
         1
       );
@@ -67,9 +73,9 @@ const StarPoints = forwardRef(function StarPoints(
       // needsUpdate not needed due to useLayoutEffect timing
       //starPointsBufferGeoRef.current.attributes.position.needsUpdate = true;
     }
-  }, [viewAsBackground, galaxy]);
+  }, [viewAsBackground, galaxy, starPointsBufferGeoRef.current]);
 
-  if (!galaxy.starCoordsBuffer) return null;
+  if (!galaxy || !galaxy.hasOwnProperty("starCoordsBuffer")) return null;
   return (
     <points
       //layers={1}

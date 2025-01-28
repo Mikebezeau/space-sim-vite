@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
-import Scenery from "./Scenery";
-//import BuildMech from "../buildMech/BuildMech";
+import Scenery, { SCENERY_TYPE } from "./Scenery";
+import BuildMech from "../buildMech/BuildMech";
 
 const Station = ({ station }) => {
   console.log("Station rendered");
@@ -17,7 +17,7 @@ const Station = ({ station }) => {
       ref.current.rotation.set(0, r, 0);
     }
   });
-
+  console.log(station.stationBP.color);
   return (
     <group
       ref={ref}
@@ -32,8 +32,19 @@ const Station = ({ station }) => {
         station.object3d.rotation.z,
       ]}
     >
-      {/*<BuildMech mechBP={station.stationBP} servoHitNames={servoHitNames} />*/}
-      <Scenery />
+      <BuildMech mechBP={station.stationBP} />
+      <group scale={40} position={[-6, 110, 0]} rotation={[0, 0, 0.6]}>
+        <Scenery sceneryType={SCENERY_TYPE.junk.brokenDish} />
+      </group>
+      <group scale={6} position={[0, 60, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <Scenery sceneryType={SCENERY_TYPE.ss.coms1} />
+      </group>
+      <group scale={6} position={[0, -60, 0]} rotation={[0, 0, 0]}>
+        <Scenery sceneryType={SCENERY_TYPE.ss.dockingBay} />
+      </group>
+      <group scale={6} position={[0, -60, 0]} rotation={[0, Math.PI, 0]}>
+        <Scenery sceneryType={SCENERY_TYPE.ss.dockingBay} />
+      </group>
     </group>
   );
 };

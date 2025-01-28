@@ -25,8 +25,8 @@ export type typeStars = {
 };
 */
 // value within a range
-export const getFromRange = (rangeRandom: number, [min, max]) => {
-  return rangeRandom * (max - min) + min;
+export const getFromRange = (rangeNormalValue: number, [min, max]) => {
+  return rangeNormalValue * (max - min) + min;
 };
 
 const genStarData = (starIndex: number) => {
@@ -127,7 +127,7 @@ const genStarData = (starIndex: number) => {
   };
 
   // Random weighted selection based on percentage
-  function weightedRandom(percentages) {
+  function weightedRandom(percentages: number[]) {
     const total = percentages.reduce((sum, value) => sum + value, 0);
     const threshold = rng() * total;
     let cumulative = 0;
@@ -148,11 +148,11 @@ const genStarData = (starIndex: number) => {
     for (let i = 0; i < props.createPlanetAttempts; i++) {
       if (rng() < props.planetCreateChance) numPlanets++;
     }
-    const fixedRangeRandom = Math.random();
+    const fixedRangeRandom = rng();
 
     const solarMass = getFromRange(fixedRangeRandom, props.mass);
     const luminosity = getFromRange(fixedRangeRandom, props.luminosity);
-    const orbitalZonesData = genObitalZonesData(solarMass, luminosity);
+    const orbitalZonesData = genObitalZonesData(rng, solarMass, luminosity);
 
     const starData: typeStarData = {
       index: starIndex,

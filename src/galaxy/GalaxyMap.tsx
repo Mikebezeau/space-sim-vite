@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, Suspense } from "react";
+import React, { useCallback, useEffect, useRef, Suspense } from "react";
 import * as THREE from "three";
 import { extend, useThree, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
@@ -26,8 +26,7 @@ import {
 import { STAR_DISPLAY_MODE } from "./galaxyConstants";
 import { IS_MOBILE } from "../constants/constants";
 import StarPoints from "./StarPoints";
-import { isMouseOverStarInfoCard } from "../galaxy/StarInfoCard";
-
+import isMouseOverStarInfoCard from "../galaxy/isMouseOverStarInfoCard";
 extend({ MeshLineGeometry, MeshLineMaterial });
 /*
 function Box(props) {
@@ -59,20 +58,24 @@ const RAYCAST_THRESHOLD = 1;
 const GalaxyMap = () => {
   console.log("GalaxyMap rendered");
   const { camera, scene } = useThree();
-  const controlsRef = useRef(null);
-  const galaxyRef = useRef(null);
+  const controlsRef = useRef<any>(null);
+  const galaxyRef = useRef<THREE.Group | null>(null);
   const centerOnStarIndexRef = useRef(null);
   const hoveredStarIndexRef = useRef(null);
   const targetStarIndexRef = useRef(null);
   const lineToHoveredStarPointRef = useRef(null);
-  const lineToTargetStarPointRef = useRef(null);
+  const lineToTargetStarPointRef = useRef<[number, number, number] | null>(
+    null
+  );
 
   const resestControlsCameraPosition = useCallback(() => {
-    controlsRef.current.reset(); // reset camera controls
-    camera.position.set(0, 0, -175);
-    camera.lookAt(0, 0, 0);
-    galaxyRef.current.position.set(0, 0, 0);
-    //galaxyRef.current.rotation.set(Math.PI / 4, -Math.PI / 10, 0);
+    if (controlsRef.current !== null && galaxyRef.current !== null) {
+      controlsRef.current.reset(); // reset camera controls
+      camera.position.set(0, 0, -175);
+      camera.lookAt(0, 0, 0);
+      galaxyRef.current.position.set(0, 0, 0);
+      //galaxyRef.current.rotation.set(Math.PI / 4, -Math.PI / 10, 0);
+    }
   }, [camera]);
 
   const StarPointsWithControls = () => {
@@ -87,7 +90,7 @@ const GalaxyMap = () => {
       (state) => state.galaxy
     );
 
-    const starPointsRef = useRef(null);
+    const starPointsRef = useRef<THREE.Points | null>(null);
     const mouseMovedStart = useRef(new THREE.Vector2(0, 0));
     const mouseMovedEnd = useRef(new THREE.Vector2(0, 0));
     const mouseButtonDown = useRef(false);
@@ -197,6 +200,7 @@ const GalaxyMap = () => {
       else return closest;
     };
 
+    /*
     const setStarRaycastSelection = (e) => {
       const intersects = getRaycasterIntersects(e, RAYCAST_THRESHOLD);
       // primary selected star set to star closest to raycaster ray
@@ -223,17 +227,19 @@ const GalaxyMap = () => {
             if (distance < RAYCAST_THRESHOLD) {
               starSelectedBuffer.array[intersect.index] =
                 STAR_DISPLAY_MODE.secondarySelected;
-            } /* else {
-          //console.log("distance", distance, intersect.point);
-          starSelectedBuffer.array[intersect.index] =
-            STAR_DISPLAY_MODE.tertiarySelected;
-        }*/ // tertiary selection for debugging
+            }
+          // else {
+            //console.log("distance", distance, intersect.point);
+            //starSelectedBuffer.array[intersect.index] =
+            //  STAR_DISPLAY_MODE.tertiarySelected;
+          //} // tertiary selection for debugging
           }
         });
         // set view to selected star
         viewSelectedStar(centerOnStarIndexRef.current);
       }
     };
+    */
 
     const updateStarPointsSelectedAttribute = () => {
       // update star points aSelected attribute
@@ -385,9 +391,14 @@ const GalaxyMap = () => {
     return <StarPoints ref={starPointsRef} />;
   };
 
-  const Line = ({ color, pointRef }) => {
-    const lineRef = useRef(null);
-    const previousPoint = useRef(null);
+  interface LineInt {
+    color: string;
+    pointRef: React.MutableRefObject<[number, number, number] | null>;
+  }
+  const Line = (props: LineInt) => {
+    const { color, pointRef } = props;
+    const lineRef = useRef<MeshLineGeometry>(null);
+    const previousPoint = useRef<[number, number, number] | null>(null);
 
     useFrame(() => {
       if (lineRef.current) {
@@ -397,7 +408,7 @@ const GalaxyMap = () => {
           previousPoint.current = point;
           // create line vectors from point array
           // this creates a line from selected star to all stars in lineToHoveredStarPointRef.current array
-          const lineVectors = [];
+          const lineVectors: THREE.Vector3[] = [];
           if (point) {
             const centerPoint = new THREE.Vector3(0, 0, 0);
             const endPoint = new THREE.Vector3(...point);
@@ -423,9 +434,12 @@ const GalaxyMap = () => {
       }
     });
     // frustrumCulled={false} is required for line to be visible when camera is close to line
+    //@ts-nocheck
     return (
-      <mesh frustrumCulled={false}>
+      <mesh frustumCulled={false}>
+        {/*@ts-ignore*/}
         <meshLineGeometry ref={lineRef} />
+        {/*@ts-ignore*/}
         <meshLineMaterial
           color={color}
           lineWidth={0.05}

@@ -1,9 +1,10 @@
+import React from "react";
 import useStore from "../stores/store";
 import usePlayerControlStore from "../stores/playerControlsStore";
 import { PLAYER } from "../constants/constants";
 //import { equipData } from "../equipment/data/equipData";
 
-const WeaponsReadout = (/*{ isAlwaysDisplay = false }*/) => {
+const WeaponsReadout = ({ isAlwaysDisplay = false }) => {
   const weaponList = useStore((state) => state.player.mechBP.weaponList);
   const playerControlMode = usePlayerControlStore(
     (state) => state.playerControlMode
@@ -11,15 +12,14 @@ const WeaponsReadout = (/*{ isAlwaysDisplay = false }*/) => {
 
   return (
     <>
-      {
-        /*isAlwaysDisplay ||*/ playerControlMode === PLAYER.controls.combat && (
+      {isAlwaysDisplay ||
+        (playerControlMode === PLAYER.controls.combat && (
           <div className="text-white">
             {weaponList.map((weapon, i) => (
               <p key={i}>{weapon.name}</p>
             ))}
           </div>
-        )
-      }
+        ))}
     </>
   );
 };

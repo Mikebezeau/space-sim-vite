@@ -11,11 +11,8 @@ export const GALAXY_SIZE = 40;
 export const IS_MOBILE = /Mobi|Android/i.test(navigator.userAgent);
 
 export const PLAYER_START = {
-  system: 30420,
+  system: 27750,
   mechBPindex: 0,
-  x: 0, // position set in store.actions.init()
-  y: 0,
-  z: 0,
 };
 
 export const PLAYER = {

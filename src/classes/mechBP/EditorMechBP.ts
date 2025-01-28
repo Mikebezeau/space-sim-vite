@@ -1,4 +1,4 @@
-import Mech from "../Mech";
+//import Mech from "../Mech";
 import MechBP from "./MechBP";
 import MechServo from "./MechServo";
 import MechServoShape from "./MechServoShape";

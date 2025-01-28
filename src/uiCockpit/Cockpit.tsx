@@ -1,13 +1,13 @@
+import React from "react";
 import { useRef, useLayoutEffect } from "react";
-//import { useShallow } from "zustand/react/shallow";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
+import CockpitFacesRed from "./CockpitFacesRed";
 import {
   useMouseDown,
   useMouseUp,
   useMouseMove,
 } from "../hooks/controls/useMouseKBControls";
-
 import {
   useTouchStartControls,
   useTouchMoveControls,
@@ -15,17 +15,10 @@ import {
 
 import { lerp } from "../util/gameUtil";
 import "./cockpit.css";
-import CockpitLeft from "./faces/CockpitLeft";
-import CockpitMiddle from "./faces/CockpitMiddle";
-import CockpitRight from "./faces/CockpitRight";
-import CockpitConsole from "./faces/CockpitConsole";
 import {
   ActionModeControls,
   Cockpit1stPersonControls,
 } from "./CockpitControls";
-import beamImage from "./images/beam.png";
-import screenMini1Image from "./images/cockpit_screen_mini_1.jpg";
-import screenMini2Image from "./images/cockpit_screen_mini_2.jpg";
 import { PLAYER } from "../constants/constants";
 
 const Cockpit = () => {
@@ -36,7 +29,7 @@ const Cockpit = () => {
     (state) => state.getPlayerState
   );
 
-  const cockpitRef = useRef(null);
+  const cockpitRef = useRef<HTMLDivElement>(null);
   const targetView = useRef({
     rotateX: 0,
     rotateY: 0,
@@ -52,7 +45,7 @@ const Cockpit = () => {
     moveZ: 0,
     isZoom: false,
   }); //current view rotation and position
-  const rafRef = useRef(null);
+  const rafRef = useRef<number | null>(null);
 
   // mouse move change rotation of cockpit view
   // isInitializeNoLerp is used to skip lerp animation
@@ -103,7 +96,7 @@ const Cockpit = () => {
         lerpSpeed
       );
 
-      [...cockpitRef.current.children].forEach((group) => {
+      [...cockpitRef.current.children].forEach((group: any) => {
         group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
       });
 
@@ -161,87 +154,9 @@ const Cockpit = () => {
     }
   });
 
-  /*
-  return (
-    <div className="container-full-screen cockpit-view" ref={cockpitRef}>
-      <div className="perspective-400 preserve-3d container-full-screen controls-container">
-        <div className="face middle test"></div>
-        <div className="face left test"></div>
-        <div className="face right test"></div>
-        <CockpitConsole />
-      </div>
-      <div className="perspective-400 preserve-3d container-full-screen">
-        <div className="face screen-top"></div>
-        <div className="face screen-middle"></div>
-      </div>
-    </div>
-  );
-  */
   return (
     <div className="container-full-screen cockpit-view top-0" ref={cockpitRef}>
-      <div className="perspective-400 preserve-3d container-full-screen screen-container">
-        <div className="preserve-3d face screen-top">
-          <div
-            className="screen-beam screen-beam-right"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-          <div
-            className="screen-beam screen-beam-left"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-        </div>
-        <div className="preserve-3d face screen-middle">
-          <div
-            className="screen-beam screen-beam-right"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-          <div
-            className="screen-beam screen-beam-left"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-          <div
-            className="screen-beam screen-beam-top"
-            style={{
-              backgroundImage: `url(${beamImage})`,
-            }}
-          />
-
-          <div
-            className="screen-mini absolute -top-2 left-2 w-[9vh] h-[3vh] bg-cover bg-left border-2 border-black"
-            style={{
-              backgroundImage: `url(${screenMini1Image})`,
-            }}
-          />
-          <div
-            className="screen-mini absolute -top-2 right-2 w-[9vh] h-[3vh] bg-cover bg-right border-2 border-black"
-            style={{
-              backgroundImage: `url(${screenMini2Image})`,
-            }}
-          />
-        </div>
-      </div>
-      <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
-        <div className="face middle">
-          <CockpitMiddle />
-        </div>
-        <div className="face left">
-          <CockpitLeft />
-        </div>
-        <div className="face right">
-          <CockpitRight />
-        </div>
-        <CockpitConsole />
-        <div className="face bottom" />
-      </div>
-
+      <CockpitFacesRed />
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
         <div className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[28vh]">
           <Cockpit1stPersonControls />

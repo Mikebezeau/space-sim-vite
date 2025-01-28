@@ -2,9 +2,25 @@ import { useRef } from "react";
 //import { LoadingManager } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 //import { useFrame } from "@react-three/fiber";
-import glbFile from "/models/junk/warShip.glb";
+//import glbFile from "/models/junk/warShip.glb";
+import glbPod from "/models/artifact/pod.glb";
+import glbBrokenDish from "/models/junk/brokenDish.glb";
 
-const Scenery = () => {
+import glbComs1 from "/models/ss/ss_coms1.glb";
+import glbDockingBay from "/models/ss/ss_dockingBay.glb";
+import glbSolar1 from "/models/ss/ss_solar1.glb";
+
+export const SCENERY_TYPE = {
+  artifact: {
+    pod: glbPod,
+  },
+  junk: {
+    brokenDish: glbBrokenDish,
+  },
+  ss: { coms1: glbComs1, dockingBay: glbDockingBay, solar1: glbSolar1 },
+};
+
+const Scenery = ({ sceneryType }) => {
   //const manager = new LoadingManager();
   //const loader = new OBJLoader(manager);
   const loader = new GLTFLoader();
@@ -13,7 +29,7 @@ const Scenery = () => {
 
   loader.load(
     // resource URL
-    glbFile,
+    sceneryType,
     // called when resource is loaded
     function (object) {
       objectMeshRef.current?.add(object.scene);
@@ -24,7 +40,7 @@ const Scenery = () => {
     },
     // called when loading has errors
     function (error) {
-      console.log("An error happened");
+      console.log("An error happened", error);
     }
   );
 

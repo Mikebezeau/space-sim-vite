@@ -15,6 +15,7 @@ import TestPlanetScene from "./scenes/TestPlanetScene";
 
 const AppCanvasScene = () => {
   const initGameStore = useStore((state) => state.initGameStore);
+  const disposeGameStore = useStore((state) => state.disposeGameStore);
   const isGameStoreInit = useStore((state) => state.isGameStoreInit);
 
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
@@ -30,6 +31,9 @@ const AppCanvasScene = () => {
     if (!testScreen.planetTest && !isGameStoreInit) {
       initGameStore(gl);
     }
+    return () => {
+      disposeGameStore();
+    };
   }, [testScreen, isGameStoreInit, initGameStore]);
 
   return (

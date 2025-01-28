@@ -24,8 +24,6 @@ class PlayerMech extends Mech implements PlayerMechInt {
         rotation: new Euler(),
       },
     };
-    // initial player position
-    this.object3d.position.set(PLAYER_START.x, PLAYER_START.y, PLAYER_START.z);
   }
   // save location in space
   storeSpaceLocation() {

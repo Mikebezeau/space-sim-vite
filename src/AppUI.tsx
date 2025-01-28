@@ -4,6 +4,7 @@ import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
 import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
+import FlightHUD from "./uiCockpit/FlightHUD";
 import Cockpit from "./uiCockpit/Cockpit";
 import {
   ActionModeControls,
@@ -77,6 +78,7 @@ const AppUI = () => {
                     <ShieldsReadout />
                     <WeaponsReadout />
                   </div>
+                  <FlightHUD />
                 </>
               )}
             {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}

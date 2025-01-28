@@ -9,7 +9,7 @@ import {
 export type typePlanetData = {
   planetClass: number;
   planetType: number;
-  label: string;
+  class: string;
   description: string;
   size: [number, number];
   mass: [number, number];
@@ -54,7 +54,7 @@ const calculateTemperature = (
 
 // Helper function to determine likely planet class based star data
 const determinePlanetType = (
-  rng: any,
+  rng: () => number,
   starData: typeStarData,
   orbitalZonesData: typeObitalZonesData,
   distanceFromStar: number

@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 
 interface ColorPickerInt {
-  color: string;
-  setPartColor: (color: string) => void;
+  color: string | null;
+  setPartColor: (color: string | null) => void;
 }
 const ColorPicker = (props: ColorPickerInt) => {
   const { color, setPartColor } = props;
@@ -42,7 +42,10 @@ const ColorPicker = (props: ColorPickerInt) => {
         <span className="relative">
           <div className="absolute -top-1 -left-52">
             <div ref={colorPickerRef}>
-              <HexColorPicker color={color} onChange={setPartColor} />
+              <HexColorPicker
+                color={color || undefined}
+                onChange={setPartColor}
+              />
             </div>
             <div className="w-full bg-black text-center">CLOSE</div>
           </div>
@@ -56,7 +59,7 @@ const ColorPicker = (props: ColorPickerInt) => {
       <span className="nonSelectedItem">
         <button
           onClick={() => {
-            setPartColor("");
+            setPartColor(null);
           }}
         >
           Clear

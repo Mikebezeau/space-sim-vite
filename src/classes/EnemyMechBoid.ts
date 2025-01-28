@@ -77,7 +77,6 @@ class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
   update(delta: number) {
     if (!this.isBossMech) {
       const deltaFPS = delta * FPS;
-      //(deltaFPS);
       const maxSpeed = this.maxSpeed;
       // update velocity
       this.velocity.add(this.acceleration);

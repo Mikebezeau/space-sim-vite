@@ -3,7 +3,6 @@ import { Canvas } from "@react-three/fiber";
 //import useStore from "./stores/store";
 import AppCanvasLoadTrigger from "./AppCanvasLoadTrigger";
 import AppCanvasScene from "./AppCanvasScene";
-import { PLAYER_START } from "./constants/constants";
 import { Perf } from "r3f-perf";
 
 const AppCanvas = () => {
@@ -18,8 +17,6 @@ const AppCanvas = () => {
       <div className="absolute right-0 bottom-0 top-0 left-0">
         <Canvas
           camera={{
-            // setting camera position to player start position
-            position: [PLAYER_START.x, PLAYER_START.y, PLAYER_START.z],
             // giving rotation to camera to match player ship
             rotation: [0, -Math.PI, 0],
             near: 0.001,

@@ -4,10 +4,13 @@ import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useDevStore from "../stores/devStore";
 import TestPlanet from "../3d/solarSystem/TestPlanet";
+import StarClass from "../classes/solarSystem/Star";
 import PlanetClass from "../classes/solarSystem/Planet";
 import { PLANET_TYPE_DATA } from "../constants/solarSystemConstants";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+
+import { setCustomData } from "r3f-perf";
 
 import {
   //PLANET_TYPE_DATA,
@@ -22,17 +25,17 @@ const TestPlanetScene = () => {
   const setPlanetType = useDevStore((state) => state.setPlanetType);
 
   const { camera, gl } = useThree();
-
+  setCustomData(gl.capabilities.maxFragmentUniforms);
   const guiRef = useRef<any>(null);
   const folderLayer1ref = useRef<any>(null);
   const folderLayer2ref = useRef<any>(null);
   const cameraControlsRef = useRef<any>(null);
-  const testPlanetRef = useRef<PlanetClass | null>(null);
+  const testPlanetRef = useRef<StarClass | PlanetClass | null>(null);
 
   const planetTypeSelectOptions = [
     "select",
     ...Object.values(PLANET_TYPE_DATA).map(
-      (planetTypeData) => planetTypeData.label
+      (planetTypeData) => planetTypeData.class
     ),
   ];
 
@@ -46,9 +49,10 @@ const TestPlanetScene = () => {
     amplitude: 0.0,
     persistence: 0.0,
     lacunarity: 0.0,
-    isRigid: false,
+    isDoubleNoise: false,
     stretchX: 1.0,
     stretchY: 1.0,
+    isRigid: false,
     isWarp: false,
     baseColor: "#000000",
     secondColor: "#ffffff",
@@ -75,12 +79,10 @@ const TestPlanetScene = () => {
 
   const setGuiData = () => {
     if (testPlanetRef.current) {
-      console.log(
-        "set testPlanet data",
-        testPlanetRef.current.textureMapOptions
-      );
       effectControllerPlanetTypeOptions.planetType =
-        testPlanetRef.current.data.label;
+        testPlanetRef.current instanceof PlanetClass
+          ? testPlanetRef.current.data.class
+          : "sun";
       // set controller options from planet texture map options
       effectControllerOptions.scale =
         testPlanetRef.current.textureMapOptions.scale || 2.0;
@@ -93,8 +95,8 @@ const TestPlanetScene = () => {
       effectControllerOptions.lacunarity =
         testPlanetRef.current.textureMapOptions.lacunarity || 0.5;
 
-      effectControllerOptions.isRigid =
-        testPlanetRef.current.textureMapOptions.isRigid || false;
+      effectControllerOptions.isDoubleNoise =
+        testPlanetRef.current.textureMapOptions.isDoubleNoise || false;
 
       effectControllerOptions.stretchX =
         testPlanetRef.current.textureMapOptions.stretchX || 1.0;
@@ -104,6 +106,8 @@ const TestPlanetScene = () => {
 
       effectControllerOptions.isWarp =
         testPlanetRef.current.textureMapOptions.isWarp || false;
+      effectControllerOptions.isRigid =
+        testPlanetRef.current.textureMapOptions.isRigid || false;
 
       effectControllerOptions.baseColor =
         testPlanetRef.current.textureMapOptions.baseColor || "#000000";
@@ -159,9 +163,9 @@ const TestPlanetScene = () => {
         .name("Planet Type")
         .onChange((value) => {
           const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
-            (planetTypeData) => planetTypeData.label === value
+            (planetTypeData) => planetTypeData.class === value
           );
-          console.log(planetTypeData?.label);
+          console.log(planetTypeData?.class);
           if (planetTypeData) {
             setPlanetType(planetTypeData);
             testPlanetRef.current = getTestPlanet();
@@ -193,7 +197,7 @@ const TestPlanetScene = () => {
         .onChange(valuesChanger);
 
       folderLayer1ref.current
-        .add(effectControllerOptions, "isRigid")
+        .add(effectControllerOptions, "isDoubleNoise")
         .onChange(valuesChanger);
 
       folderLayer1ref.current
@@ -206,6 +210,10 @@ const TestPlanetScene = () => {
 
       folderLayer1ref.current
         .add(effectControllerOptions, "isWarp")
+        .onChange(valuesChanger);
+
+      folderLayer1ref.current
+        .add(effectControllerOptions, "isRigid")
         .onChange(valuesChanger);
 
       folderLayer1ref.current

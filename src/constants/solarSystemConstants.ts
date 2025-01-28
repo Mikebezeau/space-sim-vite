@@ -87,7 +87,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.mterran]: {
     planetClass: PLANET_CLASS.terrestrial,
     planetType: PLANET_TYPE.mterran,
-    label: "Mini Terran",
+    class: "Mini Terran",
     description: "Mini Terran planets are the smallest rocky worlds.",
     size: [0.03, 0.4],
     mass: [0.00001, 0.1],
@@ -106,7 +106,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.sterran]: {
     planetClass: PLANET_CLASS.terrestrial,
     planetType: PLANET_TYPE.sterran,
-    label: "Sub Terran",
+    class: "Sub Terran",
     description: "Sub Terran planets are small rocky worlds.",
     size: [0.4, 0.8],
     mass: [0.1, 0.5],
@@ -119,7 +119,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.terran]: {
     planetClass: PLANET_CLASS.terrestrial,
     planetType: PLANET_TYPE.terran,
-    label: "Terran",
+    class: "Terran",
     description: "Terran planets are rocky worlds.",
     size: [0.8, 1.5],
     mass: [0.5, 5],
@@ -132,7 +132,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.earthLike]: {
     planetClass: PLANET_CLASS.terrestrial,
     planetType: PLANET_TYPE.earthLike,
-    label: "Earth Like",
+    class: "Earth Like",
     description:
       "Earth Like planets are rocky worlds where liquid water exists, located in the habitable zone.",
     size: [1.5, 2],
@@ -147,7 +147,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.suTerran]: {
     planetClass: PLANET_CLASS.terrestrial,
     planetType: PLANET_TYPE.suTerran,
-    label: "Super Terran",
+    class: "Super Terran",
     description: "Super Terran planets are large rocky worlds.",
     size: [1.5, 2.5],
     mass: [5, 10],
@@ -160,7 +160,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.venusian]: {
     planetClass: PLANET_CLASS.terrestrial,
     planetType: PLANET_TYPE.venusian,
-    label: "Venusian",
+    class: "Venusian",
     description:
       "Venusian planets are rocky worlds with an extremely thick atmosphere.",
     size: [0.8, 1.5],
@@ -188,7 +188,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.neptunian]: {
     planetClass: PLANET_CLASS.gasGiant,
     planetType: PLANET_TYPE.neptunian,
-    label: "Neptunian",
+    class: "Neptunian",
     description:
       "Neptunian planets are gas giants, the most common type of planet to form in the icy outer regions of planetary systems.",
     size: [2.5, 6],
@@ -201,7 +201,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.jovian]: {
     planetClass: PLANET_CLASS.gasGiant,
     planetType: PLANET_TYPE.jovian,
-    label: "Jovian",
+    class: "Jovian",
     description:
       "Jovian planets are gas giants, primarily composed of hydrogen and helium gas.",
     size: [6, 15],
@@ -214,7 +214,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.hotJovian]: {
     planetClass: PLANET_CLASS.gasGiant,
     planetType: PLANET_TYPE.hotJovian,
-    label: "Hot Jovian",
+    class: "Hot Jovian",
     description:
       "Hot Jovian planets are gas giants located very close to their host star.",
     size: [6, 15],
@@ -230,7 +230,7 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.dwarf]: {
     planetClass: PLANET_CLASS.dwarf,
     planetType: PLANET_TYPE.dwarf,
-    label: "Dwarf",
+    class: "Dwarf",
     description: "Dwarf planets are small rocky worlds.",
     size: [0.6, 0.8],
     mass: [0.00001, 0.1],
@@ -249,11 +249,12 @@ export type typeTextureMapOptions = {
   persistence?: number;
   lacunarity?: number;
 
-  isRigid?: boolean;
+  isDoubleNoise?: boolean;
 
   stretchX?: number;
   stretchY?: number;
 
+  isRigid?: boolean;
   isWarp?: boolean;
 
   baseColor?: string;
@@ -295,7 +296,7 @@ export const PLANET_CLASS_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       amplitude: 1.3,
       persistence: 0.5,
       lacunarity: 1.5,
-      isRigid: true,
+      isDoubleNoise: true,
       isWarp: false,
       stretchY: 5.0,
       baseColor: "#DD44DD",
@@ -399,11 +400,13 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
         PLANET_TYPE_DATA[PLANET_TYPE.earthLike].craterIntensity || 0,
     },
     [PLANET_TYPE.suTerran]: {
-      scale: 2, // Adjust for finer detail
+      scale: 4, // Adjust for finer detail
       octaves: 13,
-      amplitude: 0.9,
+      amplitude: 3.9,
       persistence: 0.3,
       lacunarity: 5.0,
+      isDoubleNoise: true,
+      isWarp: true,
       baseColor: PLANET_TYPE_DATA[PLANET_TYPE.suTerran].color,
       craterIntensity:
         PLANET_TYPE_DATA[PLANET_TYPE.suTerran].craterIntensity || 0,
@@ -411,10 +414,10 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
     [PLANET_TYPE.venusian]: {
       scale: 3, // Adjust for finer detail
       octaves: 7,
-      amplitude: 1.1,
+      amplitude: 0.4,
       persistence: 0.6,
       lacunarity: 1.7,
-      isRigid: true,
+      isDoubleNoise: true,
       baseColor: "#6b2b00",
       secondColor: "#db8b00",
       craterIntensity:
@@ -426,7 +429,7 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       amplitude: 1.3,
       persistence: 0.5,
       lacunarity: 1.5,
-      isRigid: false,
+      isDoubleNoise: false,
       isWarp: true,
       stretchY: 5.0,
       baseColor: "#3d4b94",
@@ -438,7 +441,7 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       amplitude: 1.3,
       persistence: 0.5,
       lacunarity: 1.5,
-      isRigid: false,
+      isDoubleNoise: false,
       isWarp: true,
       stretchY: 5.0,
       baseColor: "#ad3d00",
@@ -450,10 +453,20 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       amplitude: 1.3,
       persistence: 0.5,
       lacunarity: 1.5,
-      isRigid: false,
+      isDoubleNoise: false,
       isWarp: true,
       stretchY: 5.0,
       baseColor: "#ad0000",
       secondColor: "#ff6a38",
+    },
+    [PLANET_TYPE.dwarf]: {
+      scale: 1,
+      octaves: 7,
+      amplitude: 0.3,
+      persistence: 0.5,
+      lacunarity: 3.0,
+      baseColor: "#151d3c",
+      secondColor: "#5e68a1",
+      craterIntensity: PLANET_TYPE_DATA[PLANET_TYPE.dwarf].craterIntensity || 0,
     },
   };

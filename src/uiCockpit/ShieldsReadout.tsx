@@ -1,3 +1,4 @@
+import React from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { PLAYER } from "../constants/constants";

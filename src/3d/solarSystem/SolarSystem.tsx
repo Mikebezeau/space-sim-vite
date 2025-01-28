@@ -10,11 +10,11 @@ const SolarSystem = () => {
   console.log("SolarSystem rendered", planets);
   return (
     <>
-      {stars?.map((star, index) => (
-        <Star key={index} star={star} />
-      ))}
       {planets?.map((planet, index) => (
         <Planet key={index} planet={planet} />
+      ))}
+      {stars?.map((star, index) => (
+        <Star key={index} star={star} />
       ))}
     </>
   );

@@ -1,5 +1,8 @@
-import consoleImage from "../images/console.png";
-import consoleFrontImage from "../images/console-front.png";
+import React from "react";
+//@ts-ignore
+import consoleImage from "../../images/blue/console.png";
+//@ts-ignore
+import consoleFrontImage from "../../images/blue/console-front.png";
 
 const CockpitConsole = () => {
   //console.log("CockpitConsole rendered");

@@ -48,7 +48,7 @@ class MechServoShape implements MechServoShapeInt {
   _shape: number = 0;
   shapeProps: number[] = [];
   servoShapes: MechServoShape[] = [];
-  _color: string = "";
+  _color: string | null = null;
 
   constructor(servoShapeData: any | null = null) {
     if (servoShapeData) {
@@ -64,8 +64,10 @@ class MechServoShape implements MechServoShapeInt {
     return this._color;
   }
 
-  public set color(color: string) {
-    if (color.length > 0) {
+  public set color(color: string | null) {
+    if (color === null) {
+      this._color = null;
+    } else if (color.length > 0) {
       var pattern = new RegExp("^#([a-fA-F0-9]){3}$|[a-fA-F0-9]{6}$");
       if (!pattern.test(color)) this._color = "#FFFFFF";
       else this._color = color;

@@ -1,23 +1,12 @@
+import React from "react";
 import { useEffect, useState, useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { systemInfoGen } from "../solarSystemGen/systemGen";
+import { typeStarData } from "../solarSystemGen/genStarData";
+import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
 //import CyberMenuBorder from "../menuComponents/common/CyberMenuBorder";
-
-export const isMouseOverStarInfoCard = (e) => {
-  const starInfoCard = document.querySelector("#star-info-card");
-  if (starInfoCard) {
-    const rect = starInfoCard.getBoundingClientRect();
-    return (
-      e.clientX >= rect.left &&
-      e.clientX <= rect.right &&
-      e.clientY >= rect.top &&
-      e.clientY <= rect.bottom
-    );
-  }
-  return false;
-};
 
 const StarInfoCard = () => {
   const showInfoHoveredStarIndex = useStore(
@@ -29,10 +18,10 @@ const StarInfoCard = () => {
   const { setSelectedWarpStar } = useStore((state) => state.actions);
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
   //const [showInfo, setShowInfo] = useState(true);
-  const [viewStarIndex, setViewStarIndex] = useState(null);
-  const systemInfoCardRef = useRef(null);
-  const starInfoRef = useRef(null);
-  const planetDataRef = useRef(null);
+  const [viewStarIndex, setViewStarIndex] = useState<number | null>(null);
+  const systemInfoCardRef = useRef<HTMLDivElement | null>(null);
+  const starInfoRef = useRef<typeStarData | null>(null);
+  const planetDataRef = useRef<typeGenPlanetData[] | null>(null);
 
   useEffect(() => {
     const starIndex = showInfoHoveredStarIndex || showInfoTargetStarIndex;
@@ -48,6 +37,7 @@ const StarInfoCard = () => {
 
   //can use this to poition box when get screen position of star viewed
   useEffect(() => {
+    if (systemInfoCardRef.current === null) return;
     if (IS_MOBILE) {
       systemInfoCardRef.current.style.top = "10px";
       systemInfoCardRef.current.style.right = "10px";
@@ -55,7 +45,7 @@ const StarInfoCard = () => {
       systemInfoCardRef.current.style.top = "180px";
       systemInfoCardRef.current.style.left = "10px";
     }
-  }, []);
+  }, [systemInfoCardRef.current]);
 
   return (
     <div
@@ -121,7 +111,7 @@ const StarInfoCard = () => {
         <p>planets: {planetDataRef.current?.length}</p>
         {planetDataRef.current?.map((planet, i) => (
           <p key={i}>
-            {planet.planetType.label} Dst:
+            {planet.planetType.class} Dst:
             {planet.distanceFromStar.toFixed(2)} Tmp K:
             {planet.temperature.average.toFixed(2)}
           </p>

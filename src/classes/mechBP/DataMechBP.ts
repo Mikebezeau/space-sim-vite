@@ -63,7 +63,7 @@ class DataMechBP implements DataMechBPInt {
     | MechWeaponMissile
     | MechWeaponProjectile
   )[] = [];
-  color: string;
+  color: string | null;
 
   constructor(mechBPdata?: any) {
     this.id = uuidv4();
@@ -94,7 +94,7 @@ class DataMechBP implements DataMechBPInt {
     this.multSystemList = [];
     this.weaponList = [];
 
-    this.color = "#999";
+    this.color = "#FFF";
     // transfer properties from parsed JSON data (servoData) to this
     if (mechBPdata) {
       transferProperties(this, mechBPdata);

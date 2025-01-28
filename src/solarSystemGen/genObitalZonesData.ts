@@ -12,6 +12,7 @@ export type typeObitalZonesData = {
 };
 
 function genObitalZonesData(
+  rng: () => number,
   solarMass: number,
   luminosity: number
 ): typeObitalZonesData {
@@ -37,21 +38,19 @@ function genObitalZonesData(
 
   const outerSolarSystem: typeZone = {
     radiusStart: innerSolarSystem.radiusEnd,
-    radiusEnd: (Math.random() * 3 + 2) * 10 * solarMass, // Arbitrary boundary for outer system
+    radiusEnd: (rng() * 3 + 2) * 10 * solarMass, // Arbitrary boundary for outer system
   };
 
   // Asteroid belt(s) probability and placement
   // TODO: place asteroid belts between planets with large space between orbits
-  const numAsteroidBelts =
-    Math.random() < 0.7 ? Math.floor(Math.random() * 3) : 0; // 70% chance of 0-2 belts
+  const numAsteroidBelts = rng() < 0.7 ? Math.floor(rng() * 3) : 0; // 70% chance of 0-2 belts
   const asteroidBelts: typeZone[] = [];
   for (let i = 0; i < numAsteroidBelts; i++) {
     const beltRadiusStart =
       innerSolarSystem.radiusEnd +
-      (Math.random() *
-        (outerSolarSystem.radiusStart - innerSolarSystem.radiusEnd)) /
+      (rng() * (outerSolarSystem.radiusStart - innerSolarSystem.radiusEnd)) /
         (i + 1);
-    const beltWidth = Math.random() * 2 + 0.5; // Belt width between 0.5 and 2 AU
+    const beltWidth = rng() * 2 + 0.5; // Belt width between 0.5 and 2 AU
     asteroidBelts.push({
       radiusStart: beltRadiusStart,
       radiusEnd: beltRadiusStart + beltWidth,
@@ -60,10 +59,10 @@ function genObitalZonesData(
 
   // Kuiper belt probability and placement
   let kuiperBelt: typeZone | null = null;
-  if (Math.random() < 0.3) {
+  if (rng() < 0.3) {
     // 30% chance of having a Kuiper belt
     const kuiperStart = outerSolarSystem.radiusEnd * 0.7;
-    const kuiperWidth = Math.random() * 20 + 10; // Width between 10 and 30 AU
+    const kuiperWidth = rng() * 20 + 10; // Width between 10 and 30 AU
     kuiperBelt = {
       radiusStart: kuiperStart,
       radiusEnd: kuiperStart + kuiperWidth,

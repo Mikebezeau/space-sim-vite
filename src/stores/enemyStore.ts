@@ -19,7 +19,11 @@ const generateEnemies = async (
       Math.random() * 500 - 250
     );
   });
-  enemies[0].object3d.position.set(0, 0, -100); // set boss enemy to center
+  enemies[0].object3d.position.set(
+    Math.random() * 50,
+    Math.random() * 50,
+    Math.random() * 50
+  ); // set boss enemy to center
   // group enemies into squads, sets leaders and upgrades leader ships
   const groupedEnemies = groupEnemies(enemies);
   return groupedEnemies;

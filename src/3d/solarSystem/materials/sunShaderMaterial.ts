@@ -1,6 +1,5 @@
 import { FrontSide, ShaderMaterial } from "three";
 import fresnelShader from "../shaders/fresnelShader";
-import sunShader from "../shaders/sunShader";
 
 const sunShaderMaterial = new ShaderMaterial({
   side: FrontSide, // using depthWrite: false possible preformance upgrade
@@ -9,7 +8,7 @@ const sunShaderMaterial = new ShaderMaterial({
   depthWrite: false, // must have true for uv mapping unless use THREE.FrontSide
   uniforms: {
     u_time: {
-      value: 0.0,
+      value: 1.0,
     },
     u_texture: {
       value: null,
@@ -23,12 +22,10 @@ const sunShaderMaterial = new ShaderMaterial({
 
 varying vec2 vUv;
 ${fresnelShader.vertHead}
-${sunShader.vertHead}
 
 
 void main() {
   ${fresnelShader.vertMain}
-  ${sunShader.vertMain}
   vUv = uv;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
   #include <logdepthbuf_vertex>
@@ -40,7 +37,6 @@ uniform sampler2D u_texture;
 varying vec2 vUv;
 
 ${fresnelShader.fragHead}
-${sunShader.fragHead}
 
 #include <common>
 #include <logdepthbuf_pars_fragment>
@@ -51,7 +47,6 @@ void main() {
   gl_FragColor = texture2D( u_texture, vUv );
 
   ${fresnelShader.fragMain}
-  ${sunShader.fragMain}
 }
 `,
 });
