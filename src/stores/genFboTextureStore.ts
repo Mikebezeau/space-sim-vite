@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
+//import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
@@ -569,6 +570,17 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     if (get().gpuCompute !== null) {
       // @ts-ignore
       get().gpuCompute.compute();
+      // copy texture
+      /*
+      const data = new Uint8Array(WIDTH * HEIGHT * 4);
+      const dataTexture = new THREE.DataTexture(data, WIDTH, HEIGHT);
+      get().gpuCompute.copyTextureToTexture(
+        position,
+        dataTexture,
+        get().gpuCompute.getCurrentRenderTarget(shaderVariable).texture
+      );
+      return dataTexture;
+      */
       // @ts-ignore
       return get().gpuCompute.getCurrentRenderTarget(shaderVariable).texture;
     }
