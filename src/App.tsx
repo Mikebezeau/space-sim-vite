@@ -7,13 +7,19 @@ import AppLoadingScreen from "./AppLoadingScreen";
 // @ts-ignore
 import loadingPatternSrc from "/images/loadingScreen/loadingPattern.jpg";
 
-import useNoContextMenu from "./hooks/useNoContextMenu";
+//import useNoContextMenu from "./hooks/useNoContextMenu";
+//import useWindowResize from "./hooks/useWindowResize";
+
 import "./css/lilGui.css";
 
 function App() {
   console.log("app render");
   //useNoContextMenu();
-
+  /*
+  useWindowResize(() => {
+    console.log("window resized");
+  });
+*/
   return (
     <>
       <AppCanvas />

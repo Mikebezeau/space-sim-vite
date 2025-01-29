@@ -43,12 +43,9 @@ interface playerControlStoreState {
 const cameraMoveToObj = new THREE.Object3D();
 const direction = new THREE.Vector3();
 
-// forship and camera rotation
-const currentCameraQuat = new THREE.Quaternion(),
-  currentShipQuat = new THREE.Quaternion(),
-  rotateShipQuat = new THREE.Quaternion(),
+// for ship and camera rotation
+const rotateShipQuat = new THREE.Quaternion(),
   adjustCameraViewQuat = new THREE.Quaternion(),
-  finalShipQuat = new THREE.Quaternion(),
   finalCameraQuat = new THREE.Quaternion();
 
 const usePlayerControlsStore = create<playerControlStoreState>()(
@@ -143,12 +140,31 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       },
     },
 
+    updatePlayerSpeedUseFrame: (delta) => {
+      const player = useStore.getState().player;
+      // TODO add acceleration / deceleration
+      if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
+        let speed = lerp(
+          player.speed,
+          SPEED_VALUES[get().playerSpeedSetting] *
+            // increase speed by 1000x for testing
+            (devPlayerSpeedX1000 ? 1000 : 1),
+          0.6
+        );
+        // round speed to integer
+        speed = Math.round(speed); // * 10) / 10;
+        // changing player class properties does not trigger state subscriptions
+        // need to use the setSpeed function that triggers togglePlayerPropUpdate() flag
+        useStore.getState().actions.setSpeed(speed);
+      }
+    },
+
     updatePlayerMechAndCameraFrame: (delta, camera) => {
       const player = useStore.getState().player;
       // must call function to calc relative world position
       const playerPositionUpdated = useStore.getState().playerPositionUpdated;
-      const setSpeed = useStore.getState().actions.setSpeed;
       const mouse = useStore.getState().mutation.mouse;
+      const windowAspectRatio = window.innerWidth / window.innerHeight;
 
       const devPlayerSpeedX1000 = useDevStore.getState().devPlayerSpeedX1000;
 
@@ -163,20 +179,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       const adjustedManuverability = MVmult * deltaFPS;
 
       //set speed
-      if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
-        let speed = lerp(
-          player.speed,
-          SPEED_VALUES[get().playerSpeedSetting] *
-            // increase speed by 1000x for testing
-            (devPlayerSpeedX1000 ? 1000 : 1),
-          0.6
-        );
-        // round speed to integer
-        speed = Math.round(speed); // * 10) / 10;
-        // changing player class properties does not trigger state subscriptions
-        // need to use the setSpeed function that triggers togglePlayerPropUpdate() flag
-        setSpeed(speed);
-      }
+      get().updatePlayerSpeedUseFrame(delta);
 
       //rotate ship based on mouse position
 
@@ -196,96 +199,51 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         playerControlMouseY = mouse.y;
       }
 
-      const rotationVectorX =
-        playerControlMouseY * 0.05 * adjustedManuverability;
-      const rotationVectorY =
-        -playerControlMouseX * 0.05 * adjustedManuverability;
-      const rotationVectorZ =
-        playerControlMouseX * 0.1 * adjustedManuverability;
-
       rotateShipQuat
-        .set(rotationVectorX, rotationVectorY, rotationVectorZ, 1)
+        .set(
+          playerControlMouseY * 0.05 * adjustedManuverability,
+          -playerControlMouseX * 0.05 * adjustedManuverability,
+          playerControlMouseX * 0.1 * adjustedManuverability,
+          1
+        )
         .normalize();
-      //player.object3d.quaternion.multiply( rotateShipQuat );
-
-      /*
-      rotateShipQuat.setFromAxisAngle(
-        direction.set(
-          playerControlMouseY * 0.05,
-          -playerControlMouseX * 0.05,
-          playerControlMouseX * 0.1
-        ),
-        MVmult
-      );
-*/
-      //current ship rotation
-      currentShipQuat.setFromEuler(player.object3d.rotation);
-      //update ship rotation
-      finalShipQuat
-        .multiplyQuaternions(currentShipQuat, rotateShipQuat)
-        .normalize();
-      player.object3d.rotation.setFromQuaternion(finalShipQuat);
-
+      player.object3d.quaternion.multiply(rotateShipQuat);
       player.object3d.translateZ(adjustedSpeed);
       // must call function to calc relative world position
       playerPositionUpdated();
+
       //CAMERA
-      /*
-      currentCameraQuat.setFromEuler(camera.rotation);
-      //adjust for the change in angle of the ship (adjusting for FPS jitter)
-      //camera rotation is based on ship rotation flipped
-      finalCameraQuat.copy(rotateShipQuat).invert();
-      currentCameraQuat.multiply(finalCameraQuat);
-      //NOT WORKING QUITE RIGHT
-      camera.rotation.setFromQuaternion(currentCameraQuat);
-*/
       //set cameraMoveToObj to be behind ship
-      cameraMoveToObj.position.copy(player.object3d.position);
-      cameraMoveToObj.rotation.copy(player.object3d.rotation);
+      camera.position.copy(player.object3d.position);
+      camera.quaternion.copy(flipRotation(player.object3d.quaternion));
       // camera position changes based on player view mode
       if (get().playerViewMode === PLAYER.view.firstPerson) {
         // todo find a way to set camera position based on mech cockpit servo position
-        cameraMoveToObj.translateY(0.5 * player.mechBP.scale);
-        camera.position.copy(cameraMoveToObj.position);
+        camera.translateY(0.5 * player.mechBP.scale);
       }
-      //flip the ship rotation, since camera is behind the ship
-      finalCameraQuat.copy(flipRotation(finalShipQuat));
       if (get().playerViewMode === PLAYER.view.thirdPerson) {
         // follow ship position precisely (no jitter)
-        cameraMoveToObj.translateY(1.4 * player.mechBP.scale);
-        cameraMoveToObj.translateZ(-8 * player.mechBP.scale);
-        camera.position.copy(cameraMoveToObj.position);
+        camera.translateY(1.4 * player.mechBP.scale);
+        camera.translateZ((6 / windowAspectRatio + 8) * player.mechBP.scale);
         // additional camera position based on mouse position
-        const cameraOffsetX = mouse.x * 8; // / 10;
-        const cameraOffsetY = mouse.y * 10; // / 10;
-        cameraMoveToObj.translateX(cameraOffsetX * player.mechBP.scale);
-        cameraMoveToObj.translateY(cameraOffsetY * player.mechBP.scale);
+        camera.translateX(-mouse.x * 8 * player.mechBP.scale);
+        camera.translateY(mouse.y * 10 * player.mechBP.scale);
         // update camera position based on mouse position
+        /*
         const thirdPersonCameraLerpSpeed = resetCameraLerpSpeed || 0.3; //distance(state.camera.position, camDummy.position) / 0.8;
         camera.position.lerp(
           cameraMoveToObj.position,
           thirdPersonCameraLerpSpeed
         );
+        */
       }
-      //get end rotation angle for camera for smooth follow
-      currentCameraQuat.setFromEuler(camera.rotation);
       // additional camera rotation based on mouse position (looking around)
       adjustCameraViewQuat.setFromAxisAngle(
         direction.set(-mouse.y, -mouse.x, 0),
         Math.PI / 4
       );
-      //flip the ship rotation, since camera is behind the ship
-      finalCameraQuat.copy(flipRotation(finalShipQuat));
-      //adjust final camera rotation
-      finalCameraQuat.multiply(adjustCameraViewQuat);
-      // rotate towards target quaternion
-      camera.rotation.setFromQuaternion(
-        currentCameraQuat
-          .slerp(finalCameraQuat, resetCameraLerpSpeed || 0.2)
-          .normalize()
-      );
-      // don't need this in r3f
-      //camera.updateProjectionMatrix();
+      camera.quaternion.multiply(adjustCameraViewQuat).normalize();
+      //.slerp(finalCameraQuat, resetCameraLerpSpeed || 0.2).normalize();
     },
   })
 );

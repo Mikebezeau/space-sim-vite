@@ -91,7 +91,6 @@ interface storeState {
     updateTouchMobileMoveShip: (event: TouchEvent) => void;
   };
   mutation: {
-    //particles_old: any;
     mouse: THREE.Vector2;
     mouseScreen: THREE.Vector2;
     //ongoingTouches: any[];
