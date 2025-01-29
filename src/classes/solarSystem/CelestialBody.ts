@@ -42,14 +42,12 @@ class CelestialBody implements CelestialBodyInt {
   textureMapOptions: typeTextureMapOptions;
   cloudShaderUniforms: typeCloudShaderUniforms;
   renderTargetGPU: any | null;
-  texture: THREE.Texture | null;
-  bumpMapTexture: THREE.Texture | null;
-  uTime: number;
+  uTimeTracker: number;
 
   constructor(isTestCelestial?: boolean) {
     this.id = uuidv4();
     this.isTestCelestial = isTestCelestial || false;
-    this.uTime = 1;
+    this.uTimeTracker = 1;
     this.cloudShaderUniforms = {
       u_isClouds: true,
       u_cloudscale: 1.0,
@@ -120,7 +118,6 @@ class CelestialBody implements CelestialBodyInt {
     this.disposeTextures();
     // if renderer provided will initComputeRenderer
     // othwise will generate the texture if already initialized
-    //const texture =
     useGenFboTextureStore
       .getState()
       .generateTextureGPU(
@@ -158,11 +155,17 @@ class CelestialBody implements CelestialBodyInt {
   };
 
   disposeTextures = () => {
-    if (this.texture) this.texture.dispose();
-    if (this.bumpMapTexture) this.bumpMapTexture.dispose();
+    if (this.material.uniforms.u_texture?.value?.dispose)
+      this.material.uniforms.u_texture.value.dispose();
+    // dispose of crater textures in material uniforms
+    if (this.material.uniforms.u_craterTexture?.value?.dispose)
+      this.material.uniforms.u_craterTexture.value.dispose();
+    if (this.material.uniforms.u_craterTBumpMap?.value?.dispose)
+      this.material.uniforms.u_craterTBumpMap.value.dispose();
   };
 
   disposeResources = () => {
+    this.renderTargetGPU.dispose();
     this.material.dispose();
     this.disposeTextures();
   };
@@ -211,8 +214,8 @@ class CelestialBody implements CelestialBodyInt {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     this.object3d.rotateY(delta / 500);
     // for clouds
-    this.uTime += delta;
-    this.material.uniforms.u_time = { value: this.uTime };
+    this.uTimeTracker += delta;
+    this.material.uniforms.u_time = { value: this.uTimeTracker };
     // for tracking planet rotation (atmosphere shader lighting)
     this.material.uniforms.u_objectMatrixWorld = {
       value: this.object3d.matrixWorld,

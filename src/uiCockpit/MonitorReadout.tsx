@@ -78,7 +78,6 @@ const MonitorReadout = () => {
   ];
   return (
     <div className="relative text-xs">
-      {/*<div className="">{hoveredSection}</div>*/}
       <div className="flex flex-wrap">
         {menuItems.map((item, index) => (
           <Fragment key={item}>

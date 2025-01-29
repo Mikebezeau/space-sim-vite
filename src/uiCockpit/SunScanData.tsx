@@ -25,10 +25,11 @@ const SunScanData = () => {
             "planetInnerZoneProb",
           ].includes(key) &&
           !(typeof value === "object") && ( // filtering out keys
-            <span key={key}>
-              <span className="floatLeft">{key}:</span> {value}
+            <div key={key}>
+              <span className="floatLeft">{key}:</span>
+              {typeof value === "number" ? value.toFixed(2) : value}
               <br />
-            </span>
+            </div>
           )
       )}
     </>

@@ -59,12 +59,9 @@ class Planet extends CelestialBody implements PlanetInt {
     this.earthMasses = earthMasses;
 
     this.setTextureOptions();
-    // generate terrian texture map
-    //this.genTexture(renderer);
-    // TODO generate crater texture map
-    this.bumpMapTexture = null;
-
     this.material = useStore.getState().clonePlanetShaderMaterial();
+    // generate terrian texture map
+    this.genTexture(renderer);
     this.updateUniforms();
   }
 

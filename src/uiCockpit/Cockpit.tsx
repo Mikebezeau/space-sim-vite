@@ -69,17 +69,19 @@ const Cockpit = () => {
         targetView.current.moveY + (currentView.current.isZoom ? 20 : 0);
 
       const totalTargetMoveZ = currentView.current.isZoom ? 20 : 0;
-
+      /*
       currentView.current.rotateX = lerp(
         currentView.current.rotateX,
         targetView.current.rotateX,
         lerpSpeed
       );
+      */
       currentView.current.rotateY = lerp(
         currentView.current.rotateY,
         targetView.current.rotateY,
         lerpSpeed
       );
+
       currentView.current.moveX = lerp(
         currentView.current.moveX,
         totalTargetMoveX,
@@ -158,7 +160,10 @@ const Cockpit = () => {
     <div className="container-full-screen cockpit-view top-0" ref={cockpitRef}>
       <CockpitFacesRed />
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
-        <div className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[28vh]">
+        <div
+          className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[10vh]"
+          style={{ transform: "translateZ(6vh)" }}
+        >
           <Cockpit1stPersonControls />
         </div>
       </div>

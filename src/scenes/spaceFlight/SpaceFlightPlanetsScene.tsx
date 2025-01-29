@@ -3,7 +3,7 @@ import { Group, Mesh } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import SolarSystem from "../../3d/solarSystem/SolarSystem";
 import Stations from "../../3d/spaceFlight/Stations";
-import PlayerMech from "../../3d/spaceFlight/PlayerMechNew";
+import PlayerMech from "../../3d/spaceFlight/PlayerMech";
 import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
 import Particles from "../../3d/Particles";
 import useStore from "../../stores/store";

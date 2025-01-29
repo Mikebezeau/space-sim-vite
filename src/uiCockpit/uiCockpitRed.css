@@ -1,6 +1,24 @@
-.right {
-  width: 30vh;
+.face.middle-red {
+  width: 80vh;
   height: 65vh;
-  transform: translateX(48.5vh) translateY(4.6vh) translateZ(13vh)
-    rotateX(25deg) rotateY(-45deg) rotateZ(25deg);
+  transform: translateY(2.7vh) translateZ(2vh) rotateX(7deg);
+}
+
+.face.right-red {
+  width: 60vh;
+  height: 65vh;
+  transform: translateX(44.5vh) translateY(18vh) translateZ(13vh) rotateX(7deg);
+}
+
+.face.left-red {
+  width: 60vh;
+  height: 65vh;
+  transform: translateX(-44.5vh) translateY(18vh) translateZ(13vh) rotateX(7deg);
+}
+
+.face.bottom-red {
+  width: 74vh;
+  height: 13vh;
+  /*background: blue;*/
+  transform: translateY(58vh) translateZ(12vh) rotateX(60deg);
 }

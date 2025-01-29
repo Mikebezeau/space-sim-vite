@@ -13,7 +13,7 @@ import {
 import SpeedReadout from "./uiCockpit/SpeedReadout";
 import ShieldsReadout from "./uiCockpit/ShieldsReadout";
 import WeaponsReadout from "./uiCockpit/WeaponsReadout";
-import MainMenu from "./menuComponents/MainMenu";
+import MainMenu from "./uiTitleScreen/MainMenu";
 import GalaxyMapMenu from "./menuComponents/GalaxyMapMenu";
 import StationDockMenu from "./menuComponents/StationDockMenu";
 import EquipmentMenu from "./menuComponents/EquipmentMenu";
@@ -22,9 +22,6 @@ import { IS_MOBILE, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
 import "./css/glitch.css";
 import "./css/arrowsAnimate.css";
-
-import AppLoadingManager from "./AppLoadingManager";
-import AppLoadingScreen from "./AppLoadingScreen";
 
 const AppUI = () => {
   console.log("AppUI render");
@@ -35,8 +32,6 @@ const AppUI = () => {
   );
   //const getIsTestScreen = useDevStore((state) => state.getIsTestScreen);
   const testScreen = useDevStore((state) => state.testScreen);
-  const devEnemyTest = useDevStore((state) => state.devEnemyTest);
-  const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
   /*
   const isTestScreen = useRef<boolean>(false);
@@ -58,29 +53,26 @@ const AppUI = () => {
         <>
           <LilGui />
           <div className="pointer-events-none touch-none">
-            <AppLoadingScreen />
-            <AppLoadingManager />
             {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
-            {playerScreen === PLAYER.screen.flight &&
-              (devEnemyTest ? devPlayerPilotMech : true) && (
-                <>
-                  {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
-                  {playerViewMode === PLAYER.view.thirdPerson && (
-                    <>
-                      <Cockpit3rdPersonControls />
-                      <ActionModeControls />
-                      <div className="absolute top-20 left-10">
-                        <SpeedReadout />
-                      </div>
-                    </>
-                  )}
-                  <div className="absolute top-72 right-11">
-                    <ShieldsReadout />
-                    <WeaponsReadout />
-                  </div>
-                  <FlightHUD />
-                </>
-              )}
+            {playerScreen === PLAYER.screen.flight && (
+              <>
+                {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
+                {playerViewMode === PLAYER.view.thirdPerson && (
+                  <>
+                    <Cockpit3rdPersonControls />
+                    <ActionModeControls />
+                    <div className="absolute top-20 left-10">
+                      <SpeedReadout />
+                    </div>
+                  </>
+                )}
+                <div className="absolute top-72 right-11">
+                  <ShieldsReadout />
+                  <WeaponsReadout />
+                </div>
+                <FlightHUD />
+              </>
+            )}
             {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
             {playerScreen === PLAYER.screen.dockedStation && (
               <StationDockMenu />
@@ -88,16 +80,15 @@ const AppUI = () => {
             {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
 
             {(playerScreen === PLAYER.screen.flight ||
-              playerScreen === PLAYER.screen.landedPlanet) &&
-              (devEnemyTest ? devPlayerPilotMech : true) && (
-                <>
-                  {IS_MOBILE ? (
-                    <SpaceFlightControlsTouch />
-                  ) : (
-                    <SpaceFlightControlsMouseKB />
-                  )}
-                </>
-              )}
+              playerScreen === PLAYER.screen.landedPlanet) && (
+              <>
+                {IS_MOBILE ? (
+                  <SpaceFlightControlsTouch />
+                ) : (
+                  <SpaceFlightControlsMouseKB />
+                )}
+              </>
+            )}
             {/*<CustomCursor />*/}
           </div>
         </>

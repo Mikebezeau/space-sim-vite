@@ -1,31 +1,32 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { createRoot } from "@react-three/fiber";
 import usePlayerControlsStore from "./stores/playerControlsStore";
-import useDevStore from "./stores/devStore";
 import BuildMech from "./3d/buildMech/BuildMech";
-import PlanetScanReadout from "./3d/spaceFlight/PlanetScanReadout";
+//import PlanetScanReadout from "./3d/spaceFlight/PlanetScanReadout";
 import useStore from "./stores/store";
-import { IS_MOBILE, PLAYER } from "./constants/constants";
+import { PLAYER } from "./constants/constants";
 
-function MyCanvas(props) {
-  const canvas = useRef();
-  const root = useRef();
+const MyCanvas = (props) => {
+  const canvas = useRef<HTMLCanvasElement | null>(null);
+  const root = useRef<any>();
 
   useEffect(() => {
-    if (!root.current) {
-      root.current = createRoot(canvas.current);
+    if (canvas.current !== null) {
+      if (!root.current) {
+        root.current = createRoot(canvas.current);
+      }
+      root.current.configure({ ...props }); // configuring without r3f events
+      root.current.render(props.children);
     }
-    root.current.configure({ ...props }); // configuring without r3f events
-    root.current.render(props.children);
-  }, [props]);
+  }, [canvas.current, props]);
 
   return (
     // className="pointer-events-none touch-auto"
     <canvas ref={canvas}></canvas>
   );
-}
+};
 
-function AppUICanvas() {
+const AppUICanvas = () => {
   console.log("AppUICanvas rendered");
   const playerMechBP = useStore((state) => state.player.mechBP);
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
@@ -35,7 +36,6 @@ function AppUICanvas() {
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
-  const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
   return (
     <div
@@ -58,7 +58,7 @@ function AppUICanvas() {
       >
         {
           // playerControlMode === PLAYER.controls.combat &&
-          playerScreen === PLAYER.screen.flight || devPlayerPilotMech ? (
+          playerScreen === PLAYER.screen.flight ? (
             <>
               {playerControlMode === PLAYER.controls.scan ? (
                 <>
@@ -82,6 +82,6 @@ function AppUICanvas() {
       </MyCanvas>
     </div>
   );
-}
+};
 
 export default AppUICanvas;

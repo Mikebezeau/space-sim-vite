@@ -1,27 +1,44 @@
 import { useEffect } from "react";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+import usePlayerControlsStore from "../stores/playerControlsStore";
 import useDevStore from "../stores/devStore";
+import { PLAYER } from "../constants/constants";
 
 const LilGui = () => {
   const devStoreState = useDevStore((state) => state);
+  const switchScreen = usePlayerControlsStore(
+    (state) => state.actions.switchScreen
+  );
+
+  const controls = { toggleTitleScreen: false };
+
   useEffect(() => {
     const gui = new GUI();
 
     gui.close();
-    gui.add(devStoreState, "devEnemyTest").onChange((value) => {
-      // not accepting boolean values (even though type is boolean in store)
-      devStoreState.setProp("devEnemyTest", value ? 1 : 0);
-    });
-    gui.add(devStoreState, "devPlayerPilotMech").onChange((value) => {
-      devStoreState.setProp("devPlayerPilotMech", value ? 1 : 0);
-    });
-    gui.add(devStoreState, "devPlayerSpeedX1000").onChange((value) => {
-      devStoreState.setProp("devPlayerSpeedX1000", value ? 1 : 0);
-    });
+    /*
     gui.add(devStoreState, "showObbBox").onChange((value) => {
       devStoreState.setProp("showObbBox", value ? 1 : 0);
     });
+*/
 
+    const folderPage = gui.addFolder("Page");
+    folderPage.open(false);
+
+    folderPage
+      .add(controls, "toggleTitleScreen")
+      .name("View Title Screen")
+      .onChange(() => {
+        controls.toggleTitleScreen = false;
+        switchScreen(PLAYER.screen.mainMenu);
+      });
+
+    const pilotPage = gui.addFolder("Pilot");
+    pilotPage.open(false);
+
+    pilotPage.add(devStoreState, "devPlayerSpeedX1000").onChange((value) => {
+      devStoreState.setProp("devPlayerSpeedX1000", value ? 1 : 0);
+    });
     return () => {
       gui.destroy();
     };

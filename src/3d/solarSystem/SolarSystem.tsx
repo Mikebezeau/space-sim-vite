@@ -1,7 +1,6 @@
 import React from "react";
 import useStore from "../../stores/store";
-import Star from "./Star";
-import Planet from "./Planet";
+import CelestialBody from "./CelestialBody";
 
 const SolarSystem = () => {
   const stars = useStore((state) => state.stars);
@@ -10,11 +9,11 @@ const SolarSystem = () => {
   console.log("SolarSystem rendered", planets);
   return (
     <>
-      {planets?.map((planet, index) => (
-        <Planet key={index} planet={planet} />
-      ))}
       {stars?.map((star, index) => (
-        <Star key={index} star={star} />
+        <CelestialBody key={index} celestialBody={star} />
+      ))}
+      {planets?.map((planet, index) => (
+        <CelestialBody key={index} celestialBody={planet} />
       ))}
     </>
   );

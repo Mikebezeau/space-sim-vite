@@ -1,13 +1,12 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { BoxGeometry, FrontSide, Object3D, ShaderMaterial } from "three";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
-import useDevStore from "../../stores/devStore";
 import useParticleStore from "../../stores/particleStore";
 import PlayerCrosshair from "./PlayerCrosshair";
 import BuildMech from "../buildMech/BuildMech";
-import Particles from "../../3d/Particles";
+import Particles from "../Particles";
 import { setVisible } from "../../util/gameUtil";
 import { PLAYER } from "../../constants/constants";
 //import { setCustomData } from "r3f-perf";
@@ -28,9 +27,6 @@ const PlayerMech = () => {
   const addEngineExhaust = useParticleStore(
     (state) => state.playerEffects.addEngineExhaust
   );
-
-  const devEnemyTest = useDevStore((state) => state.devEnemyTest);
-  const devPlayerPilotMech = useDevStore((state) => state.devPlayerPilotMech);
 
   const playerMechRef = useRef(null);
   const secondaryGroupRef = useRef(null);
@@ -106,9 +102,8 @@ const PlayerMech = () => {
     );
 
     if (player.object3d) {
-      if (!devEnemyTest || devPlayerPilotMech) {
-        updatePlayerMechAndCameraFrame(delta, camera);
-      }
+      updatePlayerMechAndCameraFrame(delta, camera);
+
       // player mech object3d directly linked to Buildmech ref: playerMechRef.current
       // update secondary group (crosshair, weapon light)
       secondaryGroupRef.current.position.copy(player.object3d.position);

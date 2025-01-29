@@ -42,13 +42,10 @@ class Star extends CelestialBody {
         new THREE.Vector3(1, 1, 1),
       ],
     };
-    //this.setShaderColors();
-
-    // generate terrian texture map
-    // not working when called from genSystem in rapid succession stars, planets...
-    //this.genTexture(renderer);
 
     this.material = useStore.getState().sunShaderMaterial;
+    // generate terrian texture map
+    this.genTexture(renderer);
     this.updateUniforms();
   }
 }

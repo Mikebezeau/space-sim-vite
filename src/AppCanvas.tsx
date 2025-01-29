@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import AppCanvasLoadTrigger from "./AppCanvasLoadTrigger";
 import AppCanvasScene from "./AppCanvasScene";
 import { Perf } from "r3f-perf";
+import { IS_MOBILE } from "./constants/constants";
 
 const AppCanvas = () => {
   console.log("AppCanvas rendered");
@@ -39,7 +40,7 @@ const AppCanvas = () => {
         >
           <Perf
             logsPerSecond={5}
-            //minimal
+            minimal={IS_MOBILE}
             customData={{
               value: 0, // initial value,
               name: 1, //"Custom", // name to show

@@ -72,7 +72,7 @@ export const ActionWarpToPlanet = () => {
   const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
   return focusPlanetIndex !== null ? (
     <>
-      {IS_MOBILE ? (
+      {/*IS_MOBILE ? (
         <div
           className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
           onClick={warpToPlanet}
@@ -85,41 +85,38 @@ export const ActionWarpToPlanet = () => {
             />
           </span>
         </div>
-      ) : (
-        <>
-          <div
-            className="pointer-events-auto w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
-            onClick={isScanDistanceToPlanet ? scanPlanet : warpToPlanet}
-          >
-            <div className="w-full cybr-btn" onClick={() => {}}>
-              {isScanDistanceToPlanet ? "Scan Planet" : "Engage Warp"}
-              <span
-                aria-hidden
-                className="cybr-btn__glitch glitch-once pl-[10%]"
-              >
-                {isScanDistanceToPlanet
-                  ? scanPlanetProgress > 0
-                    ? scanPlanetProgress * 10 + "%"
-                    : "Scan Planet"
-                  : "Engage Warp"}
-              </span>
-              <span aria-hidden className="cybr-btn__tag">
-                X12
-              </span>
-            </div>
+      ) : (*/}
+      <>
+        <div
+          className="pointer-events-auto w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
+          onClick={isScanDistanceToPlanet ? scanPlanet : warpToPlanet}
+        >
+          <div className="w-full cybr-btn" onClick={() => {}}>
+            {isScanDistanceToPlanet ? "Scan Planet" : "Engage Warp"}
+            <span aria-hidden className="cybr-btn__glitch glitch-once pl-[10%]">
+              {isScanDistanceToPlanet
+                ? scanPlanetProgress > 0
+                  ? scanPlanetProgress * 10 + "%"
+                  : "Scan Planet"
+                : "Engage Warp"}
+            </span>
+            <span aria-hidden className="cybr-btn__tag">
+              X12
+            </span>
           </div>
-          <div className="arrow">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          {/*<img
+        </div>
+        <div className="arrow">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        {/*<img
             src={warp}
             alt="cancel controls icon"
             className="w-full h-full pointer-events-none"
           />*/}
-        </>
-      )}
+      </>
+      {/*)}*/}
     </>
   ) : null;
 };
@@ -136,7 +133,7 @@ export const ActionModeControls = () => {
           <ActionControlPilot />
         </div>
       )}
-      {!IS_MOBILE && (
+      {true && ( //!IS_MOBILE && (
         <div className="absolute bottom-24 left-1/2">
           <ActionWarpToPlanet />
         </div>
@@ -335,7 +332,7 @@ export const CockpitControlEquip = () => {
 
 export const Cockpit1stPersonControls = () => {
   return (
-    <div className="flex flex-row gap-1 sm:gap-[36vh]">
+    <div className="flex flex-row gap-1 sm:gap-2">
       <div className="flex flex-col gap-1">
         <CockpitControlMode />
         <CockpitControlMap />

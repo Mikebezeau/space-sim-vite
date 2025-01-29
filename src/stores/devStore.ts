@@ -22,8 +22,6 @@ interface devStoreState {
   genTestPlanet: (renderer: THREE.WebGLRenderer | null) => void;
   setPlanetType: (planetTypeData: typePlanetData) => void;
   //
-  devEnemyTest: boolean;
-  devPlayerPilotMech: boolean;
   devPlayerSpeedX1000: boolean;
   showLeaders: boolean;
   showObbBox: boolean;
@@ -118,8 +116,6 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     }));
   },
   // dev
-  devEnemyTest: false,
-  devPlayerPilotMech: true,
   devPlayerSpeedX1000: false, //true,
   showLeaders: false,
   showObbBox: false,
