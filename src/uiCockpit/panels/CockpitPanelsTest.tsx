@@ -1,11 +1,8 @@
 import React from "react";
-import CockpitMiddleRed from "./faces/red/CockpitMiddleRed";
-import CockpitSidesRed from "./faces/red/CockpitSidesRed";
-import CockpitConsoleRed from "./faces/red/CockpitConsoleRed";
-import CockpitBottomRed from "./faces/red/CockpitBottomRed";
-import "./uiCockpitRed.css";
+import CockpitConsole from "./blue/CockpitConsole";
+import "../css/uiCockpitBlue.css";
 
-const CockpitFacesTest = () => {
+const CockpitPanelsTest = () => {
   return (
     <>
       <div className="perspective-400 preserve-3d container-full-screen screen-container">
@@ -71,23 +68,15 @@ const CockpitFacesTest = () => {
           />
         </div>
       </div>
-      <div className="perspective-400 preserve-3d container-full-screen top-[70vh]">
-        <div className="face middle-red">
-          <CockpitMiddleRed />
-        </div>
-        <div className="face left-red">
-          <CockpitSidesRed isLeft={true} />
-        </div>
-        <div className="face right-red">
-          <CockpitSidesRed />
-        </div>
-        {/*<CockpitConsoleRed />*/}
-        <div className="face bottom-red">
-          <CockpitBottomRed />
-        </div>
+      <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
+        <div className="face middle test">{/*<CockpitMiddle />*/}</div>
+        <div className="face left test">{/*<CockpitLeft />*/}</div>
+        <div className="face right test">{/*<CockpitRight />*/}</div>
+        <CockpitConsole />
+        <div className="face bottom test" />
       </div>
     </>
   );
 };
 
-export default CockpitFacesTest;
+export default CockpitPanelsTest;

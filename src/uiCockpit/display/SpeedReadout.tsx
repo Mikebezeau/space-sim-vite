@@ -1,5 +1,5 @@
 import React from "react";
-import useStore from "../stores/store";
+import useStore from "../../stores/store";
 
 const SpeedReadout = () => {
   const speed = useStore((state) => state.player.speed);

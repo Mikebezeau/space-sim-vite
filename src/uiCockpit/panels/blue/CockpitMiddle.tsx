@@ -1,8 +1,8 @@
 import React from "react";
-import SpeedReadout from "../../SpeedReadout";
+import SpeedReadout from "../../display/SpeedReadout";
 import { IS_MOBILE } from "../../../constants/constants";
 //@ts-ignore
-import cockpitImage from "../../images/blue/middle.png"; //import controls from "../../icons/controls.svg";
+import cockpitImage from "/images/cockpit/panelsBlue/middle.png"; //import controls from "../../icons/controls.svg";
 
 const CockpitMiddle = () => {
   return (

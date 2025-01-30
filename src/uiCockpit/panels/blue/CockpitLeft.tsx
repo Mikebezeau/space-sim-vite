@@ -1,8 +1,8 @@
 import React from "react";
-import SunScanData from "../../SunScanData";
-import PlanetScanData from "../../PlanetScanData";
+import SunScanData from "../../display/SunScanData";
+import PlanetScanData from "../../display/PlanetScanData";
 //@ts-ignore
-import screenBImage from "../../images/blue/screenB.png";
+import screenBImage from "/images/cockpit/panelsBlue/screenB.png";
 
 const CockpitLeft = () => {
   return (

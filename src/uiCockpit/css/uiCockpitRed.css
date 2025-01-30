@@ -1,3 +1,9 @@
+.face.screen-top {
+  width: 40vh;
+  height: 25vh;
+  transform: translateY(-5vh) translateZ(36vh) rotateX(-71deg);
+}
+
 .face.middle-red {
   width: 80vh;
   height: 65vh;
@@ -16,9 +22,22 @@
   transform: translateX(-44.5vh) translateY(18vh) translateZ(13vh) rotateX(7deg);
 }
 
+.face.right-outer-red {
+  width: 20vh;
+  height: 40vh;
+  transform: translateX(73vh) translateY(28vh) translateZ(21vh) rotateX(10deg)
+    rotateY(-55deg) rotateZ(0deg);
+}
+
+.face.left-outer-red {
+  width: 20vh;
+  height: 40vh;
+  transform: translateX(-73vh) translateY(28vh) translateZ(21vh) rotateX(10deg)
+    rotateY(55deg) rotateZ(0deg);
+}
+
 .face.bottom-red {
   width: 74vh;
   height: 13vh;
-  /*background: blue;*/
   transform: translateY(58vh) translateZ(12vh) rotateX(60deg);
 }

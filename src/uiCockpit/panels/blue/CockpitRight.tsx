@@ -1,7 +1,7 @@
 import React from "react";
 //@ts-ignore
-import screenBImage from "../../images/blue/screenB.png";
-import MonitorReadout from "../../MonitorReadout";
+import screenBImage from "/images/cockpit/panelsBlue/screenB.png";
+import MonitorReadout from "../../display/MonitorReadout";
 
 const CockpitRight = () => {
   //console.log("CockpitRight rendered");

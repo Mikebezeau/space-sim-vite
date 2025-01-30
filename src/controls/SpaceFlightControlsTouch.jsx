@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import useStore from "../stores/store";
 import controls from "../assets/icons/controls.svg";
-import controlStick from "/images/controls/controlStick.png";
-import throttleStick from "/images/controls/throttleStick.png";
+import controlStick from "/images/cockpit/controls/controlStick.png";
+import throttleStick from "/images/cockpit/controls/throttleStick.png";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import {
   useTouchStartControls,

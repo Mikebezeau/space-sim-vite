@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import SunScanData from "../../SunScanData";
-import PlanetScanData from "../../PlanetScanData";
+import SunScanData from "../../display/SunScanData";
+import PlanetScanData from "../../display/PlanetScanData";
 //import MonitorReadout from "../../MonitorReadout";
 //@ts-ignore
-import cockpitRightRed from "../../images/red/cockpitRightRed.png";
+import cockpitRightRed from "/images/cockpit/panelsRed/cockpitRightRed.png";
 // @ts-ignore
 import screenMenuOptions from "/images/sreenWindowImages/screenMenuOptions.png";
 // @ts-ignore
@@ -42,7 +42,7 @@ const imageSrcArrayLeft = [
   solarMap2,
 ];
 
-const CockpitSidesRed = ({ isLeft = false }) => {
+const PanelSidesRed = ({ isLeft = false }) => {
   //console.log("CockpitRight rendered");
   const screenImageRef = useRef<HTMLImageElement | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -100,4 +100,4 @@ const CockpitSidesRed = ({ isLeft = false }) => {
   );
 };
 
-export default CockpitSidesRed;
+export default PanelSidesRed;

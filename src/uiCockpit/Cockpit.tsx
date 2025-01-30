@@ -2,7 +2,7 @@ import React from "react";
 import { useRef, useLayoutEffect } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import CockpitFacesRed from "./CockpitFacesRed";
+import CockpitPanelsRed from "./panels/CockpitPanelsRed";
 import {
   useMouseDown,
   useMouseUp,
@@ -19,7 +19,7 @@ import {
   Cockpit1stPersonControls,
 } from "./CockpitControls";
 import { PLAYER } from "../constants/constants";
-import "./uiCockpitBlue.css";
+import "./css/uiCockpit.css";
 
 const Cockpit = () => {
   console.log("Cockpit rendered");
@@ -158,7 +158,7 @@ const Cockpit = () => {
 
   return (
     <div className="container-full-screen cockpit-view top-0" ref={cockpitRef}>
-      <CockpitFacesRed />
+      <CockpitPanelsRed />
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
         <div
           className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[10vh]"

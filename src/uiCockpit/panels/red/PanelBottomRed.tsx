@@ -1,8 +1,8 @@
 import React from "react";
 //@ts-ignore
-import cockpitBottomSrc from "../../images/red/cockpitBottomRed.png";
+import cockpitBottomSrc from "/images/cockpit/panelsRed/cockpitBottomRed.png";
 
-const CockpitBottomRed = () => {
+const PanelBottomRed = () => {
   return (
     <div
       className="w-[100%] h-[100%] bg-cover bg-center"
@@ -11,4 +11,4 @@ const CockpitBottomRed = () => {
   );
 };
 
-export default CockpitBottomRed;
+export default PanelBottomRed;

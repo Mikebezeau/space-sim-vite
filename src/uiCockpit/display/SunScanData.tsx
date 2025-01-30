@@ -1,5 +1,5 @@
 import React from "react";
-import useStore from "../stores/store";
+import useStore from "../../stores/store";
 
 const SunScanData = () => {
   console.log("SunScanData rendered");

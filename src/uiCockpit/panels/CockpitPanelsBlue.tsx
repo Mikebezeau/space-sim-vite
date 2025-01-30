@@ -1,32 +1,17 @@
 import React from "react";
-import CockpitLeft from "./faces/blue/CockpitLeft";
-import CockpitMiddle from "./faces/blue/CockpitMiddle";
-import CockpitRight from "./faces/blue/CockpitRight";
-import CockpitConsole from "./faces/blue/CockpitConsole";
+import CockpitLeft from "./blue/CockpitLeft";
+import CockpitMiddle from "./blue/CockpitMiddle";
+import CockpitRight from "./blue/CockpitRight";
+import CockpitConsole from "./blue/CockpitConsole";
 //@ts-ignore
-import beamImage from "./images/blue/beam.png";
+import beamImage from "/images/cockpit/panelsBlue/beam.png";
 //@ts-ignore
-import screenMini1Image from "./images/blue/cockpit_screen_mini_1.jpg";
+import screenMini1Image from "/images/cockpit/panelsBlue/cockpit_screen_mini_1.jpg";
 //@ts-ignore
-import screenMini2Image from "./images/blue/cockpit_screen_mini_2.jpg";
+import screenMini2Image from "/images/cockpit/panelsBlue/cockpit_screen_mini_2.jpg";
+import "../css/uiCockpitBlue.css";
 
-const CockpitFacesBlue = () => {
-  /*
-  return (
-    <div className="container-full-screen cockpit-view" ref={cockpitRef}>
-      <div className="perspective-400 preserve-3d container-full-screen controls-container">
-        <div className="face middle test"></div>
-        <div className="face left test"></div>
-        <div className="face right test"></div>
-        <CockpitConsole />
-      </div>
-      <div className="perspective-400 preserve-3d container-full-screen">
-        <div className="face screen-top"></div>
-        <div className="face screen-middle"></div>
-      </div>
-    </div>
-  );
-  */
+const CockpitPanelsBlue = () => {
   return (
     <>
       <div className="perspective-400 preserve-3d container-full-screen screen-container">
@@ -95,4 +80,4 @@ const CockpitFacesBlue = () => {
   );
 };
 
-export default CockpitFacesBlue;
+export default CockpitPanelsBlue;

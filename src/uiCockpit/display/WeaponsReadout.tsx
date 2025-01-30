@@ -1,7 +1,7 @@
 import React from "react";
-import useStore from "../stores/store";
-import usePlayerControlStore from "../stores/playerControlsStore";
-import { PLAYER } from "../constants/constants";
+import useStore from "../../stores/store";
+import usePlayerControlStore from "../../stores/playerControlsStore";
+import { PLAYER } from "../../constants/constants";
 //import { equipData } from "../equipment/data/equipData";
 
 const WeaponsReadout = ({ isAlwaysDisplay = false }) => {

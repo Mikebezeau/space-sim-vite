@@ -10,9 +10,9 @@ import {
   ActionModeControls,
   Cockpit3rdPersonControls,
 } from "./uiCockpit/CockpitControls";
-import SpeedReadout from "./uiCockpit/SpeedReadout";
-import ShieldsReadout from "./uiCockpit/ShieldsReadout";
-import WeaponsReadout from "./uiCockpit/WeaponsReadout";
+import SpeedReadout from "./uiCockpit/display/SpeedReadout";
+import ShieldsReadout from "./uiCockpit/display/ShieldsReadout";
+import WeaponsReadout from "./uiCockpit/display/WeaponsReadout";
 import MainMenu from "./uiTitleScreen/MainMenu";
 import GalaxyMapMenu from "./menuComponents/GalaxyMapMenu";
 import StationDockMenu from "./menuComponents/StationDockMenu";
