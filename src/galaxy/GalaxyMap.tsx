@@ -95,8 +95,8 @@ const GalaxyMap = () => {
     const mouseMovedEnd = useRef(new THREE.Vector2(0, 0));
     const mouseButtonDown = useRef(false);
 
-    const getStarBufferPoisition = useCallback(
-      (index) => {
+    const getStarBufferPosition = useCallback(
+      (index: number) => {
         return new THREE.Vector3(
           starCoordsBuffer.array[index * 3],
           starCoordsBuffer.array[index * 3 + 1],
@@ -109,7 +109,7 @@ const GalaxyMap = () => {
     const viewSelectedStar = useCallback(
       (starPointIndex) => {
         resestControlsCameraPosition(); // reset controls, camera and galaxy positions
-        const centerOnStarPosition = getStarBufferPoisition(starPointIndex);
+        const centerOnStarPosition = getStarBufferPosition(starPointIndex);
         galaxyRef.current.position.set(
           -centerOnStarPosition.x,
           -centerOnStarPosition.y,
@@ -117,7 +117,7 @@ const GalaxyMap = () => {
         ); // move galaxy to position selected star at (0,0,0)
         camera.position.setZ(-(RAYCAST_THRESHOLD + 2)); // move camera closer to star to inspect
       },
-      [getStarBufferPoisition]
+      [getStarBufferPosition]
     );
 
     const setStarSelectionBuffer = (value) => {
@@ -125,10 +125,10 @@ const GalaxyMap = () => {
     };
 
     const setSecondarySelectedStars = useCallback((starPointIndex) => {
-      const centerOnStarPosition = getStarBufferPoisition(starPointIndex);
+      const centerOnStarPosition = getStarBufferPosition(starPointIndex);
       const secondaryStarPosition = new THREE.Vector3();
       starSelectedBuffer.array.forEach((_, index) => {
-        secondaryStarPosition.copy(getStarBufferPoisition(index));
+        secondaryStarPosition.copy(getStarBufferPosition(index));
         const distance = centerOnStarPosition.distanceTo(secondaryStarPosition);
         if (distance < RAYCAST_THRESHOLD) {
           starSelectedBuffer.array[index] = STAR_DISPLAY_MODE.secondarySelected;
@@ -211,14 +211,14 @@ const GalaxyMap = () => {
         starSelectedBuffer.array[centerOnStarIndexRef.current] =
           STAR_DISPLAY_MODE.selected;
         // secondary selected stars in close proximity
-        const centerOnStarPosition = getStarBufferPoisition(
+        const centerOnStarPosition = getStarBufferPosition(
           centerOnStarIndexRef.current
         );
         // check all stars intersecting with raycaster ray for distance to selected star
         // calculated with starCoordsBuffer for accurate coordinates - raycaster ray not achieving accurate results
         const secondaryStarPosition = new THREE.Vector3();
         intersects.forEach((intersect) => {
-          secondaryStarPosition.copy(getStarBufferPoisition(intersect.index));
+          secondaryStarPosition.copy(getStarBufferPosition(intersect.index));
           // secondary star selections are stars close to selected star
           if (intersect.index !== centerOnStarIndexRef.current) {
             const distance = centerOnStarPosition.distanceTo(
@@ -275,7 +275,7 @@ const GalaxyMap = () => {
           setShowInfoHoveredStarIndex(hoveredStar.index); // to show star info card in GalaxyMapHud/StarInfoCard
           // offest galaxyRef.current.position since galaxy is moved so that
           // the main central star (current player position) is moved to (0,0,0) for inspection
-          const hoveredStarPosition = getStarBufferPoisition(hoveredStar.index);
+          const hoveredStarPosition = getStarBufferPosition(hoveredStar.index);
           lineToHoveredStarPointRef.current = [
             hoveredStarPosition.x + galaxyRef.current.position.x,
             hoveredStarPosition.y + galaxyRef.current.position.y,
@@ -308,7 +308,7 @@ const GalaxyMap = () => {
         }
         targetStarIndexRef.current = hoveredStarIndexRef.current;
         // set target star line
-        const targetStarPosition = getStarBufferPoisition(
+        const targetStarPosition = getStarBufferPosition(
           targetStarIndexRef.current
         );
         // offset by galaxy position (centered on current player star position)

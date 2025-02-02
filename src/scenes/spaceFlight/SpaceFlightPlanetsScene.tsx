@@ -10,7 +10,7 @@ import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import EnemyMechs from "../../3d/enemyMechs/EnemyMechsNew";
 import ObbTest from "./dev/ObbTest";
-import { flipRotation } from "../../util/gameUtil";
+import { flipRotation } from "../../util/cameraUtil";
 
 const SpaceFlightPlanetsScene = () => {
   console.log("SpaceFlight Scene rendered");

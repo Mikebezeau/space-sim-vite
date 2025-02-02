@@ -1,15 +1,17 @@
 import { create } from "zustand";
 import useStore from "./store";
 import useDevStore from "./devStore";
-import * as THREE from "three";
-import { flipRotation, lerp } from "../util/gameUtil";
+import { PerspectiveCamera, Quaternion, Vector3 } from "three";
+import { flipRotation, getScreenPosition } from "../util/cameraUtil";
+//import { lerp } from "../util/gameUtil";
 import { PLAYER, FPS, SPEED_VALUES } from "../constants/constants";
-//import { setCustomData } from "r3f-perf";
 
 interface playerControlStoreState {
   playerActionMode: number;
   playerControlMode: number;
   playerViewMode: number;
+  playerLookXY: { x: number; y: number };
+  setPlayerLookXY: (x: number, y: number) => void;
   playerScreen: number;
   isSwitchingPlayerScreen: boolean;
   setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
@@ -23,6 +25,20 @@ interface playerControlStoreState {
     playerScreen: number;
     isResetCamera: boolean;
   };
+  targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
+  targetsPlanetsNormalHUD: {
+    xn: number;
+    yn: number;
+    angleDiff: number;
+  }[];
+  getPlayerTargetsHUD: () => {
+    targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
+    targetsPlanetsNormalHUD: {
+      xn: number;
+      yn: number;
+      angleDiff: number;
+    }[];
+  };
   playerSpeedSetting: number;
   getPlayerSpeedSetting: () => number;
   isPlayerPilotControl: () => boolean;
@@ -34,25 +50,31 @@ interface playerControlStoreState {
     switchScreen: (playerScreen: number) => void;
     setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
   };
+  updateTargetsPositionHUD: (camera: PerspectiveCamera) => void;
+  updatePlayerCameraLookAngle: () => void;
+  updatePlayerSpeedUseFrame: (delta: number) => void;
   updatePlayerMechAndCameraFrame: (
     delta: number,
-    camera: THREE.PerspectiveCamera
+    camera: PerspectiveCamera
   ) => void;
 }
 
-const cameraMoveToObj = new THREE.Object3D();
-const direction = new THREE.Vector3();
+// reusable
+const dummyVec3 = new Vector3();
 
 // for ship and camera rotation
-const rotateShipQuat = new THREE.Quaternion(),
-  adjustCameraViewQuat = new THREE.Quaternion(),
-  finalCameraQuat = new THREE.Quaternion();
+const rotateShipQuat = new Quaternion(),
+  adjustCameraViewQuat = new Quaternion();
 
 const usePlayerControlsStore = create<playerControlStoreState>()(
   (set, get) => ({
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
+    playerLookXY: { x: 0, y: 0 },
+    setPlayerLookXY: (x, y) => {
+      get().playerLookXY = { x, y };
+    },
     // testing
     //playerScreen: PLAYER.screen.mainMenu,
     //playerScreen: PLAYER.screen.newCampaign,
@@ -82,6 +104,14 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         playerViewMode: get().playerViewMode,
         playerScreen: get().playerScreen,
         isResetCamera: get().isResetCamera,
+      };
+    },
+    targetWarpToStarHUD: null,
+    targetsPlanetsNormalHUD: [],
+    getPlayerTargetsHUD: () => {
+      return {
+        targetWarpToStarHUD: get().targetWarpToStarHUD,
+        targetsPlanetsNormalHUD: get().targetsPlanetsNormalHUD,
       };
     },
     playerSpeedSetting: 1, // used in throttle control, and updatePlayerMechAndCameraFrame below
@@ -140,19 +170,40 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       },
     },
 
+    updateTargetsPositionHUD: (camera) => {
+      // warp star target
+      if (useStore.getState().selectedWarpStarPosition !== null) {
+        const { xn, yn, angleDiff } = getScreenPosition(
+          camera,
+          useStore.getState().selectedWarpStarPosition!
+        );
+        set({ targetWarpToStarHUD: { xn, yn, angleDiff } });
+      } else {
+        set({ targetWarpToStarHUD: null });
+      }
+      if (useStore.getState().planets.length > 0) {
+        const targetsPlanetsNormalHUD: {
+          xn: number;
+          yn: number;
+          angleDiff: number;
+        }[] = [];
+        useStore.getState().planets.forEach((planet) => {
+          //getWorldPosition required due to relative positioning to player
+          planet.object3d.getWorldPosition(dummyVec3);
+          const { xn, yn, angleDiff } = getScreenPosition(camera, dummyVec3);
+          targetsPlanetsNormalHUD.push({ xn, yn, angleDiff });
+        });
+        set({ targetsPlanetsNormalHUD });
+      }
+    },
+
+    updatePlayerCameraLookAngle: () => {},
+
     updatePlayerSpeedUseFrame: (delta) => {
       const player = useStore.getState().player;
       // TODO add acceleration / deceleration
       if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
-        let speed = lerp(
-          player.speed,
-          SPEED_VALUES[get().playerSpeedSetting] *
-            // increase speed by 1000x for testing
-            (devPlayerSpeedX1000 ? 1000 : 1),
-          0.6
-        );
-        // round speed to integer
-        speed = Math.round(speed); // * 10) / 10;
+        let speed = SPEED_VALUES[get().playerSpeedSetting];
         // changing player class properties does not trigger state subscriptions
         // need to use the setSpeed function that triggers togglePlayerPropUpdate() flag
         useStore.getState().actions.setSpeed(speed);
@@ -160,8 +211,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     },
 
     updatePlayerMechAndCameraFrame: (delta, camera) => {
+      get().updateTargetsPositionHUD(camera);
+
       const player = useStore.getState().player;
-      // must call function to calc relative world position
+      // playerPositionUpdated: function to update relative world position
       const playerPositionUpdated = useStore.getState().playerPositionUpdated;
       const mouse = useStore.getState().mutation.mouse;
       const windowAspectRatio = window.innerWidth / window.innerHeight;
@@ -170,6 +223,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
       const deltaFPS = delta * FPS;
 
+      //update speed
+      get().updatePlayerSpeedUseFrame(delta);
+
       const adjustedSpeed =
         player.speed * deltaFPS * (devPlayerSpeedX1000 ? 1000 : 1);
       // MVmod is a modifier for rotation speed based on ship maneuverability
@@ -177,9 +233,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       const MVmult = Math.PI / 12;
       //10 / (player.mechBP.MV() < 0.1 ? 0.1 : player.mechBP.MV());
       const adjustedManuverability = MVmult * deltaFPS;
-
-      //set speed
-      get().updatePlayerSpeedUseFrame(delta);
 
       //rotate ship based on mouse position
 
@@ -218,7 +271,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       camera.quaternion.copy(flipRotation(player.object3d.quaternion));
       // camera position changes based on player view mode
       if (get().playerViewMode === PLAYER.view.firstPerson) {
-        // todo find a way to set camera position based on mech cockpit servo position
+        // TODO set camera position based on mech cockpit servo position
         camera.translateY(0.5 * player.mechBP.scale);
       }
       if (get().playerViewMode === PLAYER.view.thirdPerson) {
@@ -239,8 +292,12 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       }
       // additional camera rotation based on mouse position (looking around)
       adjustCameraViewQuat.setFromAxisAngle(
-        direction.set(-mouse.y, -mouse.x, 0),
-        Math.PI / 4
+        {
+          x: get().playerLookXY.x / 100,
+          y: -get().playerLookXY.y / 100,
+          z: 0,
+        },
+        Math.PI / 2
       );
       camera.quaternion.multiply(adjustCameraViewQuat).normalize();
       //.slerp(finalCameraQuat, resetCameraLerpSpeed || 0.2).normalize();

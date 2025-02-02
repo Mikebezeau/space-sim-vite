@@ -41,6 +41,16 @@ interface storeState {
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
   galaxy: TypeGalaxy | Promise<void | TypeGalaxy> | null;
+  getStarBufferPosition: (starIndex: number) => {
+    x: number;
+    y: number;
+    z: number;
+  };
+  getStarPositionIsBackground: (starIndex: number) => {
+    x: number;
+    y: number;
+    z: number;
+  };
   starPointsShaderMaterial: THREE.ShaderMaterial;
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
@@ -56,11 +66,19 @@ interface storeState {
     newPosition: THREE.Vector3 | { x: number; y: number; z: number }
   ) => void;
   playerPositionUpdated: () => void;
+
+  selectedWarpStarPosition: THREE.Vector3 | null;
+  setSelectedWarpStarPosition: () => void;
   focusTargetIndex: number | null;
   selectedTargetIndex: number | null;
   focusPlanetIndex: number | null;
   selectedPanetIndex: number | null;
-  getTargets: () => Object;
+  getTargets: () => {
+    focusPlanetIndex: number | null;
+    selectedPanetIndex: number | null;
+    focusTargetIndex: number | null;
+    selectedTargetIndex: number | null;
+  };
   stars: Star[];
   planets: Planet[];
   checkScanDistanceToPlanet: (planetIndex: number) => void;
@@ -128,6 +146,25 @@ const useStore = create<storeState>()((set, get) => ({
   galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
     set({ galaxy: galaxyData });
   }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+  getStarBufferPosition: (starIndex: number) => {
+    //TODO make Galaxy class and move this function to it
+    return {
+      x: get().galaxy.starCoordsBuffer.array[starIndex * 3],
+      y: get().galaxy.starCoordsBuffer.array[starIndex * 3 + 1],
+      z: get().galaxy.starCoordsBuffer.array[starIndex * 3 + 2],
+    };
+  },
+  getStarPositionIsBackground: (starIndex: number) => {
+    const playerStarPosition = get().getStarBufferPosition(
+      get().playerCurrentStarIndex
+    );
+    const starPosition = get().getStarBufferPosition(starIndex);
+    return {
+      x: starPosition.x - playerStarPosition.x,
+      y: starPosition.y - playerStarPosition.y,
+      z: starPosition.z - playerStarPosition.z,
+    };
+  },
 
   starPointsShaderMaterial: starPointsShaderMaterial,
   // intial player star
@@ -178,16 +215,35 @@ const useStore = create<storeState>()((set, get) => ({
     }
   },
   // targeting
+  selectedWarpStarPosition: null,
+  setSelectedWarpStarPosition: () => {
+    if (get().selectedWarpStar !== null) {
+      const warpStarPosition = get().getStarPositionIsBackground(
+        get().selectedWarpStar!
+      );
+      set({
+        selectedWarpStarPosition: new THREE.Vector3(
+          warpStarPosition.x,
+          warpStarPosition.y,
+          warpStarPosition.z
+        ),
+      });
+    } else {
+      set({
+        selectedWarpStarPosition: null,
+      });
+    }
+  },
   focusTargetIndex: null,
   selectedTargetIndex: null,
   focusPlanetIndex: null,
   selectedPanetIndex: null,
   getTargets: () => {
     return {
-      selectedTargetIndex: get().selectedTargetIndex,
       focusPlanetIndex: get().focusPlanetIndex,
       selectedPanetIndex: get().selectedPanetIndex,
       focusTargetIndex: get().focusTargetIndex,
+      selectedTargetIndex: get().selectedTargetIndex,
     };
   },
   stars: [], // set in call to setPlayerCurrentStarIndex
@@ -503,6 +559,7 @@ const useStore = create<storeState>()((set, get) => ({
 
     setSelectedWarpStar(selectedWarpStar) {
       set(() => ({ selectedWarpStar }));
+      get().setSelectedWarpStarPosition();
     },
 
     setSelectedPanetIndex(planetIndex) {

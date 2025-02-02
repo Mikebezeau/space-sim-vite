@@ -3,7 +3,7 @@ import useStore from "../../stores/store";
 
 const SpeedReadout = () => {
   const speed = useStore((state) => state.player.speed);
-  // to re-render component on player prop change
+  // playerPropUpdate: to re-render component on player prop change
   const playerPropUpdate = useStore((state) => state.playerPropUpdate);
 
   return (
@@ -13,10 +13,10 @@ const SpeedReadout = () => {
         color: "rgb(61 224 61)",
       }}
     >
-      <div className="glitch text-xl -mb-2" data-text="SPEED">
+      <div className="glitch text-md -mb-3" data-text="SPEED">
         SPEED
       </div>
-      <div className="glitch text-6xl" data-text={speed}>
+      <div className="glitch text-5xl" data-text={speed}>
         {speed}
       </div>
     </div>

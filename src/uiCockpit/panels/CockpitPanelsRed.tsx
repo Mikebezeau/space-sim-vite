@@ -14,22 +14,31 @@ const CockpitPanelsRed = () => {
           <PanelScreenTopRed />
         </div>
       </div>
-      <div className="perspective-400 preserve-3d container-full-screen top-[70vh]">
+      <div
+        className="perspective-400 preserve-3d container-full-screen top-[70vh]"
+        style={{
+          transform: `translateZ(40vh)`,
+        }}
+      >
         <div className="face middle-red">
           <PanelMiddleRed />
         </div>
         <div className="face left-red">
           <PanelSidesRed isLeft={true} />
         </div>
+        {/*
         <div className="face left-outer-red">
           <PanelSidesOuterRed isLeft={true} />
         </div>
+        */}
         <div className="face right-red">
           <PanelSidesRed />
         </div>
+        {/*
         <div className="face right-outer-red">
           <PanelSidesOuterRed />
         </div>
+        */}
         <div className="face bottom-red">
           <PanelBottomRed />
         </div>

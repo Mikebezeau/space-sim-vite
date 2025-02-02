@@ -6,7 +6,7 @@ import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 //import Mech from "./Mech";
 import BuildMech from "../buildMech/BuildMech";
-import { flipRotation } from "../../util/gameUtil";
+import { flipRotation } from "../../util/cameraUtil";
 import { SCALE_PLANET_WALK, PLAYER } from "../../constants/constants";
 
 const tempObjectDummy = new THREE.Object3D();

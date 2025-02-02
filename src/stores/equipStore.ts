@@ -16,7 +16,7 @@ import MechWeaponProjectile from "../classes/mechBP/weaponBP/MechWeaponProjectil
 import { initWeaponBP } from "../util/initEquipUtil";
 import { servoShapeDesigns } from "../equipment/data/servoShapeDesigns";
 // @ts-ignore
-import greySpeckleBmpSrc from "../assets/bmp/greySpeckle.bmp";
+import greySpeckleBmpSrc from "/images/bump/greySpeckle.bmp";
 import { equipData } from "../equipment/data/equipData";
 
 export const EDIT_MENU_SELECT = {

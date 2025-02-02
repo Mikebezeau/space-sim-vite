@@ -1,4 +1,3 @@
-//import { memo } from "react";
 import * as THREE from "three";
 import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
@@ -6,6 +5,7 @@ import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
+import { getCameraAngleDiffToPosition } from "../../util/cameraUtil";
 import { PLAYER, SCALE } from "../../constants/constants";
 
 const worldPosition = new THREE.Vector3();
@@ -14,9 +14,6 @@ const dummyObj = new THREE.Object3D(),
   arrowDummyObj = new THREE.Object3D();
 const targetQuat = new THREE.Quaternion(),
   curQuat = new THREE.Quaternion();
-
-const flipRotation = new THREE.Quaternion();
-flipRotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
 
 const yellow = new THREE.Color("yellow");
 const lightgreen = new THREE.Color("lightgreen");
@@ -111,33 +108,12 @@ const ScannerReadout = () => {
         for (let i = 0; i < planets.length; i++) {
           //planets.forEach((planet, i) => {
           const planet = planets[i];
-          //worldPosition.copy(planet.object3d.position);
-          //worldPosition.add(playerWorldOffsetPosition);
           planet.object3d.getWorldPosition(worldPosition);
-          dummyObj.position.copy(camera.position);
-          dummyObj.lookAt(worldPosition);
-          // can delete this line
-          const flipRotation = new THREE.Quaternion();
-          dummyObj.getWorldQuaternion(targetQuat);
-          //flip the opposite direction
-          flipRotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
-          targetQuat.multiplyQuaternions(targetQuat, flipRotation);
-          //
-          dummyObj.rotation.setFromQuaternion(targetQuat);
-          //optional setting z angle to match roll of ship
-          dummyObj.rotation.set(
-            dummyObj.rotation.x,
-            dummyObj.rotation.y,
-            camera.rotation.z
-          );
-          dummyObj.getWorldQuaternion(targetQuat);
-          // set a target on the planet if it's within 0.38 radians of the camera direction
-          const angleDiff = targetQuat.angleTo(camera.quaternion);
+          const angleDiff = getCameraAngleDiffToPosition(camera, worldPosition);
           if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
             smallestTargetAngle = angleDiff;
             tempFocusPlanetIndex = i;
           }
-          //if (i === 0) testVal = worldPosition.x;
         }
         setFocusPlanetIndex(tempFocusPlanetIndex);
       }
@@ -149,16 +125,6 @@ const ScannerReadout = () => {
         dummyObj.position.copy(camera.position);
         dummyObj.lookAt(worldPosition);
         const highlight = tempFocusPlanetIndex === i || focusPlanetIndex === i;
-        /*
-        dummyObj,
-        camera,
-        mesh,
-        highlight,
-        selectedTargetIndex,
-        enemyIndex,
-        distanceNormalized,
-        isPlanet
-        */
         placeTarget(dummyObj, camera, mesh, highlight, -1, i, 1);
         if (highlight) {
           checkScanDistanceToPlanet(i);
@@ -180,22 +146,15 @@ const ScannerReadout = () => {
           ) /
             10;
         enemy.distanceNormalized = distanceNormalized;
-        // place target
-        dummyObj.position.copy(camera.position);
-        dummyObj.lookAt(enemy.object3d.position);
-        dummyObj.getWorldQuaternion(targetQuat);
-        //flip the opposite direction to match camera direction
-        targetQuat.multiplyQuaternions(targetQuat, flipRotation);
 
-        // find target enemy closest to direction player mech is pointing
-        const angleDiff = targetQuat.angleTo(camera.quaternion);
+        enemy.object3d.getWorldPosition(worldPosition);
+        const angleDiff = getCameraAngleDiffToPosition(camera, worldPosition);
         if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
           smallestTargetAngle = angleDiff;
           tempFocusTargetIndex = i;
         }
         enemy.angleDiff = angleDiff;
-        // need to clear target if not within angle
-        //if (angleDiff < 0.38) {
+
         const targetMesh = enemyTargetGroupRef.current.children[i];
         placeTarget(
           dummyObj,

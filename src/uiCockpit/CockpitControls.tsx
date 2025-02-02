@@ -4,6 +4,8 @@ import usePlayerControlsStore from "../stores/playerControlsStore";
 //@ts-ignore
 import controls from "../assets/icons/controls.svg";
 //@ts-ignore
+import crosshair from "../assets/icons/crosshairInner.svg";
+//@ts-ignore
 import rightClick from "../assets/icons/mouse/right-click-1.svg";
 //@ts-ignore
 import warp from "../assets/icons/warp-galaxy.svg";
@@ -20,6 +22,25 @@ import stars from "../assets/icons/stars.svg";
 //@ts-ignore
 import camera from "../assets/icons/camera-change.svg";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
+
+export const ActionShoot = () => {
+  // TODO remove code from SpaceFlightControlsTouch to shoot
+  const actionModeSelect = usePlayerControlsStore(
+    (state) => state.actions.actionModeSelect
+  );
+
+  return (
+    <div className="button-cyber w-[10vh] h-[10vh]">
+      <span className="button-cyber-content">
+        <img
+          src={crosshair}
+          alt="shoot icon"
+          className="w-[10vh] h-[10vh] pointer-events-none"
+        />
+      </span>
+    </div>
+  );
+};
 
 // for mouse users, click to enter manual control mode of piloting
 const ActionControlPilot = () => {
@@ -133,16 +154,14 @@ export const ActionModeControls = () => {
           <ActionControlPilot />
         </div>
       )}
-      {true && ( //!IS_MOBILE && (
-        <div className="absolute bottom-24 left-1/2">
-          <ActionWarpToPlanet />
-        </div>
-      )}
       {!IS_MOBILE && playerActionMode !== PLAYER.action.inspect && (
         <div className="absolute bottom-8 right-8">
           <ActionCancelPilot />
         </div>
       )}
+      <div className="absolute bottom-24 left-1/2">
+        <ActionWarpToPlanet />
+      </div>
     </>
   );
 };

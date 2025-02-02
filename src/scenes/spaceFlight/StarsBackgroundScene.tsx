@@ -20,13 +20,13 @@ const StarsBackgroundScene = () => {
   console.log("StarsBackgroundScene rendered");
   const { camera, scene } = useThree();
   const starPointsRef = useRef<Group | null>(null);
-
+  /*
   useEffect(() => {
     const loader = new CubeTextureLoader();
     const texture = loader.load([right, left, top, bottom, front, back]);
     scene.background = texture;
   }, []);
-
+*/
   useFrame(() => {
     if (starPointsRef.current === null) return;
     starPointsRef.current.position.set(

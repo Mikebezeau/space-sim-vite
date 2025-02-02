@@ -25,7 +25,7 @@ const TestPlanetScene = () => {
   const setPlanetType = useDevStore((state) => state.setPlanetType);
 
   const { camera, gl } = useThree();
-  setCustomData(gl.capabilities.maxFragmentUniforms);
+  //setCustomData(gl.capabilities.maxFragmentUniforms);
   const guiRef = useRef<any>(null);
   const folderLayer1ref = useRef<any>(null);
   const folderLayer2ref = useRef<any>(null);

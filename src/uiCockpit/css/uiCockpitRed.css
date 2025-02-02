@@ -5,9 +5,9 @@
 }
 
 .face.middle-red {
-  width: 80vh;
-  height: 65vh;
-  transform: translateY(2.7vh) translateZ(2vh) rotateX(7deg);
+  width: 112vh;
+  height: 91vh;
+  transform: translateY(-12vh) translateZ(2vh) rotateX(7deg);
 }
 
 .face.right-red {

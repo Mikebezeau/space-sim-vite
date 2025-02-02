@@ -1,6 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import SunScanData from "../../display/SunScanData";
-import PlanetScanData from "../../display/PlanetScanData";
 //import MonitorReadout from "../../MonitorReadout";
 //@ts-ignore
 import cockpitRightRed from "/images/cockpit/panelsRed/cockpitRightRed.png";
@@ -84,14 +82,14 @@ const PanelSidesRed = ({ isLeft = false }) => {
           }}
           alt="city info"
         />
+      </div>
+      {/*
         {isLeft && (
           <div className="absolute w-[140px] right-24 top-10 text-right text-xs scale-x-[-1]">
             <SunScanData />
             <PlanetScanData />
           </div>
         )}
-      </div>
-      {/*
         <div className="absolute top-1 left-8 border-l-8 border-cyan-800">
           <MonitorReadout />
         </div>

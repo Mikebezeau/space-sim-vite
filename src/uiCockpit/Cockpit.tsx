@@ -5,7 +5,6 @@ import usePlayerControlsStore from "../stores/playerControlsStore";
 import CockpitPanelsRed from "./panels/CockpitPanelsRed";
 import {
   useMouseDown,
-  useMouseUp,
   useMouseMove,
 } from "../hooks/controls/useMouseKBControls";
 import {
@@ -27,6 +26,9 @@ const Cockpit = () => {
   const mouse = useStore((state) => state.mutation.mouse);
   const getPlayerState = usePlayerControlsStore(
     (state) => state.getPlayerState
+  );
+  const setPlayerLookXY = usePlayerControlsStore(
+    (state) => state.setPlayerLookXY
   );
 
   const cockpitRef = useRef<HTMLDivElement>(null);
@@ -60,22 +62,22 @@ const Cockpit = () => {
     if (cockpitRef.current) {
       targetView.current.rotateX = isPlayerPilotControl ? 0 : -mouse.y * 40;
       targetView.current.rotateY = isPlayerPilotControl ? 0 : mouse.x * 40;
-      targetView.current.moveX = isPlayerPilotControl ? 0 : -mouse.x * 70;
-      targetView.current.moveY = isPlayerPilotControl ? 0 : -mouse.y * 120;
+      targetView.current.moveX = isPlayerPilotControl ? 0 : -mouse.x * 100;
+      targetView.current.moveY = isPlayerPilotControl ? 0 : -mouse.y * 100;
 
       // not using zoom in yet
       const totalTargetMoveX = targetView.current.moveX;
       const totalTargetMoveY =
         targetView.current.moveY + (currentView.current.isZoom ? 20 : 0);
 
-      const totalTargetMoveZ = currentView.current.isZoom ? 20 : 0;
-      /*
+      const totalTargetMoveZ = 10; // currentView.current.isZoom ? 40 : 30;
+
       currentView.current.rotateX = lerp(
         currentView.current.rotateX,
         targetView.current.rotateX,
         lerpSpeed
       );
-      */
+
       currentView.current.rotateY = lerp(
         currentView.current.rotateY,
         targetView.current.rotateY,
@@ -99,7 +101,8 @@ const Cockpit = () => {
       );
 
       [...cockpitRef.current.children].forEach((group: any) => {
-        group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
+        //group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
+        group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(50vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
       });
 
       // continue animating if not reached target
@@ -112,6 +115,7 @@ const Cockpit = () => {
           Math.pow(totalTargetMoveY - currentView.current.moveY, 2) +
           Math.pow(totalTargetMoveZ - currentView.current.moveZ, 2)
       );
+      setPlayerLookXY(currentView.current.rotateX, currentView.current.rotateY);
       if (deltaRotate > 0.05 || deltaMove > 0.05)
         // requestAnimationFrame passing time delta as first parameter to smoothViewRender
         // unless specified
@@ -127,14 +131,6 @@ const Cockpit = () => {
   });
 
   useMouseDown(() => {
-    //cockpitRef.current.style.transform = "translateY(20vh) translateZ(20vh)";
-    //currentView.current.isZoom = true;
-    smoothViewRender();
-  });
-
-  useMouseUp(() => {
-    //cockpitRef.current.style.transform = "translateY(0) translateZ(0)";
-    //currentView.current.isZoom = false;
     smoothViewRender();
   });
 
@@ -157,7 +153,7 @@ const Cockpit = () => {
   });
 
   return (
-    <div className="container-full-screen cockpit-view top-0" ref={cockpitRef}>
+    <div ref={cockpitRef} className="container-full-screen cockpit-view top-0">
       <CockpitPanelsRed />
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
         <div

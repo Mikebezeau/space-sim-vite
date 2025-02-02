@@ -9,13 +9,14 @@ import {
   useTouchMoveControls,
   useTouchEndControls,
 } from "../hooks/controls/useTouchControls";
-import { ActionWarpToPlanet } from "../uiCockpit/CockpitControls";
+import { ActionShoot } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 
 const ThrottleControlsDisplay = () => {
   const playerSpeedSetting = usePlayerControlsStore(
     (state) => state.playerSpeedSetting
   );
+
   const SPEED_COLOURS = ["yellow", "white", "aqua", "aqua", "orange", "red"];
 
   return (
@@ -55,6 +56,10 @@ const SpaceFlightControlsTouch = () => {
   const getPlayerState = usePlayerControlsStore(
     (state) => state.getPlayerState
   );
+  const playerControlMode = usePlayerControlsStore(
+    (state) => state.playerControlMode
+  );
+
   const actionModeSelect = usePlayerControlsStore(
     (state) => state.actions.actionModeSelect
   );
@@ -161,53 +166,48 @@ const SpaceFlightControlsTouch = () => {
         <div
           id="btn-ship-move"
           ref={moveControl}
-          className="rounded-full w-full h-full bg-gray-500 pointer-events-auto"
+          className="rounded-full w-full h-full pointer-events-auto border-2 border-white"
         >
-          <img
-            src={controlStick}
-            alt="controls icon"
-            className={`${
-              isReverseSideTouchControls && "scale-x-[-1]"
-            } pointer-events-none absolute w-20 left-10 top-8 opacity-75`}
-          />
-          <img
-            src={controls}
-            alt="controls icon"
-            className="pointer-events-none absolute w-36 h-36 left-2 top-2 opacity-25"
-          />
+          <div className="rounded-full w-full h-full bg-gray-500 opacity-45">
+            <img
+              src={controlStick}
+              alt="controls icon"
+              className={`${
+                isReverseSideTouchControls && "scale-x-[-1]"
+              } pointer-events-none absolute w-20 left-10 top-8 opacity-75`}
+            />
+            <img
+              src={controls}
+              alt="controls icon"
+              className="pointer-events-none absolute w-36 h-36 left-2 top-2 opacity-25"
+            />
+          </div>
         </div>
       </div>
-
       <div className="absolute w-[200px] h-[100px] bottom-5 right-28 flex justify-end">
         <div
           id="btn-shoot"
           className="pointer-events-auto ml-1 w-24 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
         >
           <div className="relative scale-x-[-1] right-2 top-2">
-            {
-              // - remove pointer-events-auto above
-              //playerActionMode !== PLAYER.action.manualControl ? (
-              //<ActionShoot />
-              //) : (
-              <ActionWarpToPlanet />
-              //
-            }
-          </div>
-        </div>
-        {/*<span id="btn-sys">sys</span>*/}
-      </div>
-
-      <div className="absolute rounded-tl-3xl bg-gray-500 opacity-75 bottom-0 right-0 h-52 w-28">
-        <div className="relative p-5 pt-8">
-          <div
-            id="throttle-control"
-            ref={throttleControl}
-            className="pointer-events-auto"
-          >
-            <ThrottleControlsDisplay />
+            {playerControlMode === PLAYER.controls.combat && <ActionShoot />}
           </div>
         </div>
       </div>
+      <div className="absolute rounded-tl-3xl border-2 border-white -bottom-[2px] -right-[2px] h-52 w-28">
+        <div className=" bg-gray-500 opacity-45 rounded-tl-3xl h-full w-full">
+          <div className="relative p-5 pt-8">
+            <div
+              id="throttle-control"
+              ref={throttleControl}
+              className="pointer-events-auto"
+            >
+              <ThrottleControlsDisplay />
+            </div>
+          </div>
+        </div>
+      </div>
+      v
     </>
   );
 };
