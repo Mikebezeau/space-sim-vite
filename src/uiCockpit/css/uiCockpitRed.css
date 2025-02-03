@@ -1,4 +1,5 @@
 .face.screen-top {
+  top: -36vh;
   width: 40vh;
   height: 25vh;
   transform: translateY(-5vh) translateZ(36vh) rotateX(-71deg);

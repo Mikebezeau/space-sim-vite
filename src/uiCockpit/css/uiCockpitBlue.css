@@ -1,3 +1,7 @@
+.screen-container {
+  top: 2vh;
+}
+
 .screen-top {
   width: 78vh;
   height: 45vh;

@@ -23,14 +23,42 @@ function App() {
   return (
     <>
       <AppCanvas />
+
       <AppLoadingScreen>
-        <div className="absolute top-0 left-0 w-full h-full bg-black">
+        <div
+          className="
+            absolute
+            top-0 left-0
+            w-full h-full
+            bg-black"
+        >
           <img
-            className="absolute -right-[100px] opacity-20"
+            className="
+              absolute 
+              right-1/2
+              opacity-20 
+              h-full
+              scale-y-[-1]"
+            style={{
+              transition: "all 1s ease",
+              //right: "100%",
+              //transform: "translate(-100%, 0)",
+              //animation: "animate 2s infinite",
+            }}
             src={loadingPatternSrc}
           />
           <img
-            className="absolute -left-[100px] opacity-20 scale-x-[-1]"
+            className="
+              absolute 
+              left-1/2
+              opacity-20 
+              h-full
+              scale-x-[-1]"
+            style={{
+              transition: "all 1s ease",
+              //left: "100%",
+              //transform: "translate(100%, 0)",
+            }}
             src={loadingPatternSrc}
           />
         </div>

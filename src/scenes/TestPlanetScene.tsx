@@ -10,8 +10,6 @@ import { PLANET_TYPE_DATA } from "../constants/solarSystemConstants";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
-import { setCustomData } from "r3f-perf";
-
 import {
   //PLANET_TYPE_DATA,
   typeTextureMapOptions,
@@ -25,7 +23,6 @@ const TestPlanetScene = () => {
   const setPlanetType = useDevStore((state) => state.setPlanetType);
 
   const { camera, gl } = useThree();
-  //setCustomData(gl.capabilities.maxFragmentUniforms);
   const guiRef = useRef<any>(null);
   const folderLayer1ref = useRef<any>(null);
   const folderLayer2ref = useRef<any>(null);

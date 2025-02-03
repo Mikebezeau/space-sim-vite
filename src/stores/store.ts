@@ -67,8 +67,8 @@ interface storeState {
   ) => void;
   playerPositionUpdated: () => void;
 
-  selectedWarpStarPosition: THREE.Vector3 | null;
-  setSelectedWarpStarPosition: () => void;
+  selectedWarpStarDirection: THREE.Vector3 | null;
+  setSelectedWarpStarDirection: () => void;
   focusTargetIndex: number | null;
   selectedTargetIndex: number | null;
   focusPlanetIndex: number | null;
@@ -215,22 +215,27 @@ const useStore = create<storeState>()((set, get) => ({
     }
   },
   // targeting
-  selectedWarpStarPosition: null,
-  setSelectedWarpStarPosition: () => {
+  selectedWarpStarDirection: null,
+  setSelectedWarpStarDirection: () => {
     if (get().selectedWarpStar !== null) {
-      const warpStarPosition = get().getStarPositionIsBackground(
+      const warpStarDirection = get().getStarPositionIsBackground(
         get().selectedWarpStar!
       );
+      // background star scene is rotated 90 degrees, so adjust direction
+      const directionVec3 = new THREE.Vector3(
+        warpStarDirection.x,
+        warpStarDirection.y,
+        warpStarDirection.z
+      );
+      const rotateVec3 = new THREE.Vector3(1, 0, 0);
+      directionVec3.applyAxisAngle(rotateVec3, Math.PI / 2);
       set({
-        selectedWarpStarPosition: new THREE.Vector3(
-          warpStarPosition.x,
-          warpStarPosition.y,
-          warpStarPosition.z
-        ),
+        selectedWarpStarDirection: directionVec3.normalize(),
       });
+      console.log("warpStarDirection", get().selectedWarpStarDirection);
     } else {
       set({
-        selectedWarpStarPosition: null,
+        selectedWarpStarDirection: null,
       });
     }
   },
@@ -559,7 +564,7 @@ const useStore = create<storeState>()((set, get) => ({
 
     setSelectedWarpStar(selectedWarpStar) {
       set(() => ({ selectedWarpStar }));
-      get().setSelectedWarpStarPosition();
+      get().setSelectedWarpStarDirection();
     },
 
     setSelectedPanetIndex(planetIndex) {

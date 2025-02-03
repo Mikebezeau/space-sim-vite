@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import SpeedReadout from "../../display/SpeedReadout";
 //@ts-ignore
 import cockpitImage from "/images/cockpit/panelsRed/cockpitRed2.png";
-//import { IS_MOBILE } from "../../../constants/constants";
+import { IS_MOBILE } from "../../../constants/constants";
 
 const COMPUTOR_COMMANDS = [
   "VERIFY_POWER_CELLS",
@@ -25,7 +25,7 @@ const COMPUTOR_COMMANDS = [
 */
 const NUM_LOADING_DOTS = 16;
 const SPACE_TEXT_TITLE = `
-  __  _ __      __ _  ___  ___<br>/  __|  '_  \\  /  _'  |/  __/  _  \\<br>\\__  \\  |_)  |  (_|  |  (_  |    __/<br>|___/  .__/ \\__,_|\\___\\__|<br>        |_|<br>c:/sys>INIT_SYSTEM_BOOT<br>`;
+  __  _ __      __ _  ___  ___<br>/  __|  '_  \\  /  _'  |/  __/  _  \\<br>\\__  \\  |_)  |  (_|  |  (_  |    __/<br>|___/  .__/ \\___|\\___\\__|<br>        |_|<br>c:/sys>INIT_SYSTEM_BOOT<br>`;
 /*
 const spaceTextTitle = `
 / __| '_ \ / _` |/ __/ _ \
@@ -115,34 +115,29 @@ const PanelMiddleRed = () => {
   return (
     <div
       className="w-full h-full bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${cockpitImage})` }}
+      style={{
+        backgroundImage: `url(${cockpitImage})`,
+        //transform: `translateX(0vh) translateY(0vh) translateZ(0vh) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`,
+      }}
     >
+      {/* TODO find out why scale is needed to make screens correct size for mobile */}
       <div
-        className="absolute top-[18vh] left-[45vh] w-[22vh] h-[20vh] p-1 whitespace-pre leading-none overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]"
-        style={{
-          transform: `translateX(0vh) translateY(0vh) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`,
-        }}
+        className={`w-full h-full ${
+          IS_MOBILE && "scale-x-[90%] scale-y-[90%]"
+        }`}
       >
-        <div ref={computerScreen} />
+        <div className="absolute top-[18vh] left-[45vh] w-[22vh] h-[20vh] p-1 whitespace-pre leading-none overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]">
+          <div ref={computerScreen} />
+        </div>
+
+        <div className="absolute top-[26.7vh] left-[27vh]">
+          <SpeedReadout />
+        </div>
+
+        <div className="absolute top-[27vh] left-[26vh] w-[10vh] h-[8.5vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]" />
+
+        <div className="absolute top-[27vh] left-[76vh] w-[10vh] h-[8.5vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]" />
       </div>
-
-      <div className="absolute top-[26.7vh] left-[27vh]">
-        <SpeedReadout />
-      </div>
-
-      <div
-        className="absolute top-[27vh] left-[26vh] w-[10vh] h-[8.5vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]"
-        style={{
-          transform: `translateX(0vh) translateY(0vh) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`,
-        }}
-      />
-
-      <div
-        className="absolute top-[27vh] left-[76vh] w-[10vh] h-[8.5vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]"
-        style={{
-          transform: `translateX(0vh) translateY(0vh) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`,
-        }}
-      />
     </div>
   );
 };

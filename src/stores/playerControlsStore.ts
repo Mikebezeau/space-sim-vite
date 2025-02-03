@@ -2,7 +2,11 @@ import { create } from "zustand";
 import useStore from "./store";
 import useDevStore from "./devStore";
 import { PerspectiveCamera, Quaternion, Vector3 } from "three";
-import { flipRotation, getScreenPosition } from "../util/cameraUtil";
+import {
+  flipRotation,
+  getScreenPosition,
+  getScreenPositionFromDirection,
+} from "../util/cameraUtil";
 //import { lerp } from "../util/gameUtil";
 import { PLAYER, FPS, SPEED_VALUES } from "../constants/constants";
 
@@ -10,8 +14,8 @@ interface playerControlStoreState {
   playerActionMode: number;
   playerControlMode: number;
   playerViewMode: number;
-  playerLookXY: { x: number; y: number };
-  setPlayerLookXY: (x: number, y: number) => void;
+  thirdPersonViewRotateXY: { x: number; y: number };
+  setThirdPersonViewRotateXY: (x: number, y: number) => void;
   playerScreen: number;
   isSwitchingPlayerScreen: boolean;
   setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
@@ -71,9 +75,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
-    playerLookXY: { x: 0, y: 0 },
-    setPlayerLookXY: (x, y) => {
-      get().playerLookXY = { x, y };
+    thirdPersonViewRotateXY: { x: 0, y: 0 },
+    setThirdPersonViewRotateXY: (x, y) => {
+      get().thirdPersonViewRotateXY = { x, y };
     },
     // testing
     //playerScreen: PLAYER.screen.mainMenu,
@@ -172,10 +176,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
     updateTargetsPositionHUD: (camera) => {
       // warp star target
-      if (useStore.getState().selectedWarpStarPosition !== null) {
-        const { xn, yn, angleDiff } = getScreenPosition(
+      if (useStore.getState().selectedWarpStarDirection !== null) {
+        const { xn, yn, angleDiff } = getScreenPositionFromDirection(
           camera,
-          useStore.getState().selectedWarpStarPosition!
+          useStore.getState().selectedWarpStarDirection!
         );
         set({ targetWarpToStarHUD: { xn, yn, angleDiff } });
       } else {
@@ -279,28 +283,25 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         camera.translateY(1.4 * player.mechBP.scale);
         camera.translateZ((6 / windowAspectRatio + 8) * player.mechBP.scale);
         // additional camera position based on mouse position
-        camera.translateX(-mouse.x * 8 * player.mechBP.scale);
-        camera.translateY(mouse.y * 10 * player.mechBP.scale);
-        // update camera position based on mouse position
-        /*
-        const thirdPersonCameraLerpSpeed = resetCameraLerpSpeed || 0.3; //distance(state.camera.position, camDummy.position) / 0.8;
-        camera.position.lerp(
-          cameraMoveToObj.position,
-          thirdPersonCameraLerpSpeed
+        camera.translateX(
+          (-get().thirdPersonViewRotateXY.y / 10) * player.mechBP.scale
         );
-        */
+        camera.translateY(
+          (-get().thirdPersonViewRotateXY.x / 10) * player.mechBP.scale
+        );
+        // update camera rotation based on mouse position
+        //camera.rotation.
       }
       // additional camera rotation based on mouse position (looking around)
       adjustCameraViewQuat.setFromAxisAngle(
         {
-          x: get().playerLookXY.x / 100,
-          y: -get().playerLookXY.y / 100,
+          x: get().thirdPersonViewRotateXY.x / 100,
+          y: -get().thirdPersonViewRotateXY.y / 100,
           z: 0,
         },
         Math.PI / 2
       );
       camera.quaternion.multiply(adjustCameraViewQuat).normalize();
-      //.slerp(finalCameraQuat, resetCameraLerpSpeed || 0.2).normalize();
     },
   })
 );

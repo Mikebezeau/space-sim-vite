@@ -40,12 +40,25 @@ export const getScreenPosition = (
   camera: PerspectiveCamera,
   position: Vector3
 ) => {
-  // normalized position (-1 to 1) on screen: x, y and angle difference to camera
+  const angleDiff = getCameraAngleDiffToPosition(camera, position);
+  // dummyVec3: normalized position is -1 to 1 when on screen (values beyond are off screen)
   dummyVec3.copy(position);
   dummyVec3.project(camera);
-  const x = 0; //((dummyVec3.x + 1) * window.innerWidth) / 2;
-  const y = 0; //((1 - dummyVec3.y) * window.innerHeight) / 2;
-  const angleDiff = getCameraAngleDiffToPosition(camera, position);
   // flipping sign of y to match CSS screen coordinates x y
-  return { x, y, xn: dummyVec3.x, yn: -dummyVec3.y, angleDiff };
+  return { xn: dummyVec3.x, yn: -dummyVec3.y, angleDiff };
+};
+
+export const getScreenPositionFromDirection = (
+  camera: PerspectiveCamera,
+  direction: Vector3
+) => {
+  // simple angle difference between camera and direction
+  camera.getWorldDirection(cameraForwardVector);
+  const angleDiff = cameraForwardVector.angleTo(direction);
+  // center position on camera, add direction to get relative position
+  dummyVec3.copy(camera.position);
+  dummyVec3.add(direction);
+  dummyVec3.project(camera);
+  // flipping sign of y to match CSS screen coordinates x y
+  return { xn: dummyVec3.x, yn: -dummyVec3.y, angleDiff };
 };

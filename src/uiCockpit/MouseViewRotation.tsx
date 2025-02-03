@@ -1,8 +1,6 @@
-import React from "react";
 import { useRef, useLayoutEffect } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import CockpitPanelsRed from "./panels/CockpitPanelsRed";
 import { useMouseMove } from "../hooks/controls/useMouseKBControls";
 import {
   useTouchStartControls,
@@ -10,15 +8,11 @@ import {
 } from "../hooks/controls/useTouchControls";
 
 import { lerp } from "../util/gameUtil";
-import {
-  ActionModeControls,
-  Cockpit1stPersonControls,
-} from "./CockpitControls";
-import { PLAYER } from "../constants/constants";
+import { IS_MOBILE, PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
 
-const Cockpit = () => {
-  console.log("Cockpit rendered");
+const MouseViewRotation = (rotateDivElementRef: any) => {
+  console.log("MouseViewRotation rendered");
   const { updateMouse } = useStore((state) => state.actions);
   const mouse = useStore((state) => state.mutation.mouse);
   const getPlayerState = usePlayerControlsStore(
@@ -28,7 +22,6 @@ const Cockpit = () => {
     (state) => state.setThirdPersonViewRotateXY
   );
 
-  const cockpitRef = useRef<HTMLDivElement>(null);
   const targetView = useRef({
     rotateX: 0,
     rotateY: 0,
@@ -49,11 +42,9 @@ const Cockpit = () => {
   // mouse move change rotation of cockpit view
   // isInitializeNoLerp is used to skip lerp animation
   const smoothViewRender = (isInitializeNoLerp = false) => {
-    //console.log("smoothViewRender rafRef.current", rafRef.current);
-
     let isPlayerPilotControl = false;
     //if (getPlayerState().playerActionMode !== PLAYER.action.inspect) {
-    //  isPlayerPilotControl = true;
+    //isPlayerPilotControl = true;
     //}
     const lerpSpeed = isInitializeNoLerp ? 1 : 0.2; //view lerp speed
 
@@ -67,7 +58,7 @@ const Cockpit = () => {
     const totalTargetMoveY =
       targetView.current.moveY + (currentView.current.isZoom ? 20 : 0);
 
-    const totalTargetMoveZ = 0; // currentView.current.isZoom ? 40 : 30;
+    const totalTargetMoveZ = 10; // currentView.current.isZoom ? 40 : 30;
 
     currentView.current.rotateX = lerp(
       currentView.current.rotateX,
@@ -96,16 +87,13 @@ const Cockpit = () => {
       totalTargetMoveZ,
       lerpSpeed
     );
-    if (cockpitRef.current) {
-      [...cockpitRef.current.children].forEach((group: any) => {
-        group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
+
+    if (rotateDivElementRef.current) {
+      [...rotateDivElementRef.current.children].forEach((group: any) => {
+        //group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(${currentView.current.moveZ}vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
+        group.style.transform = `translateX(${currentView.current.moveX}vh) translateY(${currentView.current.moveY}vh) translateZ(50vh) rotateX(${currentView.current.rotateX}deg) rotateY(${currentView.current.rotateY}deg)`;
       });
     }
-    setThirdPersonViewRotateXY(
-      currentView.current.rotateX,
-      currentView.current.rotateY
-    );
-
     // continue animating if not reached target
     const deltaRotate = Math.sqrt(
       Math.pow(targetView.current.rotateX - currentView.current.rotateX, 2) +
@@ -122,6 +110,12 @@ const Cockpit = () => {
       // unless specified
       rafRef.current = requestAnimationFrame(() => smoothViewRender());
     else rafRef.current = null;
+
+    // update store variable for third person 3d camera view rotation
+    setThirdPersonViewRotateXY(
+      currentView.current.rotateX,
+      currentView.current.rotateY
+    );
   };
 
   // starting position
@@ -138,13 +132,10 @@ const Cockpit = () => {
     // will reset view to center if player is piloting ship:
     // player has touched the screen to move the ship
     // ship controls set playerActionMode = PLAYER.action.manualControl
-    /*
-    //TODO fix the issue with touching a button and cockpit moves
     updateMouse(event.changedTouches[0]);
     if (getPlayerState().playerActionMode === PLAYER.action.inspect) {
       smoothViewRender();
     }
-      */
   });
 
   useTouchMoveControls("root", (event) => {
@@ -154,25 +145,7 @@ const Cockpit = () => {
     }
   });
 
-  return (
-    <div ref={cockpitRef} className="container-full-screen cockpit-view top-0">
-      <div className="perspective-400 preserve-3d container-full-screen top-[70vh]">
-        <CockpitPanelsRed />
-      </div>
-      <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
-        <div
-          className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[10vh]"
-          style={{
-            transform: "translateY(10vh) translateZ(-14vh)", //IS_MOBILE ? "translateZ(-14vh)" : "translateZ(-14vh)",
-          }}
-        >
-          <Cockpit1stPersonControls />
-        </div>
-      </div>
-
-      <ActionModeControls />
-    </div>
-  );
+  return null;
 };
 
-export default Cockpit;
+export default MouseViewRotation;

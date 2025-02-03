@@ -1,23 +1,18 @@
 import React, { useState, useRef } from "react";
 import useStore from "../../stores/store";
-import {
-  //useMouseDown,
-  //useMouseUp,
-  useMouseMove,
-} from "../../hooks/controls/useMouseKBControls";
+import { useMouseMove } from "../../hooks/controls/useMouseKBControls";
 import {
   useTouchStartControls,
   useTouchMoveControls,
 } from "../../hooks/controls/useTouchControls";
 import useWindowResize from "../../hooks/useWindowResize";
-import WarpToStarTarget from "./WarpToStarTarget";
-import PlanetTargets from "./PlanetTargets";
+import TargetsHUD from "./targetsHUD/TargetsHUD";
 
 export const getScreenCoordinates = (x: number, y: number) => {};
 
 const FlightHUD = () => {
   const mouse = useStore.getState().mutation.mouse;
-  const targetRef = useRef<HTMLDivElement>(null);
+  const playerDirectionTargetRef = useRef<HTMLDivElement>(null);
 
   const getHudDiameterPxFromWindow = () =>
     window.innerWidth > window.innerHeight
@@ -38,27 +33,27 @@ const FlightHUD = () => {
     setTargetDiameterPx(newTargetDiameterPx);
   });
 
-  const updateTarget = () => {
-    if (targetRef.current) {
-      targetRef.current.style.marginLeft = `${
+  const updatePlayerDirectionTarget = () => {
+    if (playerDirectionTargetRef.current) {
+      playerDirectionTargetRef.current.style.marginLeft = `${
         mouse.x * hudDiameterPx - targetDiameterPx / 2
       }px`;
-      targetRef.current.style.marginTop = `${
+      playerDirectionTargetRef.current.style.marginTop = `${
         mouse.y * hudDiameterPx - targetDiameterPx / 2
       }px`;
     }
   };
 
   useMouseMove(() => {
-    requestAnimationFrame(updateTarget);
+    requestAnimationFrame(updatePlayerDirectionTarget);
   });
 
   useTouchStartControls("root", () => {
-    requestAnimationFrame(updateTarget);
+    requestAnimationFrame(updatePlayerDirectionTarget);
   });
 
   useTouchMoveControls("root", () => {
-    requestAnimationFrame(updateTarget);
+    requestAnimationFrame(updatePlayerDirectionTarget);
   });
 
   return (
@@ -73,18 +68,14 @@ const FlightHUD = () => {
         }}
       />
       <div
-        ref={targetRef}
+        ref={playerDirectionTargetRef}
         className={`opacity-50 absolute top-1/2 left-1/2 border-2 border-green-500 rounded-full`}
         style={{
           width: `${targetDiameterPx}px`,
           height: `${targetDiameterPx}px`,
         }}
       />
-      <WarpToStarTarget
-        hudDiameterPx={hudDiameterPx}
-        targetDiameterPx={targetDiameterPx}
-      />
-      <PlanetTargets
+      <TargetsHUD
         hudDiameterPx={hudDiameterPx}
         targetDiameterPx={targetDiameterPx}
       />

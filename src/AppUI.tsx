@@ -2,6 +2,7 @@ import React /*, { useLayoutEffect, useRef }*/ from "react";
 import LilGui from "./dev/LilGui";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
+import MouseViewRotation from "./uiCockpit/MouseViewRotation";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
 import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
 import FlightHUD from "./uiCockpit/flightHUD/FlightHUD";
@@ -59,6 +60,7 @@ const AppUI = () => {
                 {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
                 {playerViewMode === PLAYER.view.thirdPerson && (
                   <>
+                    <MouseViewRotation />
                     <Cockpit3rdPersonControls />
                     <ActionModeControls />
                     <div className="absolute top-20 left-10">

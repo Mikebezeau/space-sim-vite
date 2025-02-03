@@ -1,14 +1,21 @@
 import React, { useEffect, useRef } from "react";
-import useStore from "../../stores/store";
-import usePlayerControlsStore from "../../stores/playerControlsStore";
+import useStore from "../../../stores/store";
+import usePlayerControlsStore from "../../../stores/playerControlsStore";
 
 type planetTargetsInt = {
-  hudDiameterPx: number;
+  getTargetPosition: (
+    xn: number,
+    yn: number,
+    angleDiff: number
+  ) => {
+    marginLeft: string;
+    marginTop: string;
+  };
   targetDiameterPx: number;
 };
 
 const PlanetTargets = (props: planetTargetsInt) => {
-  const { hudDiameterPx, targetDiameterPx } = props;
+  const { getTargetPosition, targetDiameterPx } = props;
 
   const planets = useStore((state) => state.planets);
   const getPlayerTargetsHUD = usePlayerControlsStore(
@@ -22,31 +29,15 @@ const PlanetTargets = (props: planetTargetsInt) => {
     if (targetRefs.current.length > 0) {
       targetRefs.current.forEach((targetDiv, index) => {
         if (targetsPlanetsNormalHUD[index]) {
-          let { xn, yn, angleDiff } = targetsPlanetsNormalHUD[index];
-
-          let pxNorm = (xn * window.innerWidth) / 2;
-          let pyNorm = (yn * window.innerHeight) / 2;
-
-          const targetBehindCamera = Math.abs(angleDiff) >= Math.PI / 2;
-          // adjust position values if behind camera by flipping them
-          if (targetBehindCamera) {
-            pxNorm *= -1;
-            pyNorm *= -1;
-          }
-
-          // if x, y is outside HUD circle, adjust x, y to be on egde of HUD circle
-          // also always set x, y on edge if angle is greater than 90 degrees
-          if (
-            Math.sqrt(pxNorm * pxNorm + pyNorm * pyNorm) > hudDiameterPx / 2 ||
-            targetBehindCamera
-          ) {
-            const atan2Angle = Math.atan2(pyNorm, pxNorm);
-            pxNorm = (Math.cos(atan2Angle) * hudDiameterPx) / 2;
-            pyNorm = (Math.sin(atan2Angle) * hudDiameterPx) / 2;
-          }
+          const { xn, yn, angleDiff } = targetsPlanetsNormalHUD[index];
+          const { marginLeft, marginTop } = getTargetPosition(
+            xn,
+            yn,
+            angleDiff
+          );
           // set position of target div
-          targetDiv.style.marginLeft = `${pxNorm - targetDiameterPx / 2}px`;
-          targetDiv.style.marginTop = `${pyNorm - targetDiameterPx / 2}px`;
+          targetDiv.style.marginLeft = marginLeft;
+          targetDiv.style.marginTop = marginTop;
         }
       });
     }
