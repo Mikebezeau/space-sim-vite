@@ -1,26 +1,28 @@
 .face.screen-top {
-  top: -36vh;
+  top: -70vh;
   width: 40vh;
   height: 25vh;
-  transform: translateY(-5vh) translateZ(36vh) rotateX(-71deg);
+  transform: translateZ(10vh) rotateX(-60deg);
 }
 
 .face.middle-red {
-  width: 112vh;
-  height: 91vh;
+  width: 200vh;
+  height: 85vh;
   transform: translateY(-12vh) translateZ(2vh) rotateX(7deg);
 }
 
 .face.right-red {
-  width: 60vh;
-  height: 65vh;
-  transform: translateX(44.5vh) translateY(18vh) translateZ(13vh) rotateX(7deg);
+  width: 100%;
+  height: 50vh;
+  left: 50%;
+  transform: translateX(16vh) translateY(15vh) translateZ(7vh) rotateX(8deg);
 }
 
 .face.left-red {
-  width: 60vh;
-  height: 65vh;
-  transform: translateX(-44.5vh) translateY(18vh) translateZ(13vh) rotateX(7deg);
+  width: 100%;
+  height: 50vh;
+  right: 50%;
+  transform: translateX(-16vh) translateY(15vh) translateZ(7vh) rotateX(8deg);
 }
 
 .face.right-outer-red {

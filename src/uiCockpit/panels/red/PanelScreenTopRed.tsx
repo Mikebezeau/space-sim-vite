@@ -6,7 +6,7 @@ const PanelScreenTopRed = () => {
   return (
     <>
       <div
-        className="absolute top-0 left-1 w-1/2 h-full scale-y-[-1]"
+        className="absolute top-0 left-1 w-1/2 h-full scale-y-[-1] bg-contain"
         style={{
           backgroundImage: `url(${cockpitTopGrey})`,
           backgroundSize: "140% 100%",
@@ -14,7 +14,7 @@ const PanelScreenTopRed = () => {
         }}
       />
       <div
-        className="absolute top-0 right-1 w-1/2 h-full scale-x-[-1] scale-y-[-1]"
+        className="absolute top-0 right-1 w-1/2 h-full scale-x-[-1] scale-y-[-1] bg-contain"
         style={{
           backgroundImage: `url(${cockpitTopGrey})`,
           backgroundSize: "140% 100%",

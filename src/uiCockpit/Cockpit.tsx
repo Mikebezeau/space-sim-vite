@@ -161,12 +161,14 @@ const Cockpit = () => {
       </div>
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
         <div
-          className="face middle absolute top-[26vh] sm:top-[18vh] left-1/2 -ml-[16vw] sm:-ml-[10vh]"
+          className=" preserve-3d container-full-screen"
           style={{
-            transform: "translateY(10vh) translateZ(-14vh)", //IS_MOBILE ? "translateZ(-14vh)" : "translateZ(-14vh)",
+            transform: "translateY(0vh) translateZ(20vh)", //IS_MOBILE ? "translateZ(-14vh)" : "translateZ(-14vh)",
           }}
         >
-          <Cockpit1stPersonControls />
+          <div className="face middle scale-x-[0.5] scale-y-[0.5] absolute top-[4vh] left-1/2 -ml-[17.3vh]">
+            <Cockpit1stPersonControls />
+          </div>
         </div>
       </div>
 

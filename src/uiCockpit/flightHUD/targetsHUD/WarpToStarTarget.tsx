@@ -26,7 +26,11 @@ const WarpToStarTarget = (props: warpToStarTargetInt) => {
 
   const updateTargets = () => {
     const { targetWarpToStarHUD } = getPlayerTargetsHUD();
-    if (targetRef.current && targetWarpToStarHUD) {
+    if (targetRef.current) {
+      if (!targetWarpToStarHUD) {
+        targetRef.current.style.marginLeft = `${window.innerWidth}px`;
+        return;
+      }
       let { xn, yn, angleDiff } = targetWarpToStarHUD;
       const { marginLeft, marginTop } = getTargetPosition(xn, yn, angleDiff);
       // set position of target div

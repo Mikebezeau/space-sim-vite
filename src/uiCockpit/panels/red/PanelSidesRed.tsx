@@ -53,7 +53,7 @@ const PanelSidesRed = ({ isLeft = false }) => {
 
     timeoutRef.current = setTimeout(() => {
       ChangeRandomImage();
-    }, Math.random() * 1000 + 2500);
+    }, Math.random() * 2000 + 3000);
   };
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const PanelSidesRed = ({ isLeft = false }) => {
   return (
     <>
       <div
-        className={`absolute top-0 w-full h-full bg-no-repeat ${
+        className={`absolute top-0 w-full h-full bg-no-repeat bg-contain ${
           isLeft && "scale-x-[-1]"
         }`}
         style={{ backgroundImage: `url(${cockpitRightRed})` }}
@@ -76,9 +76,9 @@ const PanelSidesRed = ({ isLeft = false }) => {
         <img
           ref={screenImageRef}
           src={isLeft ? screenMenuSymbols : screenMenuOptions}
-          className="absolute w-[64px] h-[80px] border-2 border-black opacity-30"
+          className="absolute w-[9vh] h-[11vh] border-2 border-black opacity-30"
           style={{
-            transform: `translateX(24vh) translateY(4vh) rotateX(-34deg) rotateY(-17deg) rotateZ(-11deg)`,
+            transform: `translateX(22vh) translateY(4vh) rotateX(-34deg) rotateY(-17deg) rotateZ(-11deg)`,
           }}
           alt="city info"
         />
