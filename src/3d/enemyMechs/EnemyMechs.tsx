@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+//import { useFrame } from "@react-three/fiber";
+import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import BuildMech from "../buildMech/BuildMech";
 import InstancedMechGroups from "./InstancedMechGroups";
 import BoidController from "../../classes/BoidController";
 
 export default function EnemyMechs() {
-  console.log("EnemyMechs rendered");
+  useStore.getState().updateRenderInfo("EnemyMechs");
 
   const enemies = useEnemyStore((state) => state.enemies);
 

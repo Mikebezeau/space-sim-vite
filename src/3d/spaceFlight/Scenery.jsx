@@ -36,11 +36,11 @@ const Scenery = ({ sceneryType }) => {
     },
     // called when loading is in progress
     function (xhr) {
-      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+      //const loaded = (xhr.loaded / xhr.total) * 100 + "% loaded";
     },
     // called when loading has errors
     function (error) {
-      console.log("An error happened", error);
+      console.error("Scenery models", error);
     }
   );
 

@@ -346,10 +346,8 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
       shaderDataVariable: get().initShaderVariable(gpuCompute, textureFS),
     });
 
-    console.log(
-      "shaderDataVariable.material.uniforms",
-      get().shaderDataVariable.material.uniforms
-    );
+    //get().shaderDataVariable.material.uniforms
+
     /*
     // Create compute shader to read water level
     const readShader = gpuCompute.createShaderMaterial(readFragmentShader, {
@@ -376,7 +374,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     if (error !== null) {
       console.error("gpuCompute.init", error);
     } else {
-      //console.log("initComputeRenderer");
       set({ gpuCompute });
       //set({ textureData });
       //set({ shaderDataVariable });
@@ -445,8 +442,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
       value: cloudShaderUniforms.u_cloudAlpha || 20,
     };
     uniforms["u_rotateX"] = { value: cloudShaderUniforms.u_rotateX || 1 };
-
-    //console.log(uniforms);
   },
 
   generateTextureGPU: (
@@ -495,7 +490,5 @@ export default useGenFboTextureStore;
 
     // Get rgb values from the readImageArray
     const rgb = new Float32Array(readImageArray.buffer);
-
-    console.log(rgb.r);
   };
   */

@@ -6,7 +6,8 @@ const SolarSystem = () => {
   const stars = useStore((state) => state.stars);
   const planets = useStore((state) => state.planets);
 
-  console.log("SolarSystem rendered", planets);
+  useStore.getState().updateRenderInfo("SolarSystem", planets);
+
   return (
     <>
       {stars?.map((star, index) => (

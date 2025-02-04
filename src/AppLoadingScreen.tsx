@@ -27,14 +27,10 @@ const AppLoadingScreen = (props: AppScreenTransitionInt) => {
         setTimeout(() => {
           setIsSwitchingPlayerScreen(false);
           setFadeOut(false);
-          console.log("Timeout");
         }, 1000);
       } else {
         setFadeOut(false);
       }
-      console.log("isSwitchingPlayerScreen", isSwitchingPlayerScreen);
-      console.log("canvasSceneRendered", canvasSceneRendered);
-      console.log("fadeOut", fadeOut);
     }
   }, [canvasSceneRendered, isSwitchingPlayerScreen]);
 

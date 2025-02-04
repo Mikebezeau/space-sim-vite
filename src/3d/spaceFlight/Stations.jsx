@@ -5,7 +5,7 @@ import Scenery, { SCENERY_TYPE } from "./Scenery";
 import BuildMech from "../buildMech/BuildMech";
 
 const Station = ({ station }) => {
-  console.log("Station rendered");
+  useStore.getState().updateRenderInfo("Station");
 
   //station rotation
   const ref = useRef();
@@ -17,7 +17,7 @@ const Station = ({ station }) => {
       ref.current.rotation.set(0, r, 0);
     }
   });
-  console.log(station.stationBP.color);
+
   return (
     <group
       ref={ref}

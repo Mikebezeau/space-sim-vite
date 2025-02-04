@@ -1,5 +1,6 @@
 import React /*, { useLayoutEffect, useRef }*/ from "react";
 import LilGui from "./dev/LilGui";
+import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
 import MouseViewRotation from "./uiCockpit/MouseViewRotation";
@@ -25,7 +26,7 @@ import "./css/glitch.css";
 import "./css/arrowsAnimate.css";
 
 const AppUI = () => {
-  console.log("AppUI render");
+  useStore.getState().updateRenderInfo("AppUI");
   //if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {}
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
   const playerViewMode = usePlayerControlsStore(
@@ -39,7 +40,7 @@ const AppUI = () => {
 
   useLayoutEffect(() => {
     isTestScreen.current = getIsTestScreen();
-    console.log(
+    //console.log(
       "isTestScreen.current testScreen.planetTest",
       isTestScreen.current,
       testScreen.planetTest

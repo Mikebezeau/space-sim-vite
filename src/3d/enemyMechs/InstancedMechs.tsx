@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import BuildMech from "../buildMech/BuildMech";
 
@@ -10,13 +11,18 @@ interface InstancedMechsInt {
 // not using the forwarded ref for anything atm
 const InstancedMechs = (props: InstancedMechsInt) => {
   const { mechBpId } = props;
-
+  // TODO
   const enemies = useEnemyStore((state) => state.enemies);
   const instancedMechObject3d = useRef<THREE.Object3D | null>(null);
   const instancedEnemies = enemies.filter(
     (enemy) => enemy.useInstancedMesh && enemy.mechBP.id === mechBpId
   );
-  console.log("InstancedMechs rendered", instancedEnemies.length, mechBpId);
+
+  useStore.getState().updateRenderInfo("InstancedMechs", {
+    instancedEnemies: instancedEnemies.length,
+    mechBpId: mechBpId,
+  });
+
   const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
 
   // set loaded BuildMech object3d for instancedMesh
@@ -96,8 +102,8 @@ const InstancedMechs = (props: InstancedMechsInt) => {
                 <meshLambertMaterial
                 /*
           onBeforeCompile={(shader) => {
-            console.log(shader.vertexShader);
-            console.log(shader.fragmentShader);
+            //console.log(shader.vertexShader);
+            //console.log(shader.fragmentShader);
             shader.vertexShader =
               `attribute vec3 aColor;\nvarying vec4 vColor;\n` +
               shader.vertexShader;

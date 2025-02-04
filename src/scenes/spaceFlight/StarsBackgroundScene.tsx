@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { CubeTextureLoader, Group } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
+import useStore from "../../stores/store";
 import StarPoints from "../../galaxy/StarPoints";
 //@ts-ignore
 import back from "/images/skybox/purple/back.png";
@@ -17,7 +18,7 @@ import top from "/images/skybox/purple/top.png";
 //import GlitchEffect from "../../3d/effects/GlitchEffect";
 
 const StarsBackgroundScene = () => {
-  console.log("StarsBackgroundScene rendered");
+  useStore.getState().updateRenderInfo("StarsBackgroundScene");
   const { camera, scene } = useThree();
   const starPointsRef = useRef<Group | null>(null);
   /*

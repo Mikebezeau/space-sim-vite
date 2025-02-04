@@ -2,11 +2,11 @@ import React from "react";
 import useStore from "../../stores/store";
 
 const SunScanData = () => {
-  console.log("SunScanData rendered");
+  useStore.getState().updateRenderInfo("SunScanData");
+
   const stars = useStore((state) => state.stars);
   const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
 
-  //console.log("PlanetScanData rendered");
   const data =
     stars && focusPlanetIndex === null && stars[0]
       ? Object.entries(stars[0].data)

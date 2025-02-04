@@ -1,13 +1,13 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-//import useStore from "./stores/store";
+import useStore from "./stores/store";
 import AppCanvasLoadTrigger from "./AppCanvasLoadTrigger";
 import AppCanvasScene from "./AppCanvasScene";
 import { Perf } from "r3f-perf";
 import { IS_MOBILE } from "./constants/constants";
 
 const AppCanvas = () => {
-  console.log("AppCanvas rendered");
+  useStore.getState().updateRenderInfo("AppCanvas");
 
   return (
     <>

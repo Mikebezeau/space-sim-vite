@@ -13,7 +13,8 @@ const StarPoints = forwardRef(function StarPoints(
   props: StarPointsInt,
   starPointsForwardRef: any
 ) {
-  console.log("StarPoints rendered");
+  useStore.getState().updateRenderInfo("StarPoints");
+
   const { viewAsBackground = false } = props;
 
   const starPointsBufferGeoRef = useRef<THREE.BufferGeometry | null>(null);

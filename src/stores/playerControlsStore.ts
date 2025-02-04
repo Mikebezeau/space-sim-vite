@@ -90,14 +90,17 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen) => {
       if (isSwitchingPlayerScreen !== get().isSwitchingPlayerScreen) {
         set({ isSwitchingPlayerScreen });
-        console.log("isSwitchingPlayerScreen", get().isSwitchingPlayerScreen);
       }
     },
     canvasSceneRendered: false, // used to trigger render
     setCanvasSceneRendered: (canvasSceneRendered) => {
       if (canvasSceneRendered !== get().canvasSceneRendered) {
         set({ canvasSceneRendered });
-        console.log("canvasSceneRendered", get().canvasSceneRendered);
+        console.log(
+          "renderInfo",
+          useStore.getState().renderCount,
+          useStore.getState().renderData
+        );
       }
     },
     isResetCamera: true,

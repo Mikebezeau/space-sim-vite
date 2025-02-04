@@ -10,15 +10,13 @@ import {
 } from "../hooks/controls/useTouchControls";
 
 import { lerp } from "../util/gameUtil";
-import {
-  ActionModeControls,
-  Cockpit1stPersonControls,
-} from "./CockpitControls";
+import { ActionModeControls, ControlIconsRowBottom } from "./CockpitControls";
 import { PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
 
 const Cockpit = () => {
-  console.log("Cockpit rendered");
+  useStore.getState().updateRenderInfo("Cockpit");
+
   const { updateMouse } = useStore((state) => state.actions);
   const mouse = useStore((state) => state.mutation.mouse);
   const getPlayerState = usePlayerControlsStore(
@@ -49,8 +47,6 @@ const Cockpit = () => {
   // mouse move change rotation of cockpit view
   // isInitializeNoLerp is used to skip lerp animation
   const smoothViewRender = (isInitializeNoLerp = false) => {
-    //console.log("smoothViewRender rafRef.current", rafRef.current);
-
     let isPlayerPilotControl = false;
     //if (getPlayerState().playerActionMode !== PLAYER.action.inspect) {
     //  isPlayerPilotControl = true;
@@ -166,8 +162,8 @@ const Cockpit = () => {
             transform: "translateY(0vh) translateZ(20vh)", //IS_MOBILE ? "translateZ(-14vh)" : "translateZ(-14vh)",
           }}
         >
-          <div className="face middle scale-x-[0.5] scale-y-[0.5] absolute top-[4vh] left-1/2 -ml-[17.3vh]">
-            <Cockpit1stPersonControls />
+          <div className="face middle  absolute top-[-22vh]">
+            <ControlIconsRowBottom />
           </div>
         </div>
       </div>

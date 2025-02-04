@@ -28,7 +28,7 @@ const shipMaterial = new THREE.MeshBasicMaterial({
 const maxMapSize = 25;
 
 export default function SystemMap({ showPlayer = false }) {
-  console.log("SystemMap rendered");
+  useStore.getState().updateRenderInfo("SystemMap");
   const { camera } = useThree();
   const planets = useStore((state) => state.planets);
   const systemMap = useRef(null);
@@ -75,14 +75,12 @@ export default function SystemMap({ showPlayer = false }) {
 }
 
 const System = ({ showPlayer, mapScale }) => {
-  console.log("System rendered", mapScale);
+  useStore.getState().updateRenderInfo("System map", { mapScale: mapScale });
   const planets = useStore((state) => state.planets);
   //function System({ planets, mapScale }) {
   return planets?.map((planet, index) => {
-    //console.log(planet.type);
     const ringRadius =
       mapScale * distance(planet.object3d.position, { x: 0, y: 0, z: 0 });
-    //console.log(mapScale, planet.object3d.position.x); // scale={[mapScale, mapScale, mapScale]}>
     return (
       <group key={index}>
         <mesh
@@ -107,7 +105,7 @@ const System = ({ showPlayer, mapScale }) => {
 };
 
 function ShipPositions({ mapScale }) {
-  console.log("ShipPositions rendered");
+  useStore.getState().updateRenderInfo("ShipPositions system map");
   const getPlayer = useStore((state) => state.getPlayer);
   const playerRef = useRef(null);
 

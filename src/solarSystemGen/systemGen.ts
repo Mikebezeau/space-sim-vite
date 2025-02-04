@@ -98,8 +98,6 @@ function handleAddAsteroidRing(num) {
     const angle = (360 / num) * i;
     const x = ringRadius * Math.sin(angle);
     const z = ringRadius * Math.cos(angle);
-    //console.log("xz", x, z);
-    //console.log("r s", ringRadius, Math.sin(angle));
     setPlanets((prev) => [
       ...prev,
       {

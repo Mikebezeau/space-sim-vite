@@ -71,7 +71,7 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 */
 
 const ScannerReadout = () => {
-  console.log("ScannerReadout rendered");
+  useStore.getState().updateRenderInfo("ScannerReadout");
   const { camera } = useThree();
   const player = useStore((state) => state.player);
   const planets = useStore((state) => state.planets);
@@ -110,7 +110,7 @@ const ScannerReadout = () => {
           const planet = planets[i];
           planet.object3d.getWorldPosition(worldPosition);
           const angleDiff = getCameraAngleDiffToPosition(camera, worldPosition);
-          if (angleDiff < 0.38 && angleDiff < smallestTargetAngle) {
+          if (angleDiff < 0.3 && angleDiff < smallestTargetAngle) {
             smallestTargetAngle = angleDiff;
             tempFocusPlanetIndex = i;
           }

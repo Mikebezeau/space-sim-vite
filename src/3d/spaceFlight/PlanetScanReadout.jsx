@@ -5,7 +5,7 @@ import useStore from "../../stores/store";
 const geometryPlanet = new THREE.SphereGeometry(5, 12, 12);
 
 const PlanetScanReadout = () => {
-  console.log("PlanetScanReadout rendered");
+  useStore.getState().updateRenderInfo("PlanetScanReadout");
 
   const planets = useStore((state) => state.planets);
   const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);

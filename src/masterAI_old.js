@@ -119,7 +119,6 @@ export function loopAI(player, enemies, enemyBoids, clock, actionShoot) {
     //move toward target
     enemy.object3d.translateZ(enemy.speed);
 
-    //if (index === 0) console.log(enemyBoids[index].speed);
     //enemy.object3d.lookAt(enemyBoids[index].pointAt);
     //enemy.object3d.lookAt(enemyBoids[index].position);
     //enemy.object3d.position.copy(enemyBoids[index].position);
@@ -180,10 +179,6 @@ function groupFollowPosition(enemy, enemyLeader, enemies) {
         SCALE;
     });
   }
-  /*
-  if (enemy.id === 150 && clock.getElapsedTime() % 1 < 0.05)
-    console.log(enemy.formationPosition);
-    */
   //destination location is the leaders position offset by this ships formation coordinates position/offset values
   destinationObject.translateX(enemy.formationPosition.x);
   destinationObject.translateY(enemy.formationPosition.y);

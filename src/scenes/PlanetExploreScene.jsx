@@ -1,3 +1,4 @@
+import useStore from "../stores/store";
 import PlayerWalk from "../3d/planetExplore/PlayerWalk";
 import WeaponFire from "../3d/WeaponFire";
 import TestTerrain from "../terrainGen/TestTerrain";
@@ -5,7 +6,8 @@ import TestTerrain from "../terrainGen/TestTerrain";
 import { SCALE_PLANET_WALK } from "../constants/constants";
 
 export default function PlanetExploreScene() {
-  console.log("PlanetExploreScene rendered");
+  useStore.getState().updateRenderInfo("PlanetExploreScene");
+
   return (
     <>
       <pointLight

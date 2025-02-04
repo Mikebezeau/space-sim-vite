@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
+import useStore from "../stores/store";
 import useParticleStore from "../stores/particleStore";
 
 interface ParticlesInt {
@@ -7,9 +8,9 @@ interface ParticlesInt {
 }
 
 const Particles = (props: ParticlesInt) => {
+  useStore.getState().updateRenderInfo("Particles");
   const { isPlayerParticles = false } = props;
 
-  console.log("Particles rendered");
   const particleController = useParticleStore((state) =>
     isPlayerParticles
       ? state.playerParticleController
@@ -18,11 +19,9 @@ const Particles = (props: ParticlesInt) => {
   const { scene } = useThree();
 
   useEffect(() => {
-    console.log("Particles added to scene");
     if (particleController) scene.add(particleController.particleSystem);
 
     return () => {
-      console.log("Particles cleanup");
       if (particleController) {
         particleController.dispose(scene);
       }

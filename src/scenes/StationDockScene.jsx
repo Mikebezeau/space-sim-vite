@@ -1,7 +1,8 @@
+import useStore from "../stores/store";
 import UiMainScene from "../uiMain/UiMainScene";
 
 const StationDockScene = () => {
-  console.log("StationDockScene rendered");
+  useStore.getState().updateRenderInfo("StationDockScene");
   return <UiMainScene />;
 };
 

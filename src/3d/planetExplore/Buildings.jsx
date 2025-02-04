@@ -1,7 +1,8 @@
-import { DEBUG_RENDERS } from "../../constants/debugConstants";
+import useStore from "../../stores/store";
 
 const Buildings = ({ buildings }) => {
-  if (DEBUG_RENDERS) console.log("Buildings rendered");
+  useStore.getState().updateRenderInfo("Buildings");
+
   return (
     <group>
       {Object.entries(buildings.buildingMeshList).map(([key, mesh]) => (

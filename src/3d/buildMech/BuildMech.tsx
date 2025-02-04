@@ -1,6 +1,7 @@
 import React, { forwardRef, Fragment } from "react";
 import { RepeatWrapping } from "three";
 import MechBP from "../../classes/mechBP/MechBP";
+import useStore from "../../stores/store";
 import useEquipStore from "../../stores/equipStore";
 import ServoShapes from "./ServoShapes";
 
@@ -18,7 +19,7 @@ const BuildMech = forwardRef(function BuildMech(
   props: BuildMechInt,
   buildMechForwardRef: any
 ) {
-  console.log("BuildMech rendered");
+  useStore.getState().updateRenderInfo("BuildMech");
   const {
     mechBP,
     flatShading,

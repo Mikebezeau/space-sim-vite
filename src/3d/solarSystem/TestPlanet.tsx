@@ -1,12 +1,13 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import useStore from "../../stores/store";
 import useDevStore from "../../stores/devStore";
 
 const Planet = () => {
   const testPlanet = useDevStore((state) => state.testPlanet);
 
-  console.log("Planet rendered", testPlanet);
+  useStore.getState().updateRenderInfo("Planet test", testPlanet);
 
   const planetRef = useRef<THREE.Mesh | null>(null);
 

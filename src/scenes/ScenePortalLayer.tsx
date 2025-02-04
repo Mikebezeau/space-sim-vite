@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { Scene } from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
+import useStore from "../stores/store";
 
 interface ScenePortalLayerInt {
   autoClear?: boolean;
   children: React.ReactNode;
 }
 const ScenePortalLayer = (props: ScenePortalLayerInt) => {
-  console.log("ScenePortalLayer rendered");
+  useStore.getState().updateRenderInfo("ScenePortalLayer");
+
   const { autoClear = true, children } = props;
   const [scene] = useState(() => new Scene());
   const { /*gl, size,*/ camera } = useThree();

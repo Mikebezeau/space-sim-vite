@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import { setVisible } from "../../util/gameUtil";
 import { PLAYER } from "../../constants/constants";
@@ -12,7 +13,7 @@ const crossMaterial = new THREE.MeshBasicMaterial({
 });
 
 const PlayerCrossHair = () => {
-  //console.log("PlayerCrossHair rendered");
+  useStore.getState().updateRenderInfo("PlayerCrossHair");
   const playerActionMode = usePlayerControlsStore(
     (state) => state.playerActionMode
   );

@@ -25,18 +25,17 @@ const WarpToStarTarget = (props: warpToStarTargetInt) => {
   const targetRef = useRef<HTMLDivElement>(null);
 
   const updateTargets = () => {
-    const { targetWarpToStarHUD } = getPlayerTargetsHUD();
     if (targetRef.current) {
-      if (!targetWarpToStarHUD) {
+      const { targetWarpToStarHUD } = getPlayerTargetsHUD();
+      if (targetWarpToStarHUD === null) {
         targetRef.current.style.marginLeft = `${window.innerWidth}px`;
-        return;
+      } else {
+        let { xn, yn, angleDiff } = targetWarpToStarHUD;
+        const { marginLeft, marginTop } = getTargetPosition(xn, yn, angleDiff);
+        // set position of target div
+        targetRef.current.style.marginLeft = marginLeft;
+        targetRef.current.style.marginTop = marginTop;
       }
-      let { xn, yn, angleDiff } = targetWarpToStarHUD;
-      const { marginLeft, marginTop } = getTargetPosition(xn, yn, angleDiff);
-      // set position of target div
-      targetRef.current.style.marginLeft = marginLeft;
-      targetRef.current.style.marginTop = marginTop;
-      setCustomData(angleDiff);
     }
     animationFrameRef.current = requestAnimationFrame(updateTargets);
   };

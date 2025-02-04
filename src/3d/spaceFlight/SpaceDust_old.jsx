@@ -3,8 +3,8 @@ import { useRef, useEffect } from "react";
 import useStore from "../../stores/store";
 import { SCALE } from "../../constants/constants";
 
-export default function Particles() {
-  console.log("Particles rendered");
+export default function SpaceDust() {
+  useStore.getState().updateRenderInfo("SpaceDust");
   const instancedMesh = useRef();
   const { particles } = useStore((state) => state.mutation);
   const dummy = new THREE.Object3D();

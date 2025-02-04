@@ -67,9 +67,7 @@ gui.add( myObject, 'myNumber', { Label1: 0, Label2: 1, Label3: 2 } );
 // Chainable methods
 gui.add( myObject, 'myProperty' )
 	.name( 'Custom Name' )
-	.onChange( value => {
-		console.log( value );
-	} );
+	.onChange( value => {  } );
 
 // Create color pickers for multiple color formats
 const colorFormats = {

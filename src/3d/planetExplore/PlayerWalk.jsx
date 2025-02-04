@@ -21,12 +21,12 @@ const crossMaterial = new THREE.MeshBasicMaterial({
 });
 
 export default function PlayerWalk() {
-  console.log("PlayerWalk rendered");
+  useStore.getState().updateRenderInfo("PlayerWalk");
   const { camera } = useThree();
   const getPlayer = useStore((state) => state.getPlayer);
   const playerMechBP = getPlayer().mechBP;
   const mutation = useStore((state) => state.mutation);
-  const player = useStore((state) => state.player);
+  //const player = useStore((state) => state.player);
   const { terrain } = useStore((state) => state.planetTerrain);
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
@@ -83,7 +83,6 @@ export default function PlayerWalk() {
       );
 
       //shitty collision check for roads
-      //console.log(terrain.roads.count);
       let onRoad = false;
       terrain.roads.forEach((road) => {
         if (!onRoad) {

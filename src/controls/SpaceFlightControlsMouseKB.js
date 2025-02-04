@@ -10,7 +10,7 @@ import {
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 
 const ControlsMouseKBSpaceFlight = () => {
-  console.log("MouseKBControlsSpaceFlight render");
+  useStore.getState().updateRenderInfo("ControlsMouseKBSpaceFlight");
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);

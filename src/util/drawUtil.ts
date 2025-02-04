@@ -20,7 +20,7 @@ const rgbToHex = (color) => {
         return hex.length === 1 ? "0" + hex : hex;
       })
       .join("");
-  console.log("rgbToHex", color, hex);
+  //console.log("rgbToHex", color, hex);
   return hex;
 }
 */

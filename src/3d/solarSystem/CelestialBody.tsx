@@ -8,7 +8,6 @@ interface celestialBodyInt {
 
 const CelestialBody = (props: celestialBodyInt) => {
   const { celestialBody } = props;
-  //console.log("Planet rendered");
 
   useFrame((_, delta) => {
     celestialBody.useFrameUpdateUniforms(delta);

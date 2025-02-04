@@ -17,7 +17,8 @@ import Stations from "../3d/spaceFlight/Stations";
 import { PLAYER } from "../constants/constants";
 
 const NewCampaignScene = () => {
-  console.log("NewCampaignScene rendered");
+  useStore.getState().updateRenderInfo("NewCampaignScene");
+
   const { camera } = useThree();
   const player = useStore((state) => state.player);
   const { setPlayerPosition, setPlayerCurrentStarIndex } = useStore(

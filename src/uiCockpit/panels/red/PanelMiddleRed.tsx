@@ -128,23 +128,18 @@ const PanelMiddleRed = () => {
         //transform: `translateX(0vh) translateY(0vh) translateZ(0vh) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`,
       }}
     >
-      {/* TODO find out why scale is needed to make screens correct size for mobile */}
-      <div
-        className={`w-full h-full ${
-          IS_MOBILE && "scale-x-[90%] scale-y-[90%]"
-        }`}
-      >
+      <div>
         <div className="absolute top-[14.5vh] left-1/2 w-[22vh] h-[20vh] -ml-[10.8vh] p-1 whitespace-pre leading-none overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]">
           <div ref={computerScreen} />
         </div>
 
-        <div className="absolute top-[23.5vh] right-1/2 -mr-[29vh]">
+        <div className="absolute top-[23.7vh] right-1/2 w-[10vh] h-[8.5vh] mr-[20.5vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]" />
+
+        <div className="absolute top-[23.7vh] left-1/2 w-[10vh] h-[8.5vh] ml-[20.6vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]" />
+
+        <div className="absolute top-[23.5vh] left-1/2 ml-[21vh]">
           <SpeedReadout />
         </div>
-
-        <div className="absolute top-[23.7vh] left-1/2 w-[10vh] h-[8.5vh] -ml-[30.5vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]" />
-
-        <div className="absolute top-[23.7vh] right-1/2 w-[10vh] h-[8.5vh] -mr-[30.6vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]" />
       </div>
     </div>
   );

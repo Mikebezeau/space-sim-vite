@@ -41,7 +41,6 @@ const imageSrcArrayLeft = [
 ];
 
 const PanelSidesRed = ({ isLeft = false }) => {
-  //console.log("CockpitRight rendered");
   const screenImageRef = useRef<HTMLImageElement | null>(null);
   const timeoutRef = useRef<number | null>(null);
 

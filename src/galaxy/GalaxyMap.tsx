@@ -56,7 +56,7 @@ function Box(props) {
 const RAYCAST_THRESHOLD = 1;
 
 const GalaxyMap = () => {
-  console.log("GalaxyMap rendered");
+  useStore.getState().updateRenderInfo("GalaxyMap");
   const { camera, scene } = useThree();
   const controlsRef = useRef<any>(null);
   const galaxyRef = useRef<THREE.Group | null>(null);
@@ -79,7 +79,7 @@ const GalaxyMap = () => {
   }, [camera]);
 
   const StarPointsWithControls = () => {
-    console.log("StarPointsWithControls rendered");
+    useStore.getState().updateRenderInfo("StarPointsWithControls");
     const {
       getPlayerCurrentStarIndex,
       getShowInfoTargetStarIndex,
@@ -137,7 +137,6 @@ const GalaxyMap = () => {
     }, []);
 
     useEffect(() => {
-      console.log(starPointsRef.current);
       const playerCurrentStarIndex = getPlayerCurrentStarIndex();
       if (playerCurrentStarIndex !== null && starPointsRef.current !== null) {
         // dim all stars

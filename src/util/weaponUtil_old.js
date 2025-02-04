@@ -105,7 +105,7 @@ const weaponUtil = {
 
         return CP;
       default:
-        console.log("invalid weapon type");
+        console.error("invalid weapon type");
         return null;
     }
   },

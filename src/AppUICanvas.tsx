@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { createRoot } from "@react-three/fiber";
+import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import BuildMech from "./3d/buildMech/BuildMech";
 //import PlanetScanReadout from "./3d/spaceFlight/PlanetScanReadout";
-import useStore from "./stores/store";
 import { PLAYER } from "./constants/constants";
 
 const MyCanvas = (props) => {
@@ -27,7 +27,7 @@ const MyCanvas = (props) => {
 };
 
 const AppUICanvas = () => {
-  console.log("AppUICanvas rendered");
+  useStore.getState().updateRenderInfo("AppUICanvas");
   const playerMechBP = useStore((state) => state.player.mechBP);
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
   /*const playerViewMode = usePlayerControlsStore(

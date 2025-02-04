@@ -182,7 +182,7 @@ class Mech implements MechInt {
 
       this.bufferGeom = getMergedBufferGeom(this.object3d);
     } else {
-      console.log(
+      console.error(
         "Mech.setMergedBufferGeom(): object3d not set",
         this.object3d
       );
@@ -233,7 +233,7 @@ class Mech implements MechInt {
               .effects.addMissile(weaponWorldPositionVec, mechRefObj.rotation);
           }
         } else {
-          console.log("servoOffset not found for weapon", weapon);
+          console.error("servoOffset not found for weapon", weapon);
         }
       });
     }

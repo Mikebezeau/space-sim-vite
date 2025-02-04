@@ -209,7 +209,7 @@ class BoidController {
       );
       this.cohesionCount = 1;
     } catch (e) {
-      console.log(currentMech.groupLeaderId);
+      console.error("setCohesionGroupVector group", currentMech.groupLeaderId);
     }
   }
 

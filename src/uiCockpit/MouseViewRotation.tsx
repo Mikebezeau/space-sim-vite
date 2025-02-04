@@ -8,11 +8,11 @@ import {
 } from "../hooks/controls/useTouchControls";
 
 import { lerp } from "../util/gameUtil";
-import { IS_MOBILE, PLAYER } from "../constants/constants";
+import { PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
 
 const MouseViewRotation = (rotateDivElementRef: any) => {
-  console.log("MouseViewRotation rendered");
+  useStore.getState().updateRenderInfo("MouseViewRotation");
   const { updateMouse } = useStore((state) => state.actions);
   const mouse = useStore((state) => state.mutation.mouse);
   const getPlayerState = usePlayerControlsStore(

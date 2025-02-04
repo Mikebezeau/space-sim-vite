@@ -149,7 +149,9 @@ const signedVolumeOfTriangle = (p1, p2, p3) => {
 
 export const getVolume = (geometry) => {
   if (!geometry.isBufferGeometry) {
-    console.log("'geometry' must be an indexed or non-indexed buffer geometry");
+    console.error(
+      "'geometry' must be an indexed or non-indexed buffer geometry"
+    );
     return 0;
   }
   var isIndexed = geometry.index !== null;

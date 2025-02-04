@@ -23,7 +23,8 @@ const cityCenterSphereMaterial = new THREE.MeshBasicMaterial({
 });
 
 const PreTestTerrian = () => {
-  console.log("render test terrain");
+  useStore.getState().updateRenderInfo("TestTerrian");
+
   const planetTerrain = useStore((state) => state.planetTerrain);
   //<group position={[city.position.x, city.position.y, city.position.z]}></group>
   return (

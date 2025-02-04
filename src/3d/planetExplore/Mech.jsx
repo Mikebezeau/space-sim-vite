@@ -1,16 +1,17 @@
 import { memo, useEffect, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
+import useStore from "../../stores/store";
 
 useGLTF.preload("./model/mechJ.gltf");
 
 const PreMech = () => {
-  console.log("Mech rendered");
+  useStore.getState().updateRenderInfo("Mech");
+
   const groupRef = useRef();
   const { nodes } = useGLTF("./model/mechJ.gltf");
   useEffect(() => {
     // computeVertexNormals() : to fix lighting issues from blender export
     groupRef.current.children[0].geometry.computeVertexNormals();
-    //console.log("Mech useEffect", playerMechGroupRef.current);
   }, []);
 
   return (

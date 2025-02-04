@@ -70,7 +70,7 @@ const GridsContainer = ({ briefcases }) => {
         positionsBriefcases.push(briefcase);
       });
 
-      console.log(positionsSmallCross);
+      //console.log(positionsSmallCross);
 
       positionsBigCross = positionsBigCross.filter((value, index) => {
         // Filtering odd points on X and Y

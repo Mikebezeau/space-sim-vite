@@ -54,7 +54,7 @@ export default class StarSystem {
     /*
     for (const k in this.config) {
       if (this.config.hasOwnProperty(k)) {
-        console.log(`${k}: ${this.config[k]}`);
+        // `${k}: ${this.config[k]}`;
       }
     }
     */
@@ -73,11 +73,6 @@ export default class StarSystem {
       this.planets = this.checkCollisions(this.planets);
       //i += 1;
     }
-    /*
-    console.log(
-      `Created system of ${this.planets.length} planets after ${i} iterations`
-    );
-    */
     return this;
   }
 

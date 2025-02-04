@@ -52,7 +52,7 @@ const ThrottleControlsDisplay = () => {
 };
 
 const SpaceFlightControlsTouch = () => {
-  console.log("SpaceFlightControlsTouch rendered");
+  useStore.getState().updateRenderInfo("SpaceFlightControlsTouch");
   const getPlayerState = usePlayerControlsStore(
     (state) => state.getPlayerState
   );
@@ -97,7 +97,6 @@ const SpaceFlightControlsTouch = () => {
 
   //SHOOT LASERS
   function handleShoot() {
-    console.log("mobile shoot");
     actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
   }
   useTouchStartControls("btn-shoot", handleShoot);

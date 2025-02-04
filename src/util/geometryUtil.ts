@@ -60,7 +60,7 @@ const makeTriangle = (isRight = false) => {
 const createGeometry = (shapeType: number, props: number[]) => {
   // make sure props has correct number of elements for shapeType
   if (props.length !== Object.keys(GEO_PROP_TYPE[shapeType]).length) {
-    console.log("props length not correct");
+    console.error("props length not correct");
     props = getGeomtryDefaultProps(shapeType);
   }
   let newShape: THREE.BufferGeometry | null = null;
@@ -125,7 +125,7 @@ const createGeometry = (shapeType: number, props: number[]) => {
       newShape = makeTriangle(true);
       break;
     default:
-      console.log("shapeType not found");
+      console.error("shapeType not found");
       newShape = new THREE.BoxGeometry(1, 1, 1);
   }
   return newShape;
@@ -158,7 +158,6 @@ const recursiveGetCreateShape = (
     );
   } else {
     if (!recurseObj[prop]) {
-      //console.log("new shape created");
       recurseObj[prop] = createGeometry(shapeType, fullPropList);
     }
     return recurseObj[prop];
@@ -187,8 +186,8 @@ const shapeType = GEO_SHAPE_TYPE.torus;
 const props1 = [0.2, 8, 16, Math.PI * 2];
 const props2 = [0.2, 8, 8, Math.PI * 2];
 const props3 = [0.2, 12, 8, Math.PI * 2];
-console.log(getGeometryFromList(shapeType, props1));
-console.log(getGeometryFromList(shapeType, props2));
-console.log(getGeometryFromList(shapeType, props3));
-console.log(SHAPES);
+//console.log(getGeometryFromList(shapeType, props1));
+//console.log(getGeometryFromList(shapeType, props2));
+//console.log(getGeometryFromList(shapeType, props3));
+//console.log(SHAPES);
 */

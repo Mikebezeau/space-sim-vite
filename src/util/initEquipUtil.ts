@@ -107,7 +107,7 @@ const initWeaponBP = function (weaponData) {
       break;
     default:
       newWeaponBP = new MechWeaponBeam(weaponData);
-      console.log("Invalid weapon type");
+      console.error("Invalid weapon type");
   }
   return newWeaponBP;
 };

@@ -131,7 +131,7 @@ class CelestialBody implements CelestialBodyInt {
         value: this.renderTargetGPU.texture,
       };
     } else {
-      console.log("no GPU texture generated");
+      console.error("no GPU texture generated");
     }
     // craters
     if (this.textureMapOptions.craterIntensity) {

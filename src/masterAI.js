@@ -118,7 +118,6 @@ export function loopAI(player, enemies, actionShoot) {
     //move toward target
     enemy.object3d.translateZ(enemy.speed);
 
-    //if (index === 0) console.log(enemyBoids[index].speed);
     //enemy.object3d.lookAt(enemyBoids[index].pointAt);
     //enemy.object3d.lookAt(enemyBoids[index].position);
     //enemy.object3d.position.copy(enemyBoids[index].position);

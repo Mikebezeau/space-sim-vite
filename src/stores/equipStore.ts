@@ -66,7 +66,7 @@ const recursiveCallMethod = (
   arr.forEach((s) => {
     if (s.id === id) {
       if (typeof s[method] !== "function")
-        console.log("Method not found", method);
+        console.error("Method not found", method);
       else props ? s[method](props) : s[method]();
     } else if (s.servoShapes.length > 0) {
       recursiveCallMethod(s.servoShapes, id, method, props);
@@ -234,7 +234,7 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
           if (
             key === "material"
           ) {
-            console.log(key);
+            //console.log(key);
             return undefined;
           } else {
             return value;
@@ -277,7 +277,7 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
         ) {
           return get().editorMechBP.weaponList;
         } else {
-          console.log("List not found");
+          console.error("List not found");
           return [];
         }
       },
@@ -428,7 +428,7 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
           const weapon = get().editorMechBP.getPartById(id);
           if (weapon !== undefined && weapon.hasOwnProperty(propName)) {
             weapon[propName] = val;
-          } else console.log("Property not found: ", propName);
+          } else console.error("Property not found: ", propName);
         }
         get().toggleUpdateState();
       },
@@ -443,7 +443,7 @@ const useEquipStore = create<equipStoreState>()((set, get) => ({
             weapon.data.hasOwnProperty(propName)
           ) {
             weapon.data[propName] = Number(val);
-          } else console.log("Data property not found: ", propName);
+          } else console.error("Data property not found: ", propName);
         }
         get().toggleUpdateState();
       },

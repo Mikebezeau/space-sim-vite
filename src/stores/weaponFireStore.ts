@@ -69,7 +69,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       const reloadSpeed = weapon.burstValue()
         ? 1000 / weapon.burstValue()
         : 1000;
-      //console.log(weapon);
 
       const weaponFireObj = new THREE.Object3D();
       //copy position of weapon (offset from base mech)

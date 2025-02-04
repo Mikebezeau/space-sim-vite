@@ -10,7 +10,8 @@ import BuildMech from "../3d/buildMech/BuildMech";
 import { SCALE } from "../constants/constants";
 
 export default function UiMainScene() {
-  console.log("MainUIScene rendered");
+  useStore.getState().updateRenderInfo("UiMainScene");
+
   const { itemsPrivateLocker, itemsShareLocker, itemsSam } = useMainUIStore(
     (state) => state
   );

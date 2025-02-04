@@ -5,8 +5,6 @@ import consoleImage from "/images/cockpit/panelsBlue/console.png";
 import consoleFrontImage from "/images/cockpit/panelsBlue/console-front.png";
 
 const CockpitConsole = () => {
-  //console.log("CockpitConsole rendered");
-
   return (
     <>
       <div

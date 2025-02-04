@@ -31,6 +31,9 @@ export type TypeGalaxy = {
 };
 
 interface storeState {
+  renderCount: {};
+  renderData: {};
+  updateRenderInfo: (componentName: string, data?: any | undefined) => void;
   initGameStore: (renderer: THREE.WebGLRenderer) => void;
   disposeGameStore: () => void;
   isGameStoreInit: boolean;
@@ -125,6 +128,26 @@ interface storeState {
 //const useStore = create((set, get) => {
 
 const useStore = create<storeState>()((set, get) => ({
+  renderCount: {},
+  renderData: {},
+  updateRenderInfo: (componentName: string, data?: any | undefined) => {
+    // setting values hard, to avoid render state errors as below
+    // from nested set state calls
+    /*
+    Warning: Cannot update a component while rendering a different 
+    component - bad setState() call 
+    */
+    if (get().renderCount[componentName]) get().renderCount[componentName]++;
+    else get().renderCount[componentName] = 1;
+
+    if (data) {
+      get().renderData[componentName] = data;
+    }
+    const count = get().renderCount[componentName];
+    if (count === 100) {
+      console.log("WARNING RENDER COUNT > 100", componentName);
+    }
+  },
   initGameStore: (renderer) => {
     // set planet texture map renderer
     useGenFboTextureStore.getState().initComputeRenderer(renderer);
@@ -232,7 +255,6 @@ const useStore = create<storeState>()((set, get) => ({
       set({
         selectedWarpStarDirection: directionVec3.normalize(),
       });
-      console.log("warpStarDirection", get().selectedWarpStarDirection);
     } else {
       set({
         selectedWarpStarDirection: null,
@@ -339,9 +361,9 @@ const useStore = create<storeState>()((set, get) => ({
             }
           });
         }
-        console.log(
-          galaxyMapData.find((systemData) => systemData.breathable === "YES")
-        );
+        //console.log(
+        //  galaxyMapData.find((systemData) => systemData.breathable === "YES")
+        //);
         set(() => ({
           galaxyMapDataOutput: JSON.stringify(galaxyMapData),
         }));

@@ -131,7 +131,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       const reloadSpeed = weapon.burstValue()
         ? 1000 / weapon.burstValue()
         : 1000;
-      //console.log(weapon.data);
       clearTimeout(weapon.shootWeaponTO);
       weapon.shootWeaponTO = setTimeout(
         () => get().actions.shootWeapon(args),
@@ -274,7 +273,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       set(() => ({
         weaponFireList: updateWeaponFire,
       }));
-      //console.log(get().weaponFireList.length);
     },
 
     //test for weaponFire hits using ray (ray from spaceship)
@@ -313,7 +311,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       //use ray from front bullet to detect coming hit
       let result = false;
       result = shot.ray.intersectBox(target.hitBox, target.hit);
-      //console.log(result);
       if (result) {
         const distance = shot.ray.origin.distanceTo(target.hit);
         result = distance < shot.velocity * SCALE ? true : false;
@@ -435,7 +432,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
 
     //add new explosions
     if (newExplosions.length) {
-      //console.log(newExplosions);
     }
     //remove old timed out weaponfire
     actions.removeWeaponFire();

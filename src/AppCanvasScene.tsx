@@ -14,6 +14,8 @@ import { PLAYER } from "./constants/constants";
 import TestPlanetScene from "./scenes/TestPlanetScene";
 
 const AppCanvasScene = () => {
+  useStore.getState().updateRenderInfo("AppCanvasScene");
+
   const initGameStore = useStore((state) => state.initGameStore);
   const disposeGameStore = useStore((state) => state.disposeGameStore);
   const isGameStoreInit = useStore((state) => state.isGameStoreInit);
@@ -23,8 +25,6 @@ const AppCanvasScene = () => {
   const testScreen = useDevStore((state) => state.testScreen);
 
   const { gl } = useThree();
-
-  console.log("AppCanvasScene rendered", isGameStoreInit, playerScreen);
 
   // init game
   useLayoutEffect(() => {

@@ -1,3 +1,4 @@
+import useStore from "../stores/store";
 import ExternalGrid from "./ExternalGrid";
 import Floor from "./Floor";
 import GridsContainer from "./GridsContainer";
@@ -5,7 +6,8 @@ import useMainUIStore from "./useMainUIStore";
 import ZoomController from "./zoomEffects/ZoomController";
 
 export default function UiMainScene() {
-  console.log("MainUIScene rendered");
+  useStore.getState().updateRenderInfo("UiMainScene");
+
   const { itemsPrivateLocker, itemsShareLocker, itemsSam } = useMainUIStore(
     (state) => state
   );

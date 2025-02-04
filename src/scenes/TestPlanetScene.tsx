@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Vector3 } from "three";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
+import useStore from "../stores/store";
 import useDevStore from "../stores/devStore";
 import TestPlanet from "../3d/solarSystem/TestPlanet";
 import StarClass from "../classes/solarSystem/Star";
@@ -16,7 +17,7 @@ import {
 } from "../constants/solarSystemConstants";
 
 const TestPlanetScene = () => {
-  console.log("TestPlanetScene rendered");
+  useStore.getState().updateRenderInfo("TestPlanetScene");
 
   const getTestPlanet = useDevStore((state) => state.getTestPlanet);
   const genTestPlanet = useDevStore((state) => state.genTestPlanet);
@@ -147,8 +148,6 @@ const TestPlanetScene = () => {
 
   useEffect(() => {
     if (!guiRef.current) {
-      console.log("set guiRef");
-
       guiRef.current = new GUI();
 
       guiRef.current
@@ -162,7 +161,6 @@ const TestPlanetScene = () => {
           const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
             (planetTypeData) => planetTypeData.class === value
           );
-          console.log(planetTypeData?.class);
           if (planetTypeData) {
             setPlanetType(planetTypeData);
             testPlanetRef.current = getTestPlanet();
@@ -260,7 +258,6 @@ const TestPlanetScene = () => {
     }
     return () => {
       if (guiRef.current) {
-        console.log("guiRef.current.destroy");
         guiRef.current.destroy();
       }
     };

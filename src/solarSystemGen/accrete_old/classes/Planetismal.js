@@ -387,7 +387,6 @@ export default class Planetismal {
   toJSONforHud = (units = "metric", precision = 2) => {
     const c = convert[units];
     //const gases = this.gasComposition;
-    //console.log(gases, this.atmosphere);
     return {
       type: this.planetType,
       "orbital Zone": this.orbitalZone,
@@ -414,7 +413,6 @@ export default class Planetismal {
   toJSON = (units = "empirical", precision = 2) => {
     const c = convert[units];
     const gases = this.gasComposition;
-    //console.log(gases, this.atmosphere);
     return {
       albedo: `${this.albedo.toFixed(precision)}`,
       aphelion: `${this.ra.toFixed(precision)} AU`,

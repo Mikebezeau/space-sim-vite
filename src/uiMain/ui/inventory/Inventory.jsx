@@ -1,12 +1,14 @@
 //import { useSprings } from '@react-spring/web'
 import { useEffect, useRef, useState } from "react";
+import useStore from "../../../stores/store";
 import useMainUIStore from "../../useMainUIStore";
 import ActionModal from "../ActionModal";
 import MenuItems from "./MenuItems";
 import MenuTab from "../MenuTab";
 
 const Inventory = () => {
-  console.log("Inventory rendered");
+  useStore.getState().updateRenderInfo("App");
+
   const {
     setSelectedItem,
     getAllItems,

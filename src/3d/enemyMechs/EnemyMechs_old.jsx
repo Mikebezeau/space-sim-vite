@@ -2,12 +2,13 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../../stores/enemyStore";
+import useStore from "../../stores/store";
 import BuildMech from "../buildMech/BuildMech";
 import { MeshLineTrail } from "../Trail";
 import { SCALE } from "../../constants/constants";
 
 export default function EnemyMechs() {
-  console.log("EnemyMechs rendered");
+  useStore.getState().updateRenderInfo("EnemyMechs old");
   const enemies = useEnemyStore((state) => state.enemies);
   return enemies.map((enemyMech, index) => (
     <Enemy key={enemyMech.id} enemyMechIndex={index} />
@@ -33,7 +34,6 @@ const Enemy = ({ enemyMechIndex }) => {
       enemyMech.setHitBox();
       // set hitBoxRef to show hitbox on screen
       hitBoxRef.current = enemyMech.hitBox;
-      //console.log("hitBoxRef enemy", hitBoxRef.current);
     }
   }, [enemyMechGroupRef.current]);
 

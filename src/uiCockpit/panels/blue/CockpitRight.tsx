@@ -4,8 +4,6 @@ import screenBImage from "/images/cockpit/panelsBlue/screenB.png";
 import MonitorReadout from "../../display/MonitorReadout";
 
 const CockpitRight = () => {
-  //console.log("CockpitRight rendered");
-
   return (
     <>
       <div

@@ -10,7 +10,7 @@ const ObbTest = forwardRef(function ObbTest(
   props: any,
   obbTestForwardRef: any
 ) {
-  console.log("obbTest rendered");
+  useStore.getState().updateRenderInfo("ObbTest");
   const playerWorldOffsetPosition = useStore(
     (state) => state.playerWorldOffsetPosition
   );
@@ -72,7 +72,6 @@ const ObbTest = forwardRef(function ObbTest(
         const obbToTest = enemies[j].obbPositioned;
         // now perform intersection test
         if (obb.intersectsOBB(obbToTest) === true) {
-          //if (i === 0) console.log("obb collision", i, j);
           // change color of obb test boxes if colliding
           // @ts-ignore - material.color exists
           obbTestForwardRef.current[i].material.color.setHex(0xffff00);

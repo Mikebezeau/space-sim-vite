@@ -8,12 +8,12 @@ import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
 import Particles from "../../3d/Particles";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
-import EnemyMechs from "../../3d/enemyMechs/EnemyMechsNew";
+import EnemyMechs from "../../3d/enemyMechs/EnemyMechs";
 import ObbTest from "./dev/ObbTest";
 import { flipRotation } from "../../util/cameraUtil";
 
 const SpaceFlightPlanetsScene = () => {
-  console.log("SpaceFlight Scene rendered");
+  useStore.getState().updateRenderInfo("SpaceFlightPlanetsScene");
   const { camera } = useThree();
 
   const player = useStore((state) => state.player);

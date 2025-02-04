@@ -83,7 +83,7 @@ const ActionCancelPilot = () => {
   );
 };
 
-export const ActionWarpToPlanet = () => {
+export const ActionWarpToPlanetPopupHUD = () => {
   const isScanDistanceToPlanet = useStore(
     (state) => state.isScanDistanceToPlanet
   );
@@ -109,10 +109,10 @@ export const ActionWarpToPlanet = () => {
       ) : (*/}
       <>
         <div
-          className="pointer-events-auto w-40 h-10 -ml-20 bg-green-500 cursor-pointer"
+          className="pointer-events-auto w-40 h-10 -ml-20 cursor-pointer"
           onClick={isScanDistanceToPlanet ? scanPlanet : warpToPlanet}
         >
-          <div className="w-full cybr-btn" onClick={() => {}}>
+          <div className="w-full cybr-btn bg-blue-500" onClick={() => {}}>
             {isScanDistanceToPlanet ? "Scan Planet" : "Engage Warp"}
             <span aria-hidden className="cybr-btn__glitch glitch-once pl-[10%]">
               {isScanDistanceToPlanet
@@ -142,6 +142,54 @@ export const ActionWarpToPlanet = () => {
   ) : null;
 };
 
+export const ActionWarpToStarPopupHUD = () => {
+  const selectedWarpStar = useStore((state) => state.selectedWarpStar);
+  /*
+  const getPlayerTargetsHUD = usePlayerControlsStore(
+    (state) => state.getPlayerTargetsHUD
+  );
+  const { targetWarpToStarHUD } = getPlayerTargetsHUD();
+  */
+  const { setPlayerCurrentStarIndex, setSelectedWarpStar } = useStore(
+    (state) => state.actions
+  );
+  if (selectedWarpStar === null /*|| targetWarpToStarHUD === null*/)
+    return null;
+  return (
+    // TODO create updatable base state store variable for angleDiff
+    //targetWarpToStarHUD.angleDiff < 0.3 ? ( // this needs to be a base state variable to recieve updates
+    <>
+      <div
+        className="pointer-events-auto w-40 h-10 -ml-20 cursor-pointer"
+        onClick={() => {
+          setPlayerCurrentStarIndex(selectedWarpStar);
+          setSelectedWarpStar(null);
+        }}
+      >
+        <div className="w-full cybr-btn bg-blue-500" onClick={() => {}}>
+          Engage Hyper Drive
+          <span aria-hidden className="cybr-btn__glitch glitch-once pl-[10%]">
+            Engage Hyper Drive
+          </span>
+          <span aria-hidden className="cybr-btn__tag">
+            X11
+          </span>
+        </div>
+      </div>
+      <div className="arrow">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      {/*<img
+            src={warp}
+            alt="cancel controls icon"
+            className="w-full h-full pointer-events-none"
+          />*/}
+    </>
+  );
+};
+
 export const ActionModeControls = () => {
   const playerActionMode = usePlayerControlsStore(
     (state) => state.playerActionMode
@@ -159,8 +207,11 @@ export const ActionModeControls = () => {
           <ActionCancelPilot />
         </div>
       )}
-      <div className="absolute bottom-24 left-1/2">
-        <ActionWarpToPlanet />
+      <div className="absolute bottom-32 left-1/2">
+        <ActionWarpToPlanetPopupHUD />
+      </div>
+      <div className="absolute bottom-48 left-1/2">
+        <ActionWarpToStarPopupHUD />
       </div>
     </>
   );
@@ -241,7 +292,6 @@ export const CockpitControlWarp = () => {
         !selectedWarpStar && "opacity-50"
       }`}
       onClick={() => {
-        console.log(selectedWarpStar);
         if (selectedWarpStar) {
           setPlayerCurrentStarIndex(selectedWarpStar);
           setSelectedWarpStar(null);
@@ -349,18 +399,31 @@ export const CockpitControlEquip = () => {
   );
 };
 
-export const Cockpit1stPersonControls = () => {
+export const ControlIconsRowBottom = () => {
   return (
-    <div className="flex flex-row gap-1 sm:gap-2">
-      <div className="flex flex-col gap-1">
+    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+      <div
+        className="flex flex-row gap-2"
+        style={{ transform: "scale(0.7, 0.7)" }}
+      >
         <CockpitControlMode />
         <CockpitControlMap />
-        <CockpitControlWarp />
-      </div>
-      <div className="flex flex-col gap-1">
         <CockpitControlView />
-        <CockpitControlDockStation />
-        <CockpitControlEquip />
+      </div>
+    </div>
+  );
+};
+
+const ControlIconsColumnRight = () => {
+  return (
+    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+      <div
+        className="flex flex-col gap-2"
+        style={{ transform: "scale(0.7, 0.7)" }}
+      >
+        <CockpitControlMode />
+        <CockpitControlMap />
+        <CockpitControlView />
       </div>
     </div>
   );
@@ -368,17 +431,13 @@ export const Cockpit1stPersonControls = () => {
 
 export const Cockpit3rdPersonControls = () => {
   return (
-    <div className="absolute bottom-48 -right-3 sm:bottom-8 sm:right-8 sm:mr-[10vh] flex flex-row gap-2 sm:flex-col scale-75">
-      <div className="flex flex-col sm:flex-row gap-2">
-        <CockpitControlMode />
-        <CockpitControlMap />
-        <CockpitControlWarp />
+    <>
+      <div className="hidden md:block">
+        <ControlIconsRowBottom />
       </div>
-      <div className="flex flex-col sm:flex-row gap-2">
-        <CockpitControlView />
-        <CockpitControlDockStation />
-        <CockpitControlEquip />
+      <div className="md:hidden">
+        <ControlIconsColumnRight />
       </div>
-    </div>
+    </>
   );
 };
