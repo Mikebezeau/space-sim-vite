@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Quaternion, Vector3 } from "three";
+import { Quaternion, Vector3 } from "three";
 
 // avoiding creating new objects in loop
 const dummyQuat = new Quaternion();
@@ -20,7 +20,7 @@ const cameraForwardVector = new Vector3();
 const objectDirectionVector = new Vector3();
 
 export const getCameraAngleDiffToPosition = (
-  camera: PerspectiveCamera,
+  camera: any,
   lookAtPosition: Vector3
 ) => {
   // angle difference between camera and position
@@ -36,10 +36,7 @@ export const getCameraAngleDiffToPosition = (
 // avoiding creating new objects in loop
 const dummyVec3 = new Vector3();
 
-export const getScreenPosition = (
-  camera: PerspectiveCamera,
-  position: Vector3
-) => {
+export const getScreenPosition = (camera: any, position: Vector3) => {
   const angleDiff = getCameraAngleDiffToPosition(camera, position);
   // dummyVec3: normalized position is -1 to 1 when on screen (values beyond are off screen)
   dummyVec3.copy(position);
@@ -49,7 +46,7 @@ export const getScreenPosition = (
 };
 
 export const getScreenPositionFromDirection = (
-  camera: PerspectiveCamera,
+  camera: any,
   direction: Vector3
 ) => {
   // simple angle difference between camera and direction

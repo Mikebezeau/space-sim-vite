@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import usePlayerControlsStore from "./stores/playerControlsStore";
+// @ts-ignore
+import loadingPatternSrc from "/images/loadingScreen/loadingPattern.jpg";
 
 interface AppScreenTransitionInt {
   children?: React.ReactNode;
@@ -42,7 +44,58 @@ const AppLoadingScreen = (props: AppScreenTransitionInt) => {
             fadeOut && "transition-opacity duration-1000 opacity-40"
           }`}
         >
-          {children}
+          {children || (
+            <div
+              className="
+      absolute
+      top-0
+      w-full h-full
+      bg-black"
+            >
+              <div
+                className="
+        absolute 
+        right-1/2
+        opacity-20
+        -top-[10vh]
+        h-[120vh]
+        w-[200vh]
+        bg-contain
+        scale-y-[-1]
+        bg-right
+        bg-no-repeat"
+                style={{
+                  transition: "all 1s ease",
+                  //right: "100%",
+                  //transform: "translate(-100%, 0)",
+                  //animation: "animate 2s infinite",
+                  backgroundImage: `url(${loadingPatternSrc})`,
+                  backgroundPositionX: "100%",
+                }}
+              />
+              <div
+                className="
+        absolute 
+        left-1/2
+        opacity-20
+        -top-[10vh]
+        h-[120vh]
+        w-[200vh]
+        bg-contain
+        scale-x-[-1]
+        bg-left
+        bg-no-repeat"
+                style={{
+                  transition: "all 1s ease",
+                  //right: "100%",
+                  //transform: "translate(-100%, 0)",
+                  //animation: "animate 2s infinite",
+                  backgroundImage: `url(${loadingPatternSrc})`,
+                  backgroundPositionX: "100%",
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
     </>

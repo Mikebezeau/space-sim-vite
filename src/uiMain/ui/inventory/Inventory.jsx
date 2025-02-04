@@ -7,7 +7,7 @@ import MenuItems from "./MenuItems";
 import MenuTab from "../MenuTab";
 
 const Inventory = () => {
-  useStore.getState().updateRenderInfo("App");
+  useStore.getState().updateRenderInfo("Inventory");
 
   const {
     setSelectedItem,

@@ -95,6 +95,19 @@ const SpaceFlightControlsTouch = () => {
     setPlayerSpeedSetting(newSpeedSetting);
   };
 
+  //LOOKING AROUND
+  /*
+  useTouchStartControls("root", (event) => {
+    //TODO fix the issue with touching a button and cockpit moves
+    updateMouse(event.changedTouches[0]); 
+  });
+  */
+  useTouchMoveControls("root", (event) => {
+    if (getPlayerState().playerActionMode === PLAYER.action.inspect) {
+      actions.updateMouse(event.changedTouches[0]);
+    }
+  });
+
   //SHOOT LASERS
   function handleShoot() {
     actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()

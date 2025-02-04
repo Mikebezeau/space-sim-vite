@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { Group, PointLight } from "three";
 import { BoxGeometry, FrontSide, Object3D, ShaderMaterial } from "three";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
@@ -12,10 +13,11 @@ import { PLAYER } from "../../constants/constants";
 //import { setCustomData } from "r3f-perf";
 
 const PlayerMech = () => {
-  console.log("PlayerMech rendered");
+  useStore.getState().updateRenderInfo("PlayerMech");
+
   const { camera } = useThree();
   const player = useStore((state) => state.player);
-  const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
+  //const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
 
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
@@ -28,9 +30,9 @@ const PlayerMech = () => {
     (state) => state.playerEffects.addEngineExhaust
   );
 
-  const playerMechRef = useRef(null);
-  const secondaryGroupRef = useRef(null);
-  const weaponFireLight = useRef(null);
+  const playerMechRef = useRef<any>(null);
+  const secondaryGroupRef = useRef<Group | null>(null);
+  const weaponFireLight = useRef<PointLight | null>(null);
 
   const tempEngineObject = new Object3D();
 
@@ -79,11 +81,12 @@ const PlayerMech = () => {
 
   // set mech to invisible in cockpit view
   useEffect(() => {
-    if (!playerMechRef.current) return null;
-    if (playerViewMode === PLAYER.view.firstPerson) {
-      setVisible(playerMechRef.current, false);
-    } else {
-      setVisible(playerMechRef.current, true);
+    if (playerMechRef.current !== null) {
+      if (playerViewMode === PLAYER.view.firstPerson) {
+        setVisible(playerMechRef.current, false);
+      } else {
+        setVisible(playerMechRef.current, true);
+      }
     }
   }, [playerViewMode]);
 
@@ -101,7 +104,7 @@ const PlayerMech = () => {
       player.speed
     );
 
-    if (player.object3d) {
+    if (player.object3d && secondaryGroupRef.current) {
       updatePlayerMechAndCameraFrame(delta, camera);
 
       // player mech object3d directly linked to Buildmech ref: playerMechRef.current
@@ -109,12 +112,14 @@ const PlayerMech = () => {
       secondaryGroupRef.current.position.copy(player.object3d.position);
       secondaryGroupRef.current.rotation.copy(player.object3d.rotation);
       //weapon firing light blast
-      weaponFireLight.current.intensity +=
+      if (weaponFireLight.current) {
+        weaponFireLight.current.intensity += 0; /*
         ((weaponFireLightTimer && Date.now() - weaponFireLightTimer < 100
           ? 1
           : 0) -
           weaponFireLight.current.intensity) *
-        0.3;
+        0.3;*/
+      }
     }
     // ordering sequence of useFrames so that Particles useFrame runs last
   }, -2);
@@ -125,11 +130,13 @@ const PlayerMech = () => {
         ref={(mechRef) => {
           if (mechRef) {
             playerMechRef.current = mechRef;
+            // TODO fix TS error here
+            // @ts-ignore
             player.initObject3d(mechRef);
           }
         }}
         mechBP={player.mechBP}
-        servoHitNames={[]}
+        //servoHitNames={[]}
       />
       <group ref={secondaryGroupRef}>
         <Particles isPlayerParticles />

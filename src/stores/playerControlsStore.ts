@@ -1,21 +1,23 @@
 import { create } from "zustand";
 import useStore from "./store";
 import useDevStore from "./devStore";
-import { PerspectiveCamera, Quaternion, Vector3 } from "three";
+import { Quaternion, Vector3 } from "three";
 import {
   flipRotation,
   getScreenPosition,
   getScreenPositionFromDirection,
 } from "../util/cameraUtil";
-//import { lerp } from "../util/gameUtil";
+import { lerp } from "../util/gameUtil";
 import { PLAYER, FPS, SPEED_VALUES } from "../constants/constants";
 
 interface playerControlStoreState {
   playerActionMode: number;
   playerControlMode: number;
   playerViewMode: number;
-  thirdPersonViewRotateXY: { x: number; y: number };
-  setThirdPersonViewRotateXY: (x: number, y: number) => void;
+  flightCameraLookRotation: {
+    rotateX: number;
+    rotateY: number;
+  };
   playerScreen: number;
   isSwitchingPlayerScreen: boolean;
   setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
@@ -54,13 +56,10 @@ interface playerControlStoreState {
     switchScreen: (playerScreen: number) => void;
     setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
   };
-  updateTargetsPositionHUD: (camera: PerspectiveCamera) => void;
-  updatePlayerCameraLookAngle: () => void;
+  updateTargetsPositionHUD: (camera: any) => void;
+  updatePlayerCameraLookAngle: (mouse: { x: number; y: number }) => void;
   updatePlayerSpeedUseFrame: (delta: number) => void;
-  updatePlayerMechAndCameraFrame: (
-    delta: number,
-    camera: PerspectiveCamera
-  ) => void;
+  updatePlayerMechAndCameraFrame: (delta: number, camera: any) => void;
 }
 
 // reusable
@@ -75,9 +74,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
-    thirdPersonViewRotateXY: { x: 0, y: 0 },
-    setThirdPersonViewRotateXY: (x, y) => {
-      get().thirdPersonViewRotateXY = { x, y };
+    flightCameraLookRotation: {
+      rotateX: 0,
+      rotateY: 0,
     },
     // testing
     //playerScreen: PLAYER.screen.mainMenu,
@@ -204,7 +203,24 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       }
     },
 
-    updatePlayerCameraLookAngle: () => {},
+    updatePlayerCameraLookAngle: (mouse) => {
+      const lerpSpeed = 0.2; // isInitializeNoLerp ? 1 : 0.2; //view lerp speed
+
+      const targetRotationX = -mouse.x;
+      const targetRotationY = mouse.y;
+
+      get().flightCameraLookRotation.rotateX = lerp(
+        get().flightCameraLookRotation.rotateX,
+        targetRotationX,
+        lerpSpeed
+      );
+
+      get().flightCameraLookRotation.rotateY = lerp(
+        get().flightCameraLookRotation.rotateY,
+        targetRotationY,
+        lerpSpeed
+      );
+    },
 
     updatePlayerSpeedUseFrame: (delta) => {
       const player = useStore.getState().player;
@@ -224,6 +240,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       // playerPositionUpdated: function to update relative world position
       const playerPositionUpdated = useStore.getState().playerPositionUpdated;
       const mouse = useStore.getState().mutation.mouse;
+      //update player camera look angle
+      // reference mouse / touch location, or touch move controls location if in use
+      get().updatePlayerCameraLookAngle(mouse);
+
       const windowAspectRatio = window.innerWidth / window.innerHeight;
 
       const devPlayerSpeedX1000 = useDevStore.getState().devPlayerSpeedX1000;
@@ -287,10 +307,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         camera.translateZ((6 / windowAspectRatio + 8) * player.mechBP.scale);
         // additional camera position based on mouse position
         camera.translateX(
-          (-get().thirdPersonViewRotateXY.y / 10) * player.mechBP.scale
+          get().flightCameraLookRotation.rotateX * 4 * player.mechBP.scale
         );
         camera.translateY(
-          (-get().thirdPersonViewRotateXY.x / 10) * player.mechBP.scale
+          get().flightCameraLookRotation.rotateY * 4 * player.mechBP.scale
         );
         // update camera rotation based on mouse position
         //camera.rotation.
@@ -298,8 +318,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       // additional camera rotation based on mouse position (looking around)
       adjustCameraViewQuat.setFromAxisAngle(
         {
-          x: get().thirdPersonViewRotateXY.x / 100,
-          y: -get().thirdPersonViewRotateXY.y / 100,
+          x: -get().flightCameraLookRotation.rotateY * 0.4,
+          y: get().flightCameraLookRotation.rotateX * 0.4,
           z: 0,
         },
         Math.PI / 2
