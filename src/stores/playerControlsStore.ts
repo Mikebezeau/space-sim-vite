@@ -23,14 +23,12 @@ interface playerControlStoreState {
   setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
   canvasSceneRendered: boolean;
   setCanvasSceneRendered: (canvasSceneRendered: boolean) => void;
-  //TODO use isResetCamera?
-  isResetCamera: boolean;
+
   getPlayerState: () => {
     playerActionMode: number;
     playerControlMode: number;
     playerViewMode: number;
     playerScreen: number;
-    isResetCamera: boolean;
   };
   targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
   targetsPlanetsNormalHUD: {
@@ -96,21 +94,21 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     setCanvasSceneRendered: (canvasSceneRendered) => {
       if (canvasSceneRendered !== get().canvasSceneRendered) {
         set({ canvasSceneRendered });
+        /*
         console.log(
           "renderInfo",
           useStore.getState().renderCount,
           useStore.getState().renderData
         );
+        */
       }
     },
-    isResetCamera: true,
     getPlayerState: () => {
       return {
         playerActionMode: get().playerActionMode,
         playerControlMode: get().playerControlMode,
         playerViewMode: get().playerViewMode,
         playerScreen: get().playerScreen,
-        isResetCamera: get().isResetCamera,
       };
     },
     targetWarpToStarHUD: null,
@@ -143,7 +141,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
       viewModeSelect(playerViewMode) {
         // player selection of view: 1st or 3rd person
-        set(() => ({ isResetCamera: true }));
         get().actions.actionModeSelect(PLAYER.action.inspect);
         set(() => ({ playerViewMode }));
       },
@@ -151,6 +148,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       //changing player screen
       switchScreen(playerScreen) {
         if (get().playerScreen !== playerScreen) {
+          // TODO this is not right
           /*if (
             [
               PLAYER.screen.flight,
@@ -167,7 +165,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           get().setCanvasSceneRendered(true);
           //}
           set(() => ({ isSwitchingPlayerScreen: true })); // set flag to trigger useEffect in AppLoadingScreen
-          set(() => ({ isResetCamera: true }));
           set(() => ({ playerScreen }));
         }
       },
@@ -269,12 +266,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       let playerControlMouseX = 0,
         playerControlMouseY = 0;
 
-      let resetCameraLerpSpeed: number | null = null;
-      if (get().isResetCamera) {
-        // if resetting camera, set lerp speed to 1 for immediate rotation
-        resetCameraLerpSpeed = 1;
-        set(() => ({ isResetCamera: false }));
-      } else if (get().isPlayerPilotControl()) {
+      if (get().isPlayerPilotControl()) {
         // if player is piloting the ship
         // update ship rotation based on mouse position
         playerControlMouseX = mouse.x;

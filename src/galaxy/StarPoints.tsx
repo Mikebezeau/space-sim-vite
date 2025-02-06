@@ -1,4 +1,5 @@
 import React, { forwardRef, useRef, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import * as THREE from "three";
 // @ts-ignore
 import starSpriteSrc from "../sprites/sprite120.png";
@@ -13,7 +14,11 @@ const StarPoints = forwardRef(function StarPoints(
   props: StarPointsInt,
   starPointsForwardRef: any
 ) {
-  useStore.getState().updateRenderInfo("StarPoints");
+  const componentName = "StarPoints";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   const { viewAsBackground = false } = props;
 

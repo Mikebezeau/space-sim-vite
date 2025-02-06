@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import {
@@ -10,7 +11,11 @@ import {
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 
 const ControlsMouseKBSpaceFlight = () => {
-  useStore.getState().updateRenderInfo("ControlsMouseKBSpaceFlight");
+  const componentName = "ControlsMouseKBSpaceFlight";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);

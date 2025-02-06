@@ -8,7 +8,11 @@ interface ScenePortalLayerInt {
   children: React.ReactNode;
 }
 const ScenePortalLayer = (props: ScenePortalLayerInt) => {
-  useStore.getState().updateRenderInfo("ScenePortalLayer");
+  const componentName = "ScenePortalLayer";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   const { autoClear = true, children } = props;
   const [scene] = useState(() => new Scene());

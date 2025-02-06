@@ -68,10 +68,8 @@ class SolarSystem implements SolarSystemInt {
 
     planetsData.forEach((planetData, index) => {
       if (this.planets[index]) {
-        console.log("setNewPlanetData", index);
         this.planets[index].setNewPlanetData(planetData);
       } else {
-        console.log("new Planet", index);
         this.planets.push(new Planet(planetData));
       }
     });

@@ -8,7 +8,11 @@ import InstancedMechGroups from "./InstancedMechGroups";
 import BoidController from "../../classes/BoidController";
 
 export default function EnemyMechs() {
-  useStore.getState().updateRenderInfo("EnemyMechs");
+  const componentName = "EnemyMechs";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   const enemies = useEnemyStore((state) => state.enemies);
 

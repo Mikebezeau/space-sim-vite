@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import useGenFboTextureStore, {
   WIDTH,
   HEIGHT,
-} from "../../stores/genFboTextureStore";
+} from "../../stores/genGpuTextureStore";
 import {
   //generateSortedRandomColors,
   parseHexColor,
@@ -41,7 +41,7 @@ class CelestialBody implements CelestialBodyInt {
 
   textureMapOptions: typeTextureMapOptions;
   cloudShaderUniforms: typeCloudShaderUniforms;
-  renderTargetGPU: any | null;
+  renderTargetGPU: any;
   uTimeTracker: number;
 
   constructor(isUseAtmosShader?: boolean) {
@@ -56,10 +56,9 @@ class CelestialBody implements CelestialBodyInt {
       u_cloudAlpha: 20.0,
       u_rotateX: 1.0,
     };
-    console.log("gpuCompute.createRenderTarget");
-    this.renderTargetGPU = useGenFboTextureStore
-      .getState()
-      .gpuCompute?.createRenderTarget(
+    const gpuCompute = useGenFboTextureStore.getState().gpuCompute;
+    if (gpuCompute) {
+      this.renderTargetGPU = gpuCompute.createRenderTarget(
         WIDTH,
         HEIGHT,
         THREE.ClampToEdgeWrapping,
@@ -67,7 +66,9 @@ class CelestialBody implements CelestialBodyInt {
         THREE.NearestFilter,
         THREE.NearestFilter
       );
-    console.log("gpuCompute.createRenderTarget done");
+    } else {
+      console.error("must init gpu renderer first");
+    }
   }
 
   public get temperatureC() {
@@ -117,9 +118,8 @@ class CelestialBody implements CelestialBodyInt {
   };
 
   genTexture = () => {
-    console.log("genTexture");
     // useGenFboTextureStore.initComputeRenderer must be called before this
-    this.disposeTextures();
+    //this.disposeTextures();
     useGenFboTextureStore
       .getState()
       .generateTextureGPU(
@@ -127,6 +127,7 @@ class CelestialBody implements CelestialBodyInt {
         this.textureMapOptions,
         this.cloudShaderUniforms
       );
+
     if (this.renderTargetGPU.texture) {
       this.material.uniforms.u_texture = {
         value: this.renderTargetGPU.texture,
@@ -134,6 +135,7 @@ class CelestialBody implements CelestialBodyInt {
     } else {
       console.error("no GPU texture generated");
     }
+    /*
     // craters
     if (this.textureMapOptions.craterIntensity) {
       const { craterTextureCanvas, craterBumpMapCanvas } = genCraterTexture(
@@ -153,15 +155,11 @@ class CelestialBody implements CelestialBodyInt {
         };
       }
     }
-    console.log("genTexture end");
+      */
   };
 
   disposeTextures = () => {
-    // dispose of planet texture in material uniforms
-    //if (this.material.uniforms.u_texture?.value?.dispose)
-    //  this.material.uniforms.u_texture.value.dispose();
-
-    // dispose of crater textures in material uniforms
+    // dispose of crater textures in material uniforms (these aren't reused)
     if (this.material.uniforms.u_craterTexture?.value?.dispose)
       this.material.uniforms.u_craterTexture.value.dispose();
     if (this.material.uniforms.u_craterTBumpMap?.value?.dispose)
@@ -170,8 +168,9 @@ class CelestialBody implements CelestialBodyInt {
 
   // call at end of gameplay
   disposeResources = () => {
-    this.renderTargetGPU.dispose();
+    this.object3d.clear();
     this.material.dispose();
+    this.renderTargetGPU.dispose();
     this.disposeTextures();
   };
 

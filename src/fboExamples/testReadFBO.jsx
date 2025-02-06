@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
-import useGenFboTextureStore from "../stores/genFboTextureStore";
+import useGenFboTextureStore from "../stores/genGpuTextureStore";
 
 export const TestReadFBO = () => {
   const initComputeRenderer = useGenFboTextureStore(

@@ -85,11 +85,6 @@ class Planet extends CelestialBody implements PlanetInt {
     this.textureMapOptions = textureOptions;
     this.setShaderColors();
   };
-
-  getMaterial = () => {
-    this.genTexture();
-    return this.material;
-  };
 }
 
 export default Planet;

@@ -1,11 +1,16 @@
 import { useRef } from "react";
+import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import Scenery, { SCENERY_TYPE } from "./Scenery";
 import BuildMech from "../buildMech/BuildMech";
 
 const Station = ({ station }) => {
-  useStore.getState().updateRenderInfo("Station");
+  const componentName = "Station";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   //station rotation
   const ref = useRef();

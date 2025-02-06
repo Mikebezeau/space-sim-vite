@@ -1,4 +1,5 @@
 import React, { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
@@ -14,7 +15,11 @@ import { PLAYER } from "./constants/constants";
 import TestPlanetScene from "./scenes/TestPlanetScene";
 
 const AppCanvasScene = () => {
-  useStore.getState().updateRenderInfo("AppCanvasScene");
+  const componentName = "AppCanvasScene";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   const initGameStore = useStore((state) => state.initGameStore);
   const disposeGameStore = useStore((state) => state.disposeGameStore);
@@ -34,7 +39,7 @@ const AppCanvasScene = () => {
     return () => {
       disposeGameStore();
     };
-  }, [testScreen, isGameStoreInit, initGameStore]);
+  }, [testScreen, initGameStore]);
 
   return (
     <>

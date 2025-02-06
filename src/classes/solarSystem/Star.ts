@@ -48,7 +48,6 @@ class Star extends CelestialBody implements StarInt {
     };
 
     // generate terrian texture map
-    console.log("Star genTexture");
     this.genTexture();
     this.updateUniforms();
   }

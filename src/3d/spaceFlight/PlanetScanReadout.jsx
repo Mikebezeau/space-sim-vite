@@ -19,6 +19,8 @@ const PlanetScanReadout = () => {
     wireframe: true,
   });
 
+  useStore.getState().updateRenderInfo("done");
+
   return focusPlanetIndex ? (
     <mesh geometry={geometryPlanet} material={materialPlanet}></mesh>
   ) : null;

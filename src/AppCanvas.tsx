@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import useStore from "./stores/store";
 import AppCanvasLoadTrigger from "./AppCanvasLoadTrigger";
@@ -7,7 +8,11 @@ import { Perf } from "r3f-perf";
 import { IS_MOBILE } from "./constants/constants";
 
 const AppCanvas = () => {
-  useStore.getState().updateRenderInfo("AppCanvas");
+  const componentName = "AppCanvas";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   return (
     <>

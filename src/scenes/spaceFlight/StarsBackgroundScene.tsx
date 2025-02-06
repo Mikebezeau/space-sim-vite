@@ -18,7 +18,12 @@ import top from "/images/skybox/purple/top.png";
 //import GlitchEffect from "../../3d/effects/GlitchEffect";
 
 const StarsBackgroundScene = () => {
-  useStore.getState().updateRenderInfo("StarsBackgroundScene");
+  const componentName = "StarsBackgroundScene";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
+
   const { camera, scene } = useThree();
   const starPointsRef = useRef<Group | null>(null);
   /*

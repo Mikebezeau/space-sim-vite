@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import PlayerMech from "../classes/PlayerMech";
-import useGenFboTextureStore from "./genFboTextureStore";
+import useGenFboTextureStore from "./genGpuTextureStore";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
 import { /*randomData,*/ genStations } from "../util/initGameUtil";
@@ -32,8 +32,11 @@ export type TypeGalaxy = {
 
 interface storeState {
   renderCount: {};
+  renderTime: {};
   renderData: {};
+  renderTimer: number;
   updateRenderInfo: (componentName: string, data?: any | undefined) => void;
+  updateRenderDoneInfo: (componentName: string) => void;
   initGameStore: (renderer: THREE.WebGLRenderer) => void;
   disposeGameStore: () => void;
   isGameStoreInit: boolean;
@@ -132,7 +135,9 @@ interface storeState {
 
 const useStore = create<storeState>()((set, get) => ({
   renderCount: {},
+  renderTime: {},
   renderData: {},
+  renderTimer: Date.now(),
   updateRenderInfo: (componentName: string, data?: any | undefined) => {
     // setting values hard, to avoid render state errors from nested set state calls
     // error shown below:
@@ -143,20 +148,35 @@ const useStore = create<storeState>()((set, get) => ({
     if (get().renderCount[componentName]) get().renderCount[componentName]++;
     else get().renderCount[componentName] = 1;
 
+    get().renderTime[componentName] = { start: Date.now(), end: 0 };
+
     if (data) {
       get().renderData[componentName] = data;
     }
+
     const count = get().renderCount[componentName];
     if (count === 100) {
       console.log("WARNING RENDER COUNT > 100", componentName);
     }
   },
+  updateRenderDoneInfo: (componentName: string) => {
+    get().renderTime[componentName].end = Date.now();
+    const delta =
+      get().renderTime[componentName].end -
+      get().renderTime[componentName].start;
+    console.log(componentName, delta);
+  },
   initGameStore: (renderer) => {
+    get().updateRenderInfo("initComputeRenderer");
     // set planet texture map renderer
+
     useGenFboTextureStore.getState().initComputeRenderer(renderer);
+    get().updateRenderInfo("done");
     // set planets, asteroids, stations, etc. for player start location
     get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
     set(() => ({ isGameStoreInit: true }));
+
+    get().updateRenderDoneInfo("initComputeRenderer");
   },
   disposeGameStore: () => {
     useGenFboTextureStore.getState().disposeGpuCompute();
@@ -493,7 +513,8 @@ const useStore = create<storeState>()((set, get) => ({
 
     // slecting star in galaxy map
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
-      console.log("setPlayerCurrentStarIndex start");
+      get().updateRenderInfo("setPlayerCurrentStarIndex");
+
       // playerCurrentStarIndex set at end, then triggering render of solar system related components
       // generate stars and planets for solar system
       get().solarSystem.systemGen(playerCurrentStarIndex);
@@ -578,7 +599,8 @@ const useStore = create<storeState>()((set, get) => ({
       }
       // playerCurrentStarIndex set at end, triggers render of solar system related components
       set(() => ({ playerCurrentStarIndex }));
-      console.log("setPlayerCurrentStarIndex end");
+
+      get().updateRenderDoneInfo("setPlayerCurrentStarIndex");
     },
 
     setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {

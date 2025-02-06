@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppUI from "./AppUI";
 import AppCanvas from "./AppCanvas";
 import useStore from "./stores/store";
@@ -13,6 +13,9 @@ import "./css/lilGui.css";
 
 function App() {
   useStore.getState().updateRenderInfo("App");
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo("App");
+  }, []);
 
   //useNoContextMenu();
   /*

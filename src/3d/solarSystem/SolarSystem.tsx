@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect } from "react";
 import useStore from "../../stores/store";
 import CelestialBody from "./CelestialBody";
 
@@ -11,7 +12,11 @@ const SolarSystem = () => {
   const stars = useStore((state) => state.stars);
   const planets = useStore((state) => state.planets);
 
-  useStore.getState().updateRenderInfo("SolarSystem");
+  const componentName = "SolarSystem";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   return (
     <>

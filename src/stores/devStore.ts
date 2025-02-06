@@ -2,7 +2,7 @@ import { create } from "zustand";
 import * as THREE from "three";
 //import useStore from "./store";
 //import useEnemyStore from "./enemyStore";
-import useGenFboTextureStore from "./genFboTextureStore";
+import useGenFboTextureStore from "./genGpuTextureStore";
 
 import {
   PLANET_TYPE,
@@ -79,7 +79,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           age: "1.45e+9",
           colorHex: "#FF8D23",
           colorRGB: [1, 0.5529411764705883, 0.13725490196078433],
-          index: 30420,
+          starIndex: 30420,
           luminosity: 0.5738427122354467,
           numPlanets: 4,
           orbitalZonesData: {},

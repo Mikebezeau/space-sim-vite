@@ -8,7 +8,12 @@ interface ParticlesInt {
 }
 
 const Particles = (props: ParticlesInt) => {
-  useStore.getState().updateRenderInfo("Particles");
+  const componentName = "Particles";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
+
   const { isPlayerParticles = false } = props;
 
   const particleController = useParticleStore((state) =>

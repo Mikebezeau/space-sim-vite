@@ -246,7 +246,7 @@ interface genFboTextureStoreState {
   initShaderVariable: (
     gpuCompute: GPUComputationRenderer,
     fragmentShader: any
-  ) => void;
+  ) => any;
   initComputeRenderer: (renderer: THREE.WebGLRenderer) => void;
   disposeGpuCompute: () => void;
   setUniforms: (
@@ -281,12 +281,14 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
   initShaderVariable: (gpuCompute: GPUComputationRenderer, fragmentShader) => {
     const textureData = gpuCompute.createTexture();
     //fillTexturePosition(textureData);//call to fill texture with data to send to shader
-    // don't need the u_textureData: textureData, but not sure how to set this up without
+    // don't need the starting data u_textureData: textureData
+    // but not sure how to set this up without
     const shaderVariable = gpuCompute.addVariable(
       "u_textureData",
       fragmentShader,
       textureData
     );
+
     gpuCompute.setVariableDependencies(shaderVariable, [shaderVariable]);
 
     // u_frequency / scale
@@ -459,8 +461,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
         get().shaderDataVariable.material,
         renderTargetGPU
       );
-      // @ts-ignore
-      get().gpuCompute.compute();
     } else {
       console.error(
         "generateTextureGPU: gpuCompute is null must call initComputeRenderer first"

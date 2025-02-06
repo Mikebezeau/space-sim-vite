@@ -18,7 +18,11 @@ const InstancedMechs = (props: InstancedMechsInt) => {
     (enemy) => enemy.useInstancedMesh && enemy.mechBP.id === mechBpId
   );
 
-  useStore.getState().updateRenderInfo("InstancedMechs");
+  const componentName = "InstancedMechs";
+  useStore.getState().updateRenderInfo(componentName);
+  useEffect(() => {
+    useStore.getState().updateRenderDoneInfo(componentName);
+  }, []);
 
   const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
 

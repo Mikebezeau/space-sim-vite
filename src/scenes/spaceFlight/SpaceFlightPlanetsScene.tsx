@@ -1,6 +1,6 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Group, Mesh } from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import SolarSystem from "../../3d/solarSystem/SolarSystem";
 import Stations from "../../3d/spaceFlight/Stations";
 import PlayerMech from "../../3d/spaceFlight/PlayerMech";
@@ -10,17 +10,13 @@ import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import EnemyMechs from "../../3d/enemyMechs/EnemyMechs";
 import ObbTest from "./dev/ObbTest";
-import { flipRotation } from "../../util/cameraUtil";
 
 const SpaceFlightPlanetsScene = () => {
   useStore.getState().updateRenderInfo("SpaceFlightPlanetsScene");
-  const { camera } = useThree();
 
-  const player = useStore((state) => state.player);
   const playerWorldOffsetPosition = useStore(
     (state) => state.playerWorldOffsetPosition
   );
-
   const enemyWorldPosition = useEnemyStore((state) => state.enemyWorldPosition);
   const boidController = useEnemyStore((state) => state.boidController);
 
@@ -28,12 +24,6 @@ const SpaceFlightPlanetsScene = () => {
   const enemyRelativePlayerGroupRef = useRef<Group | null>(null);
   // providing ref for forwardRef used in ObbTest component
   const obbBoxRefs = useRef<Mesh[]>([]);
-
-  useLayoutEffect(() => {
-    // set camera when returning to flight screen
-    player.object3d.getWorldPosition(camera.position);
-    camera.rotation.setFromQuaternion(flipRotation(player.object3d.quaternion));
-  }, []);
 
   useFrame((_, delta) => {
     if (relativePlayerGroupRef.current) {
