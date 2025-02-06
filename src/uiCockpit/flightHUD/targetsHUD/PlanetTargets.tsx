@@ -16,6 +16,10 @@ type planetTargetsInt = {
 
 const PlanetTargets = (props: planetTargetsInt) => {
   const { getTargetPosition, targetDiameterPx } = props;
+  // V playerCurrentStarIndex to trigger re-render when player changes star
+  const playerCurrentStarIndex = useStore(
+    (state) => state.playerCurrentStarIndex
+  );
 
   const planets = useStore((state) => state.planets);
   const getPlayerTargetsHUD = usePlayerControlsStore(
@@ -53,20 +57,22 @@ const PlanetTargets = (props: planetTargetsInt) => {
 
   return (
     <>
-      {planets.map((planet, index) => (
-        <div
-          key={planet.id}
-          ref={(targetRef) => {
-            if (targetRef) targetRefs.current[index] = targetRef;
-          }}
-          className={`opacity-50 absolute top-1/2 left-1/2 border-2 border-green-500 rounded-full`}
-          style={{
-            width: `${targetDiameterPx}px`,
-            height: `${targetDiameterPx}px`,
-            backgroundColor: planet.textureMapOptions.baseColor,
-          }}
-        />
-      ))}
+      {planets.map((planet, index) =>
+        planet.isActive ? (
+          <div
+            key={planet.id}
+            ref={(targetRef) => {
+              if (targetRef) targetRefs.current[index] = targetRef;
+            }}
+            className={`opacity-50 absolute top-1/2 left-1/2 border-2 border-green-500 rounded-full`}
+            style={{
+              width: `${targetDiameterPx}px`,
+              height: `${targetDiameterPx}px`,
+              backgroundColor: planet.textureMapOptions.baseColor,
+            }}
+          />
+        ) : null
+      )}
     </>
   );
 };

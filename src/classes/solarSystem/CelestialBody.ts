@@ -17,7 +17,7 @@ import {
 interface CelestialBodyInt {
   initObject3d(object3d: THREE.Object3D): void;
   setShaderColors(): void;
-  genTexture(renderer: THREE.WebGLRenderer | null): void;
+  genTexture(): void;
   disposeTextures(): void;
   disposeResources(): void;
   updateUniforms(): void;
@@ -27,10 +27,10 @@ interface CelestialBodyInt {
 }
 
 class CelestialBody implements CelestialBodyInt {
-  isTestCelestial: boolean;
+  isUseAtmosShader: boolean;
+  isActive: boolean;
   rngSeed: string;
   id: string;
-  index: number;
   radius: number;
   object3d: THREE.Object3D;
   material: THREE.ShaderMaterial;
@@ -44,9 +44,9 @@ class CelestialBody implements CelestialBodyInt {
   renderTargetGPU: any | null;
   uTimeTracker: number;
 
-  constructor(isTestCelestial?: boolean) {
+  constructor(isUseAtmosShader?: boolean) {
     this.id = uuidv4();
-    this.isTestCelestial = isTestCelestial || false;
+    this.isUseAtmosShader = isUseAtmosShader || true;
     this.uTimeTracker = 1;
     this.cloudShaderUniforms = {
       u_isClouds: true,
@@ -56,6 +56,7 @@ class CelestialBody implements CelestialBodyInt {
       u_cloudAlpha: 20.0,
       u_rotateX: 1.0,
     };
+    console.log("gpuCompute.createRenderTarget");
     this.renderTargetGPU = useGenFboTextureStore
       .getState()
       .gpuCompute?.createRenderTarget(
@@ -66,6 +67,7 @@ class CelestialBody implements CelestialBodyInt {
         THREE.NearestFilter,
         THREE.NearestFilter
       );
+    console.log("gpuCompute.createRenderTarget done");
   }
 
   public get temperatureC() {
@@ -114,14 +116,13 @@ class CelestialBody implements CelestialBodyInt {
     this.textureMapOptions.shaderColors = shaderColors;
   };
 
-  genTexture = (renderer?: THREE.WebGLRenderer | null | undefined) => {
+  genTexture = () => {
+    console.log("genTexture");
+    // useGenFboTextureStore.initComputeRenderer must be called before this
     this.disposeTextures();
-    // if renderer provided will initComputeRenderer
-    // othwise will generate the texture if already initialized
     useGenFboTextureStore
       .getState()
       .generateTextureGPU(
-        renderer,
         this.renderTargetGPU,
         this.textureMapOptions,
         this.cloudShaderUniforms
@@ -152,11 +153,14 @@ class CelestialBody implements CelestialBodyInt {
         };
       }
     }
+    console.log("genTexture end");
   };
 
   disposeTextures = () => {
-    if (this.material.uniforms.u_texture?.value?.dispose)
-      this.material.uniforms.u_texture.value.dispose();
+    // dispose of planet texture in material uniforms
+    //if (this.material.uniforms.u_texture?.value?.dispose)
+    //  this.material.uniforms.u_texture.value.dispose();
+
     // dispose of crater textures in material uniforms
     if (this.material.uniforms.u_craterTexture?.value?.dispose)
       this.material.uniforms.u_craterTexture.value.dispose();
@@ -164,12 +168,14 @@ class CelestialBody implements CelestialBodyInt {
       this.material.uniforms.u_craterTBumpMap.value.dispose();
   };
 
+  // call at end of gameplay
   disposeResources = () => {
     this.renderTargetGPU.dispose();
     this.material.dispose();
     this.disposeTextures();
   };
 
+  //
   updateUniforms = () => {
     // rotation matrix
     this.material.uniforms.u_objectMatrixWorld = {
@@ -183,13 +189,14 @@ class CelestialBody implements CelestialBodyInt {
       value: this.cloudShaderUniforms.u_cloudColor,
     };
     // atmos shader
-    this.material.uniforms.u_atmos = { value: this.isTestCelestial ? 0 : 1 }; // show atmosphere?
+    this.material.uniforms.u_atmos = { value: this.isUseAtmosShader ? 1 : 0 }; // show atmosphere?
     this.material.uniforms.u_planetRealPos = {
       // gives real direction to sun
       value: this.object3d.position,
     };
   };
 
+  // for testing texture generating shader uniform settings
   updateTextureOptions = (options: typeTextureMapOptions) => {
     this.textureMapOptions = {
       ...this.textureMapOptions,
@@ -201,6 +208,7 @@ class CelestialBody implements CelestialBodyInt {
     this.updateUniforms();
   };
 
+  // for testing clouds texture generating shader uniform settings
   updateCloudShaderUniform = (uniform: any) => {
     // animated planet material clouds shader
     this.material.uniforms[uniform.name] = { value: uniform.value };
@@ -210,6 +218,7 @@ class CelestialBody implements CelestialBodyInt {
     this.genTexture();
   };
 
+  // called each animation frame
   useFrameUpdateUniforms = (delta: number) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     this.object3d.rotateY(delta / 500);

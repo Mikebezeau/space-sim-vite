@@ -4,7 +4,7 @@ import genObitalZonesData, {
 } from "../solarSystemGen/genObitalZonesData";
 
 export type typeStarData = {
-  index: number;
+  starIndex: number;
   starClass: string;
   size: number;
   solarMass: number;
@@ -155,7 +155,7 @@ const genStarData = (starIndex: number) => {
     const orbitalZonesData = genObitalZonesData(rng, solarMass, luminosity);
 
     const starData: typeStarData = {
-      index: starIndex,
+      starIndex,
       starClass,
       size: getFromRange(fixedRangeRandom, props.size),
       solarMass,

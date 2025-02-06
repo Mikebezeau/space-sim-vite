@@ -2,7 +2,6 @@ import React from "react";
 import { useEffect, useState, useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import { systemInfoGen } from "../solarSystemGen/systemGen";
 import { typeStarData } from "../solarSystemGen/genStarData";
 import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
@@ -27,7 +26,9 @@ const StarInfoCard = () => {
     const starIndex = showInfoHoveredStarIndex || showInfoTargetStarIndex;
     if (starIndex) {
       setViewStarIndex(starIndex);
-      const { starData, planetsData } = systemInfoGen(starIndex);
+      const { starData, planetsData } = useStore
+        .getState()
+        .solarSystem.systemInfoGen(starIndex);
       starInfoRef.current = starData;
       planetDataRef.current = planetsData;
     } else {

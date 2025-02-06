@@ -72,7 +72,12 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 
 const ScannerReadout = () => {
   useStore.getState().updateRenderInfo("ScannerReadout");
-  const { camera } = useThree();
+
+  // V playerCurrentStarIndex to trigger re-render when player changes star
+  const playerCurrentStarIndex = useStore(
+    (state) => state.playerCurrentStarIndex
+  );
+
   const player = useStore((state) => state.player);
   const planets = useStore((state) => state.planets);
   const getTargets = useStore((state) => state.getTargets);
@@ -88,6 +93,8 @@ const ScannerReadout = () => {
   );
 
   const enemies = useEnemyStore((state) => state.enemies);
+
+  const { camera } = useThree();
 
   const planetTargetGroupRef = useRef();
   const enemyTargetGroupRef = useRef();
@@ -105,31 +112,35 @@ const ScannerReadout = () => {
       // selecting the targeted planet
       // only change target planet if player is in pilot control mode (not just looking around)
       if (getPlayerState().playerActionMode === PLAYER.action.manualControl) {
-        for (let i = 0; i < planets.length; i++) {
-          //planets.forEach((planet, i) => {
-          const planet = planets[i];
+        planets.forEach((planet, i) => {
+          // skip if not an active planet for the solar system
+          if (!planet.isActive) return;
           planet.object3d.getWorldPosition(worldPosition);
           const angleDiff = getCameraAngleDiffToPosition(camera, worldPosition);
           if (angleDiff < 0.3 && angleDiff < smallestTargetAngle) {
             smallestTargetAngle = angleDiff;
             tempFocusPlanetIndex = i;
           }
-        }
+        });
         setFocusPlanetIndex(tempFocusPlanetIndex);
       }
       // placing targets over planets
-      for (let i = 0; i < planets.length; i++) {
-        const planet = planets[i];
+      planets.forEach((planet, i) => {
+        // skip if not an active planet for the solar system
+        if (!planet.isActive) return;
         planet.object3d.getWorldPosition(worldPosition);
         const mesh = planetTargetGroupRef.current.children[i];
-        dummyObj.position.copy(camera.position);
-        dummyObj.lookAt(worldPosition);
-        const highlight = tempFocusPlanetIndex === i || focusPlanetIndex === i;
-        placeTarget(dummyObj, camera, mesh, highlight, -1, i, 1);
-        if (highlight) {
-          checkScanDistanceToPlanet(i);
+        if (mesh) {
+          dummyObj.position.copy(camera.position);
+          dummyObj.lookAt(worldPosition);
+          const highlight =
+            tempFocusPlanetIndex === i || focusPlanetIndex === i;
+          placeTarget(dummyObj, camera, mesh, highlight, -1, i, 1);
+          if (highlight) {
+            checkScanDistanceToPlanet(i);
+          }
         }
-      }
+      });
     }
     //save enemy nearest to direction player is facing
     //placing targets on enemies, and arrows toward their location on scanner readout
@@ -185,18 +196,20 @@ const ScannerReadout = () => {
       //set special rectical around the planet
       if (planetTargetGroupRef.current && focusPlanetIndex !== null) {
         const mesh = planetTargetGroupRef.current.children[focusPlanetIndex];
-        dummyObj.position.copy(camera.position);
-        dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
-        placeTarget(
-          dummyObj,
-          camera,
-          mesh,
-          true,
-          -1,
-          focusPlanetIndex,
-          1,
-          true
-        );
+        if (mesh) {
+          dummyObj.position.copy(camera.position);
+          dummyObj.lookAt(planets[focusPlanetIndex].object3d.position);
+          placeTarget(
+            dummyObj,
+            camera,
+            mesh,
+            true,
+            -1,
+            focusPlanetIndex,
+            1,
+            true
+          );
+        }
       }
 
       //set special rectical around the target enemy
@@ -220,9 +233,9 @@ const ScannerReadout = () => {
   return (
     <>
       <group ref={planetTargetGroupRef}>
-        {planets?.map((_, i) => (
-          <mesh key={"pt" + i} index={i} />
-        ))}
+        {planets?.map((planet, index) =>
+          planet.isActive ? <mesh key={planet.id} index={index} /> : null
+        )}
       </group>
       {/*}
       <group ref={enemyTargetGroupRef}>

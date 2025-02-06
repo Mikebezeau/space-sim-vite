@@ -58,12 +58,14 @@ const RAYCAST_THRESHOLD = 1;
 const GalaxyMap = () => {
   useStore.getState().updateRenderInfo("GalaxyMap");
   const { camera, scene } = useThree();
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<any | null>(null);
   const galaxyRef = useRef<THREE.Group | null>(null);
-  const centerOnStarIndexRef = useRef(null);
-  const hoveredStarIndexRef = useRef(null);
-  const targetStarIndexRef = useRef(null);
-  const lineToHoveredStarPointRef = useRef(null);
+  const centerOnStarIndexRef = useRef<number | null>(null);
+  const hoveredStarIndexRef = useRef<number | null>(null);
+  const targetStarIndexRef = useRef<number | null>(null);
+  const lineToHoveredStarPointRef = useRef<[number, number, number] | null>(
+    null
+  );
   const lineToTargetStarPointRef = useRef<[number, number, number] | null>(
     null
   );
@@ -108,13 +110,15 @@ const GalaxyMap = () => {
 
     const viewSelectedStar = useCallback(
       (starPointIndex) => {
+        if (galaxyRef.current === null) return;
         resestControlsCameraPosition(); // reset controls, camera and galaxy positions
         const centerOnStarPosition = getStarBufferPosition(starPointIndex);
         galaxyRef.current.position.set(
           -centerOnStarPosition.x,
           -centerOnStarPosition.y,
           -centerOnStarPosition.z
-        ); // move galaxy to position selected star at (0,0,0)
+        ); // move galaxy relative to selected star position. selected star is shown at pos (0,0,0)
+
         camera.position.setZ(-(RAYCAST_THRESHOLD + 2)); // move camera closer to star to inspect
       },
       [getStarBufferPosition]
@@ -242,6 +246,7 @@ const GalaxyMap = () => {
 
     const updateStarPointsSelectedAttribute = () => {
       // update star points aSelected attribute
+      if (starPointsRef.current === null) return;
       starPointsRef.current.geometry.setAttribute(
         "aSelected",
         starSelectedBuffer
@@ -383,6 +388,15 @@ const GalaxyMap = () => {
     });
 
     useMouseMove((e) => {
+      if (isMouseOverStarInfoCard(e)) {
+        if (targetStarIndexRef.current !== null) {
+          // if a star has been selected, clear the hovered star index and show the selected star data
+          setShowInfoHoveredStarIndex(null);
+          // also clear the line to hovered star
+          lineToHoveredStarPointRef.current = null;
+        }
+        return;
+      }
       mouseMovedEnd.current.set(e.clientX, e.clientY);
       setHoveredSelectedStar(e);
     });

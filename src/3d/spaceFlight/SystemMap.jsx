@@ -29,8 +29,15 @@ const maxMapSize = 25;
 
 export default function SystemMap({ showPlayer = false }) {
   useStore.getState().updateRenderInfo("SystemMap");
-  const { camera } = useThree();
+
+  // V playerCurrentStarIndex to trigger re-render when player changes star
+  const playerCurrentStarIndex = useStore(
+    (state) => state.playerCurrentStarIndex
+  );
+
   const planets = useStore((state) => state.planets);
+
+  const { camera } = useThree();
   const systemMap = useRef(null);
   const mapScaleRef = useRef(null);
 
@@ -38,6 +45,7 @@ export default function SystemMap({ showPlayer = false }) {
   // this is not working in a useEffect
   let maxRadius = 0;
   planets?.forEach((planet) => {
+    if (!planet.isActive) return;
     const distanceToSun = distance(planet.object3d.position, {
       x: 0,
       y: 0,
@@ -79,6 +87,7 @@ const System = ({ showPlayer, mapScale }) => {
   const planets = useStore((state) => state.planets);
   //function System({ planets, mapScale }) {
   return planets?.map((planet, index) => {
+    if (!planet.isActive) return null;
     const ringRadius =
       mapScale * distance(planet.object3d.position, { x: 0, y: 0, z: 0 });
     return (

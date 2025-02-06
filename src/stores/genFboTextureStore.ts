@@ -255,7 +255,6 @@ interface genFboTextureStoreState {
     cloudShaderUniforms: typeCloudShaderUniforms
   ) => void;
   generateTextureGPU: (
-    renderer: THREE.WebGLRenderer | null | undefined,
     renderTargetGPU: any,
     textureMapOptions: typeTextureMapOptions,
     cloudShaderUniforms: typeCloudShaderUniforms
@@ -445,14 +444,10 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
   },
 
   generateTextureGPU: (
-    renderer,
     renderTargetGPU,
     textureMapOptions,
     cloudShaderUniforms = { u_isClouds: false }
   ) => {
-    if (get().gpuCompute === null && renderer) {
-      get().initComputeRenderer(renderer);
-    }
     if (get().gpuCompute !== null) {
       get().setUniforms(
         get().shaderDataVariable,
@@ -466,6 +461,10 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
       );
       // @ts-ignore
       get().gpuCompute.compute();
+    } else {
+      console.error(
+        "generateTextureGPU: gpuCompute is null must call initComputeRenderer first"
+      );
     }
   },
 }));

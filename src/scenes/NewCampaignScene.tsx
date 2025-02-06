@@ -13,8 +13,8 @@ import SolarSystem from "../3d/solarSystem/SolarSystem";
 import Stations from "../3d/spaceFlight/Stations";
 //import TransparentEffect from "../3d/effects/TransparentEffect";
 //import GlitchEffect from "../3d/effects/GlitchEffect";
-
 import { PLAYER } from "../constants/constants";
+import { PLANET_TYPE } from "../constants/solarSystemConstants";
 
 const NewCampaignScene = () => {
   useStore.getState().updateRenderInfo("NewCampaignScene");
@@ -41,7 +41,9 @@ const NewCampaignScene = () => {
     viewModeSelect(PLAYER.view.thirdPerson); // just in case we start using main control loop
     //setPlayerCurrentStarIndex(666);
     let targetPlanet =
-      planets.find((planet) => planet.data.class === 2) || planets[0];
+      planets.find(
+        (planet) => planet.data.planetType === PLANET_TYPE.earthLike
+      ) || planets[0];
     player.object3d.position.copy(targetPlanet.object3d.position);
     player.object3d.lookAt(stars[0].object3d.position);
     player.object3d.translateY(-targetPlanet.radius * 0.1);

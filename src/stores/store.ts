@@ -6,11 +6,11 @@ import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
 import { /*randomData,*/ genStations } from "../util/initGameUtil";
 import galaxyGen from "../galaxy/galaxyGen";
-import systemGen from "../solarSystemGen/systemGen";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
+import SolarSystem from "../classes/solarSystem/SolarSystem";
 import CelestialBody from "../classes/solarSystem/CelestialBody";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
@@ -82,6 +82,7 @@ interface storeState {
     focusTargetIndex: number | null;
     selectedTargetIndex: number | null;
   };
+  solarSystem: SolarSystem;
   stars: Star[];
   planets: Planet[];
   checkScanDistanceToPlanet: (planetIndex: number) => void;
@@ -102,7 +103,9 @@ interface storeState {
     setSelectedTargetIndex: () => void;
     getPlayerCurrentStarIndex: () => number;
     setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
-    setShowInfoHoveredStarIndex: (showInfoHoveredStarIndex: number) => void;
+    setShowInfoHoveredStarIndex: (
+      showInfoHoveredStarIndex: number | null
+    ) => void;
     getShowInfoTargetStarIndex: () => number | null;
     setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
     setSelectedWarpStar: (selectedWarpStar: number | null) => void;
@@ -131,8 +134,8 @@ const useStore = create<storeState>()((set, get) => ({
   renderCount: {},
   renderData: {},
   updateRenderInfo: (componentName: string, data?: any | undefined) => {
-    // setting values hard, to avoid render state errors as below
-    // from nested set state calls
+    // setting values hard, to avoid render state errors from nested set state calls
+    // error shown below:
     /*
     Warning: Cannot update a component while rendering a different 
     component - bad setState() call 
@@ -157,6 +160,7 @@ const useStore = create<storeState>()((set, get) => ({
   },
   disposeGameStore: () => {
     useGenFboTextureStore.getState().disposeGpuCompute();
+    // TODO dispose solar system objects / materials / textures
   },
   isGameStoreInit: false,
 
@@ -273,6 +277,7 @@ const useStore = create<storeState>()((set, get) => ({
       selectedTargetIndex: get().selectedTargetIndex,
     };
   },
+  solarSystem: new SolarSystem(),
   stars: [], // set in call to setPlayerCurrentStarIndex
   planets: [], // set in call to setPlayerCurrentStarIndex
   checkScanDistanceToPlanet: (planetIndex) => {
@@ -488,35 +493,30 @@ const useStore = create<storeState>()((set, get) => ({
 
     // slecting star in galaxy map
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
-      const dispose = (celestialBody: CelestialBody) => {
-        celestialBody.disposeResources();
-      };
-
-      set(() => ({ playerCurrentStarIndex }));
-      get().stars.forEach((star) => {
-        dispose(star);
-      });
-      get().planets.forEach((planet) => {
-        dispose(planet);
-      });
-      const { stars, planets } = systemGen(playerCurrentStarIndex);
+      console.log("setPlayerCurrentStarIndex start");
+      // playerCurrentStarIndex set at end, then triggering render of solar system related components
+      // generate stars and planets for solar system
+      get().solarSystem.systemGen(playerCurrentStarIndex);
+      // set stars and planets
       set(() => ({
-        stars,
+        stars: get().solarSystem.stars,
       }));
       set(() => ({
-        planets,
+        planets: get().solarSystem.planets,
       }));
+      //console.log(get().stars, get().planets);
       // select first star or planet as starting position
-      let startPosCelestialBody: Star | Planet =
+      let startPosCelestialBody: Star | Planet | null = null;
+      /*
         get().planets.find(
           (planet) => planet.data.planetType === PLANET_TYPE.earthLike
         ) || get().planets[0];
-
+*/
       const startPosition = new THREE.Vector3();
       const enemyStartPosition = new THREE.Vector3();
       const stationStartPosition = new THREE.Vector3();
 
-      if (startPosCelestialBody) {
+      if (startPosCelestialBody !== null) {
         // position of planet to start at
         startPosition.copy(startPosCelestialBody.object3d.position);
         // direction towards (0,0,0)
@@ -529,23 +529,26 @@ const useStore = create<storeState>()((set, get) => ({
           .multiplyScalar(startPosCelestialBody.radius * 3);
         // set player position at this distance away from planet
         startPosition.sub(offsetDistance);
-        // set enemy position at player position + x units
+        // set enemy position at player position * x units
         enemyStartPosition.copy(startPosition);
         enemyStartPosition.add(offsetDirection.multiplyScalar(30));
-        // set station position at player position + x units
+        // set station position at player position * x units
         stationStartPosition.copy(startPosition);
         stationStartPosition.add(offsetDirection.multiplyScalar(60));
       } else {
-        startPosCelestialBody = stars[0];
+        startPosCelestialBody = get().stars[0];
         startPosition.set(
-          stars[0].object3d.position.x,
-          stars[0].object3d.position.y,
-          stars[0].object3d.position.z + stars[0].radius * 5
+          startPosCelestialBody.object3d.position.x,
+          startPosCelestialBody.object3d.position.y,
+          startPosCelestialBody.object3d.position.z -
+            startPosCelestialBody.radius * 5
         );
         stationStartPosition.set(
-          stars[0].object3d.position.x,
-          stars[0].object3d.position.y,
-          stars[0].object3d.position.z + stars[0].radius * 5 - 10
+          startPosCelestialBody.object3d.position.x,
+          startPosCelestialBody.object3d.position.y,
+          startPosCelestialBody.object3d.position.z -
+            startPosCelestialBody.radius * 5 -
+            100
         );
       }
 
@@ -573,6 +576,9 @@ const useStore = create<storeState>()((set, get) => ({
           stations,
         }));
       }
+      // playerCurrentStarIndex set at end, triggers render of solar system related components
+      set(() => ({ playerCurrentStarIndex }));
+      console.log("setPlayerCurrentStarIndex end");
     },
 
     setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {

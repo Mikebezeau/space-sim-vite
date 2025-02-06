@@ -23,6 +23,7 @@ interface playerControlStoreState {
   setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
   canvasSceneRendered: boolean;
   setCanvasSceneRendered: (canvasSceneRendered: boolean) => void;
+  //TODO use isResetCamera?
   isResetCamera: boolean;
   getPlayerState: () => {
     playerActionMode: number;
@@ -194,6 +195,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           angleDiff: number;
         }[] = [];
         useStore.getState().planets.forEach((planet) => {
+          if (!planet.isActive) return;
           //getWorldPosition required due to relative positioning to player
           planet.object3d.getWorldPosition(dummyVec3);
           const { xn, yn, angleDiff } = getScreenPosition(camera, dummyVec3);

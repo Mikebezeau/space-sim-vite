@@ -15,6 +15,7 @@ import {
 import { SYSTEM_SCALE, PLANET_SCALE } from "../../constants/constants";
 
 interface PlanetInt {
+  setNewPlanetData(genPlanetData: typeGenPlanetData): void;
   setTextureOptions(): void;
 }
 
@@ -23,47 +24,49 @@ class Planet extends CelestialBody implements PlanetInt {
   subClasses: number[];
   distanceFromStar: number;
 
-  constructor(
-    genPlanetData: typeGenPlanetData,
-    renderer?: WebGLRenderer | null | undefined,
-    isTestCelestial?: boolean
-  ) {
-    super(isTestCelestial);
+  constructor(genPlanetData: typeGenPlanetData, isUseAtmosShader?: boolean) {
+    super(isUseAtmosShader);
+    this.material = useStore.getState().clonePlanetShaderMaterial();
+    this.object3d = new Object3D();
 
+    this.setNewPlanetData(genPlanetData);
+  }
+
+  setNewPlanetData = (genPlanetData: typeGenPlanetData) => {
+    this.isActive = true;
     let { rngSeed, planetType, distanceFromStar, temperature } = genPlanetData;
+    this.rngSeed = rngSeed;
+    this.data = planetType; //planet.toJSONforHud();
+    this.subClasses = [];
+    this.distanceFromStar = distanceFromStar;
+    this.temperature = temperature;
 
+    // planet size and mass
     const rng = seedrandom(rngSeed);
-
+    const fixedRangeRandom = rng();
+    this.earthRadii = getFromRange(fixedRangeRandom, planetType.size);
+    this.earthMasses = getFromRange(fixedRangeRandom, planetType.mass);
     const earthRadiusKm = 6378; //km
+    this.radius = this.earthRadii * earthRadiusKm * PLANET_SCALE;
+
+    // position in prbit
     const orbitRadius = distanceFromStar * 147000000 * SYSTEM_SCALE;
     const angle = Math.random() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
     const y = 0;
     const z = Math.sin(angle) * orbitRadius;
-    const object3d = new Object3D();
-    object3d.position.set(x, y, z);
+    this.object3d.position.set(x, y, z);
+
+    // tilt
     //object3d.rotation.set(axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
-    const fixedRangeRandom = rng();
-    const earthRadii = getFromRange(fixedRangeRandom, planetType.size);
-    const earthMasses = getFromRange(fixedRangeRandom, planetType.mass);
 
-    this.rngSeed = rngSeed;
-    this.data = planetType; //planet.toJSONforHud();
-    this.radius = earthRadii * earthRadiusKm * PLANET_SCALE;
-    this.object3d = object3d;
-
-    this.subClasses = [];
-    this.distanceFromStar = distanceFromStar;
-    this.temperature = temperature;
-    this.earthRadii = earthRadii;
-    this.earthMasses = earthMasses;
-
+    // set texture options for genTexture
     this.setTextureOptions();
-    this.material = useStore.getState().clonePlanetShaderMaterial();
     // generate terrian texture map
-    this.genTexture(renderer);
+    this.genTexture();
+    // update texture uniforms of shader material
     this.updateUniforms();
-  }
+  };
 
   setTextureOptions = () => {
     const classOptions = PLANET_CLASS_TEXTURE_MAP[this.data.planetClass];

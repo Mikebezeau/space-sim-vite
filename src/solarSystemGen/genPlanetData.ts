@@ -114,7 +114,7 @@ const determinePlanetType = (
 
 // Main function to generate a random planet
 const genPlanetData = (starData: typeStarData, index: number = 0) => {
-  const rngSeed = starData.index.toString() + "-" + index.toString();
+  const rngSeed = starData.starIndex.toString() + "-" + index.toString();
   const rng = seedrandom(rngSeed);
   const orbitalZonesData = starData.orbitalZonesData;
 

@@ -2,6 +2,8 @@ import { create } from "zustand";
 import * as THREE from "three";
 //import useStore from "./store";
 //import useEnemyStore from "./enemyStore";
+import useGenFboTextureStore from "./genFboTextureStore";
+
 import {
   PLANET_TYPE,
   PLANET_TYPE_DATA,
@@ -19,7 +21,7 @@ interface devStoreState {
   //
   testPlanet: Planet | Star | null;
   getTestPlanet: () => Planet | Star | null;
-  genTestPlanet: (renderer: THREE.WebGLRenderer | null) => void;
+  genTestPlanet: (renderer: THREE.WebGLRenderer) => void;
   setPlanetType: (planetTypeData: typePlanetData) => void;
   //
   devPlayerSpeedX1000: boolean;
@@ -51,12 +53,15 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   // planet testing
   testPlanet: null,
   getTestPlanet: () => get().testPlanet,
-  genTestPlanet: (renderer: THREE.WebGLRenderer | null) => {
+  genTestPlanet: (renderer: THREE.WebGLRenderer) => {
+    if (useGenFboTextureStore.getState().gpuCompute === null) {
+      useGenFboTextureStore.getState().initComputeRenderer(renderer);
+    }
     const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
       (planetTypeData) => planetTypeData.planetType === PLANET_TYPE.earthLike
     );
     if (planetTypeData) {
-      const isTestCelestial = true;
+      const isUseAtmosShader = false;
       /*
       const testPlanet = new Planet(
         {
@@ -66,10 +71,9 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           distanceFromStar: 0,
           temperature: { min: 0, max: 0, average: 0 },
         },
-        renderer,
-        isTestCelestial
-      );
-      */
+        isUseAtmosShader
+      );*/
+
       const testPlanet = new Star(
         {
           age: "1.45e+9",
@@ -85,9 +89,9 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           starClass: "K",
           temperature: 5125,
         },
-        renderer,
-        isTestCelestial
+        isUseAtmosShader
       );
+
       set(() => ({
         testPlanet,
       }));
@@ -108,7 +112,6 @@ const useDevStore = create<devStoreState>()((set, get) => ({
         distanceFromStar: 0,
         temperature: { min: 0, max: 0, average: 0 },
       },
-      null,
       true
     );
     set(() => ({
