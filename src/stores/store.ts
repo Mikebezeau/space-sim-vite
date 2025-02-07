@@ -11,7 +11,7 @@ import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import SolarSystem from "../classes/solarSystem/SolarSystem";
-import CelestialBody from "../classes/solarSystem/CelestialBody";
+//import CelestialBody from "../classes/solarSystem/CelestialBody";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 //import { track } from "../util/track";
@@ -71,7 +71,7 @@ interface storeState {
   setNewPlayerPosition: (
     newPosition: THREE.Vector3 | { x: number; y: number; z: number }
   ) => void;
-  playerPositionUpdated: () => void;
+  playerPositionUpdated: () => { x: number; y: number; z: number };
 
   selectedWarpStarDirection: THREE.Vector3 | null;
   setSelectedWarpStarDirection: () => void;
@@ -131,7 +131,7 @@ interface storeState {
   };
 }
 
-//const useStore = create((set, get) => {
+const dummyVec3 = new THREE.Vector3();
 
 const useStore = create<storeState>()((set, get) => ({
   renderCount: {},
@@ -164,7 +164,7 @@ const useStore = create<storeState>()((set, get) => ({
     const delta =
       get().renderTime[componentName].end -
       get().renderTime[componentName].start;
-    console.log(componentName, delta);
+    //console.log(componentName, delta);
   },
   initGameStore: (renderer) => {
     get().updateRenderInfo("initComputeRenderer");
@@ -239,12 +239,14 @@ const useStore = create<storeState>()((set, get) => ({
     get().playerWorldPosition.copy(get().playerWorldOffsetPosition);
   },
   playerPositionUpdated: () => {
+    // if playerWorldOffsetPosition changes return the difference
     // if player.object3d.position grows to far from (0,0,0)
     if (
       Math.abs(get().player.object3d.position.x) > 65000 ||
       Math.abs(get().player.object3d.position.y) > 65000 ||
       Math.abs(get().player.object3d.position.z) > 65000
     ) {
+      dummyVec3.copy(get().player.object3d.position);
       // playerWorldOffsetPosition for placing other objects relative to player object3d
       get().playerWorldOffsetPosition.set(
         get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
@@ -253,12 +255,14 @@ const useStore = create<storeState>()((set, get) => ({
       );
       get().playerWorldPosition.copy(get().playerWorldOffsetPosition);
       get().player.object3d.position.set(0, 0, 0);
+      return dummyVec3;
     } else {
       get().playerWorldPosition.set(
         get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
         get().playerWorldOffsetPosition.y + get().player.object3d.position.y,
         get().playerWorldOffsetPosition.z + get().player.object3d.position.z
       );
+      return { x: 0, y: 0, z: 0 };
     }
   },
   // targeting
@@ -440,6 +444,21 @@ const useStore = create<storeState>()((set, get) => ({
       }
     },
     warpToPlanet() {
+      const focusPlanetIndex = get().focusPlanetIndex;
+      if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
+        // set planet world space position
+        const targetVec3 = new THREE.Vector3();
+        get().planets[focusPlanetIndex].object3d.getWorldPosition(targetVec3);
+        // get target position in front of planet
+        const targetObj = new THREE.Object3D();
+        targetObj.lookAt(targetVec3);
+        targetObj.position.copy(targetVec3);
+        targetObj.translateZ(-get().planets[focusPlanetIndex].radius * 3);
+        targetVec3.copy(targetObj.position);
+        // set player warp position
+        usePlayerControlsStore.getState().playerWarpToPosition = targetVec3;
+      }
+      /*
       let player = get().player;
       const focusPlanetIndex = get().focusPlanetIndex;
       if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
@@ -453,6 +472,7 @@ const useStore = create<storeState>()((set, get) => ({
         };
         get().setNewPlayerPosition(targetWarpPosition);
       }
+      */
     },
   },
 

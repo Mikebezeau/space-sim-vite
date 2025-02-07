@@ -22,12 +22,12 @@ const SolarSystem = () => {
     <>
       {stars?.map((star, index) =>
         star.isActive ? (
-          <CelestialBody key={index} celestialBody={star} />
+          <CelestialBody key={star.id} celestialBody={star} />
         ) : null
       )}
       {planets?.map((planet, index) =>
         planet.isActive ? (
-          <CelestialBody key={index} celestialBody={planet} />
+          <CelestialBody key={planet.id} celestialBody={planet} />
         ) : null
       )}
     </>

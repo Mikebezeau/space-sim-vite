@@ -73,6 +73,8 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 const ScannerReadout = () => {
   useStore.getState().updateRenderInfo("ScannerReadout");
 
+  const { camera } = useThree();
+
   // V playerCurrentStarIndex to trigger re-render when player changes star
   const playerCurrentStarIndex = useStore(
     (state) => state.playerCurrentStarIndex
@@ -87,14 +89,10 @@ const ScannerReadout = () => {
   const { setFocusPlanetIndex, setFocusTargetIndex } = useStore(
     (state) => state.actions
   );
-
   const getPlayerState = usePlayerControlsStore(
     (state) => state.getPlayerState
   );
-
   const enemies = useEnemyStore((state) => state.enemies);
-
-  const { camera } = useThree();
 
   const planetTargetGroupRef = useRef();
   const enemyTargetGroupRef = useRef();
@@ -228,7 +226,7 @@ const ScannerReadout = () => {
         );
       }
     }
-  });
+  }, -1);
 
   return (
     <>

@@ -81,7 +81,7 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   // call this once the mesh is loaded in component
-  initObject3d = (object3d: THREE.Object3D) => {
+  initObject3d(object3d: THREE.Object3D) {
     if (object3d) {
       // keeping position and rotation of original object3d
       const keepPosition = new THREE.Vector3();
@@ -94,9 +94,9 @@ class CelestialBody implements CelestialBodyInt {
       this.object3d.position.copy(keepPosition);
       this.object3d.rotation.copy(keepRotation);
     }
-  };
+  }
 
-  setShaderColors = () => {
+  setShaderColors() {
     let colors: any[] = [];
     if (this.textureMapOptions.colors) {
       colors = this.textureMapOptions.colors;
@@ -115,9 +115,9 @@ class CelestialBody implements CelestialBodyInt {
       (color) => new THREE.Vector3(color.r / 255, color.g / 255, color.b / 255)
     );
     this.textureMapOptions.shaderColors = shaderColors;
-  };
+  }
 
-  genTexture = () => {
+  genTexture() {
     // useGenFboTextureStore.initComputeRenderer must be called before this
     //this.disposeTextures();
     useGenFboTextureStore
@@ -156,26 +156,26 @@ class CelestialBody implements CelestialBodyInt {
       }
     }
       */
-  };
+  }
 
-  disposeTextures = () => {
+  disposeTextures() {
     // dispose of crater textures in material uniforms (these aren't reused)
     if (this.material.uniforms.u_craterTexture?.value?.dispose)
       this.material.uniforms.u_craterTexture.value.dispose();
     if (this.material.uniforms.u_craterTBumpMap?.value?.dispose)
       this.material.uniforms.u_craterTBumpMap.value.dispose();
-  };
+  }
 
   // call at end of gameplay
-  disposeResources = () => {
+  disposeResources() {
     this.object3d.clear();
     this.material.dispose();
     this.renderTargetGPU.dispose();
     this.disposeTextures();
-  };
+  }
 
   //
-  updateUniforms = () => {
+  updateUniforms() {
     // rotation matrix
     this.material.uniforms.u_objectMatrixWorld = {
       value: this.object3d.matrixWorld,
@@ -193,10 +193,10 @@ class CelestialBody implements CelestialBodyInt {
       // gives real direction to sun
       value: this.object3d.position,
     };
-  };
+  }
 
   // for testing texture generating shader uniform settings
-  updateTextureOptions = (options: typeTextureMapOptions) => {
+  updateTextureOptions(options: typeTextureMapOptions) {
     this.textureMapOptions = {
       ...this.textureMapOptions,
       ...options, //options override this.textureMapOptions
@@ -205,20 +205,20 @@ class CelestialBody implements CelestialBodyInt {
     this.genTexture();
     //for original planet material shader (inc. animated clouds)
     this.updateUniforms();
-  };
+  }
 
   // for testing clouds texture generating shader uniform settings
-  updateCloudShaderUniform = (uniform: any) => {
+  updateCloudShaderUniform(uniform: any) {
     // animated planet material clouds shader
     this.material.uniforms[uniform.name] = { value: uniform.value };
     // FBO static clouds shader
     this.cloudShaderUniforms[uniform.name] = uniform.value;
     // update the planet texture
     this.genTexture();
-  };
+  }
 
   // called each animation frame
-  useFrameUpdateUniforms = (delta: number) => {
+  useFrameUpdateUniforms(delta: number) {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     this.object3d.rotateY(delta / 500);
     // for clouds
@@ -228,7 +228,7 @@ class CelestialBody implements CelestialBodyInt {
     this.material.uniforms.u_objectMatrixWorld = {
       value: this.object3d.matrixWorld,
     };
-  };
+  }
 }
 
 export default CelestialBody;

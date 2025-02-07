@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Group, PointLight } from "three";
 import { BoxGeometry, FrontSide, Object3D, ShaderMaterial } from "three";
-import { useThree, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useParticleStore from "../../stores/particleStore";
@@ -15,15 +15,11 @@ import { PLAYER } from "../../constants/constants";
 const PlayerMech = () => {
   useStore.getState().updateRenderInfo("PlayerMech");
 
-  const { camera } = useThree();
   const player = useStore((state) => state.player);
   //const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
 
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
-  );
-  const updatePlayerMechAndCameraFrame = usePlayerControlsStore(
-    (state) => state.updatePlayerMechAndCameraFrame
   );
 
   const addEngineExhaust = useParticleStore(
@@ -105,7 +101,9 @@ const PlayerMech = () => {
     );
 
     if (player.object3d && secondaryGroupRef.current) {
-      updatePlayerMechAndCameraFrame(delta, camera);
+      //placed into SpaceFlightPlanetsScene to sync
+      // relativePlayerGroupRef and enemyRelativePlayerGroupRef with playerWorldOffsetPosition
+      //updatePlayerMechAndCameraFrame(delta, camera);
 
       // player mech object3d directly linked to Buildmech ref: playerMechRef.current
       // update secondary group (crosshair, weapon light)

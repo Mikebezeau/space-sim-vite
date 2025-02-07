@@ -32,7 +32,7 @@ class Planet extends CelestialBody implements PlanetInt {
     this.setNewPlanetData(genPlanetData);
   }
 
-  setNewPlanetData = (genPlanetData: typeGenPlanetData) => {
+  setNewPlanetData(genPlanetData: typeGenPlanetData) {
     this.isActive = true;
     let { rngSeed, planetType, distanceFromStar, temperature } = genPlanetData;
     this.rngSeed = rngSeed;
@@ -66,9 +66,9 @@ class Planet extends CelestialBody implements PlanetInt {
     this.genTexture();
     // update texture uniforms of shader material
     this.updateUniforms();
-  };
+  }
 
-  setTextureOptions = () => {
+  setTextureOptions() {
     const classOptions = PLANET_CLASS_TEXTURE_MAP[this.data.planetClass];
     const typeOptions = PLANET_TYPE_TEXTURE_MAP[this.data.planetType];
     let textureOptions: typeTextureMapOptions;
@@ -84,7 +84,7 @@ class Planet extends CelestialBody implements PlanetInt {
     textureOptions.scale = textureOptions.scale || 1; // * this.earthRadii;
     this.textureMapOptions = textureOptions;
     this.setShaderColors();
-  };
+  }
 }
 
 export default Planet;
