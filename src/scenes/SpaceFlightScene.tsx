@@ -14,7 +14,7 @@ const SpaceFlightScene = () => {
 
   return (
     <>
-      {/*<ScenePortalLayer children={<StarsBackgroundScene />} />*/}
+      <ScenePortalLayer children={<StarsBackgroundScene />} />
       <ScenePortalLayer
         autoClear={false}
         children={<SpaceFlightPlanetsScene />}

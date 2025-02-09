@@ -20,8 +20,8 @@ const SpaceFlightPlanetsScene = () => {
   const playerWorldOffsetPosition = useStore(
     (state) => state.playerWorldOffsetPosition
   );
-  const updatePlayerMechAndCameraFrame = usePlayerControlsStore(
-    (state) => state.updatePlayerMechAndCameraFrame
+  const updatePlayerMechAndCamera = usePlayerControlsStore(
+    (state) => state.updateFrame.updatePlayerMechAndCamera
   );
   const enemyWorldPosition = useEnemyStore((state) => state.enemyWorldPosition);
   const boidController = useEnemyStore((state) => state.boidController);
@@ -32,9 +32,9 @@ const SpaceFlightPlanetsScene = () => {
   const obbBoxRefs = useRef<Mesh[]>([]);
 
   useFrame((_, delta) => {
-    // must call updatePlayerMechAndCameraFrame before
+    // must call updatePlayerMechAndCamera before
     // adjustments with playerWorldOffsetPosition position
-    updatePlayerMechAndCameraFrame(delta, camera);
+    updatePlayerMechAndCamera(delta, camera);
 
     if (relativePlayerGroupRef.current) {
       relativePlayerGroupRef.current.position.set(

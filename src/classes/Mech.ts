@@ -19,8 +19,16 @@ interface MechInt {
   setObject3dCenterOffset: () => void;
   setMergedBufferGeom: () => void;
   setMergedBufferGeomColorsList: (geomColorList: THREE.Color[]) => void;
-  fireWeapon: (/*isPlayer: boolean*/) => void;
+  fireWeapon: (targetQuaternoin: THREE.Quaternion) => void;
 }
+
+// TODO move these reusable objects to a bettr location
+const mechRefObj = new THREE.Group();
+const weaponObj = new THREE.Group();
+mechRefObj.add(weaponObj);
+const weaponFireQuaternoin = new THREE.Quaternion();
+const weaponFireEuler = new THREE.Euler();
+const weaponWorldPositionVec = new THREE.Vector3();
 
 class Mech implements MechInt {
   id: string;
@@ -200,38 +208,47 @@ class Mech implements MechInt {
     }
   }
 
-  fireWeapon(/*isPlayer = false*/) {
+  fireWeapon(targetQuaternoin?: THREE.Quaternion) {
     if (this.mechBP?.weaponList) {
-      const mechRefObj = new THREE.Group();
-      const weaponObj = new THREE.Group();
-      const weaponWorldPositionVec = new THREE.Vector3();
+      //
       mechRefObj.position.copy(this.object3d.position);
       mechRefObj.rotation.copy(this.object3d.rotation);
-      mechRefObj.add(weaponObj);
+      weaponFireQuaternoin.copy(mechRefObj.quaternion);
+      // TODO fix angle target issue
+      //if (targetQuaternoin) weaponFireQuaternoin.multiply(targetQuaternoin);
+      weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
+
       // for each weapon type array
       this.mechBP.weaponList.forEach((weapon: any) => {
         weapon.servoOffset = this.mechBP.servoList.find(
           (s) => s.id === weapon.locationServoId
         )?.offset;
         if (weapon.servoOffset) {
-          weaponObj.position.set(0, 0, 0);
-          weaponObj.translateX(weapon.offset.x); // + weapon.servoOffset.x);
-          weaponObj.translateY(weapon.offset.y); // + weapon.servoOffset.y);
-          weaponObj.translateZ(weapon.offset.z); // + weapon.servoOffset.z);
+          // TODO find better way to calculate weapon position
+          // - use weapon.offset and mechRefObj.rotation
+          // mechRefObj id a shild of mechRefObj, so it's position is relative to mechRefObj
+          weaponObj.position.copy(weapon.offset);
           weaponObj.getWorldPosition(weaponWorldPositionVec);
           if (weapon.weaponType === equipData.weaponType.beam) {
             useParticleStore
               .getState()
-              .effects.addLaser(weaponWorldPositionVec, mechRefObj.rotation);
+              .effects.addLaser(weaponWorldPositionVec, weaponFireEuler);
           } else if (weapon.weaponType === equipData.weaponType.projectile) {
             useParticleStore
               .getState()
-              .effects.addBullet(weaponWorldPositionVec, mechRefObj.rotation);
+              .effects.addBullet(weaponWorldPositionVec, weaponFireEuler);
           } else if (weapon.weaponType === equipData.weaponType.missile) {
             useParticleStore
               .getState()
-              .effects.addMissile(weaponWorldPositionVec, mechRefObj.rotation);
+              .effects.addMissile(weaponWorldPositionVec, weaponFireEuler);
           }
+          // if player show fire effect
+          useParticleStore
+            .getState()
+            .playerEffects.addWeaponFireFlash(
+              weaponObj.position,
+              mechRefObj.rotation
+            );
         } else {
           console.error("servoOffset not found for weapon", weapon);
         }

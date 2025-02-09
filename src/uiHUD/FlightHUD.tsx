@@ -1,11 +1,11 @@
 import React, { useState, useRef } from "react";
-import useStore from "../../stores/store";
-import { useMouseMove } from "../../hooks/controls/useMouseKBControls";
+import useStore from "../stores/store";
+import { useMouseMove } from "../hooks/controls/useMouseKBControls";
 import {
   useTouchStartControls,
   useTouchMoveControls,
-} from "../../hooks/controls/useTouchControls";
-import useWindowResize from "../../hooks/useWindowResize";
+} from "../hooks/controls/useTouchControls";
+import useWindowResize from "../hooks/useWindowResize";
 import TargetsHUD from "./targetsHUD/TargetsHUD";
 
 export const getScreenCoordinates = (x: number, y: number) => {};

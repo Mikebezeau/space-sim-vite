@@ -132,6 +132,10 @@ interface storeState {
 }
 
 const dummyVec3 = new THREE.Vector3();
+// setting warp targets
+const targetObj = new THREE.Object3D();
+// for targeting weapons fireWeapon()
+const flightCameraLookQuaternoin = new THREE.Quaternion();
 
 const useStore = create<storeState>()((set, get) => ({
   renderCount: {},
@@ -242,11 +246,16 @@ const useStore = create<storeState>()((set, get) => ({
     // if playerWorldOffsetPosition changes return the difference
     // if player.object3d.position grows to far from (0,0,0)
     if (
-      Math.abs(get().player.object3d.position.x) > 65000 ||
-      Math.abs(get().player.object3d.position.y) > 65000 ||
-      Math.abs(get().player.object3d.position.z) > 65000
+      Math.abs(get().player.object3d.position.x) > 25000 ||
+      Math.abs(get().player.object3d.position.y) > 25000 ||
+      Math.abs(get().player.object3d.position.z) > 25000
     ) {
       dummyVec3.copy(get().player.object3d.position);
+      const offsetPositionDelta = {
+        x: dummyVec3.x,
+        y: dummyVec3.y,
+        z: dummyVec3.z,
+      };
       // playerWorldOffsetPosition for placing other objects relative to player object3d
       get().playerWorldOffsetPosition.set(
         get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
@@ -255,7 +264,7 @@ const useStore = create<storeState>()((set, get) => ({
       );
       get().playerWorldPosition.copy(get().playerWorldOffsetPosition);
       get().player.object3d.position.set(0, 0, 0);
-      return dummyVec3;
+      return offsetPositionDelta;
     } else {
       get().playerWorldPosition.set(
         get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
@@ -446,14 +455,19 @@ const useStore = create<storeState>()((set, get) => ({
     warpToPlanet() {
       const focusPlanetIndex = get().focusPlanetIndex;
       if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
-        // set planet world space position
-        const targetVec3 = new THREE.Vector3();
-        get().planets[focusPlanetIndex].object3d.getWorldPosition(targetVec3);
+        // using dummyVec3 to store target position
+        const targetVec3 = dummyVec3;
         // get target position in front of planet
-        const targetObj = new THREE.Object3D();
+        // start at player location
+        targetObj.position.copy(get().player.object3d.position);
+        // set targetVec3 at planet world space position
+        get().planets[focusPlanetIndex].object3d.getWorldPosition(targetVec3);
+        // set angle towards target planet using lookAt
         targetObj.lookAt(targetVec3);
+        // set targetObj position at distance from planet
         targetObj.position.copy(targetVec3);
-        targetObj.translateZ(-get().planets[focusPlanetIndex].radius * 3);
+        targetObj.translateZ(-get().planets[focusPlanetIndex].radius * 4);
+        // reuse targetVec3 to store target position
         targetVec3.copy(targetObj.position);
         // set player warp position
         usePlayerControlsStore.getState().playerWarpToPosition = targetVec3;
@@ -500,7 +514,19 @@ const useStore = create<storeState>()((set, get) => ({
     },
 
     setSelectedTargetIndex() {
-      get().player.fireWeapon();
+      flightCameraLookQuaternoin.setFromAxisAngle(
+        {
+          x:
+            usePlayerControlsStore.getState().flightCameraLookRotation.rotateY *
+            0.4,
+          y:
+            -usePlayerControlsStore.getState().flightCameraLookRotation
+              .rotateX * 0.4,
+          z: 0,
+        },
+        Math.PI / 2
+      );
+      get().player.fireWeapon(flightCameraLookQuaternoin);
       //make work for enemies as well
       //set new target for current shooter
       let targetIndex: number | null = null;
@@ -588,8 +614,8 @@ const useStore = create<storeState>()((set, get) => ({
           startPosCelestialBody.object3d.position.x,
           startPosCelestialBody.object3d.position.y,
           startPosCelestialBody.object3d.position.z -
-            startPosCelestialBody.radius * 5 -
-            100
+            startPosCelestialBody.radius * 5 +
+            1000
         );
       }
 

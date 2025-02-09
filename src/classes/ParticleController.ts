@@ -20,7 +20,7 @@ export interface ParticleControllerInt {
   random(): void;
   spawnParticle(options: any): void;
   update(ttime: number): void;
-  dispose(scene: THREE.Scene): void;
+  dispose(): void;
 }
 
 class ParticleController implements ParticleControllerInt {
@@ -269,8 +269,7 @@ class ParticleController implements ParticleControllerInt {
     this.geometryUpdate();
   }
 
-  dispose(scene: THREE.Scene) {
-    if (this.particleSystem) scene.remove(this.particleSystem);
+  dispose() {
     this.material.dispose();
     this.sprite.dispose();
     this.geometry.dispose();

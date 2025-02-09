@@ -22,9 +22,12 @@ const PlanetTargets = (props: planetTargetsInt) => {
   );
 
   const planets = useStore((state) => state.planets);
+
+  const playerTargetRefs = usePlayerControlsStore.getState().playerTargetRefs;
   const getPlayerTargetsHUD = usePlayerControlsStore(
     (state) => state.getPlayerTargetsHUD
   );
+
   const animationFrameRef = useRef<number | null>(null);
   const targetRefs = useRef<HTMLDivElement[]>([]);
 

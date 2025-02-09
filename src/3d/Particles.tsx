@@ -28,7 +28,7 @@ const Particles = (props: ParticlesInt) => {
 
     return () => {
       if (particleController) {
-        particleController.dispose(scene);
+        scene.remove(particleController.particleSystem);
       }
     };
   }, [particleController, scene]);

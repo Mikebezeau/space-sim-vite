@@ -5,7 +5,7 @@ import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
 import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
-import FlightHUD from "./uiCockpit/flightHUD/FlightHUD";
+import FlightHUD from "./uiHUD/FlightHUD";
 import Cockpit from "./uiCockpit/Cockpit";
 import {
   ActionModeControls,
