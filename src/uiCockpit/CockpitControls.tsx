@@ -1,6 +1,7 @@
 import React from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
+import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 //@ts-ignore
 import controls from "../assets/icons/controls.svg";
 //@ts-ignore
@@ -84,13 +85,19 @@ const ActionCancelPilot = () => {
 };
 
 export const ActionWarpToPlanetPopupHUD = () => {
-  const isScanDistanceToPlanet = useStore(
+  const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
+
+  const isScanDistanceToPlanet = useHudTargtingGalaxyMapStore(
     (state) => state.isScanDistanceToPlanet
   );
-  const scanPlanetProgress = useStore((state) => state.scanPlanetProgress);
-  const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
-  const scanPlanet = useStore((state) => state.scanPlanet);
-  const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
+  const focusPlanetIndex = useHudTargtingGalaxyMapStore(
+    (state) => state.focusPlanetIndex
+  );
+  const scanPlanet = useHudTargtingGalaxyMapStore((state) => state.scanPlanet);
+  const scanPlanetProgress = useHudTargtingGalaxyMapStore(
+    (state) => state.scanPlanetProgress
+  );
+
   return focusPlanetIndex !== null ? (
     <>
       {/*IS_MOBILE ? (
@@ -143,15 +150,20 @@ export const ActionWarpToPlanetPopupHUD = () => {
 };
 
 export const ActionWarpToStarPopupHUD = () => {
-  const selectedWarpStar = useStore((state) => state.selectedWarpStar);
+  const selectedWarpStar = useHudTargtingGalaxyMapStore(
+    (state) => state.selectedWarpStar
+  );
+  const setSelectedWarpStar = useHudTargtingGalaxyMapStore(
+    (state) => state.actions.setSelectedWarpStar
+  );
   /*
   const getPlayerTargetsHUD = usePlayerControlsStore(
     (state) => state.getPlayerTargetsHUD
   );
   const { targetWarpToStarHUD } = getPlayerTargetsHUD();
   */
-  const { setPlayerCurrentStarIndex, setSelectedWarpStar } = useStore(
-    (state) => state.actions
+  const setPlayerCurrentStarIndex = useStore(
+    (state) => state.actions.setPlayerCurrentStarIndex
   );
   if (selectedWarpStar === null /*|| targetWarpToStarHUD === null*/)
     return null;
@@ -281,9 +293,14 @@ export const CockpitControlMap = () => {
 };
 
 export const CockpitControlWarp = () => {
-  const selectedWarpStar = useStore((state) => state.selectedWarpStar);
-  const { setPlayerCurrentStarIndex, setSelectedWarpStar } = useStore(
-    (state) => state.actions
+  const selectedWarpStar = useHudTargtingGalaxyMapStore(
+    (state) => state.selectedWarpStar
+  );
+  const setSelectedWarpStar = useHudTargtingGalaxyMapStore(
+    (state) => state.actions.setSelectedWarpStar
+  );
+  const setPlayerCurrentStarIndex = useStore(
+    (state) => state.actions.setPlayerCurrentStarIndex
   );
 
   return (

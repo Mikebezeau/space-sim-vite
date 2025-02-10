@@ -1,9 +1,7 @@
 import { useRef } from "react";
 import useStore from "../stores/store";
-import controls from "../assets/icons/controls.svg";
-import controlStick from "/images/cockpit/controls/controlStick.png";
-import throttleStick from "/images/cockpit/controls/throttleStick.png";
 import usePlayerControlsStore from "../stores/playerControlsStore";
+import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import {
   useTouchStartControls,
   useTouchMoveControls,
@@ -11,6 +9,9 @@ import {
 } from "../hooks/controls/useTouchControls";
 import { ActionShoot } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
+import controls from "../assets/icons/controls.svg";
+import controlStick from "/images/cockpit/controls/controlStick.png";
+import throttleStick from "/images/cockpit/controls/throttleStick.png";
 
 const ThrottleControlsDisplay = () => {
   const playerSpeedSetting = usePlayerControlsStore(
@@ -52,7 +53,8 @@ const ThrottleControlsDisplay = () => {
 };
 
 const SpaceFlightControlsTouch = () => {
-  useStore.getState().updateRenderInfo("SpaceFlightControlsTouch");
+  const actions = useStore((state) => state.actions);
+
   const getPlayerState = usePlayerControlsStore(
     (state) => state.getPlayerState
   );
@@ -69,7 +71,11 @@ const SpaceFlightControlsTouch = () => {
   const isReverseSideTouchControls = usePlayerControlsStore(
     (state) => state.isReverseSideTouchControls
   );
-  const actions = useStore((state) => state.actions);
+
+  const setSelectedTargetIndex = useHudTargtingGalaxyMapStore(
+    (state) => state.actions.setSelectedTargetIndex
+  );
+
   // for check if touching move control to prevent screen from moving when
   // touching throttle control and vice versa
   const moveControl = useRef(null); // for detecting if touch is on the move control
@@ -110,7 +116,7 @@ const SpaceFlightControlsTouch = () => {
 
   //SHOOT LASERS
   function handleShoot() {
-    actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
+    setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
   }
   useTouchStartControls("btn-shoot", handleShoot);
 

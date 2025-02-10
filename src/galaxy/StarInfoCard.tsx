@@ -9,14 +9,20 @@ import { IS_MOBILE, PLAYER } from "../constants/constants";
 //import CyberMenuBorder from "../menuComponents/common/CyberMenuBorder";
 
 const StarInfoCard = () => {
+  const switchScreen = usePlayerControlsStore(
+    (state) => state.actions.switchScreen
+  );
+
   const showInfoHoveredStarIndex = useHudTargtingGalaxyMapStore(
     (state) => state.showInfoHoveredStarIndex
   );
-  const showInfoTargetStarIndex = useStore(
+  const showInfoTargetStarIndex = useHudTargtingGalaxyMapStore(
     (state) => state.showInfoTargetStarIndex
   );
-  const { setSelectedWarpStar } = useStore((state) => state.actions);
-  const { switchScreen } = usePlayerControlsStore((state) => state.actions);
+  const setSelectedWarpStar = useHudTargtingGalaxyMapStore(
+    (state) => state.actions.setSelectedWarpStar
+  );
+
   //const [showInfo, setShowInfo] = useState(true);
   const [viewStarIndex, setViewStarIndex] = useState<number | null>(null);
   const systemInfoCardRef = useRef<HTMLDivElement | null>(null);

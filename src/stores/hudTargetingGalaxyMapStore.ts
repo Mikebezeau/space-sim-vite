@@ -23,12 +23,14 @@ interface hudTargetingGalaxyMapStoreState {
     focusTargetIndex: number | null;
     selectedTargetIndex: number | null;
   };
+  clearTargets: () => void;
 
   checkScanDistanceToPlanet: (planetIndex: number) => void;
   scanningPlanetId: number;
   isScanDistanceToPlanet: boolean;
   scanPlanet: () => void;
   scanPlanetProgress: number;
+  // TODO clean up actions - what are actions?
   actions: {
     setFocusPlanetIndex: (focusPlanetIndex: number | null) => void;
     setFocusTargetIndex: (focusTargetIndex: number | null) => void;
@@ -91,6 +93,16 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         selectedTargetIndex: get().selectedTargetIndex,
       };
     },
+    clearTargets: () => {
+      set(() => ({
+        focusPlanetIndex: null,
+        selectedPanetIndex: null,
+        focusTargetIndex: null,
+        selectedTargetIndex: null,
+        showInfoTargetStarIndex: null,
+      }));
+    },
+
     checkScanDistanceToPlanet: (planetIndex) => {
       if (get().scanningPlanetId !== planetIndex) {
         set({ scanningPlanetId: planetIndex });
@@ -187,6 +199,7 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         set(() => ({ selectedWarpStar }));
         get().setSelectedWarpStarDirection();
       },
+      // TODO setSelectedPanetIndex not used - using setFocusPlanetIndex instead
       setSelectedPanetIndex(planetIndex) {
         set(() => ({ selectedPanetIndex: planetIndex }));
       },

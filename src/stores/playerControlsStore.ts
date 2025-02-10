@@ -1,6 +1,7 @@
 import React, { createRef } from "react";
 import { create } from "zustand";
 import useStore from "./store";
+import useHudTargtingGalaxyMapStore from "./hudTargetingGalaxyMapStore";
 import useDevStore from "./devStore";
 import { Object3D, Quaternion, Vector3 } from "three";
 import {
@@ -318,10 +319,13 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       // update positions used for CSS HUD targets
       updateTargetsPositionHUD: (camera) => {
         // warp star target
-        if (useStore.getState().selectedWarpStarDirection !== null) {
+        if (
+          useHudTargtingGalaxyMapStore.getState().selectedWarpStarDirection !==
+          null
+        ) {
           const { xn, yn, angleDiff } = getScreenPositionFromDirection(
             camera,
-            useStore.getState().selectedWarpStarDirection!
+            useHudTargtingGalaxyMapStore.getState().selectedWarpStarDirection!
           );
           set({ targetWarpToStarHUD: { xn, yn, angleDiff } });
         } else {
@@ -483,7 +487,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       // towards where player wants to look
       setPlayerCameraRotation: (camera) => {
         // additional camera rotation based on mouse position (looking around)
-        // TODO standardize this function similar use in store -> setSelectedTargetIndex -> fireWeapon
+        // TODO standardize this function similar use in hudTargtingGalaxyMapStore -> setSelectedTargetIndex -> fireWeapon
         // the signs for x, y are reversed for camera adjustment because camera angle is always reversed
         adjustCameraViewQuat.setFromAxisAngle(
           {

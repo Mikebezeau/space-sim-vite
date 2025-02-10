@@ -1,11 +1,14 @@
 import React from "react";
 import useStore from "../../stores/store";
+import useHudTargtingGalaxyMapStore from "../../stores/hudTargetingGalaxyMapStore";
 
 const SunScanData = () => {
   useStore.getState().updateRenderInfo("SunScanData");
 
   const stars = useStore((state) => state.stars);
-  const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
+  const focusPlanetIndex = useHudTargtingGalaxyMapStore(
+    (state) => state.focusPlanetIndex
+  );
 
   const data =
     stars && focusPlanetIndex === null && stars[0]

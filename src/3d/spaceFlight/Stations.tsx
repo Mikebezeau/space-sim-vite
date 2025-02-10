@@ -4,10 +4,10 @@ import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import Scenery, { SCENERY_TYPE } from "./Scenery";
 import BuildMech from "../buildMech/BuildMech";
-import SpaceStation from "../../classes/SpaceStation";
+import SpaceStationMech from "../../classes/SpaceStationMech";
 
 interface StationInt {
-  station: SpaceStation;
+  station: SpaceStationMech;
 }
 
 const Station = (props: StationInt) => {

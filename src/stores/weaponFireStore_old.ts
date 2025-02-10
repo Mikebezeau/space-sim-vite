@@ -62,7 +62,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     ) {
       if (
         isPlayer &&
-        useStore.getState().selectedTargetIndex === null &&
+        useStore.getState().selectedTargetIndex === null && //store change to useHudTargtingGalaxyMapStore
         autoFire
       ) {
         return null;

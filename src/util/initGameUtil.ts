@@ -1,11 +1,10 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
-import SpaceStation from "../classes/SpaceStation";
+import SpaceStationMech from "../classes/SpaceStationMech";
 import EnemyMechBoid from "../classes/EnemyMechBoid";
-import { initStationBP } from "./initEquipUtil";
 import { SCALE } from "../constants/constants";
 import mechDesigns from "../equipment/data/mechDesigns";
-
+// TODO update TS types
 //used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
   return new Array(count).fill(null).map(() => {
@@ -90,14 +89,14 @@ export const groupEnemies = (enemies: EnemyMechBoid[]) => {
 };
 
 export const genStations = () => {
-  let stations: SpaceStation[] = [];
+  let stations: SpaceStationMech[] = [];
   //create station
   const stationMechBPindex = 0,
     type = "EQUIPMENT",
     name = "X-22",
     ports = [{ x: 0.5, y: 0.5, z: 0.5 }];
 
-  stations.push(new SpaceStation(stationMechBPindex, type, name, ports));
+  stations.push(new SpaceStationMech(stationMechBPindex, type, name, ports));
 
   return stations;
 };

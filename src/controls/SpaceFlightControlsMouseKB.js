@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
+import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import {
   useKBControls,
   useMouseMove,
@@ -19,6 +20,7 @@ const ControlsMouseKBSpaceFlight = () => {
 
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
+
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
@@ -32,6 +34,10 @@ const ControlsMouseKBSpaceFlight = () => {
     (state) => state.actions.setPlayerSpeedSetting
   );
 
+  const setSelectedTargetIndex = useHudTargtingGalaxyMapStore(
+    (state) => state.actions.setSelectedTargetIndex
+  );
+
   //mouse move
   function handleMouseMove(e) {
     actions.updateMouse(e);
@@ -40,7 +46,7 @@ const ControlsMouseKBSpaceFlight = () => {
 
   //mouse click
   function handleMouseClick() {
-    actions.setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
+    setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
   }
   useMouseClick(handleMouseClick);
 

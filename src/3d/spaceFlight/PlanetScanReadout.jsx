@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import useStore from "../../stores/store";
+import useHudTargtingGalaxyMapStore from "../../stores/hudTargetingGalaxyMapStore";
 
 //planet shape
 const geometryPlanet = new THREE.SphereGeometry(5, 12, 12);
@@ -8,7 +9,9 @@ const PlanetScanReadout = () => {
   useStore.getState().updateRenderInfo("PlanetScanReadout");
 
   const planets = useStore((state) => state.planets);
-  const focusPlanetIndex = useStore((state) => state.focusPlanetIndex);
+  const focusPlanetIndex = useHudTargtingGalaxyMapStore(
+    (state) => state.focusPlanetIndex
+  );
 
   //planet material
   const materialPlanet = new THREE.MeshBasicMaterial({

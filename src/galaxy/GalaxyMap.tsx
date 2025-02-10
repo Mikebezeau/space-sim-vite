@@ -14,6 +14,7 @@ import {
 } from "@react-three/postprocessing";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import useStore from "../stores/store";
+import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import {
   useMouseDown,
   useMouseUp,
@@ -82,15 +83,16 @@ const GalaxyMap = () => {
 
   const StarPointsWithControls = () => {
     useStore.getState().updateRenderInfo("StarPointsWithControls");
-    const {
-      getPlayerCurrentStarIndex,
-      getShowInfoTargetStarIndex,
-      setShowInfoHoveredStarIndex,
-      setShowInfoTargetStarIndex,
-    } = useStore((state) => state.actions);
+    const { getPlayerCurrentStarIndex } = useStore((state) => state.actions);
     const { starCoordsBuffer, starSelectedBuffer } = useStore(
       (state) => state.galaxy
     );
+
+    const {
+      getShowInfoTargetStarIndex,
+      setShowInfoHoveredStarIndex,
+      setShowInfoTargetStarIndex,
+    } = useHudTargtingGalaxyMapStore((state) => state.actions);
 
     const starPointsRef = useRef<THREE.Points | null>(null);
     const mouseMovedStart = useRef(new THREE.Vector2(0, 0));
@@ -155,10 +157,11 @@ const GalaxyMap = () => {
         // set centerOnStarIndexRef to selected star for line drawing
         centerOnStarIndexRef.current = playerCurrentStarIndex;
         // reset target star player was looking at last time viewing galaxy map
-        // must set the hovered and target star indexes
         targetStarIndexRef.current = getShowInfoTargetStarIndex();
         if (targetStarIndexRef.current) {
+          // must set the hovered and target star index
           hoveredStarIndexRef.current = targetStarIndexRef.current;
+          // set target star line
           setSelectedTargetStar();
         }
         // update star points aSelected attribute
@@ -298,7 +301,7 @@ const GalaxyMap = () => {
 
     // change hovered star to  selected star
     // on mobile we set and check for hovered star existance before setSelectedTargetStar
-    const setSelectedTargetStar = (e) => {
+    const setSelectedTargetStar = (e = null) => {
       if (e && isMouseOverStarInfoCard(e)) {
         return;
       }

@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
+import useHudTargtingGalaxyMapStore from "../../stores/hudTargetingGalaxyMapStore";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { getCameraAngleDiffToPosition } from "../../util/cameraUtil";
@@ -70,6 +71,7 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 });
 */
 
+// TODO old code, make TS and clean
 const ScannerReadout = () => {
   useStore.getState().updateRenderInfo("ScannerReadout");
 
@@ -82,16 +84,18 @@ const ScannerReadout = () => {
 
   const player = useStore((state) => state.player);
   const planets = useStore((state) => state.planets);
-  const getTargets = useStore((state) => state.getTargets);
-  const checkScanDistanceToPlanet = useStore(
-    (state) => state.checkScanDistanceToPlanet
-  );
-  const { setFocusPlanetIndex, setFocusTargetIndex } = useStore(
-    (state) => state.actions
-  );
+
   const getPlayerState = usePlayerControlsStore(
     (state) => state.getPlayerState
   );
+
+  const getTargets = useHudTargtingGalaxyMapStore((state) => state.getTargets);
+  const checkScanDistanceToPlanet = useHudTargtingGalaxyMapStore(
+    (state) => state.checkScanDistanceToPlanet
+  );
+  const { setFocusPlanetIndex, setFocusTargetIndex } =
+    useHudTargtingGalaxyMapStore((state) => state.actions);
+
   const enemies = useEnemyStore((state) => state.enemies);
 
   const planetTargetGroupRef = useRef();
