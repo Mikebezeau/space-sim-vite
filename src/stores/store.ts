@@ -520,12 +520,12 @@ const useStore = create<storeState>()((set, get) => ({
             usePlayerControlsStore.getState().flightCameraLookRotation.rotateY *
             0.4,
           y:
-            -usePlayerControlsStore.getState().flightCameraLookRotation
-              .rotateX * 0.4,
+            usePlayerControlsStore.getState().flightCameraLookRotation.rotateX *
+            0.4,
           z: 0,
         },
         Math.PI / 2
-      );
+      ); //.normalize();//angle isn't big enough to need normalization
       get().player.fireWeapon(flightCameraLookQuaternoin);
       //make work for enemies as well
       //set new target for current shooter
@@ -574,11 +574,12 @@ const useStore = create<storeState>()((set, get) => ({
       //console.log(get().stars, get().planets);
       // select first star or planet as starting position
       let startPosCelestialBody: Star | Planet | null = null;
-      /*
+
+      startPosCelestialBody =
         get().planets.find(
           (planet) => planet.data.planetType === PLANET_TYPE.earthLike
         ) || get().planets[0];
-*/
+
       const startPosition = new THREE.Vector3();
       const enemyStartPosition = new THREE.Vector3();
       const stationStartPosition = new THREE.Vector3();

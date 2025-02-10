@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
-import { setCustomData } from "r3f-perf";
 
 type warpToStarTargetInt = {
   getTargetPosition: (

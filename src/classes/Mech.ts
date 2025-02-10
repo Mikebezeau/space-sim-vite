@@ -23,9 +23,9 @@ interface MechInt {
 }
 
 // TODO move these reusable objects to a bettr location
-const mechRefObj = new THREE.Group();
-const weaponObj = new THREE.Group();
-mechRefObj.add(weaponObj);
+const weaponFireMechParentObj = new THREE.Group();
+const weaponFireWeaponChildObj = new THREE.Group();
+weaponFireMechParentObj.add(weaponFireWeaponChildObj);
 const weaponFireQuaternoin = new THREE.Quaternion();
 const weaponFireEuler = new THREE.Euler();
 const weaponWorldPositionVec = new THREE.Vector3();
@@ -211,11 +211,12 @@ class Mech implements MechInt {
   fireWeapon(targetQuaternoin?: THREE.Quaternion) {
     if (this.mechBP?.weaponList) {
       //
-      mechRefObj.position.copy(this.object3d.position);
-      mechRefObj.rotation.copy(this.object3d.rotation);
-      weaponFireQuaternoin.copy(mechRefObj.quaternion);
+      weaponFireMechParentObj.position.copy(this.object3d.position);
+      weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
+      weaponFireQuaternoin.copy(weaponFireMechParentObj.quaternion);
       // TODO fix angle target issue
-      //if (targetQuaternoin) weaponFireQuaternoin.multiply(targetQuaternoin);
+      if (targetQuaternoin)
+        weaponFireQuaternoin.multiply(targetQuaternoin).normalize(); //normalization is important
       weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
 
       // for each weapon type array
@@ -225,10 +226,10 @@ class Mech implements MechInt {
         )?.offset;
         if (weapon.servoOffset) {
           // TODO find better way to calculate weapon position
-          // - use weapon.offset and mechRefObj.rotation
-          // mechRefObj id a shild of mechRefObj, so it's position is relative to mechRefObj
-          weaponObj.position.copy(weapon.offset);
-          weaponObj.getWorldPosition(weaponWorldPositionVec);
+          // - use weapon.offset and weaponFireMechParentObj.rotation
+          // weaponFireMechParentObj id a shild of weaponFireMechParentObj, so it's position is relative to weaponFireMechParentObj
+          weaponFireWeaponChildObj.position.copy(weapon.offset);
+          weaponFireWeaponChildObj.getWorldPosition(weaponWorldPositionVec);
           if (weapon.weaponType === equipData.weaponType.beam) {
             useParticleStore
               .getState()
@@ -246,8 +247,8 @@ class Mech implements MechInt {
           useParticleStore
             .getState()
             .playerEffects.addWeaponFireFlash(
-              weaponObj.position,
-              mechRefObj.rotation
+              weaponFireWeaponChildObj.position,
+              weaponFireMechParentObj.rotation
             );
         } else {
           console.error("servoOffset not found for weapon", weapon);

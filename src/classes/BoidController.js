@@ -3,7 +3,7 @@ import * as THREE from "three";
 const guiControls = new (function () {
   this.container = "box";
   this.params = {
-    maxSpeed: 1,
+    maxSpeed: 0.5,
     seek: {
       maxForce: 0.03,
     },

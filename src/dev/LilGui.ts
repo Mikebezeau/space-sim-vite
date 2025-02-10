@@ -10,7 +10,7 @@ const LilGui = () => {
     (state) => state.actions.switchScreen
   );
 
-  const controls = { toggleTitleScreen: false };
+  const controls = { toggleTitleScreen: false, toggleEquipmentScreen: false };
 
   useEffect(() => {
     const gui = new GUI();
@@ -29,14 +29,20 @@ const LilGui = () => {
       .add(controls, "toggleTitleScreen")
       .name("View Title Screen")
       .onChange(() => {
-        controls.toggleTitleScreen = false;
         switchScreen(PLAYER.screen.mainMenu);
       });
 
-    const pilotPage = gui.addFolder("Pilot");
-    pilotPage.open(false);
+    folderPage
+      .add(controls, "toggleEquipmentScreen")
+      .name("Build Equipment Screen")
+      .onChange(() => {
+        switchScreen(PLAYER.screen.equipmentBuild);
+      });
 
-    pilotPage.add(devStoreState, "devPlayerSpeedX1000").onChange((value) => {
+    const folderPilot = gui.addFolder("Pilot");
+    folderPilot.open(false);
+
+    folderPilot.add(devStoreState, "devPlayerSpeedX1000").onChange((value) => {
       devStoreState.setProp("devPlayerSpeedX1000", value ? 1 : 0);
     });
     return () => {

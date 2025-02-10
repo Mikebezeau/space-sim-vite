@@ -57,7 +57,7 @@ export const groupEnemies = (enemies: EnemyMechBoid[]) => {
     //this is also setting all followers of boss ship to upgrade to special mechBP
     if (!enemy.groupLeaderId) {
       //upgrade the leader mech to special mechBp
-      if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[2];
+      if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[1];
 
       enemies
         .filter(

@@ -1,3 +1,4 @@
+import React, { createRef } from "react";
 import { create } from "zustand";
 import useStore from "./store";
 import useDevStore from "./devStore";
@@ -36,6 +37,7 @@ interface playerControlStoreState {
 
   targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
   targetsPlanetsNormalHUD: {
+    planetIndex: number;
     xn: number;
     yn: number;
     angleDiff: number;
@@ -43,6 +45,7 @@ interface playerControlStoreState {
   getPlayerTargetsHUD: () => {
     targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
     targetsPlanetsNormalHUD: {
+      planetIndex: number;
       xn: number;
       yn: number;
       angleDiff: number;
@@ -50,10 +53,13 @@ interface playerControlStoreState {
   };
   hudDiameterPx: number;
   targetDiameterPx: number;
-  playerTargetRefs: {
-    warpToStarTargetRef: HTMLDivElement | null;
-    targetPlanetRefs: HTMLDivElement[];
-  };
+
+  // HUD target elements for CSS ui HUD
+  playerDirectionTargetDiv: React.RefObject<HTMLDivElement> | null;
+
+  warpToStarTargetRef: HTMLDivElement | null;
+  targetPlanetRefs: HTMLDivElement[];
+
   getTargetPosition: (xn: number, yn: number, angleDiff: number) => void;
 
   playerSpeedSetting: number;
@@ -71,6 +77,7 @@ interface playerControlStoreState {
   updateFrame: {
     updatePlayerWarpFrame: (deltaFPS: number) => void;
     updateTargetsPositionHUD: (camera: any) => void;
+    updatePlayerDirectionTargetHUD: () => void;
     updatePlayerCameraLookAngle: (
       deltaFPS: number,
       angleNorm?: { x: number; y: number }
@@ -153,7 +160,11 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     },
     hudDiameterPx: 0,
     targetDiameterPx: 0,
-    playerTargetRefs: { warpToStarTargetRef: null, targetPlanetRefs: [] },
+
+    playerDirectionTargetDiv: null,
+    warpToStarTargetRef: null,
+    targetPlanetRefs: [],
+
     getTargetPosition: (xn: number, yn: number, angleDiff: number) => {
       let pxNorm = (xn * window.innerWidth) / 2;
       let pyNorm = (yn * window.innerHeight) / 2;
@@ -245,23 +256,21 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       updatePlayerWarpFrame: (deltaFPS) => {
         if (get().playerWarpToPosition !== null) {
           /*
-          // change position immediately
+          // warp to target immediately TODO add GUI dev setting for this
           useStore.getState().setNewPlayerPosition(get().playerWarpToPosition!);
           get().playerWarpToPosition = null;
           */
-          // try updating playerWarpToPosition here
-          // if target position reached playerWarpToPosition is set to null
-          if (get().playerWarpToPosition !== null) {
-            // set playerWarpToPosition by recalculating target position (relative to player)
-            // now that player position changed andplayerPositionUpdated() was called
-            useStore.getState().testing.warpToPlanet();
-          }
+
+          // get updated playerWarpToPosition
+          // warpToPlanet sets playerWarpToPosition by recalculating target position (relative to player)
+          useStore.getState().testing.warpToPlanet();
+
           const player = useStore.getState().player;
           // rotate ship towards warp position
           dummyPlayerObj.copy(player.object3d);
           dummyPlayerObj.lookAt(get().playerWarpToPosition!);
-          // ignore z rotation
           /*
+          // optional - ignore z rotation (ship roll)
           dummyPlayerObj.rotation.set(
             dummyPlayerObj.rotation.x,
             dummyPlayerObj.rotation.y,
@@ -285,13 +294,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           const distanceToTarget = player.object3d.position.distanceTo(
             get().playerWarpToPosition!
           );
-          setCustomData(get().playerWarpSpeed);
           if (distanceToTarget < get().playerWarpSpeed) {
-            console.log(
-              "warp end: speed / target dist",
-              get().playerWarpSpeed,
-              distanceToTarget
-            );
             // set player at target position
             player.object3d.position.copy(get().playerWarpToPosition!);
             // cancel warp by setting playerWarpToPosition to null
@@ -319,18 +322,37 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         }
         if (useStore.getState().planets.length > 0) {
           const targetsPlanetsNormalHUD: {
+            planetIndex: number;
             xn: number;
             yn: number;
             angleDiff: number;
           }[] = [];
-          useStore.getState().planets.forEach((planet) => {
+          useStore.getState().planets.forEach((planet, index) => {
             if (!planet.isActive) return;
             //getWorldPosition required due to relative positioning to player
             planet.object3d.getWorldPosition(dummyVec3);
             const { xn, yn, angleDiff } = getScreenPosition(camera, dummyVec3);
-            targetsPlanetsNormalHUD.push({ xn, yn, angleDiff });
+            targetsPlanetsNormalHUD.push({
+              planetIndex: index,
+              xn,
+              yn,
+              angleDiff,
+            });
           });
           set({ targetsPlanetsNormalHUD });
+        }
+      },
+
+      updatePlayerDirectionTargetHUD: () => {
+        const mouse = useStore.getState().mutation.mouse;
+
+        if (get().playerDirectionTargetDiv !== null) {
+          get().playerDirectionTargetDiv!.current!.style.marginLeft = `${
+            mouse.x * get().hudDiameterPx
+          }px`;
+          get().playerDirectionTargetDiv!.current!.style.marginTop = `${
+            mouse.y * get().hudDiameterPx
+          }px`;
         }
       },
 
@@ -346,7 +368,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         get().flightCameraLookRotation.rotateX = lerp(
           get().flightCameraLookRotation.rotateX,
           targetRotationX,
-          lerpSpeed * deltaFPS
+          lerpSpeed // * deltaFPS
         );
 
         get().flightCameraLookRotation.rotateY = lerp(
@@ -435,6 +457,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       setPlayerCameraRotation: (camera) => {
         // additional camera rotation based on mouse position (looking around)
         // TODO standardize this function similar use in store -> setSelectedTargetIndex -> fireWeapon
+        // the signs for x, y are reversed for camera adjustment because camera angle is always reversed
         adjustCameraViewQuat.setFromAxisAngle(
           {
             x: -get().flightCameraLookRotation.rotateY * 0.4,
@@ -448,6 +471,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
       // called each frame to update player mech and camera
       updatePlayerMechAndCamera: (delta, camera) => {
+        // TODO cap delta to 100ms here?
         const deltaFPS = delta * FPS;
         // TODO warping make cool animation
         if (get().playerWarpToPosition !== null) {
@@ -465,6 +489,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         get().updateFrame.setPlayerFixedCameraPosition(camera);
         get().updateFrame.setPlayerCameraRotation(camera);
         get().updateFrame.updateTargetsPositionHUD(camera);
+        get().updateFrame.updatePlayerDirectionTargetHUD();
       },
     },
   })

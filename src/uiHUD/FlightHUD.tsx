@@ -1,19 +1,11 @@
-import React, { useState, useRef } from "react";
-import useStore from "../stores/store";
-import { useMouseMove } from "../hooks/controls/useMouseKBControls";
-import {
-  useTouchStartControls,
-  useTouchMoveControls,
-} from "../hooks/controls/useTouchControls";
+import React, { useEffect, useRef, useState } from "react";
+import usePlayerControlsStore from "../stores/playerControlsStore";
 import useWindowResize from "../hooks/useWindowResize";
 import TargetsHUD from "./targetsHUD/TargetsHUD";
 
 export const getScreenCoordinates = (x: number, y: number) => {};
 
 const FlightHUD = () => {
-  const mouse = useStore.getState().mutation.mouse;
-  const playerDirectionTargetRef = useRef<HTMLDivElement>(null);
-
   const getHudDiameterPxFromWindow = () =>
     window.innerWidth > window.innerHeight
       ? window.innerHeight * 0.8
@@ -26,54 +18,61 @@ const FlightHUD = () => {
     hudDiameterPx / 20
   );
 
-  useWindowResize(() => {
-    const newhudDiameterPx = getHudDiameterPxFromWindow();
-    const newTargetDiameterPx = newhudDiameterPx / 20;
-    setHudDiameterPx(newhudDiameterPx);
-    setTargetDiameterPx(newTargetDiameterPx);
-  });
+  const hudCircleRef = useRef<HTMLDivElement | null>(null);
+  const playerDirectionTargetRef = useRef<HTMLDivElement | null>(null);
 
-  const updatePlayerDirectionTarget = () => {
-    if (playerDirectionTargetRef.current) {
-      playerDirectionTargetRef.current.style.marginLeft = `${
-        mouse.x * hudDiameterPx - targetDiameterPx / 2
-      }px`;
-      playerDirectionTargetRef.current.style.marginTop = `${
-        mouse.y * hudDiameterPx - targetDiameterPx / 2
-      }px`;
+  const setSizes = () => {
+    const diameter =
+      window.innerWidth > window.innerHeight
+        ? window.innerHeight * 0.8
+        : window.innerWidth * 0.9;
+
+    usePlayerControlsStore.getState().hudDiameterPx = diameter;
+    usePlayerControlsStore.getState().targetDiameterPx = diameter / 20;
+
+    if (
+      hudCircleRef.current !== null &&
+      playerDirectionTargetRef.current !== null
+    ) {
+      hudCircleRef.current.style.marginTop = `-${diameter / 2}px`;
+      hudCircleRef.current.style.marginLeft = `-${diameter / 2}px`;
+      hudCircleRef.current.style.width = `${diameter}px`;
+      hudCircleRef.current.style.height = `${diameter}px`;
+
+      playerDirectionTargetRef.current.style.top = `calc( 50% -  ${
+        targetDiameterPx / 2
+      }px)`;
+      playerDirectionTargetRef.current.style.left = `calc( 50% -  ${
+        targetDiameterPx / 2
+      }px)`;
+      playerDirectionTargetRef.current.style.width = `${diameter / 20}px`;
+      playerDirectionTargetRef.current.style.height = `${diameter / 20}px`;
     }
   };
 
-  useMouseMove(() => {
-    requestAnimationFrame(updatePlayerDirectionTarget);
+  useWindowResize(() => {
+    setSizes();
   });
 
-  useTouchStartControls("root", () => {
-    requestAnimationFrame(updatePlayerDirectionTarget);
-  });
-
-  useTouchMoveControls("root", () => {
-    requestAnimationFrame(updatePlayerDirectionTarget);
-  });
+  useEffect(() => {
+    setSizes();
+  }, [hudCircleRef.current, playerDirectionTargetRef.current]);
 
   return (
     <>
       <div
+        ref={hudCircleRef}
         className={`opacity-50 absolute top-1/2 left-1/2 border-2 border-white rounded-full`}
-        style={{
-          marginTop: `-${hudDiameterPx / 2}px`,
-          marginLeft: `-${hudDiameterPx / 2}px`,
-          width: `${hudDiameterPx}px`,
-          height: `${hudDiameterPx}px`,
-        }}
       />
       <div
-        ref={playerDirectionTargetRef}
-        className={`opacity-50 absolute top-1/2 left-1/2 border-2 border-green-500 rounded-full`}
-        style={{
-          width: `${targetDiameterPx}px`,
-          height: `${targetDiameterPx}px`,
+        ref={(divElement) => {
+          if (divElement) {
+            playerDirectionTargetRef.current = divElement;
+            usePlayerControlsStore.getState().playerDirectionTargetDiv =
+              playerDirectionTargetRef;
+          }
         }}
+        className={`opacity-50 absolute border-2 border-green-500 rounded-full`}
       />
       <TargetsHUD
         hudDiameterPx={hudDiameterPx}
