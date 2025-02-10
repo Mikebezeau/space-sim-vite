@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
+import SpaceStation from "../classes/SpaceStation";
 import EnemyMechBoid from "../classes/EnemyMechBoid";
 import { initStationBP } from "./initEquipUtil";
 import { SCALE } from "../constants/constants";
@@ -89,15 +90,14 @@ export const groupEnemies = (enemies: EnemyMechBoid[]) => {
 };
 
 export const genStations = () => {
-  let stations: any[] = [];
+  let stations: SpaceStation[] = [];
   //create station
-  stations.push({
-    id: uuidv4(),
-    type: "EQUIPMENT",
-    name: "X-22",
-    ports: [{ x: 0.5, y: 0.5, z: 0.5 }],
-    stationBP: initStationBP(0),
-    object3d: new THREE.Object3D(),
-  });
+  const stationMechBPindex = 0,
+    type = "EQUIPMENT",
+    name = "X-22",
+    ports = [{ x: 0.5, y: 0.5, z: 0.5 }];
+
+  stations.push(new SpaceStation(stationMechBPindex, type, name, ports));
+
   return stations;
 };

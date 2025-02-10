@@ -3,20 +3,20 @@ import * as THREE from "three";
 const guiControls = new (function () {
   this.container = "box";
   this.params = {
-    maxSpeed: 0.5,
+    maxSpeed: 0.25,
     seek: {
-      maxForce: 0.03,
+      maxForce: 0.05,
     },
     align: {
-      effectiveRange: 20,
-      maxForce: 0.2, //0.18,
+      effectiveRange: 50,
+      maxForce: 0.05, //0.18,
     },
     separate: {
-      effectiveRange: 40, //80,
+      effectiveRange: 20, //80,
       maxForce: 0.05, //0.2,
     },
     cohesion: {
-      effectiveRange: 50, //160,
+      effectiveRange: 150, //160,
     },
   };
 })();

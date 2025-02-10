@@ -1,6 +1,7 @@
 import React from "react";
 import WarpToStarTarget from "./WarpToStarTarget";
 import PlanetTargets from "./PlanetTargets";
+import StationTargets from "./StationTargets";
 
 type TargetsHUDInt = {
   hudDiameterPx: number;
@@ -44,6 +45,10 @@ const TargetsHUD = (props: TargetsHUDInt) => {
         targetDiameterPx={targetDiameterPx}
       />
       <PlanetTargets
+        getTargetPosition={getTargetPosition}
+        targetDiameterPx={targetDiameterPx}
+      />
+      <StationTargets
         getTargetPosition={getTargetPosition}
         targetDiameterPx={targetDiameterPx}
       />

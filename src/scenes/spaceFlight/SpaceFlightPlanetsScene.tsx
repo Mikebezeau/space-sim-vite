@@ -57,13 +57,14 @@ const SpaceFlightPlanetsScene = () => {
 
   return (
     <>
+      <pointLight intensity={1} decay={0} />
       <ambientLight intensity={0.2} />
       <PlayerMech />
       <SpaceFlightHud />
+      {/* TODO particle system - spawn particle - do check to make sure only loacl particles are spawned */}
       <Particles />
 
       <group ref={relativePlayerGroupRef}>
-        <pointLight /*castShadow*/ intensity={1} decay={0} />
         <Stations />
         <SolarSystem />
       </group>

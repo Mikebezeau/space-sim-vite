@@ -640,6 +640,8 @@ const useStore = create<storeState>()((set, get) => ({
       const stations = genStations();
       if (stations[0]) {
         stations[0].object3d.position.copy(stationStartPosition);
+        stations[0].object3d.lookAt(startPosCelestialBody.object3d.position);
+        stations[0].object3d.translateX(500);
         set(() => ({
           stations,
         }));

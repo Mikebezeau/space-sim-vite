@@ -10,7 +10,7 @@ import BuildMech from "../buildMech/BuildMech";
 import Particles from "../Particles";
 import { setVisible } from "../../util/gameUtil";
 import { FPS, PLAYER } from "../../constants/constants";
-import { setCustomData } from "r3f-perf";
+//import { setCustomData } from "r3f-perf";
 
 const PlayerMech = () => {
   useStore.getState().updateRenderInfo("PlayerMech");

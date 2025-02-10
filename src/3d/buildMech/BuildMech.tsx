@@ -14,7 +14,7 @@ interface BuildMechInt {
   isWireFrame?: boolean;
   handleClick?: () => void;
 }
-
+// TODO fix forwardRef type - error in parent component
 const BuildMech = forwardRef(function BuildMech(
   props: BuildMechInt,
   buildMechForwardRef: any

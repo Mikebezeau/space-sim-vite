@@ -42,6 +42,12 @@ interface playerControlStoreState {
     yn: number;
     angleDiff: number;
   }[];
+  targetsStationsNormalHUD: {
+    stationIndex: number;
+    xn: number;
+    yn: number;
+    angleDiff: number;
+  }[];
   getPlayerTargetsHUD: () => {
     targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
     targetsPlanetsNormalHUD: {
@@ -152,6 +158,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     // HUD targets for CSS ui HUD
     targetWarpToStarHUD: null,
     targetsPlanetsNormalHUD: [],
+    targetsStationsNormalHUD: [],
     getPlayerTargetsHUD: () => {
       return {
         targetWarpToStarHUD: get().targetWarpToStarHUD,
@@ -340,6 +347,26 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
             });
           });
           set({ targetsPlanetsNormalHUD });
+        }
+        if (useStore.getState().stations.length > 0) {
+          const targetsStationsNormalHUD: {
+            stationIndex: number;
+            xn: number;
+            yn: number;
+            angleDiff: number;
+          }[] = [];
+          useStore.getState().stations.forEach((station, index) => {
+            //getWorldPosition required due to relative positioning to player
+            station.object3d.getWorldPosition(dummyVec3);
+            const { xn, yn, angleDiff } = getScreenPosition(camera, dummyVec3);
+            targetsStationsNormalHUD.push({
+              stationIndex: index,
+              xn,
+              yn,
+              angleDiff,
+            });
+          });
+          set({ targetsStationsNormalHUD });
         }
       },
 

@@ -10,7 +10,11 @@ const LilGui = () => {
     (state) => state.actions.switchScreen
   );
 
-  const controls = { toggleTitleScreen: false, toggleEquipmentScreen: false };
+  const controls = {
+    toggleTitleScreen: false,
+    toggleStationScreen: false,
+    toggleEquipmentScreen: false,
+  };
 
   useEffect(() => {
     const gui = new GUI();
@@ -29,13 +33,23 @@ const LilGui = () => {
       .add(controls, "toggleTitleScreen")
       .name("View Title Screen")
       .onChange(() => {
+        controls.toggleTitleScreen = false;
         switchScreen(PLAYER.screen.mainMenu);
+      });
+
+    folderPage
+      .add(controls, "toggleStationScreen")
+      .name("View Station Screen")
+      .onChange(() => {
+        controls.toggleStationScreen = false;
+        switchScreen(PLAYER.screen.dockedStation);
       });
 
     folderPage
       .add(controls, "toggleEquipmentScreen")
       .name("Build Equipment Screen")
       .onChange(() => {
+        controls.toggleEquipmentScreen = false;
         switchScreen(PLAYER.screen.equipmentBuild);
       });
 

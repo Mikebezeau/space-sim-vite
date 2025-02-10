@@ -22,7 +22,7 @@ interface MechInt {
   fireWeapon: (targetQuaternoin: THREE.Quaternion) => void;
 }
 
-// TODO move these reusable objects to a bettr location
+// TODO move these reusable objects to a better location? perhaps a util resuse const obj file
 const weaponFireMechParentObj = new THREE.Group();
 const weaponFireWeaponChildObj = new THREE.Group();
 weaponFireMechParentObj.add(weaponFireWeaponChildObj);
@@ -110,7 +110,7 @@ class Mech implements MechInt {
   // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
   initObject3d = (object3d: THREE.Object3D) => {
     if (object3d) {
-      // keeping position and rotation of original object3d
+      // keeping position and rotation set to this object3d (reset at end of function)
       const keepPosition = new THREE.Vector3();
       keepPosition.copy(this.object3d.position);
       const keepRotation = new THREE.Euler();
@@ -124,6 +124,7 @@ class Mech implements MechInt {
         // since the object3d is not directly assigned to the mesh, just copied
         this.object3d.copy(object3d, true);
         this.setMergedBufferGeom();
+        // TODO set merged buffer geometries of each color for instanced mesh
         const geomColorList = getGeomColorList(this.object3d);
         if (geomColorList) {
           this.setMergedBufferGeomColorsList(geomColorList);

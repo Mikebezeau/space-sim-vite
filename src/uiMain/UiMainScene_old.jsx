@@ -6,7 +6,7 @@ import Floor from "./Floor";
 import GridsContainer from "./GridsContainer";
 import useMainUIStore from "./useMainUIStore";
 import ZoomController from "./zoomEffects/ZoomController";
-import BuildMech from "../3d/buildMech/BuildMech";
+//import BuildMech from "../3d/buildMech/BuildMech";
 import { SCALE } from "../constants/constants";
 
 export default function UiMainScene() {
@@ -15,7 +15,7 @@ export default function UiMainScene() {
   const { itemsPrivateLocker, itemsShareLocker, itemsSam } = useMainUIStore(
     (state) => state
   );
-  const stations = useStore((state) => state.stations);
+  //const stations = useStore((state) => state.stations);
 
   const buildMechRef = useRef();
 
@@ -46,7 +46,7 @@ export default function UiMainScene() {
         rotation={[-Math.PI / 7, 0, Math.PI / 4]}
         scale={SCALE}
       >
-        {/*<BuildMech mechBP={stations[0]?.stationBP} isWireFrame={true} />*/}
+        {/*<BuildMech mechBP={stations[0]?.mechBP} isWireFrame={true} />*/}
       </group>
     </>
   );
