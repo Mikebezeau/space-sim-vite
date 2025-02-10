@@ -42,7 +42,10 @@ const Station = (props: StationInt) => {
         }}
         mechBP={station.mechBP}
       />
-      {/* example Scenery .glb 3d object models */}
+      {/*
+        example Scenery .glb 3d object models 
+        TODO add station scenery options to class / buildmech
+      */}
       <group position={station.object3d.position}>
         <group scale={40} position={[-6, 110, 0]} rotation={[0, 0, 0.6]}>
           <Scenery sceneryType={SCENERY_TYPE.junk.brokenDish} />

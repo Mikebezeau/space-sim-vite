@@ -31,21 +31,28 @@ export type TypeGalaxy = {
 };
 
 interface storeState {
+  // render info to monitor performance issues
   renderCount: {};
   renderTime: {};
   renderData: {};
   renderTimer: number;
   updateRenderInfo: (componentName: string, data?: any | undefined) => void;
   updateRenderDoneInfo: (componentName: string) => void;
+  //
   initGameStore: (renderer: THREE.WebGLRenderer) => void;
   disposeGameStore: () => void;
   isGameStoreInit: boolean;
 
   sound: boolean;
   playerCurrentStarIndex: number;
+
+  // -----------
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
   selectedWarpStar: number | null;
+  // -----------
+
+  // TODO Galaxy class
   galaxy: TypeGalaxy | Promise<void | TypeGalaxy> | null;
   getStarBufferPosition: (starIndex: number) => {
     x: number;
@@ -58,6 +65,9 @@ interface storeState {
     z: number;
   };
   starPointsShaderMaterial: THREE.ShaderMaterial;
+  // put above in class
+
+  // TODO change playerControl to player store - include more player related data
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
   // therefore do not really need to use getPlayer
@@ -73,6 +83,7 @@ interface storeState {
   ) => void;
   playerPositionUpdated: () => { x: number; y: number; z: number };
 
+  // -----------
   selectedWarpStarDirection: THREE.Vector3 | null;
   setSelectedWarpStarDirection: () => void;
   focusTargetIndex: number | null;
@@ -85,27 +96,40 @@ interface storeState {
     focusTargetIndex: number | null;
     selectedTargetIndex: number | null;
   };
+  // -----------
+
   solarSystem: SolarSystem;
   stars: Star[];
   planets: Planet[];
+
+  // -----------
   checkScanDistanceToPlanet: (planetIndex: number) => void;
   scanningPlanetId: number;
   isScanDistanceToPlanet: boolean;
   scanPlanet: () => void;
   scanPlanetProgress: number;
+  // -----------
+
   sunShaderMaterial: THREE.ShaderMaterial;
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
   stations: any[];
   planetTerrain: any;
+
   actions: {
     setSpeed: (speed: number) => void;
     setPlayerPosition: (positionVec3: THREE.Vector3) => void;
+
+    // -----------
     setFocusPlanetIndex: (focusPlanetIndex: number | null) => void;
     setFocusTargetIndex: (focusTargetIndex: number | null) => void;
     setSelectedTargetIndex: () => void;
+    // -----------
+
     getPlayerCurrentStarIndex: () => number;
     setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
+
+    // -----------
     setShowInfoHoveredStarIndex: (
       showInfoHoveredStarIndex: number | null
     ) => void;
@@ -113,6 +137,8 @@ interface storeState {
     setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
     setSelectedWarpStar: (selectedWarpStar: number | null) => void;
     setSelectedPanetIndex: (planetIndex: number | null) => void;
+    // -----------
+
     toggleSound: (sound?: boolean) => void;
     updateMouse: (event: MouseEvent) => void;
     updateTouchMobileMoveShip: (event: TouchEvent) => void;
@@ -134,8 +160,11 @@ interface storeState {
 const dummyVec3 = new THREE.Vector3();
 // setting warp targets
 const targetObj = new THREE.Object3D();
+
+// -----------
 // for targeting weapons fireWeapon()
 const flightCameraLookQuaternoin = new THREE.Quaternion();
+// -----------
 
 const useStore = create<storeState>()((set, get) => ({
   renderCount: {},
@@ -189,11 +218,15 @@ const useStore = create<storeState>()((set, get) => ({
   isGameStoreInit: false,
 
   sound: false,
+
+  // -----------
   // for galaxy map
   showInfoHoveredStarIndex: null, // used in galaxy map ui
   showInfoTargetStarIndex: null,
   selectedWarpStar: null,
+  // -----------
 
+  //
   galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
     set({ galaxy: galaxyData });
   }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
@@ -216,8 +249,9 @@ const useStore = create<storeState>()((set, get) => ({
       z: starPosition.z - playerStarPosition.z,
     };
   },
-
   starPointsShaderMaterial: starPointsShaderMaterial,
+  //
+
   // intial player star
   playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
   player: new PlayerMech(),
@@ -274,6 +308,8 @@ const useStore = create<storeState>()((set, get) => ({
       return { x: 0, y: 0, z: 0 };
     }
   },
+
+  // -----------
   // targeting
   selectedWarpStarDirection: null,
   setSelectedWarpStarDirection: () => {
@@ -310,9 +346,13 @@ const useStore = create<storeState>()((set, get) => ({
       selectedTargetIndex: get().selectedTargetIndex,
     };
   },
+  // -----------
+
   solarSystem: new SolarSystem(),
   stars: [], // set in call to setPlayerCurrentStarIndex
   planets: [], // set in call to setPlayerCurrentStarIndex
+
+  // -----------
   checkScanDistanceToPlanet: (planetIndex) => {
     if (get().scanningPlanetId !== planetIndex) {
       set({ scanningPlanetId: planetIndex });
@@ -346,6 +386,7 @@ const useStore = create<storeState>()((set, get) => ({
     }
   },
   scanPlanetProgress: 0,
+  // -----------
 
   sunShaderMaterial: sunShaderMaterial,
   planetShaderMaterial: planetShaderMaterial,
@@ -501,18 +542,17 @@ const useStore = create<storeState>()((set, get) => ({
       get().player.object3d.position.copy(positionVec3);
     },
 
+    // -----------
     setFocusPlanetIndex(focusPlanetIndex) {
       if (get().focusPlanetIndex !== focusPlanetIndex) {
         set(() => ({ focusPlanetIndex }));
       }
     },
-
     setFocusTargetIndex(focusTargetIndex) {
       if (get().focusTargetIndex !== focusTargetIndex) {
         set(() => ({ focusTargetIndex }));
       }
     },
-
     setSelectedTargetIndex() {
       flightCameraLookQuaternoin.setFromAxisAngle(
         {
@@ -553,6 +593,7 @@ const useStore = create<storeState>()((set, get) => ({
         true // isPlayer
       );*/
     },
+    // -----------
 
     // intial star position selection in galaxy map
     getPlayerCurrentStarIndex: () => get().playerCurrentStarIndex,
@@ -652,23 +693,22 @@ const useStore = create<storeState>()((set, get) => ({
       get().updateRenderDoneInfo("setPlayerCurrentStarIndex");
     },
 
+    // -----------
     setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
       set(() => ({ showInfoHoveredStarIndex }));
     },
-
     getShowInfoTargetStarIndex: () => get().showInfoTargetStarIndex,
     setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
       set(() => ({ showInfoTargetStarIndex }));
     },
-
     setSelectedWarpStar(selectedWarpStar) {
       set(() => ({ selectedWarpStar }));
       get().setSelectedWarpStarDirection();
     },
-
     setSelectedPanetIndex(planetIndex) {
       set(() => ({ selectedPanetIndex: planetIndex }));
     },
+    // -----------
 
     toggleSound(sound = !get().sound) {
       set({ sound });
