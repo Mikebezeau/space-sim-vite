@@ -20,7 +20,7 @@ const StarInfoCard = () => {
     (state) => state.showInfoTargetStarIndex
   );
   const setSelectedWarpStar = useHudTargtingGalaxyMapStore(
-    (state) => state.actions.setSelectedWarpStar
+    (state) => state.galaxyMapActions.setSelectedWarpStar
   );
 
   //const [showInfo, setShowInfo] = useState(true);

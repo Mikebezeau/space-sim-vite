@@ -1,34 +1,17 @@
-import React, { createRef } from "react";
 import { create } from "zustand";
+import { Object3D, Quaternion, Vector3 } from "three";
 import useStore from "./store";
 import useHudTargtingGalaxyMapStore from "./hudTargetingGalaxyMapStore";
 import useDevStore from "./devStore";
-import { Object3D, Quaternion, Vector3 } from "three";
-import {
-  flipRotation,
-  getScreenPosition,
-  getScreenPositionFromDirection,
-} from "../util/cameraUtil";
+import { flipRotation } from "../util/cameraUtil";
 import { lerp } from "../util/gameUtil";
 import { PLAYER, FPS, SPEED_VALUES } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
 
 interface playerControlStoreState {
   playerActionMode: number;
   playerControlMode: number;
   playerViewMode: number;
-  flightCameraLookRotation: {
-    rotateX: number;
-    rotateY: number;
-  };
   playerScreen: number;
-  isSwitchingPlayerScreen: boolean;
-  setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
-  canvasSceneRendered: boolean;
-  setCanvasSceneRendered: (canvasSceneRendered: boolean) => void;
-  // within solar system warp
-  playerWarpToPosition: Vector3 | null;
-
   getPlayerState: () => {
     playerActionMode: number;
     playerControlMode: number;
@@ -36,38 +19,17 @@ interface playerControlStoreState {
     playerScreen: number;
   };
 
-  targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
-  targetsPlanetsNormalHUD: {
-    planetIndex: number;
-    xn: number;
-    yn: number;
-    angleDiff: number;
-  }[];
-  targetsStationsNormalHUD: {
-    stationIndex: number;
-    xn: number;
-    yn: number;
-    angleDiff: number;
-  }[];
-  getPlayerTargetsHUD: () => {
-    targetWarpToStarHUD: { xn: number; yn: number; angleDiff: number } | null;
-    targetsPlanetsNormalHUD: {
-      planetIndex: number;
-      xn: number;
-      yn: number;
-      angleDiff: number;
-    }[];
+  flightCameraLookRotation: {
+    rotateX: number;
+    rotateY: number;
   };
-  hudDiameterPx: number;
-  targetDiameterPx: number;
 
-  // HUD target elements for CSS ui HUD
-  playerDirectionTargetDiv: React.RefObject<HTMLDivElement> | null;
-
-  warpToStarTargetRef: HTMLDivElement | null;
-  targetPlanetRefs: HTMLDivElement[];
-
-  getTargetPosition: (xn: number, yn: number, angleDiff: number) => void;
+  isSwitchingPlayerScreen: boolean;
+  setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
+  canvasSceneRendered: boolean;
+  setCanvasSceneRendered: (canvasSceneRendered: boolean) => void;
+  // within solar system warp
+  playerWarpToPosition: Vector3 | null;
 
   playerSpeedSetting: number;
   getPlayerSpeedSetting: () => number;
@@ -83,8 +45,6 @@ interface playerControlStoreState {
   playerWarpSpeed: number;
   updateFrame: {
     updatePlayerWarpFrame: (deltaFPS: number) => void;
-    updateTargetsPositionHUD: (camera: any) => void;
-    updatePlayerDirectionTargetHUD: () => void;
     updatePlayerCameraLookAngle: (
       deltaFPS: number,
       angleNorm?: { x: number; y: number }
@@ -98,9 +58,6 @@ interface playerControlStoreState {
   };
 }
 
-// reusable
-const dummyVec3 = new Vector3();
-
 // for ship and camera rotation
 const rotateShipQuat = new Quaternion(),
   adjustCameraViewQuat = new Quaternion();
@@ -113,16 +70,26 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
-    flightCameraLookRotation: {
-      rotateX: 0,
-      rotateY: 0,
-    },
     // testing
     //playerScreen: PLAYER.screen.mainMenu,
     //playerScreen: PLAYER.screen.newCampaign,
     playerScreen: PLAYER.screen.flight,
     //playerScreen: PLAYER.screen.equipmentBuild,
     //playerScreen: PLAYER.screen.galaxyMap,
+    getPlayerState: () => {
+      return {
+        playerActionMode: get().playerActionMode,
+        playerControlMode: get().playerControlMode,
+        playerViewMode: get().playerViewMode,
+        playerScreen: get().playerScreen,
+      };
+    },
+
+    flightCameraLookRotation: {
+      rotateX: 0,
+      rotateY: 0,
+    },
+
     // isSwitchingPlayerScreen used in AppLoadingScreen to fade in screen
     isSwitchingPlayerScreen: true, // initally set to true to fade in screen
     setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen) => {
@@ -146,60 +113,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
     // within solar system warp
     playerWarpToPosition: null,
-
-    getPlayerState: () => {
-      return {
-        playerActionMode: get().playerActionMode,
-        playerControlMode: get().playerControlMode,
-        playerViewMode: get().playerViewMode,
-        playerScreen: get().playerScreen,
-      };
-    },
-
-    // HUD targets for CSS ui HUD
-    targetWarpToStarHUD: null,
-    targetsPlanetsNormalHUD: [],
-    targetsStationsNormalHUD: [],
-    getPlayerTargetsHUD: () => {
-      return {
-        targetWarpToStarHUD: get().targetWarpToStarHUD,
-        targetsPlanetsNormalHUD: get().targetsPlanetsNormalHUD,
-      };
-    },
-    hudDiameterPx: 0,
-    targetDiameterPx: 0,
-
-    playerDirectionTargetDiv: null,
-    warpToStarTargetRef: null,
-    targetPlanetRefs: [],
-
-    getTargetPosition: (xn: number, yn: number, angleDiff: number) => {
-      let pxNorm = (xn * window.innerWidth) / 2;
-      let pyNorm = (yn * window.innerHeight) / 2;
-
-      const targetBehindCamera = Math.abs(angleDiff) >= Math.PI / 2;
-      // adjust position values if behind camera by flipping them
-      if (targetBehindCamera) {
-        pxNorm *= -1;
-        pyNorm *= -1;
-      }
-
-      // if x, y is outside HUD circle, adjust x, y to be on egde of HUD circle
-      // also always set x, y on edge if angle is greater than 90 degrees
-      if (
-        Math.sqrt(pxNorm * pxNorm + pyNorm * pyNorm) >
-          get().hudDiameterPx / 2 ||
-        targetBehindCamera
-      ) {
-        const atan2Angle = Math.atan2(pyNorm, pxNorm);
-        pxNorm = (Math.cos(atan2Angle) * get().hudDiameterPx) / 2;
-        pyNorm = (Math.sin(atan2Angle) * get().hudDiameterPx) / 2;
-      }
-      // set position of target div
-      const marginLeft = `${pxNorm - get().targetDiameterPx / 2}px`;
-      const marginTop = `${pyNorm - get().targetDiameterPx / 2}px`;
-      return { marginLeft, marginTop };
-    },
 
     playerSpeedSetting: 1, // used in throttle control, and updatePlayerMechAndCamera below
     getPlayerSpeedSetting: () => get().playerSpeedSetting,
@@ -313,77 +226,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           }
           // playerPositionUpdated: function to update relative world position
           useStore.getState().playerPositionUpdated();
-        }
-      },
-
-      // update positions used for CSS HUD targets
-      updateTargetsPositionHUD: (camera) => {
-        // warp star target
-        if (
-          useHudTargtingGalaxyMapStore.getState().selectedWarpStarDirection !==
-          null
-        ) {
-          const { xn, yn, angleDiff } = getScreenPositionFromDirection(
-            camera,
-            useHudTargtingGalaxyMapStore.getState().selectedWarpStarDirection!
-          );
-          set({ targetWarpToStarHUD: { xn, yn, angleDiff } });
-        } else {
-          set({ targetWarpToStarHUD: null });
-        }
-        if (useStore.getState().planets.length > 0) {
-          const targetsPlanetsNormalHUD: {
-            planetIndex: number;
-            xn: number;
-            yn: number;
-            angleDiff: number;
-          }[] = [];
-          useStore.getState().planets.forEach((planet, index) => {
-            if (!planet.isActive) return;
-            //getWorldPosition required due to relative positioning to player
-            planet.object3d.getWorldPosition(dummyVec3);
-            const { xn, yn, angleDiff } = getScreenPosition(camera, dummyVec3);
-            targetsPlanetsNormalHUD.push({
-              planetIndex: index,
-              xn,
-              yn,
-              angleDiff,
-            });
-          });
-          set({ targetsPlanetsNormalHUD });
-        }
-        if (useStore.getState().stations.length > 0) {
-          const targetsStationsNormalHUD: {
-            stationIndex: number;
-            xn: number;
-            yn: number;
-            angleDiff: number;
-          }[] = [];
-          useStore.getState().stations.forEach((station, index) => {
-            //getWorldPosition required due to relative positioning to player
-            station.object3d.getWorldPosition(dummyVec3);
-            const { xn, yn, angleDiff } = getScreenPosition(camera, dummyVec3);
-            targetsStationsNormalHUD.push({
-              stationIndex: index,
-              xn,
-              yn,
-              angleDiff,
-            });
-          });
-          set({ targetsStationsNormalHUD });
-        }
-      },
-
-      updatePlayerDirectionTargetHUD: () => {
-        const mouse = useStore.getState().mutation.mouse;
-
-        if (get().playerDirectionTargetDiv !== null) {
-          get().playerDirectionTargetDiv!.current!.style.marginLeft = `${
-            mouse.x * get().hudDiameterPx
-          }px`;
-          get().playerDirectionTargetDiv!.current!.style.marginTop = `${
-            mouse.y * get().hudDiameterPx
-          }px`;
         }
       },
 
@@ -519,8 +361,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         }
         get().updateFrame.setPlayerFixedCameraPosition(camera);
         get().updateFrame.setPlayerCameraRotation(camera);
-        get().updateFrame.updateTargetsPositionHUD(camera);
-        get().updateFrame.updatePlayerDirectionTargetHUD();
+        useHudTargtingGalaxyMapStore.getState().updateTargetHUD(camera);
+        useHudTargtingGalaxyMapStore
+          .getState()
+          .updatePlayerDirectionTargetHUD();
       },
     },
   })

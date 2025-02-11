@@ -1,18 +1,71 @@
 import { create } from "zustand";
 import * as THREE from "three";
+import { Vector3 } from "three";
 import useStore from "./store";
 import usePlayerControlsStore from "./playerControlsStore";
 //import useEnemyStore from "./enemyStore";
+import { distance } from "../util/gameUtil";
+import {
+  getScreenPosition,
+  getScreenPositionFromDirection,
+} from "../util/cameraUtil";
+
+export const HTML_HUD_TARGET_TYPE = {
+  WARP_TO_STAR: 0,
+  PLANET: 1,
+  STATION: 2,
+  ENEMY: 3,
+};
+
+export type htmlHudTargetType = {
+  objectType: number;
+  objectIndex: number | null;
+  label: string;
+  color: string;
+  divElement?: HTMLDivElement;
+};
 
 interface hudTargetingGalaxyMapStoreState {
   // declare type for dictionary object
   //testDictionary: { [id: string]: boolean };
+
+  // Galaxy Map - star system info and warp star selection
   showInfoHoveredStarIndex: number | null;
   showInfoTargetStarIndex: number | null;
+  showInfoPlanetIndex: number | null;
   selectedWarpStar: number | null;
+  // TODO update map to use these actions
+  galaxyMapActions: {
+    setShowInfoHoveredStarIndex: (
+      showInfoHoveredStarIndex: number | null
+    ) => void;
+    getShowInfoTargetStarIndex: () => number | null;
+    setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
+    setShowInfoPanetIndex: (planetIndex: number | null) => void;
+    setSelectedWarpStar: (selectedWarpStar: number | null) => void;
+  };
 
+  // CSS HUD targets
+  hudDiameterPx: number;
+  targetDiameterPx: number;
+  setTargetDiameterPx: (targetDiameterPx: number) => void;
+  htmlHudTargets: htmlHudTargetType[];
+  selectedWarpStarDistance: number;
+  selectedWarpStarAngle: number;
   selectedWarpStarDirection: THREE.Vector3 | null;
   setSelectedWarpStarDirection: () => void;
+  // HTML HUD player direction control target
+  playerDirectionTargetDiv: React.RefObject<HTMLDivElement> | null;
+  updatePlayerDirectionTargetHUD: () => void;
+  // HTML HUD Targets
+  generateTargets: () => void;
+  getTargetPosition: (
+    xn: number,
+    yn: number,
+    angleDiff: number
+  ) => { marginLeft: string; marginTop: string };
+  updateTargetHUD: (camera: any) => void;
+  // 3d HUD Targets
   focusTargetIndex: number | null;
   selectedTargetIndex: number | null;
   focusPlanetIndex: number | null;
@@ -23,30 +76,29 @@ interface hudTargetingGalaxyMapStoreState {
     focusTargetIndex: number | null;
     selectedTargetIndex: number | null;
   };
+  // clear all targets above
   clearTargets: () => void;
 
+  // planet scanning
   checkScanDistanceToPlanet: (planetIndex: number) => void;
   scanningPlanetId: number;
   isScanDistanceToPlanet: boolean;
   scanPlanet: () => void;
   scanPlanetProgress: number;
-  // TODO clean up actions - what are actions?
+
+  // TODO clean up actions - what are actions
   actions: {
+    // planet and enemy targeting
+    // focused target is target closest to ray cast from front of player mech
     setFocusPlanetIndex: (focusPlanetIndex: number | null) => void;
     setFocusTargetIndex: (focusTargetIndex: number | null) => void;
+    // selected enemy target
     setSelectedTargetIndex: () => void;
-
-    setShowInfoHoveredStarIndex: (
-      showInfoHoveredStarIndex: number | null
-    ) => void;
-    getShowInfoTargetStarIndex: () => number | null;
-    setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
-    setSelectedWarpStar: (selectedWarpStar: number | null) => void;
-    setSelectedPanetIndex: (planetIndex: number | null) => void;
   };
 }
 
 // reusable objects
+const dummyVec3 = new Vector3();
 // for targeting weapons fireWeapon()
 const flightCameraLookQuaternoin = new THREE.Quaternion();
 
@@ -55,9 +107,35 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
     // for galaxy map
     showInfoHoveredStarIndex: null, // used in galaxy map ui
     showInfoTargetStarIndex: null,
+    showInfoPlanetIndex: null,
     selectedWarpStar: null,
+    galaxyMapActions: {
+      setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
+        set(() => ({ showInfoHoveredStarIndex }));
+      },
+      getShowInfoTargetStarIndex: () => get().showInfoTargetStarIndex,
+      setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
+        set(() => ({ showInfoTargetStarIndex }));
+      },
+      // TODO setSelectedPanetIndex not used, plan to use for detailed planet data in Galaxy Map
+      setShowInfoPanetIndex(planetIndex) {
+        set(() => ({ showInfoPlanetIndex: planetIndex }));
+      },
+      setSelectedWarpStar(selectedWarpStar) {
+        set(() => ({ selectedWarpStar }));
+        get().setSelectedWarpStarDirection();
+      },
+    },
 
-    // targeting
+    // HUD Targeting CSS HUD
+    hudDiameterPx: 0,
+    targetDiameterPx: 0,
+    setTargetDiameterPx: (targetDiameterPx) => {
+      set(() => ({ targetDiameterPx }));
+    },
+    htmlHudTargets: [],
+    selectedWarpStarDistance: 0,
+    selectedWarpStarAngle: 0,
     selectedWarpStarDirection: null,
     setSelectedWarpStarDirection: () => {
       if (get().selectedWarpStar !== null) {
@@ -70,6 +148,9 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
           warpStarDirection.y,
           warpStarDirection.z
         );
+        set({
+          selectedWarpStarDistance: directionVec3.length(),
+        });
         const rotateVec3 = new THREE.Vector3(1, 0, 0);
         directionVec3.applyAxisAngle(rotateVec3, Math.PI / 2);
         set({
@@ -81,6 +162,144 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         });
       }
     },
+    playerDirectionTargetDiv: null,
+    updatePlayerDirectionTargetHUD: () => {
+      const mouse = useStore.getState().mutation.mouse;
+
+      if (get().playerDirectionTargetDiv !== null) {
+        get().playerDirectionTargetDiv!.current!.style.marginLeft = `${
+          mouse.x * get().hudDiameterPx
+        }px`;
+        get().playerDirectionTargetDiv!.current!.style.marginTop = `${
+          mouse.y * get().hudDiameterPx
+        }px`;
+      }
+    },
+    generateTargets: () => {
+      const htmlHudTargets: htmlHudTargetType[] = [];
+      if (useStore.getState().planets.length > 0) {
+        const targetsPlanets: htmlHudTargetType[] = [];
+        useStore.getState().planets.forEach((planet, index) => {
+          if (!planet.isActive) return;
+          targetsPlanets.push({
+            objectType: HTML_HUD_TARGET_TYPE.PLANET,
+            objectIndex: index,
+            label: planet.rngSeed,
+            color: planet.textureMapOptions.baseColor || "",
+          });
+        });
+        htmlHudTargets.push(...targetsPlanets);
+      }
+      if (useStore.getState().stations.length > 0) {
+        const targetsStations: htmlHudTargetType[] = [];
+        useStore.getState().stations.forEach((station, index) => {
+          targetsStations.push({
+            objectType: HTML_HUD_TARGET_TYPE.STATION,
+            objectIndex: index,
+            label: station.name,
+            color: "gray",
+          });
+        });
+        htmlHudTargets.push(...targetsStations);
+      }
+      htmlHudTargets.push({
+        objectType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
+        objectIndex: null,
+        label: "SYSTEM WARP",
+        color: "white",
+      });
+      set({ htmlHudTargets });
+    },
+    getTargetPosition: (xn: number, yn: number, angleDiff: number) => {
+      let pxNorm = (xn * window.innerWidth) / 2;
+      let pyNorm = (yn * window.innerHeight) / 2;
+
+      const targetBehindCamera = Math.abs(angleDiff) >= Math.PI / 2;
+      // adjust position values if behind camera by flipping them
+      if (targetBehindCamera) {
+        pxNorm *= -1;
+        pyNorm *= -1;
+      }
+
+      // if x, y is outside HUD circle, adjust x, y to be on egde of HUD circle
+      // also always set x, y on edge if angle is greater than 90 degrees
+      if (
+        Math.sqrt(pxNorm * pxNorm + pyNorm * pyNorm) >
+          get().hudDiameterPx / 2 ||
+        targetBehindCamera
+      ) {
+        const atan2Angle = Math.atan2(pyNorm, pxNorm);
+        pxNorm = (Math.cos(atan2Angle) * get().hudDiameterPx) / 2;
+        pyNorm = (Math.sin(atan2Angle) * get().hudDiameterPx) / 2;
+      }
+      // set position of target div
+      const marginLeft = `${pxNorm - get().targetDiameterPx / 2}px`;
+      const marginTop = `${pyNorm - get().targetDiameterPx / 2}px`;
+      return { marginLeft, marginTop };
+    },
+    // update div elements for HUD targets
+    updateTargetHUD: (camera) => {
+      get().htmlHudTargets.forEach((htmlHudTarget) => {
+        if (!htmlHudTarget.divElement) return;
+        let distanceToTarget = "";
+        let screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
+
+        switch (htmlHudTarget.objectType) {
+          case HTML_HUD_TARGET_TYPE.PLANET:
+          case HTML_HUD_TARGET_TYPE.STATION:
+            // set dummyVec3 to planet world space position
+            const targetArray =
+              htmlHudTarget.objectType === HTML_HUD_TARGET_TYPE.PLANET
+                ? useStore.getState().planets
+                : useStore.getState().stations;
+            const targetObject3d =
+              targetArray[htmlHudTarget.objectIndex!].object3d;
+            // set dummyVec3 to target world position (required due to relative positioning to player)
+            targetObject3d.getWorldPosition(dummyVec3);
+            // get distance to object relative to playerWorldPosition
+            distanceToTarget = distance(
+              useStore.getState().playerWorldPosition,
+              targetObject3d.position
+            ).toFixed(0);
+            // get screen position of target
+            screenPosition = getScreenPosition(camera, dummyVec3);
+            break;
+
+          case HTML_HUD_TARGET_TYPE.WARP_TO_STAR:
+            if (get().selectedWarpStarDirection === null) {
+              // send off screen if no target
+              htmlHudTarget.divElement!.style.marginLeft = `${window.innerWidth}px`;
+              // exit loop
+              return;
+            }
+            distanceToTarget =
+              (get().selectedWarpStarDistance * 7).toFixed(3) + " AU";
+            // get screen position of target
+            screenPosition = getScreenPositionFromDirection(
+              camera,
+              get().selectedWarpStarDirection!
+            );
+            set({ selectedWarpStarAngle: screenPosition.angleDiff });
+            break;
+
+          default:
+            console.error("Unknown htmlHudTarget.objectType");
+            break;
+        }
+        const { marginLeft, marginTop } = get().getTargetPosition(
+          screenPosition.xn,
+          screenPosition.yn,
+          screenPosition.angleDiff
+        );
+        // set position of target div
+        htmlHudTarget.divElement!.style.marginLeft = marginLeft;
+        htmlHudTarget.divElement!.style.marginTop = marginTop;
+        // display the distance to planet
+        htmlHudTarget.divElement!.children[0].textContent = distanceToTarget;
+      });
+    },
+
+    // 3d HUD targeting
     focusTargetIndex: null,
     selectedTargetIndex: null,
     focusPlanetIndex: null,
@@ -148,7 +367,9 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
           set(() => ({ focusTargetIndex }));
         }
       },
+      // being called when player fires weapon OLD CODE
       setSelectedTargetIndex() {
+        // weapon fire angle is based on player mouse/controls input position
         flightCameraLookQuaternoin.setFromAxisAngle(
           {
             x:
@@ -187,21 +408,6 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         false, // auto aim
         true // isPlayer
       );*/
-      },
-      setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
-        set(() => ({ showInfoHoveredStarIndex }));
-      },
-      getShowInfoTargetStarIndex: () => get().showInfoTargetStarIndex,
-      setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
-        set(() => ({ showInfoTargetStarIndex }));
-      },
-      setSelectedWarpStar(selectedWarpStar) {
-        set(() => ({ selectedWarpStar }));
-        get().setSelectedWarpStarDirection();
-      },
-      // TODO setSelectedPanetIndex not used - using setFocusPlanetIndex instead
-      setSelectedPanetIndex(planetIndex) {
-        set(() => ({ selectedPanetIndex: planetIndex }));
       },
     },
   })

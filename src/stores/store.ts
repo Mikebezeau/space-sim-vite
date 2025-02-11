@@ -45,7 +45,7 @@ interface storeState {
   isGameStoreInit: boolean;
 
   sound: boolean;
-  playerCurrentStarIndex: number;
+  playerCurrentStarIndex: number | null;
 
   // TODO Galaxy class
   galaxy: TypeGalaxy | Promise<void | TypeGalaxy> | null;
@@ -184,7 +184,7 @@ const useStore = create<storeState>()((set, get) => ({
   },
   getStarPositionIsBackground: (starIndex: number) => {
     const playerStarPosition = get().getStarBufferPosition(
-      get().playerCurrentStarIndex
+      get().playerCurrentStarIndex!
     );
     const starPosition = get().getStarBufferPosition(starIndex);
     return {
@@ -196,8 +196,10 @@ const useStore = create<storeState>()((set, get) => ({
   starPointsShaderMaterial: starPointsShaderMaterial,
   //
 
-  // intial player star
-  playerCurrentStarIndex: PLAYER_START.system, // playerCurrentStarIndex set in actions.init()
+  // current player solar system location
+  // used to trigger re-renders in solar system related components
+  // initially set to null until starting solar system is set
+  playerCurrentStarIndex: null,
   player: new PlayerMech(),
   getPlayer: () => get().player, // getting state to avoid rerenders in components when necessary
   //playerMechBP: initPlayerMechBP(),
@@ -414,12 +416,10 @@ const useStore = create<storeState>()((set, get) => ({
     },
 
     // intial star position selection in galaxy map
-    getPlayerCurrentStarIndex: () => get().playerCurrentStarIndex,
+    getPlayerCurrentStarIndex: () => get().playerCurrentStarIndex!,
 
     // slecting star in galaxy map
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
-      get().updateRenderInfo("setPlayerCurrentStarIndex");
-
       // playerCurrentStarIndex set at end, then triggering render of solar system related components
       // generate stars and planets for solar system
       get().solarSystem.systemGen(playerCurrentStarIndex);
@@ -487,9 +487,6 @@ const useStore = create<storeState>()((set, get) => ({
       // setting enemy world position relative to player test
       useEnemyStore.getState().enemyWorldPosition.copy(enemyStartPosition);
 
-      //clear targeting variables
-      useHudTargtingGalaxyMapStore.getState().clearTargets();
-
       // set position of space station near a planet
       const stations = genStations();
       if (stations[0]) {
@@ -500,10 +497,16 @@ const useStore = create<storeState>()((set, get) => ({
           stations,
         }));
       }
+
+      //clear targeting variables
+      useHudTargtingGalaxyMapStore.getState().clearTargets();
+      //clear selected warp star
+      useHudTargtingGalaxyMapStore
+        .getState()
+        .galaxyMapActions.setSelectedWarpStar(null);
+
       // playerCurrentStarIndex set at end, triggers render of solar system related components
       set(() => ({ playerCurrentStarIndex }));
-
-      get().updateRenderDoneInfo("setPlayerCurrentStarIndex");
     },
 
     toggleSound(sound = !get().sound) {

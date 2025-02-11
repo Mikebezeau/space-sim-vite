@@ -92,7 +92,7 @@ const GalaxyMap = () => {
       getShowInfoTargetStarIndex,
       setShowInfoHoveredStarIndex,
       setShowInfoTargetStarIndex,
-    } = useHudTargtingGalaxyMapStore((state) => state.actions);
+    } = useHudTargtingGalaxyMapStore((state) => state.galaxyMapActions);
 
     const starPointsRef = useRef<THREE.Points | null>(null);
     const mouseMovedStart = useRef(new THREE.Vector2(0, 0));

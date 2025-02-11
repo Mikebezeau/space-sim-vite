@@ -1,22 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
-import usePlayerControlsStore from "../stores/playerControlsStore";
+import React, { useEffect, useRef } from "react";
+import useStore from "../stores/store";
+import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import useWindowResize from "../hooks/useWindowResize";
-import TargetsHUD from "./targetsHUD/TargetsHUD";
-
-export const getScreenCoordinates = (x: number, y: number) => {};
+import TargetHUD from "./TargetHUD";
 
 const FlightHUD = () => {
-  const getHudDiameterPxFromWindow = () =>
-    window.innerWidth > window.innerHeight
-      ? window.innerHeight * 0.8
-      : window.innerWidth * 0.9;
+  const playerCurrentStarIndex = useStore(
+    (state) => state.playerCurrentStarIndex
+  );
 
-  const [hudDiameterPx, setHudDiameterPx] = useState<number>(
-    getHudDiameterPxFromWindow()
+  const htmlHudTargets = useHudTargtingGalaxyMapStore(
+    (state) => state.htmlHudTargets
   );
-  const [targetDiameterPx, setTargetDiameterPx] = useState<number>(
-    hudDiameterPx / 20
-  );
+
+  useEffect(() => {
+    useHudTargtingGalaxyMapStore.getState().generateTargets();
+  }, [playerCurrentStarIndex]);
 
   const hudCircleRef = useRef<HTMLDivElement | null>(null);
   const playerDirectionTargetRef = useRef<HTMLDivElement | null>(null);
@@ -27,8 +26,11 @@ const FlightHUD = () => {
         ? window.innerHeight * 0.8
         : window.innerWidth * 0.9;
 
-    usePlayerControlsStore.getState().hudDiameterPx = diameter;
-    usePlayerControlsStore.getState().targetDiameterPx = diameter / 20;
+    useHudTargtingGalaxyMapStore.getState().hudDiameterPx = diameter;
+    const targetDiameterPx = diameter / 20;
+    useHudTargtingGalaxyMapStore
+      .getState()
+      .setTargetDiameterPx(targetDiameterPx);
 
     if (
       hudCircleRef.current !== null &&
@@ -68,16 +70,18 @@ const FlightHUD = () => {
         ref={(divElement) => {
           if (divElement) {
             playerDirectionTargetRef.current = divElement;
-            usePlayerControlsStore.getState().playerDirectionTargetDiv =
+            useHudTargtingGalaxyMapStore.getState().playerDirectionTargetDiv =
               playerDirectionTargetRef;
           }
         }}
         className={`opacity-50 absolute border-2 border-green-500 rounded-full`}
       />
-      <TargetsHUD
-        hudDiameterPx={hudDiameterPx}
-        targetDiameterPx={targetDiameterPx}
-      />
+      {htmlHudTargets.map((target) => (
+        <TargetHUD
+          key={`${target.objectType}-${target.objectIndex}`}
+          target={target}
+        />
+      ))}
     </>
   );
 };

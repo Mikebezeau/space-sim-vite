@@ -9,6 +9,8 @@ const SolarSystem = () => {
     (state) => state.playerCurrentStarIndex
   );
 
+  // these arrays do not trigger re-render when player changes star
+  // the elements are reused when player changes star
   const stars = useStore((state) => state.stars);
   const planets = useStore((state) => state.planets);
 

@@ -153,29 +153,21 @@ export const ActionWarpToStarPopupHUD = () => {
   const selectedWarpStar = useHudTargtingGalaxyMapStore(
     (state) => state.selectedWarpStar
   );
-  const setSelectedWarpStar = useHudTargtingGalaxyMapStore(
-    (state) => state.actions.setSelectedWarpStar
+  const selectedWarpStarAngle = useHudTargtingGalaxyMapStore(
+    (state) => state.selectedWarpStarAngle
   );
-  /*
-  const getPlayerTargetsHUD = usePlayerControlsStore(
-    (state) => state.getPlayerTargetsHUD
-  );
-  const { targetWarpToStarHUD } = getPlayerTargetsHUD();
-  */
   const setPlayerCurrentStarIndex = useStore(
     (state) => state.actions.setPlayerCurrentStarIndex
   );
-  if (selectedWarpStar === null /*|| targetWarpToStarHUD === null*/)
-    return null;
+  // only show warp to star button if a star is selected and angle is less than 0.3 radians
+  if (selectedWarpStar === null || selectedWarpStarAngle > 0.3) return null;
+
   return (
-    // TODO create updatable base state store variable for angleDiff
-    //targetWarpToStarHUD.angleDiff < 0.3 ? ( // this needs to be a base state variable to recieve updates
     <>
       <div
         className="pointer-events-auto w-40 h-10 -ml-20 cursor-pointer"
         onClick={() => {
           setPlayerCurrentStarIndex(selectedWarpStar);
-          setSelectedWarpStar(null);
         }}
       >
         <div className="w-full cybr-btn bg-blue-500" onClick={() => {}}>
@@ -296,9 +288,6 @@ export const CockpitControlWarp = () => {
   const selectedWarpStar = useHudTargtingGalaxyMapStore(
     (state) => state.selectedWarpStar
   );
-  const setSelectedWarpStar = useHudTargtingGalaxyMapStore(
-    (state) => state.actions.setSelectedWarpStar
-  );
   const setPlayerCurrentStarIndex = useStore(
     (state) => state.actions.setPlayerCurrentStarIndex
   );
@@ -311,7 +300,6 @@ export const CockpitControlWarp = () => {
       onClick={() => {
         if (selectedWarpStar) {
           setPlayerCurrentStarIndex(selectedWarpStar);
-          setSelectedWarpStar(null);
         }
       }}
     >
