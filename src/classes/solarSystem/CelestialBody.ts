@@ -161,15 +161,23 @@ class CelestialBody implements CelestialBodyInt {
 
   disposeTextures() {
     // dispose of crater textures in material uniforms (these aren't reused)
-    if (this.material.uniforms.u_craterTexture?.value?.dispose)
+    if (this.material.uniforms.u_texture?.value?.dispose) {
+      console.log(this.material.uniforms.u_texture.value);
+      this.material.uniforms.u_texture.value.dispose();
+    }
+    if (this.material.uniforms.u_craterTexture?.value?.dispose) {
       this.material.uniforms.u_craterTexture.value.dispose();
-    if (this.material.uniforms.u_craterTBumpMap?.value?.dispose)
+    }
+    if (this.material.uniforms.u_craterTBumpMap?.value?.dispose) {
       this.material.uniforms.u_craterTBumpMap.value.dispose();
+    }
+
+    console.log(this.material.uniforms.u_texture.value);
   }
 
   // call at end of gameplay
   disposeResources() {
-    this.object3d.clear();
+    //this.object3d.clear();//clear only removes child objects - would need if showing rings or moons
     this.material.dispose();
     this.renderTargetGPU.dispose();
     this.disposeTextures();

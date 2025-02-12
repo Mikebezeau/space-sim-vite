@@ -27,18 +27,6 @@ export const starTypeGen = (starIndex) => {
   return star;
 };
 
-/*
-const galaxyInterface: {
-  const: (starsInGalaxy?: number, galaxySize?: number, galaxyScale?: number, onlyCore?: boolean, onlyArms?: boolean) => Promise<{
-      starCoordsBuffer: THREE.BufferAttribute;
-      starColorBuffer: THREE.BufferAttribute;
-      starSizeBuffer: THREE.BufferAttribute;
-      starSelectedBuffer: THREE.BufferAttribute;
-  }>;
-  export: any;
-  default: any;
-}
-*/
 const galaxyGen = async (
   starsInGalaxy = 1000,
   galaxySize = 40, // not effecting anything
@@ -188,15 +176,10 @@ const galaxyGen = async (
     new Float32Array(starSizes),
     1 // float value
   );
-  const starSelectedBuffer = new THREE.BufferAttribute(
-    new Int8Array(new Array(starsInGalaxy).fill(0)),
-    1
-  );
   return {
     starCoordsBuffer,
     starColorBuffer,
     starSizeBuffer,
-    starSelectedBuffer,
   };
 };
 

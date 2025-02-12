@@ -34,6 +34,7 @@ const StarsBackgroundScene = () => {
   }, []);
 */
   useFrame(() => {
+    // for intial placement of starPoints - also rotated 90 degrees below
     if (starPointsRef.current === null) return;
     starPointsRef.current.position.set(
       camera.position.x,

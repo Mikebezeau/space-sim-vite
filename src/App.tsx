@@ -12,9 +12,10 @@ import AppLoadingScreen from "./AppLoadingScreen";
 import "./css/lilGui.css";
 
 function App() {
-  useStore.getState().updateRenderInfo("App");
+  const componentName = "App";
+  useStore.getState().updateRenderInfo(componentName);
   useEffect(() => {
-    useStore.getState().updateRenderDoneInfo("App");
+    useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
 
   //useNoContextMenu();

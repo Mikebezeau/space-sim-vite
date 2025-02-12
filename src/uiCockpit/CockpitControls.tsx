@@ -153,14 +153,14 @@ export const ActionWarpToStarPopupHUD = () => {
   const selectedWarpStar = useHudTargtingGalaxyMapStore(
     (state) => state.selectedWarpStar
   );
-  const selectedWarpStarAngle = useHudTargtingGalaxyMapStore(
-    (state) => state.selectedWarpStarAngle
+  const isWarpToStarAngleShowButton = useHudTargtingGalaxyMapStore(
+    (state) => state.isWarpToStarAngleShowButton
   );
   const setPlayerCurrentStarIndex = useStore(
     (state) => state.actions.setPlayerCurrentStarIndex
   );
   // only show warp to star button if a star is selected and angle is less than 0.3 radians
-  if (selectedWarpStar === null || selectedWarpStarAngle > 0.3) return null;
+  if (selectedWarpStar === null || !isWarpToStarAngleShowButton) return null;
 
   return (
     <>

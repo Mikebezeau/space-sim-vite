@@ -51,7 +51,7 @@ interface hudTargetingGalaxyMapStoreState {
   setTargetDiameterPx: (targetDiameterPx: number) => void;
   htmlHudTargets: htmlHudTargetType[];
   selectedWarpStarDistance: number;
-  selectedWarpStarAngle: number;
+  isWarpToStarAngleShowButton: boolean;
   selectedWarpStarDirection: THREE.Vector3 | null;
   setSelectedWarpStarDirection: () => void;
   // HTML HUD player direction control target
@@ -135,13 +135,13 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
     },
     htmlHudTargets: [],
     selectedWarpStarDistance: 0,
-    selectedWarpStarAngle: 0,
+    isWarpToStarAngleShowButton: false,
     selectedWarpStarDirection: null,
     setSelectedWarpStarDirection: () => {
       if (get().selectedWarpStar !== null) {
         const warpStarDirection = useStore
           .getState()
-          .getStarPositionIsBackground(get().selectedWarpStar!);
+          .getDistanceCoordToBackgroundStar(get().selectedWarpStar!);
         // background star scene is rotated 90 degrees, so adjust direction
         const directionVec3 = new THREE.Vector3(
           warpStarDirection.x,
@@ -257,6 +257,7 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
             // set dummyVec3 to target world position (required due to relative positioning to player)
             targetObject3d.getWorldPosition(dummyVec3);
             // get distance to object relative to playerWorldPosition
+            // TODO change to Au distance measurement
             distanceToTarget = distance(
               useStore.getState().playerWorldPosition,
               targetObject3d.position
@@ -273,13 +274,18 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
               return;
             }
             distanceToTarget =
-              (get().selectedWarpStarDistance * 7).toFixed(3) + " AU";
+              (get().selectedWarpStarDistance * 7).toFixed(3) + " Ly";
             // get screen position of target
             screenPosition = getScreenPositionFromDirection(
               camera,
               get().selectedWarpStarDirection!
             );
-            set({ selectedWarpStarAngle: screenPosition.angleDiff });
+            // show button if angle is less than 0.3 radians
+            const isWarpToStarAngleShowButton = screenPosition.angleDiff < 0.3;
+            if (
+              isWarpToStarAngleShowButton !== get().isWarpToStarAngleShowButton
+            )
+              set({ isWarpToStarAngleShowButton });
             break;
 
           default:

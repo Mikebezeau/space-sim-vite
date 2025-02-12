@@ -99,6 +99,7 @@ const GalaxyMap = () => {
     const mouseMovedEnd = useRef(new THREE.Vector2(0, 0));
     const mouseButtonDown = useRef(false);
 
+    // TODO this might be in store as well
     const getStarBufferPosition = useCallback(
       (index: number) => {
         return new THREE.Vector3(

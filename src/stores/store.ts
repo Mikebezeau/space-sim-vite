@@ -12,24 +12,12 @@ import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import SolarSystem from "../classes/solarSystem/SolarSystem";
-//import CelestialBody from "../classes/solarSystem/CelestialBody";
+import Galaxy from "../classes/Galaxy";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 //import { track } from "../util/track";
-import {
-  STARS_IN_GALAXY,
-  GALAXY_SIZE,
-  PLAYER,
-  PLAYER_START,
-} from "../constants/constants";
+import { PLAYER, PLAYER_START } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/solarSystemConstants";
-
-export type TypeGalaxy = {
-  starCoordsBuffer: THREE.BufferAttribute;
-  starColorBuffer: THREE.BufferAttribute;
-  starSizeBuffer: THREE.BufferAttribute;
-  starSelectedBuffer: THREE.BufferAttribute;
-};
 
 interface storeState {
   // render info to monitor performance issues
@@ -43,18 +31,23 @@ interface storeState {
   initGameStore: (renderer: THREE.WebGLRenderer) => void;
   disposeGameStore: () => void;
   isGameStoreInit: boolean;
+  isSolarSystemInit: boolean;
+  isGalaxyInit: boolean;
 
   sound: boolean;
   playerCurrentStarIndex: number | null;
 
-  // TODO Galaxy class
-  galaxy: TypeGalaxy | Promise<void | TypeGalaxy> | null;
+  galaxy: Galaxy;
+
   getStarBufferPosition: (starIndex: number) => {
     x: number;
     y: number;
     z: number;
   };
-  getStarPositionIsBackground: (starIndex: number) => {
+  getDistanceCoordToBackgroundStar: (
+    starIndex: number,
+    playerStarIndex?: number
+  ) => {
     x: number;
     y: number;
     z: number;
@@ -81,10 +74,11 @@ interface storeState {
   solarSystem: SolarSystem;
   stars: Star[];
   planets: Planet[];
-
+  // TODO place below in solarsystem class?
   sunShaderMaterial: THREE.ShaderMaterial;
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
+  //--
   stations: any[];
   planetTerrain: any;
 
@@ -93,7 +87,10 @@ interface storeState {
     setPlayerPosition: (positionVec3: THREE.Vector3) => void;
 
     getPlayerCurrentStarIndex: () => number;
-    setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
+    setPlayerCurrentStarIndex: (
+      playerCurrentStarIndex: number,
+      initBackgroundStars?: boolean
+    ) => void;
 
     toggleSound: (sound?: boolean) => void;
     updateMouse: (event: MouseEvent) => void;
@@ -151,41 +148,54 @@ const useStore = create<storeState>()((set, get) => ({
     //console.log(componentName, delta);
   },
   initGameStore: (renderer) => {
-    get().updateRenderInfo("initComputeRenderer");
+    // async init of galaxy star data
+    get()
+      .galaxy.initStars()
+      .then(() => {
+        get().galaxy.setBackgroundStarsPosition(PLAYER_START.system);
+        set(() => ({ isGalaxyInit: true }));
+        set(() => ({
+          isGameStoreInit: get().isGalaxyInit && get().isSolarSystemInit,
+        }));
+      });
     // set planet texture map renderer
-
     useGenFboTextureStore.getState().initComputeRenderer(renderer);
-    get().updateRenderInfo("done");
     // set planets, asteroids, stations, etc. for player start location
-    get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
-    set(() => ({ isGameStoreInit: true }));
-
-    get().updateRenderDoneInfo("initComputeRenderer");
+    const initBackgroundStars = false; // set to false to avoid double star position generation
+    get().actions.setPlayerCurrentStarIndex(
+      PLAYER_START.system,
+      initBackgroundStars
+    );
+    set(() => ({ isSolarSystemInit: true }));
+    set(() => ({
+      isGameStoreInit: get().isGalaxyInit && get().isSolarSystemInit,
+    }));
   },
   disposeGameStore: () => {
     useGenFboTextureStore.getState().disposeGpuCompute();
     // TODO dispose solar system objects / materials / textures
   },
   isGameStoreInit: false,
+  isSolarSystemInit: false,
+  isGalaxyInit: false,
+
+  galaxy: new Galaxy(),
 
   sound: false,
 
-  //
-  galaxy: galaxyGen(STARS_IN_GALAXY, GALAXY_SIZE).then((galaxyData) => {
-    set({ galaxy: galaxyData });
-  }), // { starCoordsBuffer, starColorBuffer, starSizeBuffer }
+  //TODO make Galaxy class and move following to it
   getStarBufferPosition: (starIndex: number) => {
-    //TODO make Galaxy class and move this function to it
     return {
       x: get().galaxy.starCoordsBuffer.array[starIndex * 3],
       y: get().galaxy.starCoordsBuffer.array[starIndex * 3 + 1],
       z: get().galaxy.starCoordsBuffer.array[starIndex * 3 + 2],
     };
   },
-  getStarPositionIsBackground: (starIndex: number) => {
-    const playerStarPosition = get().getStarBufferPosition(
-      get().playerCurrentStarIndex!
-    );
+  getDistanceCoordToBackgroundStar: (
+    starIndex: number,
+    playerStarIndex: number = get().playerCurrentStarIndex!
+  ) => {
+    const playerStarPosition = get().getStarBufferPosition(playerStarIndex);
     const starPosition = get().getStarBufferPosition(starIndex);
     return {
       x: starPosition.x - playerStarPosition.x,
@@ -419,8 +429,13 @@ const useStore = create<storeState>()((set, get) => ({
     getPlayerCurrentStarIndex: () => get().playerCurrentStarIndex!,
 
     // slecting star in galaxy map
-    setPlayerCurrentStarIndex(playerCurrentStarIndex) {
+    setPlayerCurrentStarIndex(
+      playerCurrentStarIndex,
+      initBackgroundStars = true
+    ) {
       // playerCurrentStarIndex set at end, then triggering render of solar system related components
+      // update background stars
+      get().galaxy.setBackgroundStarsPosition(playerCurrentStarIndex);
       // generate stars and planets for solar system
       get().solarSystem.systemGen(playerCurrentStarIndex);
       // set stars and planets
