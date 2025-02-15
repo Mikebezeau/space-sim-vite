@@ -59,6 +59,9 @@ const Station = (props: StationInt) => {
         <group scale={6} position={[0, -60, 0]} rotation={[0, Math.PI, 0]}>
           <Scenery sceneryType={SCENERY_TYPE.ss.dockingBay} />
         </group>
+        <group scale={50} position={[0, -60, 0]} rotation={[0, Math.PI, 0]}>
+          <Scenery castSelfShadows sceneryType={SCENERY_TYPE.artifact.gate} />
+        </group>
       </group>
     </group>
   );

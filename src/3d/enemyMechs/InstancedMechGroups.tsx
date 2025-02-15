@@ -4,6 +4,10 @@ import InstancedMechs from "./InstancedMechs";
 
 const InstancedMechGroups = () => {
   const enemies = useEnemyStore((state) => state.enemies);
+  console.log(
+    "InstancedMechGroups",
+    enemies instanceof Array ? enemies.length : "enemies not an array"
+  );
   // using useRef to store unique instancedEnemies mechBP ids
   // using spread operator to change into an array of ids
   // TODO

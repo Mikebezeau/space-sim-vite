@@ -4,14 +4,117 @@
 
 @font-face {
   font-family: "tomorrow";
-  src: url("../assets/fonts/tomorrow/Tomorrow-Regular.ttf");
+  src: local("tomorrow"),
+    url("../assets/fonts/tomorrow/Tomorrow-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
+  font-family: "14SegmentLED"; /* TODO not working */
+  src: local("14SegmentLED"),
+    url("../assets/fonts/14SegmentLED.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "395equalizer2";
+  src: local("395equalizer2"),
+    url("../assets/fonts/395equalizer2.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ARCADE";
+  src: local("ARCADE"), url("../assets/fonts/ARCADE.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
   font-family: "audiowide";
-  src: url("../assets/fonts/audiowide/Audiowide-Regular.ttf");
+  src: local("audiowide"),
+    url("../assets/fonts/Audiowide-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "CyberAlert";
+  src: local("CyberAlert"),
+    url("../assets/fonts/CyberAlert.otf") format("opentype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "DigitalDismay";
+  src: local("DigitalDismay"),
+    url("../assets/fonts/DigitalDismay.otf") format("opentype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "DS-DIGIT";
+  src: local("DS-DIGIT"), url("../assets/fonts/DS-DIGIT.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Minisystem";
+  src: local("Minisystem"),
+    url("../assets/fonts/Minisystem.otf") format("opentype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Mesopitav";
+  src: local("Mesopitav"),
+    url("../assets/fonts/Mesopitav.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "MIASMA";
+  src: local("MIASMA"), url("../assets/fonts/MIASMA.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Linebeam";
+  src: local("Linebeam"), url("../assets/fonts/Linebeam.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lunar-Escape";
+  src: local("Lunar-Escape"),
+    url("../assets/fonts/Lunar-Escape.otf") format("opentype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "OXYGENE1";
+  src: local("OXYGENE1"), url("../assets/fonts/OXYGENE1.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "quadaptor";
+  src: local("quadaptor"),
+    url("../assets/fonts/Quadaptor.otf") format("opentype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "VT323-Regular";
+  src: local("VT323-Regular"),
+    url("../assets/fonts/VT323-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "zerovelo";
+  src: local("zerovelo"), url("../assets/fonts/zerovelo.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }

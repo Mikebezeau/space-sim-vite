@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
+import { TessellateModifier } from "three/addons/modifiers/TessellateModifier.js";
 /*
 TODO list functions here - fix TS errors
 
@@ -113,10 +114,18 @@ export const getMergedBufferGeom = (object3d: THREE.Object3D) => {
     }
   });
   geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
-  const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
-  merged.applyMatrix4(object3d.matrix.clone().invert());
-  merged.userData.materials = meshes.map((m) => m.material);
-  return merged;
+  try {
+    const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
+    merged.applyMatrix4(object3d.matrix.clone().invert());
+    merged.userData.materials = meshes.map((m) => m.material);
+    return merged;
+  } catch (e) {
+    console.warn(e);
+    const test = new THREE.Object3D();
+    test.copy(object3d, true);
+    console.log(test);
+    return null;
+  }
 };
 
 export const getMergedBufferGeomColor = (
@@ -141,6 +150,51 @@ export const getMergedBufferGeomColor = (
   merged.applyMatrix4(object3d.matrix.clone().invert());
   merged.userData.materials = meshes.map((m) => m.material);
   return merged;
+};
+
+export const getExplosionMesh = (shaderMaterial, geometry) => {
+  const tessellateModifier = new TessellateModifier(8, 6);
+  let tessGeometry = geometry.clone();
+  tessGeometry = tessellateModifier.modify(geometry!);
+  //
+  const numFaces = tessGeometry.attributes.position.count / 3;
+  const colors = new Float32Array(numFaces * 3 * 3);
+  const displacement = new Float32Array(numFaces * 3 * 3);
+
+  const color = new THREE.Color();
+
+  for (let f = 0; f < numFaces; f++) {
+    const index = 9 * f;
+
+    const h = 0.2 * Math.random();
+    const s = 0.5 + 0.5 * Math.random();
+    const l = 0.5 + 0.5 * Math.random();
+
+    color.setHSL(h, s, l);
+
+    const d = 10 * (0.5 - Math.random());
+
+    for (let i = 0; i < 3; i++) {
+      colors[index + 3 * i] = color.r;
+      colors[index + 3 * i + 1] = color.g;
+      colors[index + 3 * i + 2] = color.b;
+
+      displacement[index + 3 * i] = d;
+      displacement[index + 3 * i + 1] = d;
+      displacement[index + 3 * i + 2] = d;
+    }
+  }
+
+  tessGeometry.setAttribute(
+    "customColor",
+    new THREE.BufferAttribute(colors, 3)
+  );
+  tessGeometry.setAttribute(
+    "displacement",
+    new THREE.BufferAttribute(displacement, 3)
+  );
+
+  return new THREE.Mesh(tessGeometry, shaderMaterial);
 };
 
 const signedVolumeOfTriangle = (p1, p2, p3) => {

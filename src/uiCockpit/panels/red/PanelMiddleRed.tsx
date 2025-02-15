@@ -4,6 +4,7 @@ import SpeedReadout from "../../display/SpeedReadout";
 import cockpitImage from "/images/cockpit/panelsRed/cockpitRed2.png";
 import { IS_MOBILE } from "../../../constants/constants";
 
+// TODO plane in file MonitorScreen.tsx and change old MonitorScreen to SidePanelScreen.tsx
 const COMPUTOR_COMMANDS = [
   "VERIFY_POWER_CELLS",
   "ENGAGE_FUSION_CORE",
@@ -33,8 +34,11 @@ const spaceTextTitle = `
 */
 
 const PanelMiddleRed = () => {
+  const computerScreenContainer = useRef<HTMLDivElement>(null);
   const computerScreen = useRef<HTMLDivElement>(null);
+  const computerScreenX = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
+  const fontCounter = useRef<number>(0);
 
   const [i, setI] = useState<number>(0);
   const [commandIndex, setCommandIndex] = useState<number>(0);
@@ -120,6 +124,26 @@ const PanelMiddleRed = () => {
     // depandancy array contains i and loadingCounter to trigger updateComputerScreen loop
   }, [computerScreen.current, i, loadingCounter]);
 
+  const fonts = [
+    "14SegmentLED", // not working
+    "395equalizer2.ttf", //
+    "VT323-Regular", // normal terminal
+    "ARCADE", //weird
+    "audiowide", // normal scifi
+    "CyberAlert", // use for cyber buttons
+    //"DragonForcE",//why
+    "DS-DIGIT", //good digital clock
+    "Linebeam", //neato
+    //"Lunar-Escape",//arcaic scifi
+    "Mesopitav", //
+    "MIASMA", //
+    "Minisystem", //
+    //"OXYGENE1",// find sysmbols
+    "quadaptor", // fun scifi
+    "tomorrow",
+    "zerovelo",
+  ];
+
   return (
     <div
       className="w-full h-full bg-center bg-no-repeat bg-contain"
@@ -129,8 +153,48 @@ const PanelMiddleRed = () => {
       }}
     >
       <div>
-        <div className="absolute top-[14.5vh] left-1/2 w-[22vh] h-[20vh] -ml-[10.8vh] p-1 whitespace-pre leading-none overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]">
-          <div ref={computerScreen} />
+        <div
+          ref={computerScreenContainer}
+          className="absolute top-[14.5vh] left-1/2 w-[22vh] h-[20vh] -ml-[10.8vh] border-2 border-white opacity-30 font-extralight text-[0.5rem]"
+          style={{ fontFamily: "Linebeam" }}
+        >
+          <div
+            className="absolute pointer-events-auto top-0 left-0 w-full h-full p-1 whitespace-pre leading-none overflow-hidden break-words"
+            onClick={() => {
+              computerScreenX.current!.style.display = "block";
+              const sc = computerScreenContainer.current;
+              sc!.style.width = "33vh";
+              sc!.style.height = "30vh";
+              sc!.style.marginTop = "-8vh";
+              sc!.style.marginLeft = "-16.3vh";
+              sc!.style.opacity = "0.6";
+              sc!.style.backgroundColor = "black";
+              sc!.style.fontSize = "0.8rem";
+              //sc!.style.fontFamily = fonts[fontCounter.current];
+              //computerScreen.current!.innerHTML = fonts[fontCounter.current];
+              fontCounter.current++;
+              if (fontCounter.current === fonts.length) fontCounter.current = 0;
+            }}
+            ref={computerScreen}
+          />
+          <div className="hidden absolute top-0 right-0" ref={computerScreenX}>
+            <div
+              className="absolute pointer-events-auto -top-[2.5vh] -right-[2.1vh] w-[6vh] h-[6vh] rounded-full bg-black opacity-60"
+              onClick={(e) => {
+                e.preventDefault();
+                computerScreenX.current!.style.display = "none";
+                const sc = computerScreenContainer.current;
+                sc!.style.width = "22vh";
+                sc!.style.height = "20vh";
+                sc!.style.marginTop = "0";
+                sc!.style.marginLeft = "-10.8vh";
+                sc!.style.opacity = "0.3";
+                sc!.style.backgroundColor = "transparent";
+                sc!.style.fontSize = "0.5rem";
+              }}
+            />
+            <div className="absolute -top-2 right-0 text-[1.2rem]">X</div>
+          </div>
         </div>
 
         <div className="absolute top-[23.7vh] right-1/2 w-[10vh] h-[8.5vh] mr-[20.5vh] overflow-hidden break-words border-2 border-white opacity-30 text-[0.5rem]" />

@@ -1,4 +1,4 @@
-import React /*, { useLayoutEffect, useRef }*/ from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import LilGui from "./dev/LilGui";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
@@ -31,24 +31,20 @@ const AppUI = () => {
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
   );
-  //const getIsTestScreen = useDevStore((state) => state.getIsTestScreen);
+
+  const getIsTestScreen = useDevStore((state) => state.getIsTestScreen);
   const testScreen = useDevStore((state) => state.testScreen);
 
-  /*
   const isTestScreen = useRef<boolean>(false);
 
   useLayoutEffect(() => {
     isTestScreen.current = getIsTestScreen();
-    //console.log(
-      "isTestScreen.current testScreen.planetTest",
-      isTestScreen.current,
-      testScreen.planetTest
-    );
+    console.log("isTestScreen", isTestScreen.current);
   }, [testScreen]);
-*/
+
   return (
     <>
-      {testScreen.planetTest ? (
+      {testScreen.enemyTest ? (
         <></>
       ) : (
         <>

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import PlayerMech from "../classes/PlayerMech";
 import useGenFboTextureStore from "./genGpuTextureStore";
 import useEnemyStore from "./enemyStore";
@@ -10,6 +11,7 @@ import galaxyGen from "../galaxy/galaxyGen";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
+import expolsionShaderMaterial from "../3d/explosion/explosionShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import SolarSystem from "../classes/solarSystem/SolarSystem";
 import Galaxy from "../classes/Galaxy";
@@ -33,6 +35,9 @@ interface storeState {
   isGameStoreInit: boolean;
   isSolarSystemInit: boolean;
   isGalaxyInit: boolean;
+
+  modelLoader: (url: string, callback: any) => any;
+  loadModelSync: (url: string, callback: any) => void;
 
   sound: boolean;
   playerCurrentStarIndex: number | null;
@@ -78,6 +83,7 @@ interface storeState {
   sunShaderMaterial: THREE.ShaderMaterial;
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
+  expolsionShaderMaterial: THREE.ShaderMaterial;
   //--
   stations: any[];
   planetTerrain: any;
@@ -109,6 +115,8 @@ interface storeState {
     warpToPlanet: () => void;
   };
 }
+
+const loader = new GLTFLoader();
 
 const dummyVec3 = new THREE.Vector3();
 // setting warp targets
@@ -178,6 +186,33 @@ const useStore = create<storeState>()((set, get) => ({
   isGameStoreInit: false,
   isSolarSystemInit: false,
   isGalaxyInit: false,
+
+  // TODO fix model loader
+  modelLoader: (url, callback) => {
+    return new Promise((resolve, reject) => {
+      loader.load(
+        url,
+        (data) => callback(data),
+        (xhr) => {
+          //const loaded = (xhr.loaded / xhr.total) * 100 + "% loaded";
+        },
+        (error) => {
+          console.error("store modelLoader", error);
+        }
+      );
+    });
+  },
+
+  loadModelSync: async (url, callback) => {
+    const gltfData = await get().modelLoader(url, callback),
+      model = gltfData.scene;
+
+    /*
+  loadModelSync().catch(error => {
+    console.error(error);
+  });
+  */
+  },
 
   galaxy: new Galaxy(),
 
@@ -274,6 +309,7 @@ const useStore = create<storeState>()((set, get) => ({
   clonePlanetShaderMaterial: () => {
     return get().planetShaderMaterial.clone();
   },
+  expolsionShaderMaterial: expolsionShaderMaterial,
   asteroidBands: null, // set in call to setPlayerCurrentStarIndex
   stations: [], // set in call to setPlayerCurrentStarIndex
   planetTerrain: cityTerrianGen(PLAYER_START.system, {

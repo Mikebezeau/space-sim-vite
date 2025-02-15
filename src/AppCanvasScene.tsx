@@ -13,6 +13,7 @@ import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER } from "./constants/constants";
 
 import TestPlanetScene from "./scenes/TestPlanetScene";
+import TestEnemyAttackScene from "./scenes/TestEnemyAttackScene";
 
 const AppCanvasScene = () => {
   const componentName = "AppCanvasScene";
@@ -45,6 +46,8 @@ const AppCanvasScene = () => {
     <>
       {testScreen.planetTest ? (
         <TestPlanetScene />
+      ) : testScreen.enemyTest ? (
+        <TestEnemyAttackScene />
       ) : (
         <>
           {isGameStoreInit ? (

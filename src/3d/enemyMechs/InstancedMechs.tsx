@@ -26,6 +26,7 @@ const InstancedMechs = (props: InstancedMechsInt) => {
 
   const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
 
+  // TODO here is where the instanced enemies have object3d set
   // set loaded BuildMech object3d for instancedMesh
   useEffect(() => {
     if (instancedMechObject3d.current !== null) {
@@ -44,6 +45,7 @@ const InstancedMechs = (props: InstancedMechsInt) => {
       if (enemy.getIsLeader()) instancedMeshRef.current.setColorAt(i, red);
     });
     /*
+    // TODO can use this for explosion settings changes
       const enemyColors = [];
       instancedEnemies.forEach((enemy) => {
         const colorRgb = enemy.getIsLeader() ? [1.0, 1.0, 1.0] : [1.0, 0.2, 0.2];
@@ -62,7 +64,10 @@ const InstancedMechs = (props: InstancedMechsInt) => {
   }, [instancedEnemies, instancedMeshRef]);
 
   useFrame(() => {
-    if (instancedMeshRef.current === null) return;
+    if (instancedMeshRef.current === null) {
+      return;
+    }
+
     instancedEnemies.forEach((enemy, i) => {
       enemy.object3d.updateMatrix();
       // adjust for world relative positioning

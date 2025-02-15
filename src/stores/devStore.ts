@@ -36,7 +36,7 @@ interface devStoreState {
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
-  testScreen: { planetTest: false },
+  testScreen: { planetTest: false, enemyTest: false },
   setPlanetTest: () =>
     set((state) => ({
       testScreen: {
