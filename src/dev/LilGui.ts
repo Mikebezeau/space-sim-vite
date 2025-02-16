@@ -6,50 +6,48 @@ import { PLAYER } from "../constants/constants";
 
 const LilGui = () => {
   const devStoreState = useDevStore((state) => state);
+  const setTestScreen = useDevStore((state) => state.setTestScreen);
   const switchScreen = usePlayerControlsStore(
     (state) => state.actions.switchScreen
   );
 
   const controls = {
-    toggleTitleScreen: false,
-    toggleStationScreen: false,
-    toggleEquipmentScreen: false,
+    viewTitleScreen: false,
+    viewStationScreen: false,
+    viewEquipmentScreen: false,
+    viewEnemyTest: false,
+    summonEnemy: false,
   };
 
   useEffect(() => {
     const gui = new GUI();
 
     gui.close();
-    /*
-    gui.add(devStoreState, "showObbBox").onChange((value) => {
-      devStoreState.setProp("showObbBox", value ? 1 : 0);
-    });
-*/
 
     const folderPage = gui.addFolder("Page");
     folderPage.open(false);
 
     folderPage
-      .add(controls, "toggleTitleScreen")
+      .add(controls, "viewTitleScreen")
       .name("View Title Screen")
       .onChange(() => {
-        controls.toggleTitleScreen = false;
+        controls.viewTitleScreen = false;
         switchScreen(PLAYER.screen.mainMenu);
       });
 
     folderPage
-      .add(controls, "toggleStationScreen")
+      .add(controls, "viewStationScreen")
       .name("View Station Screen")
       .onChange(() => {
-        controls.toggleStationScreen = false;
+        controls.viewStationScreen = false;
         switchScreen(PLAYER.screen.dockedStation);
       });
 
     folderPage
-      .add(controls, "toggleEquipmentScreen")
+      .add(controls, "viewEquipmentScreen")
       .name("Build Equipment Screen")
       .onChange(() => {
-        controls.toggleEquipmentScreen = false;
+        controls.viewEquipmentScreen = false;
         switchScreen(PLAYER.screen.equipmentBuild);
       });
 
@@ -57,8 +55,50 @@ const LilGui = () => {
     folderPilot.open(false);
 
     folderPilot.add(devStoreState, "devPlayerSpeedX1000").onChange((value) => {
-      devStoreState.setProp("devPlayerSpeedX1000", value ? 1 : 0);
+      devStoreState.setDevStoreProp("devPlayerSpeedX1000", value ? 1 : 0);
     });
+
+    const folderTesting = gui.addFolder("Testing");
+    folderTesting.open(false);
+
+    folderTesting.add(devStoreState, "showObbBox").onChange((value) => {
+      devStoreState.setDevStoreProp("showObbBox", value ? 1 : 0);
+    });
+
+    folderTesting.add(devStoreState, "showBoidVectors").onChange((value) => {
+      devStoreState.setDevStoreProp("showBoidVectors", value ? 1 : 0);
+    });
+
+    folderTesting
+      .add(devStoreState, "boidAlignmentMod", -0.05, 0.05, 0.01)
+      .onChange((value) => {
+        devStoreState.setDevStoreProp("boidAlignmentMod", value);
+      });
+
+    folderTesting
+      .add(devStoreState, "boidSeparationMod", -0.05, 0.05, 0.01)
+      .onChange((value) => {
+        devStoreState.setDevStoreProp("boidSeparationMod", value);
+      });
+
+    folderTesting
+      .add(devStoreState, "boidCohesionMod", -0.05, 0.05, 0.01)
+      .onChange((value) => {
+        devStoreState.setDevStoreProp("boidCohesionMod", value);
+      });
+
+    folderTesting.add(controls, "summonEnemy").onChange(() => {
+      controls.summonEnemy = false;
+      devStoreState.summonEnemy();
+    });
+
+    folderTesting
+      .add(controls, "viewEnemyTest")
+      .name("View Enemy Test Screen")
+      .onChange(() => {
+        setTestScreen("enemyTest");
+      });
+
     return () => {
       gui.destroy();
     };

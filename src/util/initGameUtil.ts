@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
-import SpaceStationMech from "../classes/SpaceStationMech";
-import EnemyMechBoid from "../classes/EnemyMechBoid";
+import SpaceStationMech from "../classes/mech/SpaceStationMech";
+import EnemyMechBoid from "../classes/mech/EnemyMechBoid";
 import { SCALE } from "../constants/constants";
 import mechDesigns from "../equipment/data/mechDesigns";
 // TODO update TS types

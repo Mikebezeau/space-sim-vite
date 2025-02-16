@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
-//import useStore from "./store";
-//import useEnemyStore from "./enemyStore";
+import useStore from "./store";
+import useEnemyStore from "./enemyStore";
 import useGenFboTextureStore from "./genGpuTextureStore";
 
 import {
@@ -16,7 +16,7 @@ import { typePlanetData } from "../solarSystemGen/genPlanetData";
 
 interface devStoreState {
   testScreen: { [id: string]: boolean };
-  setPlanetTest: () => void;
+  setTestScreen: (id: string) => void;
   getIsTestScreen: () => boolean;
   //
   testPlanet: Planet | Star | null;
@@ -25,31 +25,36 @@ interface devStoreState {
   setPlanetType: (planetTypeData: typePlanetData) => void;
   //
   devPlayerSpeedX1000: boolean;
-  showLeaders: boolean;
   showObbBox: boolean;
-  showBoidVectors: boolean;
+  showBoidVectors: boolean; // TODO show vector arrows in BuildMech
   boidAlignmentMod: number;
   boidSeparationMod: number;
   boidCohesionMod: number;
-  setProp: (propName: string, value: number) => void;
-  //summonEnemy: () => void;
+  setDevStoreProp: (propName: string, value: number) => void;
+  setDevStoreBiodProp: (propName: string, value: number) => void;
+  summonEnemy: () => void;
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
   testScreen: { planetTest: false, enemyTest: false },
-  setPlanetTest: () =>
-    set((state) => ({
-      testScreen: {
-        ...state.testScreen,
-        planetTest: !state.testScreen.planetTest,
-      },
-    })),
+  setTestScreen: (screen?) => {
+    // set all to false
+    const testScreen = get().testScreen;
+    for (const key in testScreen) {
+      testScreen[key] = false;
+    }
+    // set screen to true
+    if (screen) testScreen[screen] = true;
+    // update state
+    set(() => ({ testScreen }));
+  },
   getIsTestScreen: () =>
     Object.values(get().testScreen).find(
       (isTestScreen) => isTestScreen === true
     )
       ? true
       : false,
+
   // planet testing
   testPlanet: null,
   getTestPlanet: () => get().testPlanet,
@@ -118,27 +123,30 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       testPlanet,
     }));
   },
-  // dev
+
+  // general dev settings
   devPlayerSpeedX1000: false, //true,
-  showLeaders: false,
-  showObbBox: false,
+  showObbBox: true,
   showBoidVectors: false,
   boidAlignmentMod: 0,
   boidSeparationMod: 0,
   boidCohesionMod: 0,
-  setProp: (propName: string, value: number | boolean) =>
-    set(() => ({ [propName]: value })),
-  /*
-  summonEnemy() {
-    const playerPosition = useStore.getState().player.object3d.position;
-    useEnemyStore.getState().enemies.map((enemy) => {
-      enemy.object3d.position.copy(playerPosition);
-      enemy.object3d.translateX((Math.random() * 500 - 250) * SCALE);
-      enemy.object3d.translateY((Math.random() * 500 - 250) * SCALE);
-      enemy.object3d.translateZ(-1000 * SCALE);
-    });
+
+  // generic GUI controls update funciton
+  setDevStoreProp(propName: string, value: number | boolean) {
+    set(() => ({ [propName]: value }));
   },
-  */
+  // update boid controller prop modifiers
+  setDevStoreBiodProp(propName: string, value: number) {
+    set(() => ({ [propName]: value }));
+    useEnemyStore.getState().boidController.updateDevStorePropModifiers();
+  },
+  // move enemy to player position
+  summonEnemy() {
+    const playerVec3: THREE.Vector3 =
+      useStore.getState().player.object3d.position;
+    useEnemyStore.getState().enemyWorldPosition = playerVec3;
+  },
 }));
 
 export default useDevStore;

@@ -2,21 +2,20 @@ import * as THREE from "three";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";
-import MechBP from "./mechBP/MechBP";
-import MechServo from "./mechBP/MechServo";
-import useStore from "../stores/store";
-import useParticleStore from "../stores/particleStore";
-import { loadBlueprint } from "../util/initEquipUtil";
+import MechBP from "../mechBP/MechBP";
+import MechServo from "../mechBP/MechServo";
+import useStore from "../../stores/store";
+import useParticleStore from "../../stores/particleStore";
+import { loadBlueprint } from "../../util/initEquipUtil";
 import {
   getGeomColorList,
   getMergedBufferGeom,
   getMergedBufferGeomColor,
   getExplosionMesh,
-} from "../util/gameUtil";
-import { equipData } from "../equipment/data/equipData";
+} from "../../util/gameUtil";
+import { equipData } from "../../equipment/data/equipData";
 
 interface MechInt {
-  buildObject3d: () => void;
   initObject3d(object3d: THREE.Object3D): void;
   updateObject3dIfAllLoaded: (mesh?: THREE.Mesh) => void;
   updateObb: () => void;
@@ -104,83 +103,9 @@ class Mech implements MechInt {
 
   public set mechBP(mechDesign: any) {
     this._mechBP = loadBlueprint(mechDesign); // mech blue print
-    // build object3d from mechBP for instanced mechs
-    if (this.useInstancedMesh) {
-      //this.buildObject3d();
-    }
   }
 
-  buildObject3d() {
-    if (this.mechBP) {
-      const object3d = new THREE.Object3D();
-      this.mechBP.servoList.forEach((servo: MechServo) => {
-        const servoGroup = servo.buildServoThreeGroup(this.mechBP.color);
-        object3d.add(servoGroup);
-      });
-      this.object3d = object3d;
-    }
-  }
-  /*
-  // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
-  initObject3d(object3d: THREE.Object3D) {
-    if (object3d) {
-      // keeping position and rotation set to this object3d (reset at end of function)
-      const keepPosition = new THREE.Vector3();
-      keepPosition.copy(this.object3d.position);
-      const keepRotation = new THREE.Euler();
-      keepRotation.copy(this.object3d.rotation);
-      // when creating hitbox and obb, the rotation must be set to (0,0,0)
-      object3d.rotation.set(0, 0, 0);
-
-      if (this.useInstancedMesh) {
-        // deep copy temp object3d to set this.object3d for computations
-        // instanced mechs position are updated in the InstancedEnemies mesh component
-        // since the object3d is not directly assigned to the mesh, just copied
-        this.object3d.copy(object3d, true);
-        // TODO this is setting merged buffer geometry for each instanced mesh
-        // should be set and reused - enemyStore
-        this.setMergedBufferGeom();
-        //
-        // TODO set merged buffer geometries of each color for instanced mesh
-        //
-        //const geomColorList = getGeomColorList(this.object3d);
-        //if (geomColorList) {
-        //  this.setMergedBufferGeomColorsList(geomColorList);
-        //}
-      } else {
-        // directly assigned object ref
-        // changes to this.object3d will update the object on screen
-        this.object3d = object3d;
-        this.setMergedBufferGeom();
-        // explosion geometry and shader testing
-        this.setExplosionMesh();
-      }
-      // mech bounding box
-      const hitBox = new THREE.Box3();
-      hitBox.setFromObject(this.object3d);
-      // set center position of mech
-      hitBox.getCenter(this.mechCenter);
-      // adjust mechCenter to accout for the object3d position (just in case not at 0,0,0)
-      this.mechCenter.sub(this.object3d.position);
-      // obb for hit testing
-      this.obb.fromBox3(hitBox);
-
-      // geometry for testing to view obb box
-      const boxSize = new THREE.Vector3();
-      hitBox.getSize(boxSize);
-      this.obbGeoHelper = new THREE.BoxGeometry(
-        boxSize.x,
-        boxSize.y,
-        boxSize.z
-      );
-      this.maxHalfWidth = Math.max(boxSize.x, boxSize.y, boxSize.z) / 2;
-      this.object3d.position.copy(keepPosition);
-      this.object3d.rotation.copy(keepRotation);
-    }
-  }
-*/
-
-  // call this once the mech's mesh is loaded in component via BuildMech ref instantiation
+  // call this once the mechBP is built 's mesh is loaded in component via BuildMech ref instantiation
   initObject3d(object3d: THREE.Object3D, isLoadingModelCount: number = 0) {
     if (object3d) {
       if (this.isObject3dInit) {
@@ -202,7 +127,7 @@ class Mech implements MechInt {
         // deep copy instanced mech object3d for computations
         // instanced mechs position are updated in the InstancedEnemies mesh component
         // since the object3d is not directly assigned to the mesh, just copied
-        // TODO use common instanced mech buffer geometry here and in updateObject3dIfAllLoaded
+        // WORK use common instanced mech buffer geometry from new mechBpStore here and in updateObject3dIfAllLoaded
         this.object3d.copy(object3d, true);
       } else {
         // directly assigned object ref
@@ -212,7 +137,9 @@ class Mech implements MechInt {
 
       this.object3d.position.copy(keepPosition);
       this.object3d.rotation.copy(keepRotation);
-
+      // TODO check mechBpStore for mechBP
+      // build object3d shapes from mechB
+      this._mechBP.buildObject3d(this.object3d);
       this.updateObject3dIfAllLoaded();
     }
   }

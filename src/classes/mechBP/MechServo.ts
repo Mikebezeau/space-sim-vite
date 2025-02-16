@@ -11,11 +11,11 @@ import {
 import { roundTenth } from "../../util/gameUtil";
 
 interface MechServoInt {
-  buildServoThreeGroup: (mechColor?: string) => THREE.Group;
   getVolume: () => number;
   classType: () => string;
   classValue: () => number;
   size: () => number;
+  buildServoObject3d: (color?: string) => void;
   structure: () => number;
   SP: (baseVal: number) => number;
   CP: (baseCP: number) => number;
@@ -56,63 +56,12 @@ class MechServo extends MechServoShape implements MechServoInt {
     return this.name || equipData.servoLabel[this.type];
   }
 
-  //TODO MAKE THHIS RECURSIVE
-  buildServoThreeGroup(mechColor?: string) {
-    const servoMainGroup = new THREE.Group();
-    const size = this.size();
-    servoMainGroup.scale.set(size, size, size);
-
-    const servoShapesGroup = new THREE.Group();
-    servoShapesGroup.position.set(this.offset.x, this.offset.y, this.offset.z);
-    servoShapesGroup.rotation.set(
-      this.rotation.x,
-      this.rotation.y,
-      this.rotation.z
-    );
-    servoShapesGroup.scale.set(
-      1 + this.scaleAdjust.x,
-      1 + this.scaleAdjust.y,
-      1 + this.scaleAdjust.z
-    );
-    this.servoShapes.forEach((servoShape) => {
-      const color = servoShape.color
-        ? servoShape.color
-        : this.color
-        ? this.color
-        : mechColor
-        ? mechColor
-        : "#FFF";
-      const servoShapeMesh = new THREE.Mesh();
-      servoShapeMesh.position.set(
-        servoShape.offset.x,
-        servoShape.offset.y,
-        servoShape.offset.z
-      );
-      servoShapeMesh.rotation.set(
-        servoShape.rotation.x,
-        servoShape.rotation.y,
-        servoShape.rotation.z
-      );
-      servoShapeMesh.scale.set(
-        1 + servoShape.scaleAdjust.x,
-        1 + servoShape.scaleAdjust.y,
-        1 + servoShape.scaleAdjust.z
-      );
-      servoShapeMesh.geometry = servoShape.geometry();
-      servoShapeMesh.material = new THREE.MeshLambertMaterial({
-        color: new THREE.Color(color),
-      });
-      servoShapesGroup.add(servoShapeMesh);
-    });
-    servoMainGroup.add(servoShapesGroup);
-    return servoMainGroup;
-  }
-
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
   getVolume() {
     // need method to build the object3d with basic THREE comands
-    const bufferGeom = getMergedBufferGeom(this.buildServoThreeGroup());
-    return getVolume(bufferGeom);
+    //const bufferGeom = getMergedBufferGeom(this.buildServoObject3d());
+    //return getVolume(bufferGeom);
+    return 0;
   }
 
   classType() {
@@ -148,6 +97,15 @@ class MechServo extends MechServoShape implements MechServoInt {
     let size = applyScaledWeightMult(this.scale, this.classValue());
     // reflection of volume change when dimensions change
     return roundTenth(Math.cbrt(size));
+  }
+
+  buildServoObject3d(color = "#ffffff") {
+    const baseScaleGroup = new THREE.Group();
+    baseScaleGroup.add(this.recursiveBuildObject3d(this.color || color));
+    // only make this group scale size adjustment once for top level
+    const size = this.size();
+    baseScaleGroup.scale.set(size, size, size);
+    return baseScaleGroup;
   }
 
   structure() {

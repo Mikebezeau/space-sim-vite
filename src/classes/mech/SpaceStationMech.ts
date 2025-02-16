@@ -1,5 +1,5 @@
 import Mech from "./Mech";
-import mechDesigns from "../equipment/data/mechDesigns";
+import mechDesigns from "../../equipment/data/mechDesigns";
 
 export interface SpaceStationMechInt {}
 

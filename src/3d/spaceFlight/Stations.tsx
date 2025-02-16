@@ -3,8 +3,7 @@ import { Group } from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import Scenery, { SCENERY_TYPE } from "./Scenery";
-import BuildMech from "../buildMech/BuildMech";
-import SpaceStationMech from "../../classes/SpaceStationMech";
+import SpaceStationMech from "../../classes/mech/SpaceStationMech";
 
 interface StationInt {
   station: SpaceStationMech;
@@ -33,14 +32,13 @@ const Station = (props: StationInt) => {
 
   return (
     <group ref={stationGroupRef}>
-      <BuildMech
+      <object3D
         ref={(mechRef) => {
           if (mechRef) {
             // @ts-ignore
             station.initObject3d(mechRef); // position arleady set in station.object3d
           }
         }}
-        mechBP={station.mechBP}
       />
       {/*
         example Scenery .glb 3d object models 

@@ -8,6 +8,7 @@ import MechWeaponMelee from "../classes/mechBP/weaponBP/MechWeaponMelee";
 import MechWeaponMissile from "../classes/mechBP/weaponBP/MechWeaponMissile";
 import MechWeaponProjectile from "../classes/mechBP/weaponBP/MechWeaponProjectile";
 
+// TODO transfer these to Class methods
 function transferProperties(mergBP: any, parsedBP: any) {
   // transfering select properties from parsedBP to mergBP
   Object.keys(parsedBP).forEach((key) => {

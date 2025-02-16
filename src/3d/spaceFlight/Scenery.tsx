@@ -38,6 +38,7 @@ export const SCENERY_TYPE = {
 type sceneryInt = {
   castSelfShadows?: boolean;
   sceneryType: string;
+  scale?: number;
   onLoadUpdateMech?: Mech; //(object: Object3D) => void;
 };
 
@@ -45,6 +46,7 @@ const Scenery = (props: sceneryInt) => {
   const {
     castSelfShadows = false,
     sceneryType,
+    scale = 1,
     onLoadUpdateMech = null,
   } = props;
 
@@ -71,6 +73,7 @@ const Scenery = (props: sceneryInt) => {
         }
       });
       const sceneryMesh = new Mesh();
+      sceneryMesh.scale.set(scale, scale, scale);
       sceneryMesh.geometry = BufferGeometryUtils.mergeGeometries(geometries);
       sceneryMesh.material = new MeshLambertMaterial({ color: "white" });
       sceneryMesh.material.flatShading = true;

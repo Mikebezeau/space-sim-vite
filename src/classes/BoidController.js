@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import useDevStore from "../stores/devStore";
 
 const guiControls = new (function () {
   this.container = "box";
@@ -36,6 +37,19 @@ class BoidController {
     //this.avoidCenterSteerVector = new THREE.Vector3();
 
     this.home = new THREE.Vector3(0, 0, 0);
+  }
+
+  updateDevStorePropModifiers() {
+    const { boidAlignmentMod, boidSeparationMod, boidCohesionMod } =
+      useDevStore.getState();
+    this.params.align.maxForce = 0.05 + boidAlignmentMod;
+    this.params.separate.maxForce = 0.05 + boidSeparationMod;
+    this.params.cohesion.maxForce = 0.05 + boidCohesionMod;
+    /*
+    this.params.align.effectiveRange = 50 + boidAlignmentMod;
+    this.params.separate.effectiveRange = 50 + boidSeparationMod;
+    this.params.cohesion.effectiveRange = 50 + boidCohesionMod;
+    */
   }
 
   update(delta) {

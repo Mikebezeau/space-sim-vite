@@ -1,9 +1,11 @@
+import { Object3D } from "three";
 import DataMechBP from "./DataMechBP";
 import MechServo from "./MechServo";
 import MechServoShape from "./MechServoShape";
 import MechWeapon from "./weaponBP/MechWeapon";
 
 interface MechBPInt {
+  buildObject3d: (object3d?: Object3D) => void;
   getPartById: (
     id: string,
     noFirstCallArr?: MechServoShape[]
@@ -23,6 +25,14 @@ interface MechBPInt {
 class MechBP extends DataMechBP implements MechBPInt {
   constructor(mechBPdata?: any) {
     super(mechBPdata);
+  }
+
+  buildObject3d(object3d: Object3D = new Object3D()) {
+    //object3d.clear();
+    this.servoList.forEach((servo: MechServo) => {
+      const servoGroup = servo.buildServoObject3d(this.color || "#ffffff");
+      object3d.add(servoGroup);
+    });
   }
 
   // find MechServo | MechWeapon, or recursively find MechServoShape of either list by id

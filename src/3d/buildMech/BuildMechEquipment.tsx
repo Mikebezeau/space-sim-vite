@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useRef, Fragment } from "react";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useEquipStore, { EDIT_MENU_SELECT } from "../../stores/equipStore";
-import BuildMech from "./BuildMech";
+//import BuildMech from "./BuildMech";
 //import { fitCameraToObject } from "../../util/gameUtil";
 
 const MechDisplay = () => {
@@ -33,6 +33,7 @@ const MechDisplay = () => {
     <>
       {editorMechBP ? (
         <>
+          {/*}
           <BuildMech
             mechBP={editorMechBP}
             editPartId={
@@ -40,6 +41,14 @@ const MechDisplay = () => {
               editPartMenuSelect === EDIT_MENU_SELECT.color ? "" : editPartId
             }
             editMode={true}
+          />*/}
+          <object3D
+            ref={(mechRef) => {
+              if (mechRef) {
+                mechRef.clear();
+                editorMechBP.buildObject3d(mechRef);
+              }
+            }}
           />
           <axesHelper args={[editorMechBP.size() * 2]} />
           {editorMechBP.weaponList.map((weapon) => (

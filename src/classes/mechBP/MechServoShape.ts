@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
 import { BufferGeometry } from "three";
 import { transferProperties, initServoShapes } from "../../util/initEquipUtil";
@@ -22,6 +23,7 @@ export const EDIT_PART_METHOD = {
 interface MechServoShapeInt {
   label: () => string;
   geometry: () => BufferGeometry;
+  recursiveBuildObject3d: (inheritColor: string) => THREE.Group;
 
   movePart: (props: { x: number; y: number; z: number }) => void;
   resetPosition: () => void;
@@ -58,6 +60,67 @@ class MechServoShape implements MechServoShapeInt {
         initServoShapes(this, servoShapeData.servoShapes);
       }
     }
+  }
+
+  //TODO MAKE THHIS RECURSIVE
+  recursiveBuildObject3d(inheritColor: string) {
+    const servoShapesGroup = new THREE.Group();
+    servoShapesGroup.position.set(this.offset.x, this.offset.y, this.offset.z);
+    servoShapesGroup.rotation.set(
+      this.rotationRadians().x,
+      this.rotationRadians().y,
+      this.rotationRadians().z
+    );
+    servoShapesGroup.scale.set(
+      (1 + this.scaleAdjust.x) * (this.mirrorAxis.x ? -1 : 1),
+      (1 + this.scaleAdjust.y) * (this.mirrorAxis.y ? -1 : 1),
+      (1 + this.scaleAdjust.z) * (this.mirrorAxis.z ? -1 : 1)
+    );
+    if (this.mirrorAxis.x === true) {
+      console.log("mirrorAxis.x", this.name, servoShapesGroup.scale.x);
+    }
+
+    this.servoShapes.forEach((servoShape) => {
+      const color = servoShape.color
+        ? servoShape.color
+        : this.color
+        ? this.color
+        : inheritColor
+        ? inheritColor
+        : "#FFF";
+      // nested group of servoShapes
+      if (servoShape.servoShapes.length > 0) {
+        servoShapesGroup.add(servoShape.recursiveBuildObject3d(inheritColor));
+      } else {
+        //
+        const servoShapeMesh = new THREE.Mesh();
+        servoShapeMesh.position.set(
+          servoShape.offset.x,
+          servoShape.offset.y,
+          servoShape.offset.z
+        );
+
+        servoShapeMesh.rotation.set(
+          servoShape.rotationRadians().x,
+          servoShape.rotationRadians().y,
+          servoShape.rotationRadians().z
+        );
+        servoShapeMesh.scale.set(
+          (1 + servoShape.scaleAdjust.x) * (servoShape.mirrorAxis.x ? -1 : 1),
+          (1 + servoShape.scaleAdjust.y) * (servoShape.mirrorAxis.y ? -1 : 1),
+          (1 + servoShape.scaleAdjust.z) * (servoShape.mirrorAxis.z ? -1 : 1)
+        );
+        // TODO only use new meterial if for different colors
+        servoShapeMesh.geometry = servoShape.geometry();
+        servoShapeMesh.material = new THREE.MeshLambertMaterial({
+          color: new THREE.Color(color),
+          flatShading: true,
+          side: THREE.DoubleSide,
+        });
+        servoShapesGroup.add(servoShapeMesh);
+      }
+    });
+    return servoShapesGroup;
   }
 
   public get color() {

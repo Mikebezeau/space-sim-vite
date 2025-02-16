@@ -99,7 +99,7 @@ const TestEnemyAttackScene = () => {
       />
       <pointLight intensity={1} decay={0} position={[1000, 1000, -1000]} />
       <ambientLight intensity={0.4} />
-      <EnemyMechs />
+      {/*<EnemyMechs />*/}
       <BuildMech
         ref={(mechRef) => {
           if (mechRef) {
@@ -107,7 +107,7 @@ const TestEnemyAttackScene = () => {
             // TODO fix TS error here
             // @ts-ignore
             player.initObject3d(mechRef);
-            player.object3d.translateY(10);
+            player.object3d.translateZ(5);
           }
         }}
         mechBP={player.mechBP}

@@ -1,7 +1,7 @@
 import { Vector3, Euler } from "three";
 import Mech from "./Mech";
-import mechDesigns from "../equipment/data/mechDesigns";
-import { PLAYER_START } from "../constants/constants";
+import mechDesigns from "../../equipment/data/mechDesigns";
+import { PLAYER_START } from "../../constants/constants";
 
 interface PlayerMechInt {
   storeSpaceLocation(): void;

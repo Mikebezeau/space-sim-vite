@@ -42,14 +42,14 @@ const ObbTest = forwardRef(function ObbTest(
         obbTestForwardRef.current[i].setRotationFromMatrix(
           enemy.obbRotationHelper
         );
-        // show leaders in red and followers in green, no group in blue
+        // show leaders in blue and followers in green, no group in yellow
         // @ts-ignore - material.color does exist
         obbTestForwardRef.current[i].material.color.setHex(
           enemy.getIsLeader()
-            ? 0xff0000
+            ? 0x0000ff
             : enemy.groupLeaderId
             ? 0x00ff00
-            : 0x0000ff
+            : 0x00ffff
         );
       });
     }
@@ -74,9 +74,9 @@ const ObbTest = forwardRef(function ObbTest(
         if (obb.intersectsOBB(obbToTest) === true) {
           // change color of obb test boxes if colliding
           // @ts-ignore - material.color exists
-          obbTestForwardRef.current[i].material.color.setHex(0xffff00);
+          obbTestForwardRef.current[i].material.color.setHex(0xff0000);
           // @ts-ignore
-          obbTestForwardRef.current[j].material.color.setHex(0xffff00);
+          obbTestForwardRef.current[j].material.color.setHex(0xff0000);
 
           tempEnemyWorldPosition.set(
             enemies[i].object3d.position.x +

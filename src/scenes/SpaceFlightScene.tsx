@@ -6,6 +6,7 @@ import SpaceFlightPlanetsScene from "./spaceFlight/SpaceFlightPlanetsScene";
 import StarsBackgroundScene from "./spaceFlight/StarsBackgroundScene";
 
 const SpaceFlightScene = () => {
+  console.log("SpaceFlightScene");
   const componentName = "SpaceFlightScene";
   useStore.getState().updateRenderInfo(componentName);
   useEffect(() => {

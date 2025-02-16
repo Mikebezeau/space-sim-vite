@@ -6,7 +6,7 @@ import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useParticleStore from "../../stores/particleStore";
 import PlayerCrosshair from "./PlayerCrosshair";
-import BuildMech from "../buildMech/BuildMech";
+//import BuildMech from "../buildMech/BuildMech";
 import Particles from "../Particles";
 import { setVisible } from "../../util/gameUtil";
 import { FPS, PLAYER } from "../../constants/constants";
@@ -182,6 +182,7 @@ const PlayerMech = () => {
 
   return (
     <>
+      {/*}
       <BuildMech
         ref={(mechRef) => {
           if (mechRef) {
@@ -193,6 +194,15 @@ const PlayerMech = () => {
         }}
         mechBP={player.mechBP}
         //servoHitNames={[]}
+      />*/}
+
+      <object3D
+        ref={(mechRef) => {
+          if (mechRef) {
+            playerMechRef.current = mechRef;
+            player.initObject3d(mechRef);
+          }
+        }}
       />
       <group ref={secondaryGroupRef}>
         <Particles isPlayerParticles />

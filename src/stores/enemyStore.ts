@@ -1,11 +1,11 @@
 import { Vector3 } from "three";
 import { create } from "zustand";
-import EnemyMechBoid from "../classes/EnemyMechBoid";
+import EnemyMechBoid from "../classes/mech/EnemyMechBoid";
 import BoidController from "../classes/BoidController";
 import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
 
-const numEnemies = 30;
+const numEnemies = 90;
 
 const generateEnemies = async (
   numEnemies: number
@@ -42,7 +42,8 @@ const useEnemyStore = create<enemyStoreState>()((set, get) => ({
   enemyWorldPosition: new Vector3(),
   enemies: generateEnemies(numEnemies).then((enemiesData: EnemyMechBoid[]) => {
     set({ enemies: enemiesData });
-    set({ boidController: new BoidController(enemiesData) });
+    //@ts-ignore
+    set({ boidController: new BoidController(get().enemies) });
   }),
 }));
 

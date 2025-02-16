@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import PlayerMech from "../classes/PlayerMech";
+import PlayerMech from "../classes/mech/PlayerMech";
 import useGenFboTextureStore from "./genGpuTextureStore";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";

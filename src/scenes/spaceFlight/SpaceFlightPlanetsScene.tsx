@@ -13,6 +13,7 @@ import EnemyMechs from "../../3d/enemyMechs/EnemyMechs";
 import ObbTest from "./dev/ObbTest";
 
 const SpaceFlightPlanetsScene = () => {
+  console.log("SpaceFlightPlanetsScene");
   useStore.getState().updateRenderInfo("SpaceFlightPlanetsScene");
 
   const { camera } = useThree();
@@ -24,7 +25,6 @@ const SpaceFlightPlanetsScene = () => {
     (state) => state.updateFrame.updatePlayerMechAndCamera
   );
   const enemyWorldPosition = useEnemyStore((state) => state.enemyWorldPosition);
-  const boidController = useEnemyStore((state) => state.boidController);
 
   const relativePlayerGroupRef = useRef<Group | null>(null);
   const enemyRelativePlayerGroupRef = useRef<Group | null>(null);
@@ -34,6 +34,7 @@ const SpaceFlightPlanetsScene = () => {
   useFrame((_, delta) => {
     // must call updatePlayerMechAndCamera before
     // adjustments with playerWorldOffsetPosition position
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
     updatePlayerMechAndCamera(delta, camera);
 
     if (relativePlayerGroupRef.current) {
@@ -50,10 +51,7 @@ const SpaceFlightPlanetsScene = () => {
         enemyWorldPosition.z - playerWorldOffsetPosition.z
       );
     }
-
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
-    boidController?.update(delta);
-  }, -2); //render order set to be before Particles and ScannerReadout
+  }, -2); //render order set to be before Particles and ScannerReadout positioning
 
   return (
     <>

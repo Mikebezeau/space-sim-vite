@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import EnemyMech from "./EnemyMech";
-import { FPS } from "../constants/constants";
+import { FPS } from "../../constants/constants";
 
 export interface EnemyMechBoidInt {
   resetVectors: () => void;
