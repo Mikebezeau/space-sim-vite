@@ -64,7 +64,6 @@ const Scenery = (props: sceneryInt) => {
       const geometries = [];
       object.scene.traverse(function (o) {
         if (o.isMesh) {
-          o.material.flatShading = true;
           object.scene.traverse(function (o) {
             if (o.isMesh) {
               geometries.push(o.geometry);
@@ -75,8 +74,11 @@ const Scenery = (props: sceneryInt) => {
       const sceneryMesh = new Mesh();
       sceneryMesh.scale.set(scale, scale, scale);
       sceneryMesh.geometry = BufferGeometryUtils.mergeGeometries(geometries);
+      // TODO get marerials from mechBpStore
       sceneryMesh.material = new MeshLambertMaterial({ color: "white" });
       sceneryMesh.material.flatShading = true;
+      //
+      sceneryMesh.updateWorldMatrix(true, true);
       if (onLoadUpdateMech !== null) {
         onLoadUpdateMech.updateObject3dIfAllLoaded(sceneryMesh);
       } else {

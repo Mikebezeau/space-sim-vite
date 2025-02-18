@@ -12,6 +12,7 @@ const LilGui = () => {
   );
 
   const controls = {
+    enemyTest: false,
     viewTitleScreen: false,
     viewStationScreen: false,
     viewEquipmentScreen: false,
@@ -23,6 +24,11 @@ const LilGui = () => {
     const gui = new GUI();
 
     gui.close();
+
+    gui.add(controls, "enemyTest").onChange(() => {
+      controls.enemyTest = false;
+      useDevStore.getState().setTestScreen("enemyTest");
+    });
 
     const folderPage = gui.addFolder("Page");
     folderPage.open(false);

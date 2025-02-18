@@ -1,14 +1,9 @@
-import React, { useRef } from "react";
+import React, { memo, useRef } from "react";
 import useEnemyStore from "../../stores/enemyStore";
 import InstancedMechsBpIdGroup from "./InstancedMechsBpIdGroup";
 
 const InstancedMechs = () => {
   const enemies = useEnemyStore((state) => state.enemies);
-
-  console.log(
-    "InstancedMechs",
-    enemies instanceof Array ? enemies.length : "enemies not an array"
-  );
 
   // using useRef to store unique instancedEnemies mechBP ids in Set
   const instancedEnemiesBpIdListRef = useRef([
@@ -28,4 +23,4 @@ const InstancedMechs = () => {
   );
 };
 
-export default InstancedMechs;
+export default memo(InstancedMechs);

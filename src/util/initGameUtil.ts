@@ -57,8 +57,9 @@ export const groupEnemies = (enemies: EnemyMechBoid[]) => {
     //this is also setting all followers of boss ship to upgrade to special mechBP
     if (!enemy.groupLeaderId) {
       //upgrade the leader mech to special mechBp
-      if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[1];
+      if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[2]; // special leader ship BP
 
+      const maxGroupSize = 7;
       enemies
         .filter(
           (e) =>
@@ -67,9 +68,9 @@ export const groupEnemies = (enemies: EnemyMechBoid[]) => {
               100 * SCALE
           // && enemy.mechBP.scale >= e.mechBP.scale
         )
-        .forEach((e) => {
+        .forEach((e, i) => {
           //this will apply to leader as well as all those nearby
-          e.groupLeaderId = enemy.id;
+          if (i < maxGroupSize) e.groupLeaderId = enemy.id;
         });
     }
   });

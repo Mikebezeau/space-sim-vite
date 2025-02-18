@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
-//import { CSG } from "three-csg-ts";
+//import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
 import MechBP from "../mechBP/MechBP";
-import MechServo from "../mechBP/MechServo";
 import useStore from "../../stores/store";
+import useMechBpStore from "../../stores/mechBpStore";
 import useParticleStore from "../../stores/particleStore";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
@@ -12,11 +12,11 @@ import {
   getMergedBufferGeom,
   getMergedBufferGeomColor,
   getExplosionMesh,
-} from "../../util/gameUtil";
+} from "../../util/mechGeometryUtil";
 import { equipData } from "../../equipment/data/equipData";
 
 interface MechInt {
-  initObject3d(object3d: THREE.Object3D): void;
+  initObject3d(object3d?: THREE.Object3D): void;
   updateObject3dIfAllLoaded: (mesh?: THREE.Mesh) => void;
   updateObb: () => void;
   setObject3dCenterOffset: () => void;
@@ -95,6 +95,11 @@ class Mech implements MechInt {
     this.shotsTesting = [];
     this.shotsHit = [];
     this.servoHitNames = [];
+    if (this.useInstancedMesh) {
+      // instanced mesh object3d is shared between all Mech objects
+      // - it is used to set up properties for hit testing etc.
+      this.initObject3d();
+    }
   }
 
   public get mechBP() {
@@ -103,45 +108,46 @@ class Mech implements MechInt {
 
   public set mechBP(mechDesign: any) {
     this._mechBP = loadBlueprint(mechDesign); // mech blue print
+    this.initObject3d();
   }
 
   // call this once the mechBP is built 's mesh is loaded in component via BuildMech ref instantiation
-  initObject3d(object3d: THREE.Object3D, isLoadingModelCount: number = 0) {
-    if (object3d) {
-      if (this.isObject3dInit) {
-        console.warn("Mech initObject3d already called");
-      }
-      this.isObject3dInit = true;
-      this.loadedModelCount = 0;
-      this.isWaitLoadModelsTotal = isLoadingModelCount;
-      // keeping position and rotation set to this object3d
-      const keepPosition = new THREE.Vector3();
-      keepPosition.copy(this.object3d.position);
-      const keepRotation = new THREE.Euler();
-      keepRotation.copy(this.object3d.rotation);
-      // clear object3d of children in case reusing this object3d
-      // this causes objects to not be rendered
-      //this.object3d.clear();
-
-      if (this.useInstancedMesh) {
-        // deep copy instanced mech object3d for computations
-        // instanced mechs position are updated in the InstancedEnemies mesh component
-        // since the object3d is not directly assigned to the mesh, just copied
-        // WORK use common instanced mech buffer geometry from new mechBpStore here and in updateObject3dIfAllLoaded
-        this.object3d.copy(object3d, true);
-      } else {
-        // directly assigned object ref
-        // changes to this.object3d will update the object on screen
-        this.object3d = object3d;
-      }
-
-      this.object3d.position.copy(keepPosition);
-      this.object3d.rotation.copy(keepRotation);
-      // TODO check mechBpStore for mechBP
-      // build object3d shapes from mechB
-      this._mechBP.buildObject3d(this.object3d);
-      this.updateObject3dIfAllLoaded();
+  initObject3d(object3d?: THREE.Object3D, isLoadingModelCount: number = 0) {
+    if (this.isObject3dInit) {
+      //console.warn("Mech initObject3d already called", this.mechBP.id);
     }
+    this.isObject3dInit = true;
+    this.loadedModelCount = 0;
+    this.isWaitLoadModelsTotal = isLoadingModelCount;
+    // keeping position and rotation set to this object3d
+    const keepPosition = new THREE.Vector3();
+    keepPosition.copy(this.object3d.position);
+    const keepRotation = new THREE.Euler();
+    keepRotation.copy(this.object3d.rotation);
+
+    // clear object3d of children in case reusing this object3d
+    this.object3d.clear();
+
+    if (this.useInstancedMesh) {
+      // TODO work on sharing object3d for instanced mesh
+      this.object3d.add(
+        useMechBpStore.getState().getCreateMechBpBuild(this._mechBP).object3d
+      );
+    } else if (object3d) {
+      // directly assigned object ref from component
+      // changes to this.object3d will update the object on screen
+      this.object3d = object3d;
+      this.object3d.add(
+        useMechBpStore.getState().getCreateMechBpBuild(this._mechBP).object3d
+      );
+    }
+    // if not using object3d dictionary, build object3d from mechBP
+    //this._mechBP.buildObject3d(this.object3d);
+
+    this.object3d.position.copy(keepPosition);
+    this.object3d.rotation.copy(keepRotation);
+    // if everything is loaded, set setMergedBufferGeom setExplosionMesh hitbox and obb
+    this.updateObject3dIfAllLoaded();
   }
 
   updateObject3dIfAllLoaded(mesh?: THREE.Mesh) {
@@ -150,7 +156,12 @@ class Mech implements MechInt {
       //mesh = CSG.union(mesh, geometry);
       this.object3d.add(mesh);
     }
-    console.log(this.loadedModelCount, this.isWaitLoadModelsTotal);
+    if (this.loadedModelCount > this.isWaitLoadModelsTotal) {
+      console.warn(
+        "updateObject3dIfAllLoaded called more than expected",
+        this.loadedModelCount === this.isWaitLoadModelsTotal
+      );
+    }
     if (this.loadedModelCount === this.isWaitLoadModelsTotal) {
       // keeping position and rotation set to this object3d (reset at end of function)
       const keepPosition = new THREE.Vector3();
@@ -210,6 +221,7 @@ class Mech implements MechInt {
   }
 
   // set the position of object3d so that the geometry is centered at the position
+  // TODO is this throwing off the obb when scenery models are added?
   setObject3dCenterOffset() {
     this.object3dCenterOffset.position.copy(this.object3d.position);
     this.object3dCenterOffset.rotation.copy(this.object3d.rotation);
@@ -225,7 +237,10 @@ class Mech implements MechInt {
       // split object children into meshes of same colors
       // merge all meshes of same color into one buffer geometry
       const merged = getMergedBufferGeom(this.object3d);
-      if (merged) this.bufferGeom = merged;
+      if (merged) {
+        this.bufferGeom?.dispose();
+        this.bufferGeom = merged;
+      }
     } else {
       console.error(
         "Mech.setMergedBufferGeom(): object3d not set",
@@ -236,6 +251,7 @@ class Mech implements MechInt {
 
   setMergedBufferGeomColorsList(geomColorList: THREE.Color[]) {
     if (this.object3d) {
+      // TODO displose of old bufferGeomColorsList
       this.bufferGeomColorsList = [];
       geomColorList.forEach((color) => {
         this.bufferGeomColorsList.push(
@@ -247,6 +263,11 @@ class Mech implements MechInt {
 
   setExplosionMesh() {
     if (this.bufferGeom !== null) {
+      if (this.explosionMesh !== null) {
+        this.explosionMesh.geometry.dispose();
+        // not using material array ( <THREE.Material[]> ) so treat material as single material
+        (<THREE.Material>this.explosionMesh.material).dispose();
+      }
       this.explosionMesh = getExplosionMesh(
         useStore.getState().expolsionShaderMaterial,
         this.bufferGeom
@@ -254,8 +275,9 @@ class Mech implements MechInt {
 
       // TODO testing explosion mesh
       if (this.explosionMesh) {
-        //this.object3d.clear();
-        //this.object3d.add(this.explosionMesh);
+        this.object3d.clear();
+        // TODO scenery objects are not added to correct position
+        this.object3d.add(this.explosionMesh);
       }
     }
   }

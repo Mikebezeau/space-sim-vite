@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef } from "react";
 import { Vector3 } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
@@ -24,9 +24,7 @@ const TestEnemyAttackScene = () => {
   const folder2ref = useRef<any>(null);
   const cameraControlsRef = useRef<any>(null);
 
-  const controllerOptions = {
-    resetEnemies: false,
-  };
+  const controllerOptions = { changeScreenTest: false, resetEnemies: false };
 
   const setGuiData = () => {
     // if need to update current controls
@@ -51,7 +49,19 @@ const TestEnemyAttackScene = () => {
     if (!guiRef.current) {
       guiRef.current = new GUI();
 
-      guiRef.current.add(controllerOptions, "resetEnemies").onChange(() => {});
+      guiRef.current.add(controllerOptions, "changeScreenTest").onChange(() => {
+        useDevStore
+          .getState()
+          .setTestScreen(
+            controllerOptions.changeScreenTest
+              ? "changeScreenTest"
+              : "enemyTest"
+          );
+      });
+
+      guiRef.current.add(controllerOptions, "resetEnemies").onChange(() => {
+        controllerOptions.resetEnemies = false;
+      });
 
       folder1ref.current = guiRef.current.addFolder("Folder 1");
       /*
@@ -79,13 +89,12 @@ const TestEnemyAttackScene = () => {
     setCameraPosition();
   }, []);
 
-  const enemies = useEnemyStore((state) => state.enemies);
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     boidController?.update(delta);
     //
     // testing explosion animation
-    enemies[0]?.updateExplosionMesh();
+    player.updateExplosionMesh();
   }, -2); //render order set to be before Particles and ScannerReadout
 
   return (
@@ -99,28 +108,28 @@ const TestEnemyAttackScene = () => {
       />
       <pointLight intensity={1} decay={0} position={[1000, 1000, -1000]} />
       <ambientLight intensity={0.4} />
-      {/*<EnemyMechs />*/}
-      <BuildMech
+
+      <EnemyMechs />
+
+      <object3D
         ref={(mechRef) => {
           if (mechRef) {
             //playerMechRef.current = mechRef;
-            // TODO fix TS error here
-            // @ts-ignore
             player.initObject3d(mechRef);
-            player.object3d.translateZ(5);
           }
         }}
-        mechBP={player.mechBP}
-        //servoHitNames={[]}
       />
+
+      {/*
       <mesh geometry={track}>
         <meshBasicMaterial color="red" />
       </mesh>
       <mesh geometry={geometry2}>
         <meshBasicMaterial color="blue" />
       </mesh>
+      */}
     </>
   );
 };
 
-export default TestEnemyAttackScene;
+export default memo(TestEnemyAttackScene);

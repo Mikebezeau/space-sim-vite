@@ -20,6 +20,20 @@ import Planet from "../classes/solarSystem/Planet";
 //import { track } from "../util/track";
 import { PLAYER, PLAYER_START } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/solarSystemConstants";
+// @ts-ignore
+import starSpriteSrc from "../sprites/sprite120.png";
+// @ts-ignore
+import featheredSpriteSrc from "../sprites/feathered60.png";
+
+const initStarPointsShaderMaterial = () => {
+  const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
+  const nebulaSprite = new THREE.TextureLoader().load(featheredSpriteSrc);
+
+  starPointsShaderMaterial.uniforms.uTexture = { value: starSprite };
+  starPointsShaderMaterial.uniforms.uTextureNebula = { value: nebulaSprite };
+
+  return starPointsShaderMaterial;
+};
 
 interface storeState {
   // render info to monitor performance issues
@@ -238,7 +252,7 @@ const useStore = create<storeState>()((set, get) => ({
       z: starPosition.z - playerStarPosition.z,
     };
   },
-  starPointsShaderMaterial: starPointsShaderMaterial,
+  starPointsShaderMaterial: initStarPointsShaderMaterial(),
   //
 
   // current player solar system location

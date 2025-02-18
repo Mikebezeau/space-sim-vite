@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef } from "react";
 import { Group } from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
@@ -35,8 +35,7 @@ const Station = (props: StationInt) => {
       <object3D
         ref={(mechRef) => {
           if (mechRef) {
-            // @ts-ignore
-            station.initObject3d(mechRef); // position arleady set in station.object3d
+            station.initObject3d(mechRef);
           }
         }}
       />
@@ -77,4 +76,4 @@ function Stations() {
   );
 }
 
-export default Stations;
+export default memo(Stations);

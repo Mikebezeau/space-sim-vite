@@ -44,7 +44,9 @@ const AppCanvasScene = () => {
 
   return (
     <>
-      {testScreen.planetTest ? (
+      {testScreen.changeScreenTest ? (
+        <GalaxyMap />
+      ) : testScreen.planetTest ? (
         <TestPlanetScene />
       ) : testScreen.enemyTest ? (
         <TestEnemyAttackScene />

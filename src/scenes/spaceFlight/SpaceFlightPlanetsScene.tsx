@@ -13,7 +13,6 @@ import EnemyMechs from "../../3d/enemyMechs/EnemyMechs";
 import ObbTest from "./dev/ObbTest";
 
 const SpaceFlightPlanetsScene = () => {
-  console.log("SpaceFlightPlanetsScene");
   useStore.getState().updateRenderInfo("SpaceFlightPlanetsScene");
 
   const { camera } = useThree();

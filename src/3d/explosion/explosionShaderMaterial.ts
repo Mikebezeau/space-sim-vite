@@ -1,6 +1,9 @@
 import { ShaderMaterial } from "three";
 
 const vertexShader = `
+#include <common>
+#include <logdepthbuf_pars_vertex>
+
 uniform float amplitude;
 
 attribute vec3 customColor;
@@ -17,23 +20,28 @@ void main() {
   vec3 newPosition = position + normal * amplitude * displacement;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 
+  #include <logdepthbuf_vertex>
 }
 `;
 
 const fragmentShader = `
+#include <common>
+#include <logdepthbuf_pars_fragment>
+
 varying vec3 vNormal;
 varying vec3 vColor;
 
 void main() {
+  #include <logdepthbuf_fragment>
 
-const float ambient = 0.4;
+  const float ambient = 0.4;
 
-vec3 light = vec3( 1.0 );
-light = normalize( light );
+  vec3 light = vec3( 1.0 );
+  light = normalize( light );
 
-float directional = max( dot( vNormal, light ), 0.0 );
+  float directional = max( dot( vNormal, light ), 0.0 );
 
-gl_FragColor = vec4( ( directional + ambient ) * vColor, 1.0 );
+  gl_FragColor = vec4( ( directional + ambient ) * vColor, 1.0 );
 
 }
 `;

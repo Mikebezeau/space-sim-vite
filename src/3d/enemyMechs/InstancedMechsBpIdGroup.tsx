@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
-import BuildMech from "../buildMech/BuildMech";
+import useMechBpStore from "../../stores/mechBpStore";
+import Mech from "../../classes/mech/Mech";
 
 interface InstancedMechsInt {
   mechBpId: string;
@@ -13,7 +14,6 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
   const { mechBpId } = props;
   // TODO
   const enemies = useEnemyStore((state) => state.enemies);
-  const instancedMechObject3d = useRef<THREE.Object3D | null>(null);
   const instancedEnemies = enemies.filter(
     (enemy) => enemy.useInstancedMesh && enemy.mechBP.id === mechBpId
   );
@@ -25,17 +25,6 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
   }, []);
 
   const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
-
-  // TODO here is where the instanced enemies have object3d set
-  // set loaded BuildMech object3d for instancedMesh
-  useEffect(() => {
-    if (instancedMechObject3d.current !== null) {
-      instancedEnemies.forEach((enemy) => {
-        // @ts-ignore
-        enemy.initObject3d(instancedMechObject3d.current);
-      });
-    }
-  }, [instancedEnemies, instancedMechObject3d]);
 
   useEffect(() => {
     if (instancedMeshRef.current === null) return;
@@ -64,16 +53,11 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
   }, [instancedEnemies, instancedMeshRef]);
 
   useFrame(() => {
-    if (instancedMeshRef.current === null) {
-      return;
-    }
+    if (instancedMeshRef.current === null) return;
 
-    instancedEnemies.forEach((enemy, i) => {
+    instancedEnemies.forEach((enemy: Mech, i: number) => {
       enemy.object3d.updateMatrix();
-      // adjust for world relative positioning
-      //
-      // @ts-ignore
-      instancedMeshRef.current.setMatrixAt(i, enemy.object3d.matrix);
+      instancedMeshRef.current!.setMatrixAt(i, enemy.object3d.matrix);
     });
     instancedMeshRef.current.instanceMatrix.needsUpdate = true;
   });
@@ -82,31 +66,21 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
     <>
       {instancedEnemies.length > 0 && (
         <>
-          {
-            // building mech to set enemy bufferGeom for use in instancedMesh
-            instancedEnemies[0].bufferGeom === null ? (
-              <BuildMech
-                ref={(buildMechRef: THREE.Object3D) => {
-                  // buildMechRef === null on removing BuildMech component
-                  if (buildMechRef !== null) {
-                    instancedMechObject3d.current = new THREE.Object3D();
-                    instancedMechObject3d.current.copy(buildMechRef);
-                  }
-                }}
-                mechBP={instancedEnemies[0].mechBP}
-              />
-            ) : (
-              <instancedMesh
-                frustumCulled={false}
-                ref={instancedMeshRef}
-                args={[
-                  instancedEnemies[0].bufferGeom,
-                  undefined,
-                  instancedEnemies.length,
-                ]}
-              >
-                <meshLambertMaterial
-                /*
+          <instancedMesh
+            frustumCulled={false}
+            ref={instancedMeshRef}
+            args={[
+              //instancedEnemies[0].bufferGeom,
+              useMechBpStore
+                .getState()
+                .getCreateMechBpBuild(instancedEnemies[0]._mechBP)
+                .bufferGeometry,
+              undefined,
+              instancedEnemies.length,
+            ]}
+          >
+            <meshLambertMaterial
+            /*
           onBeforeCompile={(shader) => {
             //console.log(shader.vertexShader);
             //console.log(shader.fragmentShader);
@@ -126,14 +100,12 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
             );
           }}
           */
-                />
-              </instancedMesh>
-            )
-          }
+            />
+          </instancedMesh>
         </>
       )}
     </>
   );
 };
 
-export default InstancedMechsBpIdGroup;
+export default memo(InstancedMechsBpIdGroup);

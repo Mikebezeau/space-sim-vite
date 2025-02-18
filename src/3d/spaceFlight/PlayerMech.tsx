@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef } from "react";
 import { Group, PointLight } from "three";
 import { BoxGeometry, FrontSide, Object3D, ShaderMaterial } from "three";
 import { useFrame } from "@react-three/fiber";
@@ -182,20 +182,6 @@ const PlayerMech = () => {
 
   return (
     <>
-      {/*}
-      <BuildMech
-        ref={(mechRef) => {
-          if (mechRef) {
-            playerMechRef.current = mechRef;
-            // TODO fix TS error here
-            // @ts-ignore
-            player.initObject3d(mechRef);
-          }
-        }}
-        mechBP={player.mechBP}
-        //servoHitNames={[]}
-      />*/}
-
       <object3D
         ref={(mechRef) => {
           if (mechRef) {
@@ -224,4 +210,5 @@ const PlayerMech = () => {
   );
 };
 
+//export default memo(PlayerMech);
 export default PlayerMech;

@@ -2,16 +2,9 @@ import React, { useCallback, useEffect, useRef, Suspense } from "react";
 import * as THREE from "three";
 import { extend, useThree, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-//import { CompositionShader } from "./compositionShader.js";
-//import { /*BlendFunction,*/ GlitchMode } from "postprocessing";
-import {
-  EffectComposer,
-  //Scanline,
-  //Vignette,
-  Bloom,
-  //Glitch,
-  //Noise
-} from "@react-three/postprocessing";
+// EffectComposer accumulating artifact texture per time GalaxyMap loaded
+// TODO investigate why this is happening - move to AppCanvasScene if necessary
+//import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import useStore from "../stores/store";
 import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
@@ -58,9 +51,11 @@ const RAYCAST_THRESHOLD = 1;
 
 const GalaxyMap = () => {
   useStore.getState().updateRenderInfo("GalaxyMap");
+
   const { camera, scene } = useThree();
   const controlsRef = useRef<any | null>(null);
   const galaxyRef = useRef<THREE.Group | null>(null);
+  const polarGridHelperRef = useRef<THREE.PolarGridHelper | null>(null);
   const centerOnStarIndexRef = useRef<number | null>(null);
   const hoveredStarIndexRef = useRef<number | null>(null);
   const targetStarIndexRef = useRef<number | null>(null);
@@ -102,13 +97,14 @@ const GalaxyMap = () => {
     // TODO this might be in store as well
     const getStarBufferPosition = useCallback(
       (index: number) => {
+        if (typeof starCoordsBuffer?.array === "undefined") return;
         return new THREE.Vector3(
           starCoordsBuffer.array[index * 3],
           starCoordsBuffer.array[index * 3 + 1],
           starCoordsBuffer.array[index * 3 + 2]
         );
       },
-      [starCoordsBuffer.array]
+      [starCoordsBuffer]
     );
 
     const viewSelectedStar = useCallback(
@@ -116,26 +112,32 @@ const GalaxyMap = () => {
         if (galaxyRef.current === null) return;
         resestControlsCameraPosition(); // reset controls, camera and galaxy positions
         const centerOnStarPosition = getStarBufferPosition(starPointIndex);
-        galaxyRef.current.position.set(
-          -centerOnStarPosition.x,
-          -centerOnStarPosition.y,
-          -centerOnStarPosition.z
-        ); // move galaxy relative to selected star position. selected star is shown at pos (0,0,0)
+        if (centerOnStarPosition) {
+          galaxyRef.current.position.set(
+            -centerOnStarPosition.x,
+            -centerOnStarPosition.y,
+            -centerOnStarPosition.z
+          ); // move galaxy relative to selected star position. selected star is shown at pos (0,0,0)
 
-        camera.position.setZ(-(RAYCAST_THRESHOLD + 2)); // move camera closer to star to inspect
+          camera.position.setZ(-(RAYCAST_THRESHOLD + 2)); // move camera closer to star to inspect
+        }
       },
       [getStarBufferPosition]
     );
 
-    const setStarSelectionBuffer = (value) => {
-      starSelectedBuffer.array = starSelectedBuffer.array.map(() => value);
+    const setStarSelectionBuffer = (starSelectionValue: number) => {
+      starSelectedBuffer.array = starSelectedBuffer.array.map(
+        () => starSelectionValue
+      );
     };
 
+    // these stars are within range of player to select
     const setSecondarySelectedStars = useCallback((starPointIndex) => {
       const centerOnStarPosition = getStarBufferPosition(starPointIndex);
-      const secondaryStarPosition = new THREE.Vector3();
+      if (!centerOnStarPosition) return;
       starSelectedBuffer.array.forEach((_, index) => {
-        secondaryStarPosition.copy(getStarBufferPosition(index));
+        const secondaryStarPosition = getStarBufferPosition(index);
+        if (!secondaryStarPosition) return;
         const distance = centerOnStarPosition.distanceTo(secondaryStarPosition);
         if (distance < RAYCAST_THRESHOLD) {
           starSelectedBuffer.array[index] = STAR_DISPLAY_MODE.secondarySelected;
@@ -284,11 +286,13 @@ const GalaxyMap = () => {
           // offest galaxyRef.current.position since galaxy is moved so that
           // the main central star (current player position) is moved to (0,0,0) for inspection
           const hoveredStarPosition = getStarBufferPosition(hoveredStar.index);
-          lineToHoveredStarPointRef.current = [
-            hoveredStarPosition.x + galaxyRef.current.position.x,
-            hoveredStarPosition.y + galaxyRef.current.position.y,
-            hoveredStarPosition.z + galaxyRef.current.position.z,
-          ];
+          if (hoveredStarPosition && galaxyRef.current) {
+            lineToHoveredStarPointRef.current = [
+              hoveredStarPosition.x + galaxyRef.current.position.x,
+              hoveredStarPosition.y + galaxyRef.current.position.y,
+              hoveredStarPosition.z + galaxyRef.current.position.z,
+            ];
+          }
         } else {
           // clear hovered star if no star is hovered over
           hoveredStarIndexRef.current = null;
@@ -320,11 +324,13 @@ const GalaxyMap = () => {
           targetStarIndexRef.current
         );
         // offset by galaxy position (centered on current player star position)
-        lineToTargetStarPointRef.current = [
-          targetStarPosition.x + galaxyRef.current.position.x,
-          targetStarPosition.y + galaxyRef.current.position.y,
-          targetStarPosition.z + galaxyRef.current.position.z,
-        ];
+        if (targetStarPosition && galaxyRef.current) {
+          lineToTargetStarPointRef.current = [
+            targetStarPosition.x + galaxyRef.current.position.x,
+            targetStarPosition.y + galaxyRef.current.position.y,
+            targetStarPosition.z + galaxyRef.current.position.z,
+          ];
+        }
         // new target star selection (makes star green)
         starSelectedBuffer.array[targetStarIndexRef.current] =
           STAR_DISPLAY_MODE.selected;
@@ -371,7 +377,7 @@ const GalaxyMap = () => {
         return;
       if (e.button === 2) {
         // right click to clear selection and view full galaxy
-        viewGalaxy();
+        //viewGalaxy();
       } else {
         // set selected star if left mouse button is clicked
         setSelectedTargetStar(e);
@@ -466,26 +472,31 @@ const GalaxyMap = () => {
     );
   };
 
+  useFrame(() => {
+    if (polarGridHelperRef.current) {
+      polarGridHelperRef.current.quaternion.copy(camera.quaternion);
+      // rotate polarGridHelper to be perpendicular to camera
+      polarGridHelperRef.current.rotateX(Math.PI / 2);
+    }
+  });
+
   return (
     <>
       <ambientLight intensity={0.9} />
       {/*<pointLight position={[0, 0, 0]} />*/}
       <TrackballControls ref={controlsRef} rotateSpeed={3} panSpeed={0.5} />
-      {/*<Box position={[3, 3, 10]} />*/}
+
       <group ref={galaxyRef}>
-        <Suspense>
-          <StarPointsWithControls />
-        </Suspense>
+        <StarPointsWithControls />
       </group>
+      <polarGridHelper
+        ref={polarGridHelperRef}
+        args={[1, 16, 8, 64, 0x333333, 0x666666]}
+      />
       <Line color={"grey"} pointRef={lineToHoveredStarPointRef} />
       <Line color={"green"} pointRef={lineToTargetStarPointRef} />
+      {/*
       <EffectComposer>
-        {/*<Glitch
-          strength={[0.01, 0.02]} // min and max glitch strength
-          mode={GlitchMode.CONSTANT_MILD} // glitch mode
-          active // turn on/off the effect (switches between "mode" prop and GlitchMode.DISABLED)
-          ratio={0.85} // Threshold for strong glitches, 0 - no weak glitches, 1 - no strong glitches.
-        />*/}
         <Bloom
           luminanceThreshold={0}
           luminanceSmoothing={0.9}
@@ -494,8 +505,20 @@ const GalaxyMap = () => {
           radius={2}
         />
       </EffectComposer>
+      */}
     </>
   );
 };
 
 export default GalaxyMap;
+
+/*
+<EffectComposer>
+  <Glitch
+    strength={[0.01, 0.02]} // min and max glitch strength
+    mode={GlitchMode.CONSTANT_MILD} // glitch mode
+    active // turn on/off the effect (switches between "mode" prop and GlitchMode.DISABLED)
+    ratio={0.85} // Threshold for strong glitches, 0 - no weak glitches, 1 - no strong glitches.
+  />
+<EffectComposer/>
+*/

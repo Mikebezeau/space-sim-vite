@@ -1,10 +1,5 @@
 import React, { forwardRef } from "react";
 import { useEffect } from "react";
-import * as THREE from "three";
-// @ts-ignore
-import starSpriteSrc from "../sprites/sprite120.png";
-// @ts-ignore
-import featheredSpriteSrc from "../sprites/feathered60.png";
 import useStore from "../stores/store";
 
 interface StarPointsInt {
@@ -22,10 +17,6 @@ const StarPoints = forwardRef(function StarPoints(
 
   const { viewAsBackground = false } = props;
 
-  // TODO loading textures here
-  const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
-  const nebulaSprite = new THREE.TextureLoader().load(featheredSpriteSrc);
-
   const galaxy = useStore((state) => state.galaxy);
   const isGalaxyInit = useStore((state) => state.isGalaxyInit);
 
@@ -33,8 +24,7 @@ const StarPoints = forwardRef(function StarPoints(
   const starPointsShaderMaterial = useStore(
     (state) => state.starPointsShaderMaterial
   );
-  starPointsShaderMaterial.uniforms.uTexture = { value: starSprite };
-  starPointsShaderMaterial.uniforms.uTextureNebula = { value: nebulaSprite };
+
   starPointsShaderMaterial.uniforms.uBackground = {
     value: viewAsBackground ? 1 : 0,
   };

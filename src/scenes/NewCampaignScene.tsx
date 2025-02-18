@@ -91,14 +91,13 @@ const NewCampaignScene = () => {
           <>
             <pointLight intensity={1} decay={0} />
             <ambientLight intensity={0.4} />
-            <BuildMech
-              ref={(mechRef: THREE.Object3D) => {
+            <object3D
+              ref={(mechRef) => {
                 if (mechRef) {
                   playerMechRef.current = mechRef;
                   player.initObject3d(mechRef);
                 }
               }}
-              mechBP={player.mechBP}
             />
             <SolarSystem />
             <Stations />

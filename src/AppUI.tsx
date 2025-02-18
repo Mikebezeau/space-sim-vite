@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import LilGui from "./dev/LilGui";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
@@ -37,14 +37,17 @@ const AppUI = () => {
 
   const isTestScreen = useRef<boolean>(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     isTestScreen.current = getIsTestScreen();
-    console.log("isTestScreen", isTestScreen.current);
   }, [testScreen]);
 
   return (
     <>
-      {testScreen.enemyTest ? (
+      {testScreen.changeScreenTest ? (
+        <div className="pointer-events-none touch-none">
+          <GalaxyMapMenu />
+        </div>
+      ) : testScreen.enemyTest ? (
         <></>
       ) : (
         <>

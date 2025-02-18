@@ -55,6 +55,6 @@ const EnemyMechs = () => {
   );
 };
 
-export default EnemyMechs;
+//export default EnemyMechs;
 // instanced mech not working with memo
-//export default memo(EnemyMechs);
+export default memo(EnemyMechs);

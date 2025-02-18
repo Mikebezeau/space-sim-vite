@@ -6,7 +6,7 @@ const guiControls = new (function () {
   this.params = {
     maxSpeed: 0.25,
     seek: {
-      maxForce: 0.05,
+      maxForce: 0.005,
     },
     align: {
       effectiveRange: 50,
@@ -14,7 +14,7 @@ const guiControls = new (function () {
     },
     separate: {
       effectiveRange: 20, //80,
-      maxForce: 0.05, //0.2,
+      maxForce: 0.3, //0.2,
     },
     cohesion: {
       effectiveRange: 150, //160,

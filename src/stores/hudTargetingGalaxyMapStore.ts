@@ -99,7 +99,7 @@ interface hudTargetingGalaxyMapStoreState {
 
 // reusable objects
 const dummyVec3 = new Vector3();
-// for targeting weapons fireWeapon()
+//
 const flightCameraLookQuaternoin = new THREE.Quaternion();
 
 const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(

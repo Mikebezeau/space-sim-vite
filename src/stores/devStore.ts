@@ -2,8 +2,10 @@ import { create } from "zustand";
 import * as THREE from "three";
 import useStore from "./store";
 import useEnemyStore from "./enemyStore";
+import usePlayerControlsStore from "./playerControlsStore";
 import useGenFboTextureStore from "./genGpuTextureStore";
 
+import { PLAYER } from "../constants/constants";
 import {
   PLANET_TYPE,
   PLANET_TYPE_DATA,
@@ -36,7 +38,7 @@ interface devStoreState {
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
-  testScreen: { planetTest: false, enemyTest: false },
+  testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
   setTestScreen: (screen?) => {
     // set all to false
     const testScreen = get().testScreen;
@@ -47,6 +49,12 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     if (screen) testScreen[screen] = true;
     // update state
     set(() => ({ testScreen }));
+    // janky way to switch screens - so rerender toggle is triggered
+    usePlayerControlsStore
+      .getState()
+      .actions.switchScreen(
+        usePlayerControlsStore.getState().playerScreen === 1 ? 2 : 1
+      );
   },
   getIsTestScreen: () =>
     Object.values(get().testScreen).find(
@@ -126,7 +134,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
 
   // general dev settings
   devPlayerSpeedX1000: false, //true,
-  showObbBox: true,
+  showObbBox: false,
   showBoidVectors: false,
   boidAlignmentMod: 0,
   boidSeparationMod: 0,

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import MechServoShape from "./MechServoShape";
-import { getMergedBufferGeom, getVolume } from "../../util/gameUtil";
+import { getMergedBufferGeom, getVolume } from "../../util/mechGeometryUtil";
 import { transferProperties, initServoShapes } from "../../util/initEquipUtil";
 import { equipData } from "../../equipment/data/equipData";
 import { armorUtil } from "../../util/mechServoUtil";
@@ -58,7 +58,6 @@ class MechServo extends MechServoShape implements MechServoInt {
 
   // get the merged bufferGeometry, can use with InstancedMesh (when materials are consistant)
   getVolume() {
-    // need method to build the object3d with basic THREE comands
     //const bufferGeom = getMergedBufferGeom(this.buildServoObject3d());
     //return getVolume(bufferGeom);
     return 0;
