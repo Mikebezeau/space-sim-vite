@@ -275,9 +275,9 @@ class Mech implements MechInt {
 
       // TODO testing explosion mesh
       if (this.explosionMesh) {
-        this.object3d.clear();
+        //this.object3d.clear();
         // TODO scenery objects are not added to correct position
-        this.object3d.add(this.explosionMesh);
+        //this.object3d.add(this.explosionMesh);
       }
     }
   }
