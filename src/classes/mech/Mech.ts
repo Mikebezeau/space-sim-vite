@@ -24,13 +24,13 @@ const MECH_STATE = {
   IDLE: 0,
   MOVING: 1,
   ATTACKING: 2,
-  DEAD: 3,
+  EXPLODING: 3,
+  DEAD: 4,
 };
 
 interface MechInt {
   initObject3d(object3d?: THREE.Object3D): void;
   updateObject3dIfAllLoaded: (mesh?: THREE.Mesh) => void;
-  isObject3dLoaded: () => boolean;
   updateObb: () => void;
   setObject3dCenterOffset: () => void;
   setMergedBufferGeom: () => void;
@@ -38,8 +38,7 @@ interface MechInt {
   setExplosionMesh: () => void;
   explode: () => void;
   updateMechUseFrame: (delta: number) => void;
-  updateExplosionParticles: (delta: number) => void;
-  updateExplosionMesh: (delta: number) => void;
+  updateExplosionUseFrame: (delta: number) => void;
   fireWeapon: (targetQuaternoin: THREE.Quaternion) => void;
 }
 
@@ -53,15 +52,16 @@ const weaponWorldPositionVec = new THREE.Vector3();
 
 class Mech implements MechInt {
   id: string;
+  isPlayer: boolean;
   isObject3dInit: boolean;
   mechState: number;
-  isExploding: boolean;
   explosionTime: number;
   useInstancedMesh: boolean;
   _mechBP: MechBP;
   object3d: THREE.Object3D;
-  loadedModelCount: number;
-  isWaitLoadModelsTotal: number;
+  builtObject3d: THREE.Object3D;
+  object3dLoadedMeshCount: number;
+  waitObject3dLoadMeshTotal: number;
   bufferGeom: THREE.BufferGeometry | null;
   bufferGeomColorsList: THREE.BufferGeometry[];
   explosionMesh: THREE.Mesh | null;
@@ -87,9 +87,9 @@ class Mech implements MechInt {
     // WARNING: SETTING PROPERTY VALUES ABOVE DROPS FRAME RATE
     // - must declare new THREE classes here in constructor
     this.id = uuidv4();
+    this.isPlayer = false;
     this.isObject3dInit = false;
-    this.mechState = MECH_STATE.DEAD;
-    this.isExploding = false;
+    this.mechState = MECH_STATE.MOVING;
     this.explosionTime = 0;
     this.useInstancedMesh = useInstancedMesh;
     // try to set 'new MechBP' directly error:
@@ -97,8 +97,11 @@ class Mech implements MechInt {
     this._mechBP = loadBlueprint(mechDesign);
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
     this.object3d = new THREE.Object3D(); // set from BuildMech ref, updating this will update the object on screen
-    this.loadedModelCount = 0; // used to determine if all models are loaded before caluating obb and explosion mesh
-    this.isWaitLoadModelsTotal = 0; // total number of models to be loaded
+    // add this.id to object3d for hit detection
+    //this.object3d.userData.mechId = this.id;//must set on initObject3d
+    this.builtObject3d = new THREE.Object3D(); //full object3d with all added meshes
+    this.object3dLoadedMeshCount = 0; // used to determine if all models are loaded before caluating obb and explosion mesh
+    this.waitObject3dLoadMeshTotal = 0; // total number of models to be loaded
     this.bufferGeom = null; // merged geometry for instanced mesh
     this.bufferGeomColorsList = []; // merged geometry list of different colors for instanced mesh
     this.explosionMesh = null; // for explosion triangles
@@ -138,9 +141,8 @@ class Mech implements MechInt {
     if (this.isObject3dInit) {
       //console.warn("Mech initObject3d already called", this.mechBP.id);
     }
-    this.isObject3dInit = true;
-    this.loadedModelCount = 0;
-    this.isWaitLoadModelsTotal = isLoadingModelCount;
+    this.object3dLoadedMeshCount = 0;
+    this.waitObject3dLoadMeshTotal = isLoadingModelCount;
     // keeping position and rotation set to this object3d
     const keepPosition = new THREE.Vector3();
     keepPosition.copy(this.object3d.position);
@@ -152,22 +154,22 @@ class Mech implements MechInt {
     // automatically clears this object3d
     this.object3d.clear();
 
+    this.builtObject3d = useMechBpStore
+      .getState()
+      .getCreateMechBpBuild(this._mechBP).object3d;
+
     if (this.useInstancedMesh) {
       // TODO work on sharing object3d for instanced mesh
       // only ref to reference the merged buffer geometry for init in updateObject3dIfAllLoaded
-      this.object3d.add(
-        useMechBpStore.getState().getCreateMechBpBuild(this._mechBP).object3d
-      );
+      this.object3d.add(this.builtObject3d);
+      this.object3d.userData.mechId = this.id;
     } else if (object3d) {
       // directly assigned object ref from component
       // changes to this.object3d will update the object on screen
       this.object3d = object3d;
-      // note: this.object3d.copy does not interfere with the object3d reference
-      this.object3d.copy(
-        useMechBpStore.getState().getCreateMechBpBuild(this._mechBP).object3d
-      );
+      // this.object3d.copy(this.builtObject3d); happens in updateObject3dIfAllLoaded method
     }
-    // if not using object3d dictionary, build object3d from mechBP
+    // if not using object3d dictionary, build object3d with mechBP build function
     //this._mechBP.buildObject3d(this.object3d);
 
     this.object3d.position.copy(keepPosition);
@@ -178,19 +180,19 @@ class Mech implements MechInt {
 
   updateObject3dIfAllLoaded(mesh?: THREE.Mesh) {
     if (mesh !== undefined) {
-      this.loadedModelCount = this.loadedModelCount + 1;
+      this.object3dLoadedMeshCount = this.object3dLoadedMeshCount + 1;
       //mesh = CSG.union(mesh, geometry);
-      this.object3d.add(mesh);
+      this.builtObject3d.add(mesh);
     }
-    if (this.loadedModelCount > this.isWaitLoadModelsTotal) {
+    if (this.object3dLoadedMeshCount > this.waitObject3dLoadMeshTotal) {
       console.warn(
         "updateObject3dIfAllLoaded called more than expected",
-        this.loadedModelCount,
-        this.isWaitLoadModelsTotal
+        this.object3dLoadedMeshCount,
+        this.waitObject3dLoadMeshTotal
       );
     }
 
-    if (this.isObject3dLoaded()) {
+    if (this.object3dLoadedMeshCount === this.waitObject3dLoadMeshTotal) {
       // keeping position and rotation set to this object3d (reset at end of function)
       const keepPosition = new THREE.Vector3();
       keepPosition.copy(this.object3d.position);
@@ -200,6 +202,9 @@ class Mech implements MechInt {
       // when creating hitbox and obb, the rotation must be set to (0,0,0)
       this.object3d.position.set(0, 0, 0);
       this.object3d.rotation.set(0, 0, 0);
+
+      this.object3d.copy(this.builtObject3d);
+      this.object3d.userData.mechId = this.id; // update userData after copy
 
       this.setMergedBufferGeom();
 
@@ -231,11 +236,10 @@ class Mech implements MechInt {
 
       this.object3d.position.copy(keepPosition);
       this.object3d.rotation.copy(keepRotation);
-    }
-  }
 
-  isObject3dLoaded() {
-    return this.loadedModelCount === this.isWaitLoadModelsTotal;
+      // finished setting up object3d
+      this.isObject3dInit = true;
+    }
   }
 
   updateObb() {
@@ -269,7 +273,7 @@ class Mech implements MechInt {
   setMergedBufferGeom() {
     if (this.object3d) {
       const merged =
-        this.loadedModelCount > 0
+        this.waitObject3dLoadMeshTotal > 0
           ? // accounting for additional GLB models loaded into the mech build
             getMergedBufferGeom(this.object3d)
           : // using base mechBP geometry from mechBpStore
@@ -308,8 +312,9 @@ class Mech implements MechInt {
         // not using material array ( <THREE.Material[]> ) so treat material as single material
         (<THREE.Material>this.explosionMesh.material).dispose();
       }
+      // get simplified geometry for explosion mesh using useLoaderStore bufferGeom if possible
       const simplifiedGeometry =
-        this.loadedModelCount > 0
+        this.waitObject3dLoadMeshTotal > 0
           ? // accounting for additional GLB models loaded into the mech build
             useLoaderStore.getState().getSimplifiedGeometry(this.bufferGeom)
           : // using base mechBP geometry from mechBpStore
@@ -320,7 +325,7 @@ class Mech implements MechInt {
         // get explosion mesh - added vertices to break up large planes
         this.explosionMesh = getExplosionMesh(
           // TODO use a copy of the material so uniforms can be set to just this instance
-          useStore.getState().expolsionShaderMaterial,
+          useStore.getState().cloneExplosionShaderMaterial(),
           simplifiedGeometry
         );
       } else {
@@ -330,57 +335,88 @@ class Mech implements MechInt {
   }
 
   explode() {
-    console.log("explode");
-    this.mechState = MECH_STATE.DEAD;
-    this.isExploding = true;
+    this.mechState = MECH_STATE.EXPLODING;
+    this.explosionTime = 0;
     if (this.explosionMesh) {
-      console.log("explosionMesh");
+      // TODO should object3d children be disposed of?
       this.object3d.clear();
       this.object3d.add(this.explosionMesh);
+      // update explosion material size uniform - governs amplitude of explosion
+      // not using material array ( <THREE.ShaderMaterial[]> ) so treat material as single material
+      (<THREE.ShaderMaterial>this.explosionMesh.material).uniforms.size.value =
+        this._mechBP.scale;
     }
   }
 
   updateMechUseFrame(delta: number) {
-    if (!this.isObject3dLoaded()) return null;
-    if (this.mechState === MECH_STATE.DEAD && this.isExploding === false) {
-      this.explode();
-    }
-    if (this.isExploding === true) {
-      this.updateExplosionParticles(delta);
-      this.updateExplosionMesh(delta);
+    if (!this.isObject3dInit) return null;
+
+    if (this.mechState === MECH_STATE.EXPLODING) {
+      this.updateExplosionUseFrame(delta);
     }
   }
 
-  updateExplosionParticles(delta: number) {
-    const deltaFPS = delta * FPS;
-    const explosionTimeNormalized = this.explosionTime / 5;
-    useParticleStore
-      .getState()
-      .effects.addExplosion(
-        this.object3d.position,
-        Math.floor(20 * deltaFPS * (1 - explosionTimeNormalized)),
-        6,
-        10,
-        1
-      );
-    useParticleStore
-      .getState()
-      .effects.addExplosion(
-        this.object3d.position,
-        Math.floor(20 * deltaFPS * (1 - explosionTimeNormalized)),
-        2,
-        20,
-        1
-      );
-  }
-
-  updateExplosionMesh(delta: number) {
+  updateExplosionUseFrame(delta: number) {
     this.explosionTime += delta;
-    if (this.explosionTime > 5) {
+    const explosionTimeMax = (1 + this._mechBP.scale) / 2;
+
+    const explosionTimeNormalized = this.explosionTime / explosionTimeMax;
+    if (explosionTimeNormalized > 1) {
       this.explosionTime = 0;
+      this.mechState = MECH_STATE.DEAD;
+      this.object3d.clear();
+      this.mechState = MECH_STATE.IDLE;
+
+      const keepPosition = new THREE.Vector3();
+      keepPosition.copy(this.object3d.position);
+      const keepRotation = new THREE.Euler();
+      keepRotation.copy(this.object3d.rotation);
+
+      this.object3d.copy(this.builtObject3d);
+      this.object3d.userData.mechId = this.id; // update userData after copy
+
+      this.object3d.position.copy(keepPosition);
+      this.object3d.rotation.copy(keepRotation);
+
+      return;
     }
-    useStore.getState().expolsionShaderMaterial.uniforms.amplitude.value =
-      this.explosionTime; //explosionTime from 0 to 5;
+
+    // update explosion material uniform
+    if (this.explosionMesh) {
+      (<THREE.ShaderMaterial>(
+        this.explosionMesh.material
+      )).uniforms.timeNorm.value = explosionTimeNormalized;
+    }
+
+    const scale = Math.pow(this._mechBP.scale, 3) / 5; // explosion size
+    // add explosion particles
+    const deltaFPS = delta * FPS; // number of particles created adjusted by deltaFPS
+    const numParticles1 =
+      Math.pow(3 * (1 - explosionTimeNormalized * 3), 3) *
+      deltaFPS *
+      (scale / 3);
+    const numParticles2 = numParticles1 * 0.5;
+
+    if (numParticles1 > 0) {
+      useParticleStore.getState().effects.addExplosion(
+        this.object3d.position,
+        numParticles1,
+        Math.random() * scale, // increase size of particles according to scale of mech
+        Math.random() * scale * 10 * (1 - explosionTimeNormalized), // increase spread speed according to scale of mech
+        1, // lifetime in seconds
+        useParticleStore.getState().colors.red
+      );
+      useParticleStore
+        .getState()
+        .effects.addExplosion(
+          this.object3d.position,
+          numParticles2,
+          (Math.random() * scale) / 2,
+          Math.random() * scale * 20 * (1 - explosionTimeNormalized),
+          1,
+          useParticleStore.getState().colors.yellow
+        );
+    }
   }
 
   fireWeapon(targetQuaternoin?: THREE.Quaternion) {

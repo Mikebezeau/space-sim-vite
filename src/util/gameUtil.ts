@@ -1,16 +1,7 @@
-import * as THREE from "three";
-import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
-import { TessellateModifier } from "three/addons/modifiers/TessellateModifier.js";
-/*
-TODO list functions here - fix TS errors
+import { Spherical, Vector3 } from "three";
 
-distance(p1: THREE.Vector3, p2: THREE.Vector3): number
-
-*/
-
-// A helper function to calculate the distance between two points in 3d space.
-// Used to detect lasers intersecting with enemies.
-// TODO remove this function? or not, can use this with non Vector3 variables
+// A helper function to calculate the distance between two points
+// in 3d space without using Vector3 objects
 export const distance = (
   p1: { x: number; y: number; z: number },
   p2: { x: number; y: number; z: number }
@@ -45,6 +36,15 @@ export const setVisible = (obj, isVisible) => {
   });
 };
 
+const spherical = new Spherical();
+export const getRandomPointWithinSphere = (vector: Vector3, radius: number) => {
+  const theta = Math.random() * 2 * Math.PI;
+  const phi = Math.acos(2 * Math.random() - 1); // Uniform distribution on [0, pi]
+  const r = radius * Math.sqrt(Math.random()); // Random radius within sphere
+  spherical.set(r, phi, theta);
+  vector.setFromSpherical(spherical);
+  return vector;
+};
 /*
 export const fitCameraToObject = (camera, object, offset, controls) => {
   offset = offset || 1.25;

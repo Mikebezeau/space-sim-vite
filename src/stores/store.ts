@@ -95,6 +95,7 @@ interface storeState {
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
   expolsionShaderMaterial: THREE.ShaderMaterial;
+  cloneExplosionShaderMaterial: () => THREE.ShaderMaterial;
   //--
   stations: any[];
   planetTerrain: any;
@@ -294,6 +295,9 @@ const useStore = create<storeState>()((set, get) => ({
     return get().planetShaderMaterial.clone();
   },
   expolsionShaderMaterial: expolsionShaderMaterial,
+  cloneExplosionShaderMaterial: () => {
+    return get().expolsionShaderMaterial.clone();
+  },
   asteroidBands: null, // set in call to setPlayerCurrentStarIndex
   stations: [], // set in call to setPlayerCurrentStarIndex
   planetTerrain: cityTerrianGen(PLAYER_START.system, {

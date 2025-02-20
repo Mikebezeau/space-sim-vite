@@ -34,7 +34,7 @@ const useMechBpStore = create<mechBpStoreState>()((set, get) => ({
     if (!newBufferGeom) return null;
     const initialCount = newBufferGeom.attributes.position.count;
 
-    const reductionRatio = 0.4;
+    const reductionRatio = 0.3;
     const simplifiedGeometry = get().modifier.modify(
       newBufferGeom,
       Math.floor(initialCount * reductionRatio)

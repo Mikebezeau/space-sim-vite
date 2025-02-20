@@ -4,22 +4,23 @@ const vertexShader = `
 #include <common>
 #include <logdepthbuf_pars_vertex>
 
-uniform float amplitude;
+uniform float timeNorm;
+uniform float size;
 
 attribute vec3 customColor;
 attribute vec3 displacement;
 
 varying vec3 vNormal;
 varying vec3 vColor;
-varying float vAmplitude;
+varying float vTimeNorm;
 
 void main() {
 
   vNormal = normal;
   vColor = customColor;
-  vAmplitude = amplitude;
+  vTimeNorm = timeNorm;
 
-  vec3 newPosition = position + normal * amplitude * displacement;
+  vec3 newPosition = position + normal * timeNorm * displacement * ( size / 2.0 );
   gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 
   #include <logdepthbuf_vertex>
@@ -32,7 +33,7 @@ const fragmentShader = `
 
 varying vec3 vNormal;
 varying vec3 vColor;
-varying float vAmplitude;
+varying float vTimeNorm;
 
 void main() {
   #include <logdepthbuf_fragment>
@@ -43,13 +44,12 @@ void main() {
   light = normalize( light );
 
   float directional = max( dot( vNormal, light ), 0.0 );
-  float amplitudeNormalized = vAmplitude / 5.0;
   vec3 color = mix( 
     vec3(( directional + ambient ) * vColor),
     vec3( 0.0, 0.0, 0.0 ),
-    amplitudeNormalized
+    vTimeNorm
   );
-  float fadeOut = 1.0 - amplitudeNormalized;
+  float fadeOut = 1.0 - vTimeNorm;
   gl_FragColor = vec4( color, fadeOut);
 }
 `;
@@ -58,7 +58,8 @@ const expolsionShaderMaterial = new ShaderMaterial({
   transparent: true,
   side: DoubleSide,
   uniforms: {
-    amplitude: { value: 0.0 },
+    timeNorm: { value: 0.0 },
+    size: { value: 1.0 },
   },
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,

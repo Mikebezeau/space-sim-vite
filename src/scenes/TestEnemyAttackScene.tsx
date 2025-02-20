@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useStore from "../stores/store";
@@ -7,6 +8,7 @@ import useDevStore from "../stores/devStore";
 import Stations from "../3d/spaceFlight/Stations";
 import EnemyMechs from "../3d/enemyMechs/EnemyMechs";
 import Particles from "../3d/Particles";
+import Mech from "../classes/mech/Mech";
 
 import { track, geometry2 } from "../util/track";
 
@@ -16,13 +18,9 @@ const TestEnemyAttackScene = () => {
   const player = useStore((state) => state.player);
   const stations = useStore((state) => state.stations);
 
-  useEffect(() => {
-    if (stations[0]) stations[0].object3d.position.set(0, 0, 500);
-  }, [stations]);
-
   const boidController = useEnemyStore((state) => state.boidController);
 
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
 
   const guiRef = useRef<any>(null);
   const folder1ref = useRef<any>(null);
@@ -94,17 +92,101 @@ const TestEnemyAttackScene = () => {
     setCameraPosition();
   }, []);
 
+  const recursiveFindMechParentObjectId = (object: THREE.Object3D) => {
+    if (typeof object.userData.mechId !== "undefined") {
+      return object.userData.mechId;
+    }
+    // @ts-ignore
+    if (object.isScene) {
+      return null;
+    }
+    if (object.parent) {
+      return recursiveFindMechParentObjectId(object.parent);
+    }
+    return null;
+  };
+  const handleMouseClick = (event: MouseEvent) => {
+    const { clientX, clientY } = event;
+    const width = gl.domElement.clientWidth;
+    const height = gl.domElement.clientHeight;
+
+    const mouse = new THREE.Vector2(
+      (clientX / width) * 2 - 1,
+      -(clientY / height) * 2 + 1
+    );
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
+
+    const objectsToTest = [
+      player.object3d,
+      // @ts-ignore
+      ...useEnemyStore.getState().enemies.map((enemy) => enemy.object3d),
+      ...stations.map((station) => station.object3d),
+    ];
+
+    const intersects = raycaster.intersectObjects(objectsToTest, true);
+
+    if (intersects.length > 0) {
+      const intersectedObject = intersects[0].object;
+      console.log("intersectedObject: ", intersectedObject);
+      if (!intersectedObject) return;
+      const intersectedObjectMechId =
+        recursiveFindMechParentObjectId(intersectedObject);
+      if (!intersectedObjectMechId) {
+        console.log("No mech id found");
+        return;
+      }
+      // find mech by the mech.id
+      let intersectedMech: Mech | undefined = useEnemyStore
+        .getState()
+        .enemies.find((enemy) => enemy.id === intersectedObjectMechId);
+      // stations
+      if (!intersectedMech) {
+        intersectedMech = stations.find(
+          (station) => station.id === intersectedObjectMechId
+        );
+      }
+      if (!intersectedMech) {
+        if (player.id === intersectedObjectMechId)
+          intersectedMech = useStore.getState().player;
+      }
+
+      intersectedMech?.explode();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("click", handleMouseClick);
+    return () => {
+      window.removeEventListener("click", handleMouseClick);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (stations[0]) {
+      stations[0].object3d.position.set(0, 0, 500);
+      setTimeout(() => {
+        //stations[0].explode();
+      }, 3000);
+    }
+  }, [stations]);
+
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     boidController?.update(delta);
     //
     // testing explosion animation
-    //player.updateMechUseFrame(delta);
+    player.updateMechUseFrame(delta);
     // updateMechUseFrame for each enemy
     //useEnemyStore.getState().enemies.forEach((enemy) => {
     //  enemy.updateMechUseFrame(delta);
     //});
     useEnemyStore.getState().enemies[0].updateMechUseFrame(delta);
+
+    if (stations[0]) {
+      stations[0].updateMechUseFrame(delta);
+    }
   }, -2); //render order set to be before Particles and ScannerReadout
 
   return (
@@ -120,7 +202,6 @@ const TestEnemyAttackScene = () => {
       <ambientLight intensity={0.4} />
       <Particles />
       <Stations />
-
       <EnemyMechs />
       <object3D
         ref={(mechRef) => {
@@ -129,6 +210,11 @@ const TestEnemyAttackScene = () => {
             player.initObject3d(mechRef);
           }
         }}
+        /*
+        onClick={() => {
+          player.explode();
+        }}
+        */
       />
 
       {/*

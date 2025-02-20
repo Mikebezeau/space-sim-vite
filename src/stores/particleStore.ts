@@ -15,6 +15,7 @@ import starSpriteSrc from "../sprites/sprite120.png";
 //import featheredSpriteSrc from "../sprites/feathered60.png";
 // @ts-ignore
 import smokeTextureSrc from "../sprites/particles/pngTrans/smoke_11.png";
+import { getRandomPointWithinSphere } from "../util/gameUtil";
 import { FPS, WEAPON_FIRE_SPEED } from "../constants/constants";
 import { SPRITE_TYPE, DESIGN_TYPE } from "../constants/particleConstants";
 
@@ -140,19 +141,21 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
     ) => {
       if (get().particleController) {
         for (let i = 0; i < numParticles; i++) {
+          getRandomPointWithinSphere(get().vectorTemp, spread);
           get().particleController.spawnParticle({
             //sprite: DESIGN_TYPE.star,
             sprite: SPRITE_TYPE.smoke,
             position: position,
             velocity: {
-              x: (Math.random() - 0.5) * 5 * spread,
-              y: (Math.random() - 0.5) * 5 * spread,
-              z: (Math.random() - 0.5) * 5 * spread,
+              x: get().vectorTemp.x,
+              y: get().vectorTemp.y,
+              z: get().vectorTemp.z,
             },
             color: color,
             endColor: endColor ? endColor : get().colors.grey,
             lifetime: lifetime,
             size: 800 * size,
+            angle: Math.random() * 20,
           });
         }
       }
@@ -298,7 +301,10 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         // particleSpeed calculted at speed / second (speed * FPS = speed per second)
         const speedPerSecond = speed * FPS; // Math.min(Math.random() * (speed * FPS), 0);
         for (let i = 0; i < numParticles; i++) {
-          // creating random point within a sphere
+          // TODO use function in game utils to get random point within sphere
+          // and set z coord to 0
+
+          // creating random point within a circle on x, y axis
           const randAngle = Math.random() * Math.PI * 2;
           const randRadius =
             Math.random() * (positionRadius - positionRadiusMin) +

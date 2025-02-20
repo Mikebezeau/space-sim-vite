@@ -16,7 +16,7 @@ class PlayerMech extends Mech implements PlayerMechInt {
 
   constructor(mechBPIndex: number = PLAYER_START.mechBPindex) {
     super(mechDesigns.player[mechBPIndex]);
-
+    this.isPlayer = true;
     // player locations in scenes, used for changing scenes
     this.locationInfo = {
       saveSpaceObject3d: {
