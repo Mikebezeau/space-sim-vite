@@ -29,18 +29,25 @@ export const getMergedBufferGeom = (object3d: THREE.Object3D) => {
   object3d.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       meshes.push(child);
-      geoms.push(
-        child.geometry.index
-          ? child.geometry.toNonIndexed()
-          : child.geometry.clone()
-      );
+      const geom = child.geometry.index
+        ? child.geometry.toNonIndexed()
+        : child.geometry.clone();
+      // remove attributes that are not needed
+      // get list of attributes with geom.attributes.keys
+      const attributes = Object.keys(geom.attributes);
+      const attributeList = ["position", "normal", "uv"];
+      attributes.forEach((attr) => {
+        if (!attributeList.includes(attr)) geom.deleteAttribute(attr);
+      });
+      geoms.push(geom);
     }
   });
   geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
   try {
     const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
     merged.applyMatrix4(object3d.matrix.clone().invert());
-    merged.userData.materials = meshes.map((m) => m.material);
+    // not using userData.materials atm
+    //merged.userData.materials = meshes.map((m) => m.material);
     return merged;
   } catch (e) {
     console.warn(e);
@@ -76,7 +83,7 @@ export const getMergedBufferGeomColor = (
 };
 
 type getExplosionMeshType = (
-  shaderMaterial: THREE.ShaderMaterial,
+  shaderMaterial: THREE.Material,
   geometry: THREE.BufferGeometry
 ) => THREE.Mesh;
 
@@ -84,10 +91,12 @@ export const getExplosionMesh: getExplosionMeshType = (
   shaderMaterial,
   geometry
 ) => {
-  const tessellateModifier = new TessellateModifier(8, 6);
+  //TessellateModifier(maxEdgeLength = 0.1, maxIterations = 6)
+  const tessellateModifier = new TessellateModifier(4, 3);
   let tessGeometry = geometry.clone();
+  //if (tessGeometry.attributes.position.count < 10000) {
   tessGeometry = tessellateModifier.modify(geometry!);
-  //
+  //}
   const numFaces = tessGeometry.attributes.position.count / 3;
   const colors = new Float32Array(numFaces * 3 * 3);
   const displacement = new Float32Array(numFaces * 3 * 3);

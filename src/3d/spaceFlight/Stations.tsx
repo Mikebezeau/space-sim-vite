@@ -1,8 +1,9 @@
 import React, { memo, useEffect, useRef } from "react";
-import { Group } from "three";
+import { Group, Object3D } from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
-import Scenery, { SCENERY_TYPE } from "./Scenery";
+import { SCENERY_TYPE } from "../../stores/loaderStore";
+import Scenery from "./Scenery";
 import SpaceStationMech from "../../classes/mech/SpaceStationMech";
 
 interface StationInt {
@@ -30,37 +31,69 @@ const Station = (props: StationInt) => {
     }
   });
 
+  const SceneryObjects = [
+    <Scenery
+      castSelfShadows
+      sceneryType={SCENERY_TYPE.junk.brokenDish}
+      scale={40}
+      position={{ x: -6, y: 110, z: 0 }}
+      rotation={{ x: 0, y: 0, z: 0.6 }}
+      onLoadUpdateMech={station}
+    />,
+
+    <Scenery
+      castSelfShadows
+      sceneryType={SCENERY_TYPE.ss.coms1}
+      scale={6}
+      position={{ x: 0, y: 60, z: 0 }}
+      rotation={{ x: 0, y: 0, z: Math.PI / 2 }}
+      onLoadUpdateMech={station}
+    />,
+
+    <Scenery
+      castSelfShadows
+      sceneryType={SCENERY_TYPE.ss.dockingBay}
+      scale={6}
+      position={{ x: 0, y: -60, z: 0 }}
+      rotation={{ x: 0, y: 0, z: 0 }}
+      onLoadUpdateMech={station}
+    />,
+
+    <Scenery
+      castSelfShadows
+      sceneryType={SCENERY_TYPE.ss.dockingBay}
+      scale={6}
+      position={{ x: 0, y: -60, z: 0 }}
+      rotation={{ x: 0, y: Math.PI, z: 0 }}
+      onLoadUpdateMech={station}
+    />,
+
+    <Scenery
+      castSelfShadows
+      sceneryType={SCENERY_TYPE.artifact.gate}
+      scale={50}
+      position={{ x: 0, y: -60, z: 0 }}
+      rotation={{ x: 0, y: Math.PI, z: 0 }}
+      onLoadUpdateMech={station}
+    />,
+  ];
+
   return (
-    <group ref={stationGroupRef}>
+    <>
       <object3D
-        ref={(mechRef) => {
-          if (mechRef) {
-            station.initObject3d(mechRef);
-          }
+        rotation={[Math.PI / 2, 0, Math.PI / 2]}
+        ref={(mechRef: Object3D) => {
+          if (mechRef === null) return;
+          // not setting ref with initObject3d causes frame rate drop not sure what is happening
+          // could be merging of geometries helping in initObject3d or explosion particles being created if not set
+          const isWaitLoadModelsTotal = SceneryObjects.length; // number of Scenery objects below
+          station.initObject3d(mechRef, isWaitLoadModelsTotal);
         }}
       />
-      {/*
-        example Scenery .glb 3d object models 
-        TODO add station scenery options to class / buildmech
-      */}
-      <group position={station.object3d.position}>
-        <group scale={40} position={[-6, 110, 0]} rotation={[0, 0, 0.6]}>
-          <Scenery sceneryType={SCENERY_TYPE.junk.brokenDish} />
-        </group>
-        <group scale={6} position={[0, 60, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <Scenery sceneryType={SCENERY_TYPE.ss.coms1} />
-        </group>
-        <group scale={6} position={[0, -60, 0]} rotation={[0, 0, 0]}>
-          <Scenery sceneryType={SCENERY_TYPE.ss.dockingBay} />
-        </group>
-        <group scale={6} position={[0, -60, 0]} rotation={[0, Math.PI, 0]}>
-          <Scenery sceneryType={SCENERY_TYPE.ss.dockingBay} />
-        </group>
-        <group scale={50} position={[0, -60, 0]} rotation={[0, Math.PI, 0]}>
-          <Scenery castSelfShadows sceneryType={SCENERY_TYPE.artifact.gate} />
-        </group>
-      </group>
-    </group>
+      {SceneryObjects.map((scenery, index) => (
+        <React.Fragment key={index}>{scenery}</React.Fragment>
+      ))}
+    </>
   );
 };
 

@@ -5,7 +5,7 @@ import BoidController from "../classes/BoidController";
 import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
 
-const numEnemies = 90;
+const numEnemies = 100;
 
 const generateEnemies = async (
   numEnemies: number

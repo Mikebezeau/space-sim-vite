@@ -1,13 +1,12 @@
-import React, { memo, useEffect, useRef } from "react";
-import { Vector3 } from "three";
+import React, { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useStore from "../stores/store";
 import useEnemyStore from "../stores/enemyStore";
 import useDevStore from "../stores/devStore";
+import Stations from "../3d/spaceFlight/Stations";
 import EnemyMechs from "../3d/enemyMechs/EnemyMechs";
-import BuildMech from "../3d/buildMech/BuildMech";
-import Explosion from "../3d/Explosion";
+import Particles from "../3d/Particles";
 
 import { track, geometry2 } from "../util/track";
 
@@ -15,6 +14,12 @@ import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 const TestEnemyAttackScene = () => {
   const player = useStore((state) => state.player);
+  const stations = useStore((state) => state.stations);
+
+  useEffect(() => {
+    if (stations[0]) stations[0].object3d.position.set(0, 0, 500);
+  }, [stations]);
+
   const boidController = useEnemyStore((state) => state.boidController);
 
   const { camera } = useThree();
@@ -94,7 +99,12 @@ const TestEnemyAttackScene = () => {
     boidController?.update(delta);
     //
     // testing explosion animation
-    player.updateExplosionMesh();
+    //player.updateMechUseFrame(delta);
+    // updateMechUseFrame for each enemy
+    //useEnemyStore.getState().enemies.forEach((enemy) => {
+    //  enemy.updateMechUseFrame(delta);
+    //});
+    useEnemyStore.getState().enemies[0].updateMechUseFrame(delta);
   }, -2); //render order set to be before Particles and ScannerReadout
 
   return (
@@ -108,9 +118,10 @@ const TestEnemyAttackScene = () => {
       />
       <pointLight intensity={1} decay={0} position={[1000, 1000, -1000]} />
       <ambientLight intensity={0.4} />
+      <Particles />
+      <Stations />
 
       <EnemyMechs />
-
       <object3D
         ref={(mechRef) => {
           if (mechRef) {
@@ -124,6 +135,7 @@ const TestEnemyAttackScene = () => {
       <mesh geometry={track}>
         <meshBasicMaterial color="red" />
       </mesh>
+      {/*
       <mesh geometry={geometry2}>
         <meshBasicMaterial color="blue" />
       </mesh>
@@ -132,4 +144,4 @@ const TestEnemyAttackScene = () => {
   );
 };
 
-export default memo(TestEnemyAttackScene);
+export default TestEnemyAttackScene;

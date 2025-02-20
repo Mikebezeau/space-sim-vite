@@ -5,7 +5,8 @@ import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import InstancedMechs from "./InstancedMechs";
 
-import Scenery, { SCENERY_TYPE } from "../../3d/spaceFlight/Scenery";
+import { SCENERY_TYPE } from "../../stores/loaderStore";
+import Scenery from "../../3d/spaceFlight/Scenery";
 
 const EnemyMechs = () => {
   const componentName = "EnemyMechs";
@@ -38,7 +39,7 @@ const EnemyMechs = () => {
                     const isWaitLoadModelsTotal = 1; // number of Scenery objects below
                     enemyMech.initObject3d(mechRef, isWaitLoadModelsTotal);
                   }}
-                ></object3D>
+                />
                 <Scenery
                   scale={25}
                   castSelfShadows

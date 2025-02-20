@@ -1,4 +1,4 @@
-import { ShaderMaterial } from "three";
+import { DoubleSide, ShaderMaterial } from "three";
 
 const vertexShader = `
 #include <common>
@@ -11,11 +11,13 @@ attribute vec3 displacement;
 
 varying vec3 vNormal;
 varying vec3 vColor;
+varying float vAmplitude;
 
 void main() {
 
   vNormal = normal;
   vColor = customColor;
+  vAmplitude = amplitude;
 
   vec3 newPosition = position + normal * amplitude * displacement;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
@@ -30,6 +32,7 @@ const fragmentShader = `
 
 varying vec3 vNormal;
 varying vec3 vColor;
+varying float vAmplitude;
 
 void main() {
   #include <logdepthbuf_fragment>
@@ -40,13 +43,20 @@ void main() {
   light = normalize( light );
 
   float directional = max( dot( vNormal, light ), 0.0 );
-
-  gl_FragColor = vec4( ( directional + ambient ) * vColor, 1.0 );
-
+  float amplitudeNormalized = vAmplitude / 5.0;
+  vec3 color = mix( 
+    vec3(( directional + ambient ) * vColor),
+    vec3( 0.0, 0.0, 0.0 ),
+    amplitudeNormalized
+  );
+  float fadeOut = 1.0 - amplitudeNormalized;
+  gl_FragColor = vec4( color, fadeOut);
 }
 `;
 
 const expolsionShaderMaterial = new ShaderMaterial({
+  transparent: true,
+  side: DoubleSide,
   uniforms: {
     amplitude: { value: 0.0 },
   },

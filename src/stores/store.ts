@@ -50,9 +50,6 @@ interface storeState {
   isSolarSystemInit: boolean;
   isGalaxyInit: boolean;
 
-  modelLoader: (url: string, callback: any) => any;
-  loadModelSync: (url: string, callback: any) => void;
-
   sound: boolean;
   playerCurrentStarIndex: number | null;
 
@@ -200,33 +197,6 @@ const useStore = create<storeState>()((set, get) => ({
   isGameStoreInit: false,
   isSolarSystemInit: false,
   isGalaxyInit: false,
-
-  // TODO fix model loader
-  modelLoader: (url, callback) => {
-    return new Promise((resolve, reject) => {
-      loader.load(
-        url,
-        (data) => callback(data),
-        (xhr) => {
-          //const loaded = (xhr.loaded / xhr.total) * 100 + "% loaded";
-        },
-        (error) => {
-          console.error("store modelLoader", error);
-        }
-      );
-    });
-  },
-
-  loadModelSync: async (url, callback) => {
-    const gltfData = await get().modelLoader(url, callback),
-      model = gltfData.scene;
-
-    /*
-  loadModelSync().catch(error => {
-    console.error(error);
-  });
-  */
-  },
 
   galaxy: new Galaxy(),
 
