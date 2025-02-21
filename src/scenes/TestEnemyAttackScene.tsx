@@ -92,19 +92,6 @@ const TestEnemyAttackScene = () => {
     setCameraPosition();
   }, []);
 
-  const recursiveFindMechParentObjectId = (object: THREE.Object3D) => {
-    if (typeof object.userData.mechId !== "undefined") {
-      return object.userData.mechId;
-    }
-    // @ts-ignore
-    if (object.isScene) {
-      return null;
-    }
-    if (object.parent) {
-      return recursiveFindMechParentObjectId(object.parent);
-    }
-    return null;
-  };
   const handleMouseClick = (event: MouseEvent) => {
     const { clientX, clientY } = event;
     const width = gl.domElement.clientWidth;
@@ -129,10 +116,19 @@ const TestEnemyAttackScene = () => {
 
     if (intersects.length > 0) {
       const intersectedObject = intersects[0].object;
+      console.log("intersects: ", intersects.length);
       console.log("intersectedObject: ", intersectedObject);
       if (!intersectedObject) return;
-      const intersectedObjectMechId =
-        recursiveFindMechParentObjectId(intersectedObject);
+
+      let object = intersects[0].object;
+
+      while (!object.userData.mechId && object.parent) {
+        object = object.parent;
+        console.log(object.userData.mechId);
+      }
+
+      const topParentMechObj = object;
+      const intersectedObjectMechId = topParentMechObj.userData.mechId;
       if (!intersectedObjectMechId) {
         console.log("No mech id found");
         return;
@@ -140,6 +136,7 @@ const TestEnemyAttackScene = () => {
       // find mech by the mech.id
       let intersectedMech: Mech | undefined = useEnemyStore
         .getState()
+        // @ts-ignore
         .enemies.find((enemy) => enemy.id === intersectedObjectMechId);
       // stations
       if (!intersectedMech) {
@@ -208,6 +205,8 @@ const TestEnemyAttackScene = () => {
           if (mechRef) {
             //playerMechRef.current = mechRef;
             player.initObject3d(mechRef);
+          } else {
+            player.object3dRemoved();
           }
         }}
         /*

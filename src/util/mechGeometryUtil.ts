@@ -25,15 +25,19 @@ export const getGeomColorList = (object3d) => {
 export const getMergedBufferGeom = (object3d: THREE.Object3D) => {
   const geoms: THREE.BufferGeometry[] = [];
   const meshes: THREE.Mesh[] = [];
+  // make sure not passed mech.object3d
+  object3d.position.set(0, 0, 0);
+  // must update world matrix to get correct mesh positions / roatations of all children relative to parents
   object3d.updateWorldMatrix(true, true);
+
   object3d.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       meshes.push(child);
       const geom = child.geometry.index
         ? child.geometry.toNonIndexed()
         : child.geometry.clone();
-      // remove attributes that are not needed
-      // get list of attributes with geom.attributes.keys
+      // remove attributes from oaded glb models that are not needed
+      // get list of geom.attributes object keys
       const attributes = Object.keys(geom.attributes);
       const attributeList = ["position", "normal", "uv"];
       attributes.forEach((attr) => {
@@ -87,7 +91,7 @@ type getExplosionMeshType = (
   geometry: THREE.BufferGeometry
 ) => THREE.Mesh;
 
-export const getExplosionMesh: getExplosionMeshType = (
+export const getTessellatedExplosionMesh: getExplosionMeshType = (
   shaderMaterial,
   geometry
 ) => {

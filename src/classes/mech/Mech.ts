@@ -12,7 +12,7 @@ import {
   getGeomColorList,
   getMergedBufferGeom,
   getMergedBufferGeomColor,
-  getExplosionMesh,
+  getTessellatedExplosionMesh,
 } from "../../util/mechGeometryUtil";
 import { equipData } from "../../equipment/data/equipData";
 import useLoaderStore from "../../stores/loaderStore";
@@ -29,7 +29,8 @@ const MECH_STATE = {
 };
 
 interface MechInt {
-  initObject3d(object3d?: THREE.Object3D): void;
+  initObject3d: (object3d?: THREE.Object3D) => void;
+  object3dRemoved: () => void;
   updateObject3dIfAllLoaded: (mesh?: THREE.Mesh) => void;
   updateObb: () => void;
   setObject3dCenterOffset: () => void;
@@ -53,11 +54,13 @@ const weaponWorldPositionVec = new THREE.Vector3();
 class Mech implements MechInt {
   id: string;
   isPlayer: boolean;
+
   isObject3dInit: boolean;
   mechState: number;
-  explosionTime: number;
+  timeCounter: number;
   useInstancedMesh: boolean;
   _mechBP: MechBP;
+
   object3d: THREE.Object3D;
   builtObject3d: THREE.Object3D;
   object3dLoadedMeshCount: number;
@@ -90,15 +93,13 @@ class Mech implements MechInt {
     this.isPlayer = false;
     this.isObject3dInit = false;
     this.mechState = MECH_STATE.MOVING;
-    this.explosionTime = 0;
+    this.timeCounter = 0;
     this.useInstancedMesh = useInstancedMesh;
     // try to set 'new MechBP' directly error:
     // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
     this._mechBP = loadBlueprint(mechDesign);
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
     this.object3d = new THREE.Object3D(); // set from BuildMech ref, updating this will update the object on screen
-    // add this.id to object3d for hit detection
-    //this.object3d.userData.mechId = this.id;//must set on initObject3d
     this.builtObject3d = new THREE.Object3D(); //full object3d with all added meshes
     this.object3dLoadedMeshCount = 0; // used to determine if all models are loaded before caluating obb and explosion mesh
     this.waitObject3dLoadMeshTotal = 0; // total number of models to be loaded
@@ -139,75 +140,52 @@ class Mech implements MechInt {
   // call this once the mechBP is built 's mesh is loaded in component via BuildMech ref instantiation
   initObject3d(object3d?: THREE.Object3D, isLoadingModelCount: number = 0) {
     if (this.isObject3dInit) {
-      //console.warn("Mech initObject3d already called", this.mechBP.id);
+      console.log("Mech initObject3d already called", this.mechBP.id);
     }
-    this.object3dLoadedMeshCount = 0;
-    this.waitObject3dLoadMeshTotal = isLoadingModelCount;
-    // keeping position and rotation set to this object3d
-    const keepPosition = new THREE.Vector3();
-    keepPosition.copy(this.object3d.position);
-    const keepRotation = new THREE.Euler();
-    keepRotation.copy(this.object3d.rotation);
-
-    // clear object3d of children in case reusing this object3d
-    // when not using instanced mesh the R3F object3d component
-    // automatically clears this object3d
+    // make sure object3d is empty
     this.object3d.clear();
 
+    this.waitObject3dLoadMeshTotal = isLoadingModelCount;
+
+    //  getting / creating built mech object3d from useMechBpStore dictionary
     this.builtObject3d = useMechBpStore
       .getState()
       .getCreateMechBpBuild(this._mechBP).object3d;
+    /*
+    // if not using object3d dictionary, build object3d with mechBP build function:
+    this.builtObject3d = this._mechBP.buildObject3d(this.object3d);
+    */
 
-    if (this.useInstancedMesh) {
-      // TODO work on sharing object3d for instanced mesh
-      // only ref to reference the merged buffer geometry for init in updateObject3dIfAllLoaded
-      this.object3d.add(this.builtObject3d);
-      this.object3d.userData.mechId = this.id;
-    } else if (object3d) {
-      // directly assigned object ref from component
-      // changes to this.object3d will update the object on screen
+    if (!this.useInstancedMesh && object3d) {
+      // Object3D ref from scene component has been passed to link to this Mech
+      // changes to this.object3d will now update the object in the scene
+      const keepPosition = this.object3d.position.clone();
+      const keepRotation = this.object3d.rotation.clone();
       this.object3d = object3d;
-      // this.object3d.copy(this.builtObject3d); happens in updateObject3dIfAllLoaded method
+      this.object3d.position.copy(keepPosition);
+      this.object3d.rotation.copy(keepRotation);
     }
-    // if not using object3d dictionary, build object3d with mechBP build function
-    //this._mechBP.buildObject3d(this.object3d);
-
-    this.object3d.position.copy(keepPosition);
-    this.object3d.rotation.copy(keepRotation);
+    // add this.id to object3d userData for hit detection
+    this.object3d.userData.mechId = this.id;
     // if everything is loaded, set setMergedBufferGeom setExplosionMesh hitbox and obb
     this.updateObject3dIfAllLoaded();
   }
 
+  object3dRemoved() {
+    // mech object3d removed from scene
+    this.isObject3dInit = false;
+  }
+
   updateObject3dIfAllLoaded(mesh?: THREE.Mesh) {
+    // TODO something about loading of scenery models
     if (mesh !== undefined) {
       this.object3dLoadedMeshCount = this.object3dLoadedMeshCount + 1;
       //mesh = CSG.union(mesh, geometry);
       this.builtObject3d.add(mesh);
     }
-    if (this.object3dLoadedMeshCount > this.waitObject3dLoadMeshTotal) {
-      console.warn(
-        "updateObject3dIfAllLoaded called more than expected",
-        this.object3dLoadedMeshCount,
-        this.waitObject3dLoadMeshTotal
-      );
-    }
 
     if (this.object3dLoadedMeshCount === this.waitObject3dLoadMeshTotal) {
-      // keeping position and rotation set to this object3d (reset at end of function)
-      const keepPosition = new THREE.Vector3();
-      keepPosition.copy(this.object3d.position);
-      const keepRotation = new THREE.Euler();
-      keepRotation.copy(this.object3d.rotation);
-
-      // when creating hitbox and obb, the rotation must be set to (0,0,0)
-      this.object3d.position.set(0, 0, 0);
-      this.object3d.rotation.set(0, 0, 0);
-
-      this.object3d.copy(this.builtObject3d);
-      this.object3d.userData.mechId = this.id; // update userData after copy
-
       this.setMergedBufferGeom();
-
       if (!this.useInstancedMesh) {
         // explosion geometry and shader testing
         this.setExplosionMesh();
@@ -215,12 +193,10 @@ class Mech implements MechInt {
 
       // mech bounding box
       const hitBox = new THREE.Box3();
-      hitBox.setFromObject(this.object3d);
+      //this.builtObject3d must have position set to 0,0,0 for hitBox to be correct
+      hitBox.setFromObject(this.builtObject3d);
       // set center position of mech
       hitBox.getCenter(this.mechCenter);
-      // adjust mechCenter to accout for the object3d position (just in case not at 0,0,0)
-      // TODO check this - might need getWorldPosition
-      this.mechCenter.sub(this.object3d.position);
       // obb for hit testing
       this.obb.fromBox3(hitBox);
 
@@ -234,8 +210,8 @@ class Mech implements MechInt {
       );
       this.maxHalfWidth = Math.max(boxSize.x, boxSize.y, boxSize.z) / 2;
 
-      this.object3d.position.copy(keepPosition);
-      this.object3d.rotation.copy(keepRotation);
+      // add this.builtObject3d to this.object3d last to avoid world positioning isses
+      this.object3d.add(this.builtObject3d.clone());
 
       // finished setting up object3d
       this.isObject3dInit = true;
@@ -271,12 +247,12 @@ class Mech implements MechInt {
   // set the merged buffer geometry
   // this is used when extra GLB models are loaded into the mech build
   setMergedBufferGeom() {
-    if (this.object3d) {
+    if (this.builtObject3d) {
       const merged =
         this.waitObject3dLoadMeshTotal > 0
           ? // accounting for additional GLB models loaded into the mech build
-            getMergedBufferGeom(this.object3d)
-          : // using base mechBP geometry from mechBpStore
+            getMergedBufferGeom(this.builtObject3d)
+          : // using shared mechBP geometry from mechBpStore
             useMechBpStore.getState().getCreateMechBpBuild(this._mechBP)
               .bufferGeometry;
       if (merged) {
@@ -285,8 +261,8 @@ class Mech implements MechInt {
       }
     } else {
       console.error(
-        "Mech.setMergedBufferGeom(): object3d not set",
-        this.object3d
+        "Mech.setMergedBufferGeom(): this.builtObject3d not set",
+        this.builtObject3d
       );
     }
   }
@@ -294,12 +270,12 @@ class Mech implements MechInt {
   setMergedBufferGeomColorsList(geomColorList: THREE.Color[]) {
     // split object children into meshes of same colors
     // merge all meshes of same color into one buffer geometry
-    if (this.object3d) {
+    if (this.builtObject3d) {
       // TODO displose of old bufferGeomColorsList
       this.bufferGeomColorsList = [];
       geomColorList.forEach((color) => {
         this.bufferGeomColorsList.push(
-          getMergedBufferGeomColor(this.object3d, color)
+          getMergedBufferGeomColor(this.builtObject3d, color)
         );
       });
     }
@@ -322,9 +298,8 @@ class Mech implements MechInt {
               .simplifiedGeometry;
 
       if (simplifiedGeometry) {
-        // get explosion mesh - added vertices to break up large planes
-        this.explosionMesh = getExplosionMesh(
-          // TODO use a copy of the material so uniforms can be set to just this instance
+        // getTessellatedExplosionMesh - add vertices to break up large planes
+        this.explosionMesh = getTessellatedExplosionMesh(
           useStore.getState().cloneExplosionShaderMaterial(),
           simplifiedGeometry
         );
@@ -336,11 +311,10 @@ class Mech implements MechInt {
 
   explode() {
     this.mechState = MECH_STATE.EXPLODING;
-    this.explosionTime = 0;
+    this.timeCounter = 0;
     if (this.explosionMesh) {
-      // TODO should object3d children be disposed of?
       this.object3d.clear();
-      this.object3d.add(this.explosionMesh);
+      this.object3d.add(this.explosionMesh.clone());
       // update explosion material size uniform - governs amplitude of explosion
       // not using material array ( <THREE.ShaderMaterial[]> ) so treat material as single material
       (<THREE.ShaderMaterial>this.explosionMesh.material).uniforms.size.value =
@@ -350,34 +324,24 @@ class Mech implements MechInt {
 
   updateMechUseFrame(delta: number) {
     if (!this.isObject3dInit) return null;
-
-    if (this.mechState === MECH_STATE.EXPLODING) {
-      this.updateExplosionUseFrame(delta);
-    }
+    this.updateExplosionUseFrame(delta);
   }
 
   updateExplosionUseFrame(delta: number) {
-    this.explosionTime += delta;
+    if (this.mechState !== MECH_STATE.EXPLODING) return;
+    this.timeCounter += delta;
     const explosionTimeMax = (1 + this._mechBP.scale) / 2;
 
-    const explosionTimeNormalized = this.explosionTime / explosionTimeMax;
+    const explosionTimeNormalized = this.timeCounter / explosionTimeMax;
     if (explosionTimeNormalized > 1) {
-      this.explosionTime = 0;
       this.mechState = MECH_STATE.DEAD;
-      this.object3d.clear();
+      if (this.explosionMesh) this.object3d.clear();
+
+      //TESTING: reset mech to original state
       this.mechState = MECH_STATE.IDLE;
+      this.object3d.add(this.builtObject3d.clone());
 
-      const keepPosition = new THREE.Vector3();
-      keepPosition.copy(this.object3d.position);
-      const keepRotation = new THREE.Euler();
-      keepRotation.copy(this.object3d.rotation);
-
-      this.object3d.copy(this.builtObject3d);
-      this.object3d.userData.mechId = this.id; // update userData after copy
-
-      this.object3d.position.copy(keepPosition);
-      this.object3d.rotation.copy(keepRotation);
-
+      // exit function
       return;
     }
 
@@ -424,6 +388,7 @@ class Mech implements MechInt {
       //
       weaponFireMechParentObj.position.copy(this.object3d.position);
       weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
+      // get quaternion
       weaponFireQuaternoin.copy(weaponFireMechParentObj.quaternion);
       // TODO fix angle target issue
       if (targetQuaternoin)

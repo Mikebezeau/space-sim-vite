@@ -1,7 +1,7 @@
 const mechDesigns = {
   player: [
     {
-      id: "xjg6765fgfdgfdxhtjcxjtgx",
+      id: "playerMech34uh398",
       name: "Player Ship",
       scale: 2,
       generatorClass: 0,
@@ -1758,7 +1758,7 @@ const mechDesigns = {
       _color: "#FFF",
     },
     {
-      id: "xjg67ghfhgf65fgfdgfdxhtjcxjtgx",
+      id: "playerxjg67ghfhgf65fgfdgfdxhtjcxjtgx",
       name: "Player Ship w Weapon",
       scale: 2,
       generatorClass: 0,
@@ -3457,7 +3457,7 @@ const mechDesigns = {
 
   station: [
     {
-      id: "hgjgfxytgiughrdy6gihtdt",
+      id: "station3849hgjgfxytgiughrdy6gihtdt",
       name: "Station XC-2455",
       scale: 6,
       generatorClass: 0,
@@ -3753,7 +3753,7 @@ const mechDesigns = {
 
   enemy: [
     {
-      id: "uyf6898yoihghrd6u",
+      id: "enemyDestroyer8765uyf6898yoihghrd6u",
       name: "Destroyer",
       scale: 4,
       generatorClass: 0,
@@ -3904,7 +3904,7 @@ const mechDesigns = {
       _color: "#999",
     },
     {
-      id: "tderas65r98yhpihutrs",
+      id: "enemyShip8765tderas65r98yhpihutrs",
       name: "Enemy Ship",
       scale: 2,
       generatorClass: 0,
@@ -4301,7 +4301,7 @@ const mechDesigns = {
       _color: "#999",
     },
     {
-      id: "gvvxgfigoijop98876f",
+      id: "enemyLeaderShip934762gvvxgf",
       name: "Enemy Leader Ship",
       scale: 3,
       generatorClass: 0,

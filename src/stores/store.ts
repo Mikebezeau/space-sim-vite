@@ -24,6 +24,7 @@ import { PLANET_TYPE } from "../constants/solarSystemConstants";
 import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
+import SpaceStationMech from "../classes/mech/SpaceStationMech";
 
 const initStarPointsShaderMaterial = () => {
   const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
@@ -97,7 +98,7 @@ interface storeState {
   expolsionShaderMaterial: THREE.ShaderMaterial;
   cloneExplosionShaderMaterial: () => THREE.ShaderMaterial;
   //--
-  stations: any[];
+  stations: SpaceStationMech[];
   planetTerrain: any;
 
   actions: {
