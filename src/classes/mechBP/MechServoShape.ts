@@ -24,7 +24,14 @@ export const EDIT_PART_METHOD = {
 interface MechServoShapeInt {
   label: () => string;
   geometry: () => BufferGeometry;
-  recursiveBuildObject3d: (inheritColor: string) => THREE.Group;
+  recursiveBuildObject3d: (
+    inheritColor: string,
+    parentMirrored?: {
+      x: boolean;
+      y: boolean;
+      z: boolean;
+    }
+  ) => THREE.Group;
 
   movePart: (props: { x: number; y: number; z: number }) => void;
   resetPosition: () => void;
@@ -64,7 +71,14 @@ class MechServoShape implements MechServoShapeInt {
   }
 
   //TODO MAKE THHIS RECURSIVE
-  recursiveBuildObject3d(inheritColor: string) {
+  recursiveBuildObject3d(
+    inheritColor: string,
+    parentMirrored: { x: boolean; y: boolean; z: boolean } = {
+      x: false,
+      y: false,
+      z: false,
+    }
+  ) {
     const servoShapesGroup = new THREE.Group();
     servoShapesGroup.position.set(this.offset.x, this.offset.y, this.offset.z);
     servoShapesGroup.rotation.set(
@@ -72,14 +86,34 @@ class MechServoShape implements MechServoShapeInt {
       this.rotationRadians().y,
       this.rotationRadians().z
     );
+
     servoShapesGroup.scale.set(
       (1 + this.scaleAdjust.x) * (this.mirrorAxis.x ? -1 : 1),
       (1 + this.scaleAdjust.y) * (this.mirrorAxis.y ? -1 : 1),
       (1 + this.scaleAdjust.z) * (this.mirrorAxis.z ? -1 : 1)
     );
 
+    // update whether tree is mirrored on axis' or not
+    const mirrorAxis = {
+      x: parentMirrored.x ? !this.mirrorAxis.x : this.mirrorAxis.x,
+      y: parentMirrored.y ? !this.mirrorAxis.y : this.mirrorAxis.y,
+      z: parentMirrored.z ? !this.mirrorAxis.z : this.mirrorAxis.z,
+    };
+
+    // TODO if mirrored - the vertices flip changing side from front to back
+    // dev testing condition to turn servo color green
+    let testCondition = false;
+    // if mirrored on an y axis, testCondition is true
+    if (mirrorAxis.x || mirrorAxis.y || mirrorAxis.z) {
+      //testCondition = true;
+      // TODO reverse the vertices of the geometry to flip the side
+      // the children of this object will be mirrored as well, complicates things
+    }
+
     this.servoShapes.forEach((servoShape) => {
-      const color = servoShape.color
+      const color = testCondition
+        ? "#0F0"
+        : servoShape.color
         ? servoShape.color
         : this.color
         ? this.color
@@ -88,9 +122,11 @@ class MechServoShape implements MechServoShapeInt {
         : "#FFF";
       // nested group of servoShapes
       if (servoShape.servoShapes.length > 0) {
-        servoShapesGroup.add(servoShape.recursiveBuildObject3d(inheritColor));
+        servoShapesGroup.add(
+          servoShape.recursiveBuildObject3d(inheritColor, mirrorAxis)
+        );
       } else {
-        //
+        // if going to flip the geometry, need to create a new material
         const servoShapeMesh = new THREE.Mesh();
         servoShapeMesh.position.set(
           servoShape.offset.x,
@@ -108,9 +144,9 @@ class MechServoShape implements MechServoShapeInt {
           (1 + servoShape.scaleAdjust.y) * (servoShape.mirrorAxis.y ? -1 : 1),
           (1 + servoShape.scaleAdjust.z) * (servoShape.mirrorAxis.z ? -1 : 1)
         );
-        // TODO only use new meterial if for different colors
         servoShapeMesh.geometry = servoShape.geometry();
-
+        // TODO only use new meterial if for different colors
+        // create material dictionary for reuse
         servoShapeMesh.material = new THREE.MeshLambertMaterial({
           color: new THREE.Color(color),
           flatShading: true,

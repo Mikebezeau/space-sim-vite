@@ -3,6 +3,7 @@ import useDevStore from "../stores/devStore";
 
 const guiControls = new (function () {
   this.container = "box";
+
   this.params = {
     maxSpeed: 0.25,
     seek: {
@@ -42,9 +43,9 @@ class BoidController {
   updateDevStorePropModifiers() {
     const { boidAlignmentMod, boidSeparationMod, boidCohesionMod } =
       useDevStore.getState();
-    this.params.align.maxForce = 0.05 + boidAlignmentMod;
-    this.params.separate.maxForce = 0.05 + boidSeparationMod;
-    this.params.cohesion.maxForce = 0.05 + boidCohesionMod;
+    this.params.align.maxForce = boidAlignmentMod;
+    this.params.separate.maxForce = boidSeparationMod;
+    this.params.cohesion.maxForce = boidCohesionMod;
     /*
     this.params.align.effectiveRange = 50 + boidAlignmentMod;
     this.params.separate.effectiveRange = 50 + boidSeparationMod;

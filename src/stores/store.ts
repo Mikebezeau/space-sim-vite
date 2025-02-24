@@ -11,7 +11,6 @@ import galaxyGen from "../galaxy/galaxyGen";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
-import expolsionShaderMaterial from "../3d/explosion/explosionShaderMaterial";
 import cityTerrianGen from "../terrainGen/terrainGenHelper";
 import SolarSystem from "../classes/solarSystem/SolarSystem";
 import Galaxy from "../classes/Galaxy";
@@ -95,8 +94,6 @@ interface storeState {
   sunShaderMaterial: THREE.ShaderMaterial;
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
-  expolsionShaderMaterial: THREE.ShaderMaterial;
-  cloneExplosionShaderMaterial: () => THREE.ShaderMaterial;
   //--
   stations: SpaceStationMech[];
   planetTerrain: any;
@@ -294,10 +291,6 @@ const useStore = create<storeState>()((set, get) => ({
   planetShaderMaterial: planetShaderMaterial,
   clonePlanetShaderMaterial: () => {
     return get().planetShaderMaterial.clone();
-  },
-  expolsionShaderMaterial: expolsionShaderMaterial,
-  cloneExplosionShaderMaterial: () => {
-    return get().expolsionShaderMaterial.clone();
   },
   asteroidBands: null, // set in call to setPlayerCurrentStarIndex
   stations: [], // set in call to setPlayerCurrentStarIndex

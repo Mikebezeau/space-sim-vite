@@ -5,7 +5,7 @@ import BoidController from "../classes/BoidController";
 import { genBoidEnemies } from "../util/initGameUtil";
 import { groupEnemies } from "../util/initGameUtil";
 
-const numEnemies = 100;
+const NUM_ENEMIES = 10;
 
 const generateEnemies = async (
   numEnemies: number
@@ -31,19 +31,18 @@ const generateEnemies = async (
 
 interface enemyStoreState {
   numEnemies: number;
-  boidController: any | null;
+  boidController: BoidController | null;
   enemyWorldPosition: Vector3;
   enemies: EnemyMechBoid[] | Promise<void | EnemyMechBoid[]>;
 }
 
 const useEnemyStore = create<enemyStoreState>()((set, get) => ({
-  numEnemies: numEnemies,
+  numEnemies: NUM_ENEMIES,
   boidController: null,
   enemyWorldPosition: new Vector3(),
-  enemies: generateEnemies(numEnemies).then((enemiesData: EnemyMechBoid[]) => {
+  enemies: generateEnemies(NUM_ENEMIES).then((enemiesData: EnemyMechBoid[]) => {
     set({ enemies: enemiesData });
-    //@ts-ignore
-    set({ boidController: new BoidController(get().enemies) });
+    set({ boidController: new BoidController(enemiesData) });
   }),
 }));
 

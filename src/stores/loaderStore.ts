@@ -146,7 +146,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
     //
     sceneryMesh.updateWorldMatrix(true, true);
     if (onLoadUpdateMech !== null) {
-      onLoadUpdateMech.updateObject3dIfAllLoaded(sceneryMesh);
+      onLoadUpdateMech.addMeshToBuiltObject3d(sceneryMesh);
     } else {
       addToRef.current?.add(sceneryMesh);
     }

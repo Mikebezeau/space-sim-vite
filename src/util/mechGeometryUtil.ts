@@ -11,7 +11,7 @@ export const setVisible = (obj, isVisible) => {
   });
 };
 
-export const getGeomColorList = (object3d) => {
+export const getGeomColorList = (object3d: THREE.Object3D) => {
   const colorList = new Set();
   object3d.traverse((child) => {
     if (child instanceof THREE.Mesh) {
@@ -22,15 +22,17 @@ export const getGeomColorList = (object3d) => {
   return [...colorList];
 };
 
-export const getMergedBufferGeom = (object3d: THREE.Object3D) => {
+export const getMergedBufferGeom = (baseObject3d: THREE.Object3D) => {
   const geoms: THREE.BufferGeometry[] = [];
   const meshes: THREE.Mesh[] = [];
-  // make sure not passed mech.object3d
-  object3d.position.set(0, 0, 0);
+  const dummyObject3D = baseObject3d.clone();
+  // set position to 0,0,0 to get correct mesh positions of all children relative to parents
+  dummyObject3D.position.set(0, 0, 0);
+  dummyObject3D.rotation.set(0, 0, 0);
   // must update world matrix to get correct mesh positions / roatations of all children relative to parents
-  object3d.updateWorldMatrix(true, true);
+  dummyObject3D.updateWorldMatrix(true, true);
 
-  object3d.traverse((child) => {
+  dummyObject3D.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       meshes.push(child);
       const geom = child.geometry.index
@@ -49,14 +51,14 @@ export const getMergedBufferGeom = (object3d: THREE.Object3D) => {
   geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
   try {
     const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
-    merged.applyMatrix4(object3d.matrix.clone().invert());
+    merged.applyMatrix4(dummyObject3D.matrix.clone().invert());
     // not using userData.materials atm
     //merged.userData.materials = meshes.map((m) => m.material);
     return merged;
   } catch (e) {
     console.warn(e);
     const test = new THREE.Object3D();
-    test.copy(object3d, true);
+    test.copy(dummyObject3D, true);
     console.log(test);
     return null;
   }
@@ -66,24 +68,29 @@ export const getMergedBufferGeomColor = (
   object3d: THREE.Object3D,
   color: THREE.Color
 ) => {
+  // TODO - never used this function so re check code
+  /*
   const geoms: THREE.BufferGeometry[] = [];
   const meshes: THREE.Mesh[] = [];
-  object3d.updateWorldMatrix(true, true);
-  object3d.traverse((child) => {
+  const dummyObject3D = object3d.clone();
+  dummyObject3D.position.set(0, 0, 0);
+  dummyObject3D.rotation.set(0, 0, 0);
+  dummyObject3D.updateWorldMatrix(true, true);
+  dummyObject3D.traverse((child) => {
     if (child instanceof THREE.Mesh && child.material.color.equals(color)) {
+      const geom = child.geometry.index
+        ? child.geometry.toNonIndexed()
+        : child.geometry.clone();
+      geoms.push(geom);
       meshes.push(child);
-      geoms.push(
-        child.geometry.index
-          ? child.geometry.toNonIndexed()
-          : child.geometry.clone()
-      );
     }
   });
   geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
   const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
-  merged.applyMatrix4(object3d.matrix.clone().invert());
+  merged.applyMatrix4(dummyObject3D.matrix.clone().invert());
   merged.userData.materials = meshes.map((m) => m.material);
   return merged;
+  */
 };
 
 type getExplosionMeshType = (

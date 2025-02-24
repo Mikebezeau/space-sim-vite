@@ -95,7 +95,7 @@ const NewCampaignScene = () => {
               ref={(mechRef) => {
                 if (mechRef) {
                   playerMechRef.current = mechRef;
-                  player.initObject3d(mechRef);
+                  player.assignObject3dComponentRef(mechRef);
                 }
               }}
             />

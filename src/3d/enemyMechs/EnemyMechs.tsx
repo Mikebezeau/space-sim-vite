@@ -16,11 +16,10 @@ const EnemyMechs = () => {
   }, []);
 
   const enemies = useEnemyStore((state) => state.enemies);
-  const boidController = useEnemyStore((state) => state.boidController);
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
-    boidController?.update(delta);
+    //useEnemyStore.getState().boidController?.update(delta);
   });
 
   return (
@@ -34,10 +33,13 @@ const EnemyMechs = () => {
                   rotation={[Math.PI / 2, 0, Math.PI / 2]}
                   ref={(mechRef: THREE.Object3D) => {
                     if (mechRef === null) return;
-                    // not setting ref with initObject3d causes frame rate drop not sure what is happening
-                    // could be merging of geometries helping in initObject3d or explosion particles being created if not set
-                    const isWaitLoadModelsTotal = 1; // number of Scenery objects below
-                    enemyMech.initObject3d(mechRef, isWaitLoadModelsTotal);
+                    // test: way to add Object3Ds on the fly
+                    // isWaitLoadModelsTotal: number of Scenery objects loading below
+                    const isWaitLoadModelsTotal = 1;
+                    enemyMech.assignObject3dComponentRef(
+                      mechRef,
+                      isWaitLoadModelsTotal
+                    );
                   }}
                 />
                 <Scenery

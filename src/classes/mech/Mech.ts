@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
@@ -17,6 +18,8 @@ import {
 import { equipData } from "../../equipment/data/equipData";
 import useLoaderStore from "../../stores/loaderStore";
 import { FPS } from "../../constants/constants";
+import { mechMaterial } from "../../constants/mechMaterialConstants";
+import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
 
 import { setCustomData } from "r3f-perf";
 
@@ -29,14 +32,23 @@ const MECH_STATE = {
 };
 
 interface MechInt {
-  initObject3d: (object3d?: THREE.Object3D) => void;
-  object3dRemoved: () => void;
-  updateObject3dIfAllLoaded: (mesh?: THREE.Mesh) => void;
+  setBuildObject3d: () => void;
+  addMeshToBuiltObject3d: (mesh?: THREE.Mesh) => void;
+  ifBuildCompleteUpdateMech: (mesh?: THREE.Mesh) => void;
+  //
+  cloneToObject3d: () => void;
+  // assign mech to object3d ref from in scene component
+  assignObject3dComponentRef: (
+    object3d: THREE.Object3D | null,
+    isLoadingModelCount?: number
+  ) => void;
+  //
   updateObb: () => void;
   setObject3dCenterOffset: () => void;
   setMergedBufferGeom: () => void;
   setMergedBufferGeomColorsList: (geomColorList: THREE.Color[]) => void;
-  setExplosionMesh: () => void;
+  setExplosionMeshFromBufferGeom: () => void;
+  //
   explode: () => void;
   updateMechUseFrame: (delta: number) => void;
   updateExplosionUseFrame: (delta: number) => void;
@@ -55,15 +67,15 @@ class Mech implements MechInt {
   id: string;
   isPlayer: boolean;
 
-  isObject3dInit: boolean;
+  isObject3dBuilt: boolean;
   mechState: number;
   timeCounter: number;
   useInstancedMesh: boolean;
   _mechBP: MechBP;
 
   object3d: THREE.Object3D;
+  addedSceneryObjects3d: THREE.Object3D;
   builtObject3d: THREE.Object3D;
-  object3dLoadedMeshCount: number;
   waitObject3dLoadMeshTotal: number;
   bufferGeom: THREE.BufferGeometry | null;
   bufferGeomColorsList: THREE.BufferGeometry[];
@@ -91,7 +103,7 @@ class Mech implements MechInt {
     // - must declare new THREE classes here in constructor
     this.id = uuidv4();
     this.isPlayer = false;
-    this.isObject3dInit = false;
+    this.isObject3dBuilt = false;
     this.mechState = MECH_STATE.MOVING;
     this.timeCounter = 0;
     this.useInstancedMesh = useInstancedMesh;
@@ -99,9 +111,10 @@ class Mech implements MechInt {
     // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
     this._mechBP = loadBlueprint(mechDesign);
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
-    this.object3d = new THREE.Object3D(); // set from BuildMech ref, updating this will update the object on screen
-    this.builtObject3d = new THREE.Object3D(); //full object3d with all added meshes
-    this.object3dLoadedMeshCount = 0; // used to determine if all models are loaded before caluating obb and explosion mesh
+    this.object3d = new THREE.Object3D(); // set from ref, updating this will update the object on screen for non-instanced mesh
+    this.object3d.userData.mechId = this.id; // this gets set again when object3d is replaced for non-instanced mesh
+    this.addedSceneryObjects3d = new THREE.Object3D(); // added meshes
+    //this.builtObject3d set at end on constructor
     this.waitObject3dLoadMeshTotal = 0; // total number of models to be loaded
     this.bufferGeom = null; // merged geometry for instanced mesh
     this.bufferGeomColorsList = []; // merged geometry list of different colors for instanced mesh
@@ -121,11 +134,8 @@ class Mech implements MechInt {
     this.shotsTesting = [];
     this.shotsHit = [];
     this.servoHitNames = [];
-    if (this.useInstancedMesh) {
-      // instanced mesh object3d is shared between all Mech objects
-      // - it is used to set up properties for hit testing etc.
-      this.initObject3d();
-    }
+
+    this.setBuildObject3d();
   }
 
   public get mechBP() {
@@ -134,19 +144,12 @@ class Mech implements MechInt {
 
   public set mechBP(mechDesign: any) {
     this._mechBP = loadBlueprint(mechDesign); // mech blue print
-    this.initObject3d();
+    this.setBuildObject3d();
   }
 
-  // call this once the mechBP is built 's mesh is loaded in component via BuildMech ref instantiation
-  initObject3d(object3d?: THREE.Object3D, isLoadingModelCount: number = 0) {
-    if (this.isObject3dInit) {
-      console.log("Mech initObject3d already called", this.mechBP.id);
-    }
-    // make sure object3d is empty
-    this.object3d.clear();
-
-    this.waitObject3dLoadMeshTotal = isLoadingModelCount;
-
+  setBuildObject3d() {
+    // waitObject3dLoadMeshTotal reset if needed
+    this.waitObject3dLoadMeshTotal = 0;
     //  getting / creating built mech object3d from useMechBpStore dictionary
     this.builtObject3d = useMechBpStore
       .getState()
@@ -155,42 +158,40 @@ class Mech implements MechInt {
     // if not using object3d dictionary, build object3d with mechBP build function:
     this.builtObject3d = this._mechBP.buildObject3d(this.object3d);
     */
-
-    if (!this.useInstancedMesh && object3d) {
-      // Object3D ref from scene component has been passed to link to this Mech
-      // changes to this.object3d will now update the object in the scene
-      const keepPosition = this.object3d.position.clone();
-      const keepRotation = this.object3d.rotation.clone();
-      this.object3d = object3d;
-      this.object3d.position.copy(keepPosition);
-      this.object3d.rotation.copy(keepRotation);
-    }
-    // add this.id to object3d userData for hit detection
-    this.object3d.userData.mechId = this.id;
-    // if everything is loaded, set setMergedBufferGeom setExplosionMesh hitbox and obb
-    this.updateObject3dIfAllLoaded();
+    // if everything is loaded, set setMergedBufferGeom setExplosionMeshFromBufferGeom hitbox and obb
+    this.ifBuildCompleteUpdateMech();
   }
 
-  object3dRemoved() {
-    // mech object3d removed from scene
-    this.isObject3dInit = false;
-  }
-
-  updateObject3dIfAllLoaded(mesh?: THREE.Mesh) {
-    // TODO something about loading of scenery models
-    if (mesh !== undefined) {
-      this.object3dLoadedMeshCount = this.object3dLoadedMeshCount + 1;
+  addMeshToBuiltObject3d(mesh?: THREE.Mesh) {
+    if (
+      this.addedSceneryObjects3d.children.length ===
+      this.waitObject3dLoadMeshTotal
+    ) {
+      return;
+    } else if (mesh !== undefined) {
       //mesh = CSG.union(mesh, geometry);
-      this.builtObject3d.add(mesh);
+      this.addedSceneryObjects3d.add(mesh);
+      console.log("Mech: added scenery mesh");
     }
+    this.ifBuildCompleteUpdateMech();
+  }
 
-    if (this.object3dLoadedMeshCount === this.waitObject3dLoadMeshTotal) {
+  ifBuildCompleteUpdateMech() {
+    console.log(
+      this.addedSceneryObjects3d.children.length,
+      this.waitObject3dLoadMeshTotal
+    );
+    if (
+      this.addedSceneryObjects3d.children.length ===
+      this.waitObject3dLoadMeshTotal
+    ) {
+      // add all scenery meshes to builtObject3d
+      this.builtObject3d.add(this.addedSceneryObjects3d);
       this.setMergedBufferGeom();
       if (!this.useInstancedMesh) {
         // explosion geometry and shader testing
-        this.setExplosionMesh();
+        this.setExplosionMeshFromBufferGeom();
       }
-
       // mech bounding box
       const hitBox = new THREE.Box3();
       //this.builtObject3d must have position set to 0,0,0 for hitBox to be correct
@@ -210,12 +211,70 @@ class Mech implements MechInt {
       );
       this.maxHalfWidth = Math.max(boxSize.x, boxSize.y, boxSize.z) / 2;
 
-      // add this.builtObject3d to this.object3d last to avoid world positioning isses
-      this.object3d.add(this.builtObject3d.clone());
-
+      this.object3d.clear(); // just in case, clear children
+      // add this.id to object3d userData to assist hit detection functions
+      this.object3d.userData.mechId = this.id;
       // finished setting up object3d
-      this.isObject3dInit = true;
+      this.isObject3dBuilt = true;
+
+      // for testing this.bufferGeom
+      /*
+      this.object3d.add(
+        new THREE.Mesh(this.bufferGeom!, mechMaterial.selectMaterial)
+      );
+*/
+      this.cloneToObject3d();
     }
+  }
+
+  cloneToObject3d() {
+    // clone Mech build into this.object3d
+    this.object3d.add(this.builtObject3d.clone());
+    // testing
+    /*
+    this.object3d.add(
+      new THREE.Mesh(
+        new THREE.BoxGeometry(3, 3, 3),
+        mechMaterial.readoutMaterial_75
+      )
+    );
+    */
+  }
+
+  assignObject3dComponentRef(
+    object3d: THREE.Object3D | null,
+    isLoadingModelCount: number = 0
+  ) {
+    // if cleaning up object3d ref in component
+    if (object3d === null) {
+      // clean up if needed here i.e. in future for enemy mechs that are destroyed
+      return;
+    }
+
+    if (this.useInstancedMesh) {
+      console.warn(
+        "assignObject3dComponentRef: cannot assign object3dRef to instanced mesh mech"
+      );
+      return;
+    }
+
+    this.waitObject3dLoadMeshTotal = isLoadingModelCount;
+    console.log(this.waitObject3dLoadMeshTotal);
+    // Object3D ref from scene component has been passed to link to this Mech
+    // changes to this.object3d will now update the object in the scene
+    const keepPosition = this.object3d.position.clone();
+    const keepRotation = this.object3d.rotation.clone();
+    this.object3d = object3d;
+    this.object3d.position.copy(keepPosition);
+    this.object3d.rotation.copy(keepRotation);
+    // make sure object3d is empty
+    this.object3d.clear();
+    // populate this.object3d with all Mech elements
+    this.cloneToObject3d();
+    // note: this.object3d is the object3d ref from the scene component
+    // when the scene component is unmounted, this object3d will be disposed - hence clone() is used
+    // add this.id to object3d userData to assist hit detection functions
+    this.object3d.userData.mechId = this.id;
   }
 
   updateObb() {
@@ -247,23 +306,24 @@ class Mech implements MechInt {
   // set the merged buffer geometry
   // this is used when extra GLB models are loaded into the mech build
   setMergedBufferGeom() {
-    if (this.builtObject3d) {
-      const merged =
-        this.waitObject3dLoadMeshTotal > 0
-          ? // accounting for additional GLB models loaded into the mech build
-            getMergedBufferGeom(this.builtObject3d)
-          : // using shared mechBP geometry from mechBpStore
-            useMechBpStore.getState().getCreateMechBpBuild(this._mechBP)
-              .bufferGeometry;
-      if (merged) {
-        this.bufferGeom?.dispose();
-        this.bufferGeom = merged;
+    if (this.builtObject3d.children.length > 0) {
+      this.bufferGeom?.dispose();
+
+      let bufferGeometry: THREE.BufferGeometry | null = null;
+      // by default comming from mechBpStore dictionary
+      bufferGeometry = useMechBpStore
+        .getState()
+        .getCreateMechBpBuild(this._mechBP).bufferGeometry;
+      // if additional scenery objects have been added
+      // merge all geometries into one buffer geometry
+      if (this.addedSceneryObjects3d.children.length > 0) {
+        // getMergedBufferGeom - remove extra geometry attributes and merge all geometries
+        bufferGeometry = getMergedBufferGeom(this.builtObject3d);
       }
-    } else {
-      console.error(
-        "Mech.setMergedBufferGeom(): this.builtObject3d not set",
-        this.builtObject3d
-      );
+      this.bufferGeom = bufferGeometry;
+      if (this.bufferGeom === null) {
+        console.error("Mech.setMergedBufferGeom(): bufferGeom not set");
+      }
     }
   }
 
@@ -274,24 +334,27 @@ class Mech implements MechInt {
       // TODO displose of old bufferGeomColorsList
       this.bufferGeomColorsList = [];
       geomColorList.forEach((color) => {
+        /*
         this.bufferGeomColorsList.push(
           getMergedBufferGeomColor(this.builtObject3d, color)
         );
+        */
       });
     }
   }
 
-  setExplosionMesh() {
+  setExplosionMeshFromBufferGeom() {
     if (this.bufferGeom !== null) {
       if (this.explosionMesh !== null) {
-        this.explosionMesh.geometry.dispose();
+        console.log(this.explosionMesh);
+        this.explosionMesh.geometry?.dispose();
         // not using material array ( <THREE.Material[]> ) so treat material as single material
-        (<THREE.Material>this.explosionMesh.material).dispose();
+        (<THREE.Material>this.explosionMesh.material)?.dispose();
       }
       // get simplified geometry for explosion mesh using useLoaderStore bufferGeom if possible
       const simplifiedGeometry =
-        this.waitObject3dLoadMeshTotal > 0
-          ? // accounting for additional GLB models loaded into the mech build
+        this.addedSceneryObjects3d.children.length > 0
+          ? // accounting for additional GLB models loaded into addedSceneryObjects3d
             useLoaderStore.getState().getSimplifiedGeometry(this.bufferGeom)
           : // using base mechBP geometry from mechBpStore
             useMechBpStore.getState().getCreateMechBpBuild(this._mechBP)
@@ -300,11 +363,13 @@ class Mech implements MechInt {
       if (simplifiedGeometry) {
         // getTessellatedExplosionMesh - add vertices to break up large planes
         this.explosionMesh = getTessellatedExplosionMesh(
-          useStore.getState().cloneExplosionShaderMaterial(),
+          expolsionShaderMaterial.clone(),
           simplifiedGeometry
         );
       } else {
-        console.error("Mech.setExplosionMesh(): simplifiedGeometry not set");
+        console.error(
+          "Mech.setExplosionMeshFromBufferGeom(): simplifiedGeometry not set"
+        );
       }
     }
   }
@@ -319,11 +384,13 @@ class Mech implements MechInt {
       // not using material array ( <THREE.ShaderMaterial[]> ) so treat material as single material
       (<THREE.ShaderMaterial>this.explosionMesh.material).uniforms.size.value =
         this._mechBP.scale;
+    } else {
+      console.log("Mech.explode(): explosionMesh not set"); //, this.explosionMesh);
     }
   }
 
   updateMechUseFrame(delta: number) {
-    if (!this.isObject3dInit) return null;
+    if (!this.isObject3dBuilt) return null;
     this.updateExplosionUseFrame(delta);
   }
 
@@ -335,11 +402,11 @@ class Mech implements MechInt {
     const explosionTimeNormalized = this.timeCounter / explosionTimeMax;
     if (explosionTimeNormalized > 1) {
       this.mechState = MECH_STATE.DEAD;
-      if (this.explosionMesh) this.object3d.clear();
+      this.object3d.clear();
 
       //TESTING: reset mech to original state
       this.mechState = MECH_STATE.IDLE;
-      this.object3d.add(this.builtObject3d.clone());
+      this.cloneToObject3d();
 
       // exit function
       return;
@@ -427,7 +494,7 @@ class Mech implements MechInt {
               weaponFireMechParentObj.rotation
             );
         } else {
-          console.error("servoOffset not found for weapon", weapon);
+          //console.error("servoOffset not found for weapon", weapon);
         }
       });
     }

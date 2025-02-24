@@ -186,7 +186,7 @@ const PlayerMech = () => {
         ref={(mechRef) => {
           if (mechRef) {
             playerMechRef.current = mechRef;
-            player.initObject3d(mechRef);
+            player.assignObject3dComponentRef(mechRef);
           }
         }}
       />
@@ -211,4 +211,4 @@ const PlayerMech = () => {
 };
 
 //export default memo(PlayerMech);
-export default PlayerMech;
+export default memo(PlayerMech);

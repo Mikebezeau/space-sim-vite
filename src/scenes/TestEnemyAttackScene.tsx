@@ -9,6 +9,8 @@ import Stations from "../3d/spaceFlight/Stations";
 import EnemyMechs from "../3d/enemyMechs/EnemyMechs";
 import Particles from "../3d/Particles";
 import Mech from "../classes/mech/Mech";
+import ObbTest from "../scenes/spaceFlight/dev/ObbTest";
+import { flipRotation } from "../util/cameraUtil";
 
 import { track, geometry2 } from "../util/track";
 
@@ -18,17 +20,28 @@ const TestEnemyAttackScene = () => {
   const player = useStore((state) => state.player);
   const stations = useStore((state) => state.stations);
 
-  const boidController = useEnemyStore((state) => state.boidController);
-
   const { camera, gl } = useThree();
 
   const guiRef = useRef<any>(null);
   const folder1ref = useRef<any>(null);
   const folder2ref = useRef<any>(null);
   const cameraControlsRef = useRef<any>(null);
+  // providing ref for forwardRef used in ObbTest component
+  const obbBoxRefs = useRef<THREE.Mesh[]>([]);
 
   const controllerOptions = { changeScreenTest: false, resetEnemies: false };
 
+  useDevStore.getState().showObbBox = true;
+  /*
+  console.log(
+    "enemyWorldPosition",
+    useEnemyStore.getState().enemyWorldPosition
+  );
+  useEnemyStore.getState().enemyWorldPosition.copy(player.object3d.position);
+  */
+
+  /*
+  // setGuiData used when need to update GUI for non properties of objects that don't auto udate front end
   const setGuiData = () => {
     // if need to update current controls
     if (guiRef.current?.controllers) {
@@ -45,8 +58,9 @@ const TestEnemyAttackScene = () => {
   };
 
   useEffect(() => {
-    //setGuiData();
+    setGuiData();
   }, []);
+  */
 
   useEffect(() => {
     if (!guiRef.current) {
@@ -101,12 +115,17 @@ const TestEnemyAttackScene = () => {
       (clientX / width) * 2 - 1,
       -(clientY / height) * 2 + 1
     );
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera);
+    player.object3d.rotation.setFromQuaternion(flipRotation(camera.quaternion));
+    player.fireWeapon();
+    const raycaster = new THREE.Raycaster(
+      player.object3d.getWorldPosition(new THREE.Vector3(0, 0, 0)),
+      player.object3d.getWorldDirection(new THREE.Vector3(0, 0, 0))
+    );
+    //const raycaster = new THREE.Raycaster();
+    //raycaster.setFromCamera(mouse, camera);
 
     const objectsToTest = [
-      player.object3d,
+      //player.object3d,
       // @ts-ignore
       ...useEnemyStore.getState().enemies.map((enemy) => enemy.object3d),
       ...stations.map((station) => station.object3d),
@@ -164,14 +183,13 @@ const TestEnemyAttackScene = () => {
     if (stations[0]) {
       stations[0].object3d.position.set(0, 0, 500);
       setTimeout(() => {
-        //stations[0].explode();
+        stations[0].explode();
       }, 3000);
     }
   }, [stations]);
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
-    boidController?.update(delta);
     //
     // testing explosion animation
     player.updateMechUseFrame(delta);
@@ -180,6 +198,12 @@ const TestEnemyAttackScene = () => {
     //  enemy.updateMechUseFrame(delta);
     //});
     useEnemyStore.getState().enemies[0].updateMechUseFrame(delta);
+
+    useEnemyStore.getState().enemies.forEach((enemy: Mech) => {
+      if (Math.random() > 0.95) {
+        //enemy.fireWeapon();
+      }
+    });
 
     if (stations[0]) {
       stations[0].updateMechUseFrame(delta);
@@ -200,14 +224,10 @@ const TestEnemyAttackScene = () => {
       <Particles />
       <Stations />
       <EnemyMechs />
+      <ObbTest ref={obbBoxRefs} />
       <object3D
         ref={(mechRef) => {
-          if (mechRef) {
-            //playerMechRef.current = mechRef;
-            player.initObject3d(mechRef);
-          } else {
-            player.object3dRemoved();
-          }
+          player.assignObject3dComponentRef(mechRef);
         }}
         /*
         onClick={() => {

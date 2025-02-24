@@ -84,10 +84,8 @@ const Station = (props: StationInt) => {
         rotation={[Math.PI / 2, 0, Math.PI / 2]}
         ref={(mechRef: Object3D) => {
           if (mechRef === null) return;
-          // not setting ref with initObject3d causes frame rate drop not sure what is happening
-          // could be merging of geometries helping in initObject3d or explosion particles being created if not set
-          const isWaitLoadModelsTotal = SceneryObjects.length; // number of Scenery objects below
-          station.initObject3d(mechRef, isWaitLoadModelsTotal);
+          const isWaitLoadModelsTotal = SceneryObjects.length; // number of Scenery objects loading
+          station.assignObject3dComponentRef(mechRef, isWaitLoadModelsTotal);
         }}
       />
       {SceneryObjects.map((scenery, index) => (
