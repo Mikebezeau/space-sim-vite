@@ -173,6 +173,7 @@ const GalaxyMap = () => {
     }, [starPointsRef.current]);
 
     const getRaycasterIntersects = (e, threshold) => {
+      // TODO create reusable Raycaster variable
       const raycaster = new THREE.Raycaster();
       raycaster.params.Points.threshold = threshold;
       const pointer = new THREE.Vector2();

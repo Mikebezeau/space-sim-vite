@@ -121,17 +121,25 @@ const TestEnemyAttackScene = () => {
     */
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
+    raycaster.params.Points.threshold = 0.01;
+    raycaster.near = 0.1;
+    raycaster.far = 10000;
 
     const objectsToTest = [
       player.object3d,
       // @ts-ignore
       ...useEnemyStore
         .getState()
-        .enemyGroup.enemyMechs.map((enemy: Mech) => enemy.object3d),
-      //...stations.map((station) => station.object3d),
+        .enemyGroup.enemyMechs.map((enemy: Mech) =>
+          enemy.useInstancedMesh ? null : enemy.object3d
+        ),
+      ...stations.map((station) => station.object3d),
     ];
 
-    const intersects = raycaster.intersectObjects(objectsToTest, true);
+    const intersects = raycaster.intersectObjects(
+      objectsToTest.filter((obj) => obj !== null),
+      true
+    );
 
     if (intersects.length > 0) {
       const intersectedObject = intersects[0].object;
