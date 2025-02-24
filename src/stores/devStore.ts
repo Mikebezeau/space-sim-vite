@@ -28,6 +28,8 @@ interface devStoreState {
   //
   devPlayerSpeedX1000: boolean;
   showObbBox: boolean;
+  obbTestRerenderToggle: boolean;
+  obbTestToggle: () => void;
   showBoidVectors: boolean; // TODO show vector arrows in BuildMech
   boidAlignmentMod: number;
   boidSeparationMod: number;
@@ -38,7 +40,7 @@ interface devStoreState {
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
-  testScreen: { planetTest: false, enemyTest: true, changeScreenTest: false },
+  testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
   setTestScreen: (screen?) => {
     // set all to false
     const testScreen = get().testScreen;
@@ -135,6 +137,10 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   // general dev settings
   devPlayerSpeedX1000: false, //true,
   showObbBox: false,
+  obbTestRerenderToggle: false,
+  obbTestToggle: () => {
+    set(() => ({ obbTestRerenderToggle: !get().obbTestRerenderToggle }));
+  },
   showBoidVectors: false,
   boidAlignmentMod: 0,
   boidSeparationMod: 0,
@@ -147,13 +153,15 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   // update boid controller prop modifiers
   setDevStoreBiodProp(propName: string, value: number) {
     set(() => ({ [propName]: value }));
-    useEnemyStore.getState().boidController.updateDevStorePropModifiers();
+    useEnemyStore
+      .getState()
+      .enemyGroup.boidController?.updateDevStorePropModifiers();
   },
   // move enemy to player position
   summonEnemy() {
     const playerVec3: THREE.Vector3 =
       useStore.getState().player.object3d.position;
-    useEnemyStore.getState().enemyWorldPosition = playerVec3;
+    useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition = playerVec3;
   },
 }));
 

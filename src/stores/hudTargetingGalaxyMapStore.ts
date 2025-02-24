@@ -409,7 +409,7 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         get().player,
         targetIndex === null
           ? null
-          : useEnemyStore.getState().enemies[targetIndex],
+          : useEnemyStore.getState().enemyGroup.enemyMechs[targetIndex],
         false, // auto fire
         false, // auto aim
         true // isPlayer

@@ -13,7 +13,7 @@ interface InstancedMechsInt {
 const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
   const { mechBpId } = props;
   // TODO
-  const enemies = useEnemyStore((state) => state.enemies);
+  const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
   const instancedEnemies = enemies.filter(
     (enemy) => enemy.useInstancedMesh && enemy.mechBP.id === mechBpId
   );
@@ -71,6 +71,7 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
             ref={instancedMeshRef}
             args={[
               //instancedEnemies[0].bufferGeom,
+              // TODO useMechBpStore build dictionary to get bufferGeometry
               useMechBpStore
                 .getState()
                 .getCreateMechBpBuild(instancedEnemies[0]._mechBP)

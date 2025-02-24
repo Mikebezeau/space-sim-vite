@@ -23,7 +23,9 @@ const SpaceFlightPlanetsScene = () => {
   const updatePlayerMechAndCamera = usePlayerControlsStore(
     (state) => state.updateFrame.updatePlayerMechAndCamera
   );
-  const enemyWorldPosition = useEnemyStore((state) => state.enemyWorldPosition);
+  const enemyWorldPosition = useEnemyStore(
+    (state) => state.enemyGroup.enemyGroupWorldPosition
+  );
 
   const relativePlayerGroupRef = useRef<Group | null>(null);
   const enemyRelativePlayerGroupRef = useRef<Group | null>(null);

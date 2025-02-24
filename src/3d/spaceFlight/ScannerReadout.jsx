@@ -96,7 +96,7 @@ const ScannerReadout = () => {
   const { setFocusPlanetIndex, setFocusTargetIndex } =
     useHudTargtingGalaxyMapStore((state) => state.actions);
 
-  const enemies = useEnemyStore((state) => state.enemies);
+  const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
 
   const planetTargetGroupRef = useRef();
   const enemyTargetGroupRef = useRef();

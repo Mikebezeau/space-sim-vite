@@ -2,13 +2,13 @@ import * as THREE from "three";
 import EnemyMech from "./EnemyMech";
 import { FPS } from "../../constants/constants";
 
-export interface EnemyMechBoidInt {
+export interface enemyMechBoidInt {
   resetVectors: () => void;
   applyForce: (fVec3: THREE.Vector3) => void;
   update: (delta: number) => void;
 }
 
-class EnemyMechBoid extends EnemyMech implements EnemyMechBoidInt {
+class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
   velocity: THREE.Vector3;
   adjustedVelocityDeltaFPS: THREE.Vector3;
   lerpVelocity: THREE.Vector3;

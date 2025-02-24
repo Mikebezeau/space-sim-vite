@@ -15,11 +15,11 @@ const EnemyMechs = () => {
     useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
 
-  const enemies = useEnemyStore((state) => state.enemies);
+  const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
-    //useEnemyStore.getState().boidController?.update(delta);
+    useEnemyStore.getState().enemyGroup.boidController?.update(delta);
   });
 
   return (
@@ -58,6 +58,4 @@ const EnemyMechs = () => {
   );
 };
 
-//export default EnemyMechs;
-// instanced mech not working with memo
 export default memo(EnemyMechs);

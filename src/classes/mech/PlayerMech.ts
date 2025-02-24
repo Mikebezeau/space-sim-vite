@@ -3,20 +3,20 @@ import Mech from "./Mech";
 import mechDesigns from "../../equipment/data/mechDesigns";
 import { PLAYER_START } from "../../constants/constants";
 
-interface PlayerMechInt {
+interface playerMechInt {
   storeSpaceLocation(): void;
   resetSpaceLocation(): void;
   //fireWeapon(): void;
 }
 
-class PlayerMech extends Mech implements PlayerMechInt {
+class PlayerMech extends Mech implements playerMechInt {
   locationInfo: {
     saveSpaceObject3d: { position: Vector3; rotation: Euler };
   };
 
   constructor(mechBPIndex: number = PLAYER_START.mechBPindex) {
-    super(mechDesigns.player[mechBPIndex]);
-    this.isPlayer = true;
+    const isPlayer = true;
+    super(mechDesigns.player[mechBPIndex], false, isPlayer);
     // player locations in scenes, used for changing scenes
     this.locationInfo = {
       saveSpaceObject3d: {

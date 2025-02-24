@@ -141,7 +141,7 @@ function ShipPositions({ mapScale }) {
 //<EnemyPoints mapScale={mapScale} enemies={enemies} />
 /*
 function EnemyPoints({ mapScale }) {
-  const { enemies } = useEnemyStore((state) => state);
+  const  enemies  = useEnemyStore((state) => state.enemyGroup.enemyMechs);
 
   const positions = useMemo(() => {
     let positions = [];

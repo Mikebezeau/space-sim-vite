@@ -6,8 +6,6 @@ import useGenFboTextureStore from "./genGpuTextureStore";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
 import useHudTargtingGalaxyMapStore from "./hudTargetingGalaxyMapStore";
-import { /*randomData,*/ genStations } from "../util/initGameUtil";
-import galaxyGen from "../galaxy/galaxyGen";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
@@ -203,11 +201,16 @@ const useStore = create<storeState>()((set, get) => ({
 
   //TODO make Galaxy class and move following to it
   getStarBufferPosition: (starIndex: number) => {
-    return {
-      x: get().galaxy.starCoordsBuffer.array[starIndex * 3],
-      y: get().galaxy.starCoordsBuffer.array[starIndex * 3 + 1],
-      z: get().galaxy.starCoordsBuffer.array[starIndex * 3 + 2],
-    };
+    if (get().galaxy.starCoordsBuffer) {
+      return {
+        x: get().galaxy.starCoordsBuffer!.array[starIndex * 3],
+        y: get().galaxy.starCoordsBuffer!.array[starIndex * 3 + 1],
+        z: get().galaxy.starCoordsBuffer!.array[starIndex * 3 + 2],
+      };
+    } else {
+      console.warn("starCoordsBuffer not set");
+      return { x: 0, y: 0, z: 0 };
+    }
   },
   getDistanceCoordToBackgroundStar: (
     starIndex: number,
@@ -473,7 +476,7 @@ const useStore = create<storeState>()((set, get) => ({
         ) || get().planets[0];
 
       const startPosition = new THREE.Vector3();
-      const enemyStartPosition = new THREE.Vector3();
+      const enemyGroupStartPosition = new THREE.Vector3();
       const stationStartPosition = new THREE.Vector3();
 
       if (startPosCelestialBody !== null) {
@@ -489,9 +492,10 @@ const useStore = create<storeState>()((set, get) => ({
           .multiplyScalar(startPosCelestialBody.radius * 3);
         // set player position at this distance away from planet
         startPosition.sub(offsetDistance);
+        // setting enemy world position near player world position
         // set enemy position at player position * x units
-        enemyStartPosition.copy(startPosition);
-        enemyStartPosition.add(offsetDirection.multiplyScalar(30));
+        enemyGroupStartPosition.copy(startPosition);
+        enemyGroupStartPosition.add(offsetDirection.multiplyScalar(30));
         // set station position at player position * x units
         stationStartPosition.copy(startPosition);
         stationStartPosition.add(offsetDirection.multiplyScalar(60));
@@ -517,11 +521,23 @@ const useStore = create<storeState>()((set, get) => ({
       // set player looking direction
       get().player.object3d.lookAt(startPosCelestialBody.object3d.position);
 
-      // setting enemy world position relative to player test
-      useEnemyStore.getState().enemyWorldPosition.copy(enemyStartPosition);
+      // setting enemy world position near player world position
+      useEnemyStore
+        .getState()
+        .enemyGroup.enemyGroupWorldPosition.copy(enemyGroupStartPosition);
 
       // set position of space station near a planet
-      const stations = genStations();
+      let stations: SpaceStationMech[] = [];
+      //create station
+      const stationMechBPindex = 0,
+        type = "EQUIPMENT",
+        name = "X-22",
+        ports = [{ x: 0.5, y: 0.5, z: 0.5 }]; //TODO ports are supposed to be docking bays
+
+      stations.push(
+        new SpaceStationMech(stationMechBPindex, type, name, ports)
+      );
+
       if (stations[0]) {
         stations[0].object3d.position.copy(stationStartPosition);
         stations[0].object3d.lookAt(startPosCelestialBody.object3d.position);

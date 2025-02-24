@@ -1,9 +1,9 @@
 import Mech from "./Mech";
 import mechDesigns from "../../equipment/data/mechDesigns";
 
-export interface SpaceStationMechInt {}
+export interface spaceStationMechInt {}
 
-class SpaceStationMech extends Mech implements SpaceStationMechInt {
+class SpaceStationMech extends Mech implements spaceStationMechInt {
   type: string;
   name: string;
   ports: { x: number; y: number; z: number }[];

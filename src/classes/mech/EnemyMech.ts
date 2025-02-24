@@ -1,12 +1,12 @@
 import Mech from "./Mech";
 import mechDesigns from "../../equipment/data/mechDesigns";
 
-export interface EnemyMechInt {
+export interface enemyMechInt {
   getIsLeader: () => boolean;
   getHasGroup: () => boolean;
 }
 
-class EnemyMech extends Mech implements EnemyMechInt {
+class EnemyMech extends Mech implements enemyMechInt {
   isBossMech: boolean;
   team: number;
   groupLeaderId: string | null;

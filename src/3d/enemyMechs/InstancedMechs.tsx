@@ -3,7 +3,7 @@ import useEnemyStore from "../../stores/enemyStore";
 import InstancedMechsBpIdGroup from "./InstancedMechsBpIdGroup";
 
 const InstancedMechs = () => {
-  const enemies = useEnemyStore((state) => state.enemies);
+  const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
 
   // using useRef to store unique instancedEnemies mechBP ids in Set
   const instancedEnemiesBpIdListRef = useRef([

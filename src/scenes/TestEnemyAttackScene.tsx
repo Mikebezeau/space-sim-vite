@@ -31,14 +31,10 @@ const TestEnemyAttackScene = () => {
 
   const controllerOptions = { changeScreenTest: false, resetEnemies: false };
 
-  useDevStore.getState().showObbBox = true;
-  /*
-  console.log(
-    "enemyWorldPosition",
-    useEnemyStore.getState().enemyWorldPosition
-  );
-  useEnemyStore.getState().enemyWorldPosition.copy(player.object3d.position);
-  */
+  useStore.getState().playerWorldOffsetPosition.set(0, 0, 0);
+  useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition.set(0, 0, 0);
+
+  //useDevStore.getState().showObbBox = true;
 
   /*
   // setGuiData used when need to update GUI for non properties of objects that don't auto udate front end
@@ -115,20 +111,24 @@ const TestEnemyAttackScene = () => {
       (clientX / width) * 2 - 1,
       -(clientY / height) * 2 + 1
     );
-    player.object3d.rotation.setFromQuaternion(flipRotation(camera.quaternion));
+    //player.object3d.rotation.setFromQuaternion(flipRotation(camera.quaternion));
     player.fireWeapon();
+    /*
     const raycaster = new THREE.Raycaster(
       player.object3d.getWorldPosition(new THREE.Vector3(0, 0, 0)),
       player.object3d.getWorldDirection(new THREE.Vector3(0, 0, 0))
     );
-    //const raycaster = new THREE.Raycaster();
-    //raycaster.setFromCamera(mouse, camera);
+    */
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
 
     const objectsToTest = [
-      //player.object3d,
+      player.object3d,
       // @ts-ignore
-      ...useEnemyStore.getState().enemies.map((enemy) => enemy.object3d),
-      ...stations.map((station) => station.object3d),
+      ...useEnemyStore
+        .getState()
+        .enemyGroup.enemyMechs.map((enemy: Mech) => enemy.object3d),
+      //...stations.map((station) => station.object3d),
     ];
 
     const intersects = raycaster.intersectObjects(objectsToTest, true);
@@ -155,8 +155,9 @@ const TestEnemyAttackScene = () => {
       // find mech by the mech.id
       let intersectedMech: Mech | undefined = useEnemyStore
         .getState()
-        // @ts-ignore
-        .enemies.find((enemy) => enemy.id === intersectedObjectMechId);
+        .enemyGroup.enemyMechs.find(
+          (enemy) => enemy.id === intersectedObjectMechId
+        );
       // stations
       if (!intersectedMech) {
         intersectedMech = stations.find(
@@ -194,14 +195,14 @@ const TestEnemyAttackScene = () => {
     // testing explosion animation
     player.updateMechUseFrame(delta);
     // updateMechUseFrame for each enemy
-    //useEnemyStore.getState().enemies.forEach((enemy) => {
+    //useEnemyStore.getState().enemyGroup.enemyMechs.forEach((enemy) => {
     //  enemy.updateMechUseFrame(delta);
     //});
-    useEnemyStore.getState().enemies[0].updateMechUseFrame(delta);
+    useEnemyStore.getState().enemyGroup.enemyMechs[0].updateMechUseFrame(delta);
 
-    useEnemyStore.getState().enemies.forEach((enemy: Mech) => {
-      if (Math.random() > 0.95) {
-        //enemy.fireWeapon();
+    useEnemyStore.getState().enemyGroup.enemyMechs.forEach((enemy: Mech) => {
+      if (Math.random() > 0.99) {
+        enemy.fireWeapon();
       }
     });
 

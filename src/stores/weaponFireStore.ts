@@ -5,12 +5,7 @@ import useStore from "./store";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
 
-import {
-  SCALE,
-  SCALE_PLANET_WALK,
-  PLAYER,
-  WEAPON_FIRE_SPEED,
-} from "../constants/constants";
+import { PLAYER, WEAPON_FIRE_SPEED } from "../constants/constants";
 
 interface weaponFireStoreState {
   weaponFireLightTimer: number;
@@ -148,8 +143,8 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
 
   weaponFireUpdateFrame: () => {
     const { weaponFireList, mutation, actions } = get();
-    const { player } = useStore.getState();
-    const { enemies } = useEnemyStore.getState();
+    const player = useStore.getState().player;
+    const enemies = useEnemyStore.getState().enemyGroup.enemyMechs;
     const timeNow = Date.now();
 
     get().weaponFireList.forEach((weaponFire) => {});

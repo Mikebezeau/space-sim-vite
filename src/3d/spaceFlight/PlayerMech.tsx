@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useRef } from "react";
-import { Group, PointLight } from "three";
+import { Group, Mesh, MeshBasicMaterial, PointLight } from "three";
 import { BoxGeometry, FrontSide, Object3D, ShaderMaterial } from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
@@ -192,6 +192,10 @@ const PlayerMech = () => {
       />
       <group ref={secondaryGroupRef}>
         <Particles isPlayerParticles />
+        {/* TODO impliment option orb beside ship with weapon */}
+        <mesh position={[-10, 0, 0]} geometry={new BoxGeometry(0.2, 0.2, 0.2)}>
+          <meshBasicMaterial color={"blue"} />
+        </mesh>
         <PlayerCrosshair />
         <pointLight
           ref={weaponFireLight}
@@ -200,11 +204,12 @@ const PlayerMech = () => {
           intensity={0}
           color="lightgreen"
         />
+        {/*}
         <mesh
           position={[0, 0.4, -6]}
           geometry={new BoxGeometry(0.6, 0.6, 3)}
           material={engineShaderMaterial}
-        />
+        />*/}
       </group>
     </>
   );

@@ -7,6 +7,7 @@ export const mechMaterial = {
   selectMaterial: new THREE.MeshLambertMaterial({
     color: new THREE.Color("#ccf"),
     flatShading: true,
+    side: THREE.DoubleSide,
   }),
   readoutMaterial_0: new THREE.MeshBasicMaterial({
     color: new THREE.Color("#669"),

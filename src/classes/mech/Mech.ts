@@ -1,10 +1,8 @@
 import * as THREE from "three";
-import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
 import MechBP from "../mechBP/MechBP";
-import useStore from "../../stores/store";
 import useMechBpStore from "../../stores/mechBpStore";
 import useParticleStore from "../../stores/particleStore";
 import { loadBlueprint } from "../../util/initEquipUtil";
@@ -21,7 +19,7 @@ import { FPS } from "../../constants/constants";
 import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
 
-import { setCustomData } from "r3f-perf";
+//import { setCustomData } from "r3f-perf";
 
 const MECH_STATE = {
   IDLE: 0,
@@ -31,7 +29,7 @@ const MECH_STATE = {
   DEAD: 4,
 };
 
-interface MechInt {
+interface mechInt {
   setBuildObject3d: () => void;
   addMeshToBuiltObject3d: (mesh?: THREE.Mesh) => void;
   ifBuildCompleteUpdateMech: (mesh?: THREE.Mesh) => void;
@@ -63,7 +61,7 @@ const weaponFireQuaternoin = new THREE.Quaternion();
 const weaponFireEuler = new THREE.Euler();
 const weaponWorldPositionVec = new THREE.Vector3();
 
-class Mech implements MechInt {
+class Mech implements mechInt {
   id: string;
   isPlayer: boolean;
 
@@ -72,7 +70,7 @@ class Mech implements MechInt {
   timeCounter: number;
   useInstancedMesh: boolean;
   _mechBP: MechBP;
-
+  // threejs
   object3d: THREE.Object3D;
   addedSceneryObjects3d: THREE.Object3D;
   builtObject3d: THREE.Object3D;
@@ -80,14 +78,17 @@ class Mech implements MechInt {
   bufferGeom: THREE.BufferGeometry | null;
   bufferGeomColorsList: THREE.BufferGeometry[];
   explosionMesh: THREE.Mesh | null;
+  // obb
   mechCenter: THREE.Vector3;
   object3dCenterOffset: THREE.Object3D;
   obbNeedsUpdate: boolean;
   obb: OBB;
   obbPositioned: OBB;
   obbGeoHelper: THREE.BoxGeometry;
+  obbGeoHelperUpdated: boolean;
   obbRotationHelper: THREE.Matrix4;
   maxHalfWidth: number;
+
   // old stuff
   shield: { max: number; damage: number };
   speed: number;
@@ -98,11 +99,13 @@ class Mech implements MechInt {
   shotsHit: any[];
   servoHitNames: string[];
 
-  constructor(mechDesign: any, useInstancedMesh: boolean = false) {
-    // WARNING: SETTING PROPERTY VALUES ABOVE DROPS FRAME RATE
-    // - must declare new THREE classes here in constructor
+  constructor(
+    mechDesign: any,
+    useInstancedMesh: boolean = false,
+    isPlayer: boolean = false // just in case we need to know for constructor
+  ) {
     this.id = uuidv4();
-    this.isPlayer = false;
+    this.isPlayer = isPlayer;
     this.isObject3dBuilt = false;
     this.mechState = MECH_STATE.MOVING;
     this.timeCounter = 0;
@@ -114,7 +117,7 @@ class Mech implements MechInt {
     this.object3d = new THREE.Object3D(); // set from ref, updating this will update the object on screen for non-instanced mesh
     this.object3d.userData.mechId = this.id; // this gets set again when object3d is replaced for non-instanced mesh
     this.addedSceneryObjects3d = new THREE.Object3D(); // added meshes
-    //this.builtObject3d set at end on constructor
+    //this.builtObject3d set at end of constructor
     this.waitObject3dLoadMeshTotal = 0; // total number of models to be loaded
     this.bufferGeom = null; // merged geometry for instanced mesh
     this.bufferGeomColorsList = []; // merged geometry list of different colors for instanced mesh
@@ -125,6 +128,7 @@ class Mech implements MechInt {
     this.obb = new OBB(); // oriented bounding box
     this.obbPositioned = new OBB(); // obb to assign object3dCenterOffset.position and apply object3dCenterOffset.matrixWorld (assigns rotation)
     this.obbGeoHelper = new THREE.BoxGeometry(); // helpers only for testing obb to view box
+    this.obbGeoHelperUpdated = false;
     this.obbRotationHelper = new THREE.Matrix4();
     this.speed = 0;
     this.drawDistanceLevel = 0; // todo: there is a built in object3d property for this
@@ -148,8 +152,10 @@ class Mech implements MechInt {
   }
 
   setBuildObject3d() {
-    // waitObject3dLoadMeshTotal reset if needed
+    // waitObject3dLoadMeshTotal, addedSceneryObjects3d:
+    // reset if needed for new build
     this.waitObject3dLoadMeshTotal = 0;
+    this.addedSceneryObjects3d.clear();
     //  getting / creating built mech object3d from useMechBpStore dictionary
     this.builtObject3d = useMechBpStore
       .getState()
@@ -167,26 +173,31 @@ class Mech implements MechInt {
       this.addedSceneryObjects3d.children.length ===
       this.waitObject3dLoadMeshTotal
     ) {
+      // all additional meshes already loaded
       return;
     } else if (mesh !== undefined) {
       //mesh = CSG.union(mesh, geometry);
       this.addedSceneryObjects3d.add(mesh);
-      console.log("Mech: added scenery mesh");
     }
     this.ifBuildCompleteUpdateMech();
   }
 
   ifBuildCompleteUpdateMech() {
-    console.log(
-      this.addedSceneryObjects3d.children.length,
-      this.waitObject3dLoadMeshTotal
-    );
     if (
       this.addedSceneryObjects3d.children.length ===
       this.waitObject3dLoadMeshTotal
     ) {
-      // add all scenery meshes to builtObject3d
-      this.builtObject3d.add(this.addedSceneryObjects3d);
+      if (this.addedSceneryObjects3d.children.length > 0) {
+        // reset this.builtObject3d with clone of mechBP build Object3D
+        // so that we can add additional scenery meshes to it without
+        // changing the origional mechBP build
+        this.builtObject3d = useMechBpStore
+          .getState()
+          .getCreateMechBpBuild(this._mechBP)
+          .object3d.clone();
+        // add all scenery meshes to builtObject3d
+        this.builtObject3d.add(this.addedSceneryObjects3d);
+      }
       this.setMergedBufferGeom();
       if (!this.useInstancedMesh) {
         // explosion geometry and shader testing
@@ -209,11 +220,17 @@ class Mech implements MechInt {
         boxSize.y,
         boxSize.z
       );
+      // obbGeoHelperUpdated only used for testing obb
+      this.obbGeoHelperUpdated = true;
+
       this.maxHalfWidth = Math.max(boxSize.x, boxSize.y, boxSize.z) / 2;
 
       this.object3d.clear(); // just in case, clear children
       // add this.id to object3d userData to assist hit detection functions
       this.object3d.userData.mechId = this.id;
+      if (this.isPlayer) {
+        console.log("player mechId", this.id);
+      }
       // finished setting up object3d
       this.isObject3dBuilt = true;
 
@@ -230,13 +247,10 @@ class Mech implements MechInt {
   cloneToObject3d() {
     // clone Mech build into this.object3d
     this.object3d.add(this.builtObject3d.clone());
-    // testing
     /*
+    // testing bufferGeom
     this.object3d.add(
-      new THREE.Mesh(
-        new THREE.BoxGeometry(3, 3, 3),
-        mechMaterial.readoutMaterial_75
-      )
+      new THREE.Mesh(this.bufferGeom!, mechMaterial.selectMaterial)
     );
     */
   }
@@ -259,7 +273,6 @@ class Mech implements MechInt {
     }
 
     this.waitObject3dLoadMeshTotal = isLoadingModelCount;
-    console.log(this.waitObject3dLoadMeshTotal);
     // Object3D ref from scene component has been passed to link to this Mech
     // changes to this.object3d will now update the object in the scene
     const keepPosition = this.object3d.position.clone();
@@ -346,7 +359,6 @@ class Mech implements MechInt {
   setExplosionMeshFromBufferGeom() {
     if (this.bufferGeom !== null) {
       if (this.explosionMesh !== null) {
-        console.log(this.explosionMesh);
         this.explosionMesh.geometry?.dispose();
         // not using material array ( <THREE.Material[]> ) so treat material as single material
         (<THREE.Material>this.explosionMesh.material)?.dispose();
@@ -487,12 +499,14 @@ class Mech implements MechInt {
               .effects.addMissile(weaponWorldPositionVec, weaponFireEuler);
           }
           // if player show fire effect
-          useParticleStore
-            .getState()
-            .playerEffects.addWeaponFireFlash(
-              weaponFireWeaponChildObj.position,
-              weaponFireMechParentObj.rotation
-            );
+          if (this.isPlayer) {
+            useParticleStore
+              .getState()
+              .playerEffects.addWeaponFireFlash(
+                weaponFireWeaponChildObj.position,
+                weaponFireMechParentObj.rotation
+              );
+          }
         } else {
           //console.error("servoOffset not found for weapon", weapon);
         }

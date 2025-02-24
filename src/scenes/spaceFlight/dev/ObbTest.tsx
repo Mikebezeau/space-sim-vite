@@ -14,9 +14,15 @@ const ObbTest = forwardRef(function ObbTest(
   const playerWorldOffsetPosition = useStore(
     (state) => state.playerWorldOffsetPosition
   );
-  const enemies = useEnemyStore((state) => state.enemies);
-  const enemyWorldPosition = useEnemyStore((state) => state.enemyWorldPosition);
+  const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
+  const enemyWorldPosition = useEnemyStore(
+    (state) => state.enemyGroup.enemyGroupWorldPosition
+  );
   const addExplosion = useParticleStore((state) => state.effects.addExplosion);
+  // V to trigger rerender of obb test boxes
+  const obbTestRerenderToggle = useDevStore(
+    (state) => state.obbTestRerenderToggle
+  );
   const showObbBox = useDevStore((state) => state.showObbBox);
 
   const tempEnemyWorldPosition = new THREE.Vector3();
@@ -36,6 +42,12 @@ const ObbTest = forwardRef(function ObbTest(
     if (showObbBox) {
       // update obb test boxes
       enemies.forEach((enemy, i) => {
+        if (enemy.obbGeoHelperUpdated) {
+          enemy.obbGeoHelperUpdated = false;
+          // rerender this component to update obbGeoHelper
+          useDevStore.getState().obbTestToggle(); // this triggers the obbTestRerenderToggle state update in devStore
+        }
+
         enemy.updateObb();
         // for testing obb placement and intersection
         obbTestForwardRef.current[i].position.copy(enemy.obbPositioned.center);
