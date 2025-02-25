@@ -178,6 +178,7 @@ const PlayerMech = () => {
       }
     }
     // ordering sequence of useFrames so is after SpaceFlightPlanetsScene -> updatePlayerMechAndCamera
+    // TODO create useFrame render order constant
   }, -1);
 
   return (

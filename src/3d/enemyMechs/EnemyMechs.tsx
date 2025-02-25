@@ -23,7 +23,7 @@ const EnemyMechs = () => {
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     enemyGroup.updateUseFrame(delta, scene);
-  });
+  }, -2); //render order set to be before Particles and ScannerReadout
 
   return (
     <>

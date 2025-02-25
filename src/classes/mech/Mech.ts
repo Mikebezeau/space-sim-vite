@@ -21,12 +21,13 @@ import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial"
 
 //import { setCustomData } from "r3f-perf";
 
-const MECH_STATE = {
-  IDLE: 0,
-  MOVING: 1,
-  ATTACKING: 2,
-  EXPLODING: 3,
-  DEAD: 4,
+// TODO move MECH_STATE to constants / create an isDead function?
+export const MECH_STATE = {
+  idle: 0,
+  moving: 1,
+  attack: 2,
+  explode: 3,
+  dead: 4,
 };
 
 interface mechInt {
@@ -52,6 +53,8 @@ interface mechInt {
   explode: (scene?: THREE.Scene) => void;
   updateMechUseFrame: (delta: number, scene?: THREE.Scene) => void;
   updateExplosionUseFrame: (delta: number, scene?: THREE.Scene) => void;
+  isMechDead: () => boolean;
+  setMechDead: (scene?: THREE.Scene) => void;
   fireWeapon: (targetQuaternoin: THREE.Quaternion) => void;
 }
 
@@ -108,10 +111,9 @@ class Mech implements mechInt {
     isStation: boolean = false // testing
   ) {
     this.id = uuidv4();
-    if (isStation) console.log("Station created:", this.id);
     this.isPlayer = isPlayer;
     this.isObject3dBuilt = false;
-    this.mechState = MECH_STATE.MOVING;
+    this.mechState = MECH_STATE.moving;
     this.timeCounter = 0;
     this.useInstancedMesh = useInstancedMesh;
     // try to set 'new MechBP' directly error:
@@ -281,7 +283,16 @@ class Mech implements mechInt {
 
   cloneToObject3d() {
     // clone Mech build into this.object3d
-    this.object3d.add(this.builtObject3d.clone());
+    if (!this.useInstancedMesh) {
+      this.object3d.add(this.builtObject3d.clone());
+    } else {
+      if (this.object3d.children.length > 0) {
+        console.warn(
+          "instanced mech has object children",
+          this.object3d.children.length
+        );
+      }
+    }
     /*
     // testing bufferGeom
     this.object3d.add(
@@ -402,12 +413,18 @@ class Mech implements mechInt {
   }
 
   explode(scene?: THREE.Scene) {
-    if (scene) {
+    this.mechState = MECH_STATE.explode;
+    this.timeCounter = 0;
+
+    // add explosion mesh to scene for instanced mechs
+    if (this.useInstancedMesh && scene) {
       // add object3d to scene if not already added
       if (!scene.children.find((obj) => obj.id === this.object3d.id)) {
         scene.add(this.object3d);
       }
     }
+
+    // adding immediate explosion particles
     useParticleStore.getState().effects.addExplosion(
       this.object3d.position,
       6000,
@@ -417,13 +434,12 @@ class Mech implements mechInt {
       useParticleStore.getState().colors.white
     );
 
-    this.mechState = MECH_STATE.EXPLODING;
-    this.timeCounter = 0;
+    // add explosion mesh to object3d
     if (this.explosionMesh) {
       this.object3d.clear();
       this.object3d.add(this.explosionMesh.clone());
       // update explosion material size uniform - governs amplitude of explosion
-      // not using material array ( <THREE.ShaderMaterial[]> ) so treat material as single material
+      // cast material as THREE.ShaderMaterial, no material array is used, just single material
       (<THREE.ShaderMaterial>this.explosionMesh.material).uniforms.size.value =
         this._mechBP.scale;
     } else {
@@ -445,35 +461,10 @@ class Mech implements mechInt {
   }
 
   updateExplosionUseFrame(delta: number, scene?: THREE.Scene) {
-    if (this.mechState !== MECH_STATE.EXPLODING) return;
+    if (this.mechState !== MECH_STATE.explode) return;
     this.timeCounter += delta;
     const explosionTimeMax = (1 + this._mechBP.scale) / 2;
-
     const explosionTimeNormalized = this.timeCounter / explosionTimeMax;
-    if (explosionTimeNormalized > 1) {
-      this.mechState = MECH_STATE.DEAD;
-      this.object3d.clear();
-
-      if (
-        this.useInstancedMesh &&
-        scene?.children.find((obj) => obj.id === this.object3d.id)
-      ) {
-        scene.remove(this.object3d);
-        // TODO dispose explosionMesh and other cleanup for Mechs
-        if (this.explosionMesh !== null) {
-          this.explosionMesh.geometry?.dispose();
-          // not using material array ( <THREE.Material[]> ) so treat material as single material
-          (<THREE.Material>this.explosionMesh.material)?.dispose();
-        }
-      }
-
-      //TESTING: reset mech to original state
-      this.mechState = MECH_STATE.IDLE;
-      this.cloneToObject3d();
-
-      // exit function
-      return;
-    }
 
     // update explosion material uniform
     if (this.explosionMesh) {
@@ -482,8 +473,8 @@ class Mech implements mechInt {
       )).uniforms.timeNorm.value = explosionTimeNormalized;
     }
 
-    const scale = Math.pow(this._mechBP.scale, 2) / 5; // explosion size
     // add explosion particles
+    const scale = Math.pow(this._mechBP.scale, 2) / 5; // explosion size
     const deltaFPS = delta * FPS; // number of particles created adjusted by deltaFPS
     const numParticles1 =
       Math.pow(8 * (1 - explosionTimeNormalized * 3), 3) *
@@ -510,6 +501,42 @@ class Mech implements mechInt {
           1.6,
           useParticleStore.getState().colors.purple
         );
+    }
+
+    // if explosionTimeNormalized is greater than 1, mech is dead
+    if (explosionTimeNormalized > 1) {
+      this.setMechDead(scene);
+      //TESTING: reset mech to original state
+      if (!this.useInstancedMesh) {
+        this.mechState = MECH_STATE.idle;
+        this.cloneToObject3d();
+      }
+      // exit function
+      return;
+    }
+  }
+
+  isMechDead() {
+    return this.mechState === MECH_STATE.dead;
+  }
+
+  setMechDead(scene?: THREE.Scene) {
+    this.mechState = MECH_STATE.dead;
+    this.object3d.clear();
+    // position mech object far away to not interfear with scene
+    //this.object3d.position.set(this.object3d.position.x + 100000, 0, 0);
+
+    if (
+      this.useInstancedMesh &&
+      scene?.children.find((obj) => obj.id === this.object3d.id)
+    ) {
+      scene.remove(this.object3d);
+      // TODO dispose explosionMesh and other cleanup for Mechs
+      if (this.explosionMesh !== null) {
+        this.explosionMesh.geometry?.dispose();
+        // not using material array ( <THREE.Material[]> ) so treat material as single material
+        (<THREE.Material>this.explosionMesh.material)?.dispose();
+      }
     }
   }
 

@@ -5,21 +5,24 @@ import useStore from "../../../stores/store";
 import useEnemyStore from "../../../stores/enemyStore";
 import useParticleStore from "../../../stores/particleStore";
 import useDevStore from "../../../stores/devStore";
+import { MECH_STATE } from "../../../classes/mech/Mech";
 
 const ObbTest = forwardRef(function ObbTest(
   props: any,
   obbTestForwardRef: any
 ) {
+  // render tracking
   useStore.getState().updateRenderInfo("ObbTest");
   const playerWorldOffsetPosition = useStore(
     (state) => state.playerWorldOffsetPosition
   );
+
   const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
   const enemyWorldPosition = useEnemyStore(
     (state) => state.enemyGroup.enemyGroupWorldPosition
   );
   const addExplosion = useParticleStore((state) => state.effects.addExplosion);
-  // V to trigger rerender of obb test boxes
+  // V to trigger rerender of obb test boxes after mech objects are updated
   const obbTestRerenderToggle = useDevStore(
     (state) => state.obbTestRerenderToggle
   );
@@ -57,7 +60,9 @@ const ObbTest = forwardRef(function ObbTest(
         // show leaders in blue and followers in green, no group in yellow
         // @ts-ignore - material.color does exist
         obbTestForwardRef.current[i].material.color.setHex(
-          enemy.getIsLeader()
+          enemy.mechState === MECH_STATE.dead
+            ? 0x333333 // show gray if dead
+            : enemy.getIsLeader()
             ? 0x0000ff
             : enemy.groupLeaderId
             ? 0x00ff00
@@ -69,8 +74,16 @@ const ObbTest = forwardRef(function ObbTest(
     // non-instanced mechs are updated when their object3d is updated
     // check for intersection between obb test boxes
     for (let i = 0, il = enemies.length; i < il; i++) {
+      // skip this mech if it is in a state that should be ignored
+      if (enemies[i].mechState === MECH_STATE.dead) {
+        continue;
+      }
       // only check each object once
       for (let j = i + 1, jl = enemies.length; j < jl; j++) {
+        // skip this mech if it is in a state that should be ignored
+        if (enemies[j].mechState === MECH_STATE.dead) {
+          continue;
+        }
         // check distance first to determine if full intersection test is needed
         const distance = enemies[i].object3d.position.distanceTo(
           enemies[j].object3d.position

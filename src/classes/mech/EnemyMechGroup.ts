@@ -21,7 +21,7 @@ export interface enemyMechGroupInt {
     instancedMesh: THREE.InstancedMesh,
     instanceId: number
   ) => void;
-  updateLeaderColor: () => void;
+  updateLeaderColor: (instancedMesh: THREE.InstancedMesh) => void;
   updateInstancedColor: (
     instancedMesh: THREE.InstancedMesh,
     instanceId: number
@@ -126,9 +126,14 @@ class EnemyMechGroup implements enemyMechGroupInt {
     // identify mesh by mechBpId
     instancedMesh.userData.mechBpId = mechBpId;
     // remove from array if instancedMesh=>instancedMesh.userData.mechBpId exists
-    this.instancedMeshRefs = this.instancedMeshRefs.filter(
-      (mesh) => mesh.userData.mechBpId !== mechBpId
+    const existingMesh = this.instancedMeshRefs.find(
+      (mesh) => mesh.userData.mechBpId === mechBpId
     );
+    if (existingMesh) {
+      this.instancedMeshRefs = this.instancedMeshRefs.filter(
+        (mesh) => mesh.userData.mechBpId !== mechBpId
+      );
+    }
     // add to array
     this.instancedMeshRefs.push(instancedMesh);
   }
@@ -150,21 +155,28 @@ class EnemyMechGroup implements enemyMechGroupInt {
     instancedMesh: THREE.InstancedMesh,
     instanceId: number
   ) {
+    // TODO if leader explodes create new leader to replace
     const mechBpId = instancedMesh.userData.mechBpId;
+    // TODO could only update ranges of the attribute array instead of entire thing
     instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
     instancedMesh.geometry.attributes.isDead.needsUpdate = true;
+    // call explode on Mech object
     this.getInstancedMeshEnemies(mechBpId)[instanceId].explode(scene);
   }
 
-  updateLeaderColor() {
-    this.instancedMeshRefs.forEach((instancedMesh) => {
-      // TODO
+  updateLeaderColor(instancedMesh: THREE.InstancedMesh) {
+    const red = useParticleStore.getState().colors.red;
+    const instancedEnemies = this.getInstancedMeshEnemies(
+      instancedMesh.userData.mechBpId
+    );
+    instancedEnemies.forEach((enemy, i) => {
+      if (enemy.getIsLeader()) instancedMesh.setColorAt(i, red);
     });
   }
 
   updateInstancedColor(instancedMesh: THREE.InstancedMesh, instanceId: number) {
-    //const color = new Color();
-    //instancedMesh.getColorAt(instanceId, color);// this line dosn't work for instanced mesh with no color
+    const color = new THREE.Color();
+    instancedMesh.getColorAt(instanceId, color);
     instancedMesh.setColorAt(
       instanceId,
       useParticleStore.getState().colors.black

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import useDevStore from "../stores/devStore";
+import { MECH_STATE } from "./mech/Mech";
 
 const guiControls = new (function () {
   this.container = "box";
@@ -60,9 +61,17 @@ class BoidController {
 
     for (let i = 0, il = this.mechs.length; i < il; i++) {
       const mech1 = this.mechs[i];
+      // skip this mech if it is in a state that should be ignored
+      if (mech1.mechState === MECH_STATE.dead) {
+        continue;
+      }
       // only check mechs against eachother once and apply forces to each
       for (let j = i + 1, jl = this.mechs.length; j < jl; j++) {
         const mech2 = this.mechs[j];
+        // skip this mech if it is in a state that should be ignored
+        if (mech2.mechState === MECH_STATE.dead) {
+          continue;
+        }
         this.addAlignVector(mech1, mech2);
         this.addSeparateVector(mech1, mech2);
         if (!mech1.getHasGroup()) {
