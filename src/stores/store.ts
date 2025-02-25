@@ -296,7 +296,9 @@ const useStore = create<storeState>()((set, get) => ({
     return get().planetShaderMaterial.clone();
   },
   asteroidBands: null, // set in call to setPlayerCurrentStarIndex
-  stations: [], // set in call to setPlayerCurrentStarIndex
+  stations: [
+    new SpaceStationMech(0, "EQUIPMENT", "X-22", [{ x: 0.5, y: 0.5, z: 0.5 }]),
+  ], // set in call to setPlayerCurrentStarIndex
   planetTerrain: cityTerrianGen(PLAYER_START.system, {
     numCity: 4,
     minSize: 3,
@@ -527,24 +529,11 @@ const useStore = create<storeState>()((set, get) => ({
         .enemyGroup.enemyGroupWorldPosition.copy(enemyGroupStartPosition);
 
       // set position of space station near a planet
-      let stations: SpaceStationMech[] = [];
-      //create station
-      const stationMechBPindex = 0,
-        type = "EQUIPMENT",
-        name = "X-22",
-        ports = [{ x: 0.5, y: 0.5, z: 0.5 }]; //TODO ports are supposed to be docking bays
-
-      stations.push(
-        new SpaceStationMech(stationMechBPindex, type, name, ports)
-      );
-
-      if (stations[0]) {
-        stations[0].object3d.position.copy(stationStartPosition);
-        stations[0].object3d.lookAt(startPosCelestialBody.object3d.position);
-        stations[0].object3d.translateX(500);
-        set(() => ({
-          stations,
-        }));
+      const station = get().stations[0];
+      if (station) {
+        station.object3d.position.copy(stationStartPosition);
+        station.object3d.lookAt(startPosCelestialBody.object3d.position);
+        station.object3d.translateX(500);
       }
 
       //clear targeting variables

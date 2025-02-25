@@ -13,6 +13,7 @@ import ObbTest from "../scenes/spaceFlight/dev/ObbTest";
 import { flipRotation } from "../util/cameraUtil";
 
 import { track, geometry2 } from "../util/track";
+import { setCustomData } from "r3f-perf";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
@@ -33,6 +34,8 @@ const TestEnemyAttackScene = () => {
 
   useStore.getState().playerWorldOffsetPosition.set(0, 0, 0);
   useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition.set(0, 0, 0);
+
+  const { scene } = useThree();
 
   //useDevStore.getState().showObbBox = true;
 
@@ -101,7 +104,7 @@ const TestEnemyAttackScene = () => {
   useEffect(() => {
     setCameraPosition();
   }, []);
-
+  //ZEIRAIDER
   const handleMouseClick = (event: MouseEvent) => {
     const { clientX, clientY } = event;
     const width = gl.domElement.clientWidth;
@@ -127,13 +130,16 @@ const TestEnemyAttackScene = () => {
 
     const objectsToTest = [
       player.object3d,
-      // @ts-ignore
+      ...useStore.getState().stations.map((station) => station.object3d),
       ...useEnemyStore
         .getState()
         .enemyGroup.enemyMechs.map((enemy: Mech) =>
           enemy.useInstancedMesh ? null : enemy.object3d
         ),
-      ...stations.map((station) => station.object3d),
+      // instanceed meshes
+      ...useEnemyStore
+        .getState()
+        .enemyGroup.instancedMeshRefs.map((instancedMesh) => instancedMesh),
     ];
 
     const intersects = raycaster.intersectObjects(
@@ -143,41 +149,66 @@ const TestEnemyAttackScene = () => {
 
     if (intersects.length > 0) {
       const intersectedObject = intersects[0].object;
-      console.log("intersects: ", intersects.length);
-      console.log("intersectedObject: ", intersectedObject);
       if (!intersectedObject) return;
 
       let object = intersects[0].object;
 
-      while (!object.userData.mechId && object.parent) {
-        object = object.parent;
-        console.log(object.userData.mechId);
+      if (object instanceof THREE.InstancedMesh) {
+        const instanceId = intersects[0].instanceId;
+        if (!instanceId) {
+          console.warn("No instance id found");
+          return;
+        }
+        // expolde mech in enemyGroup corresponding to InstancedMesh object and instanceId
+        useEnemyStore
+          .getState()
+          .enemyGroup.explodeInstancedEnemy(
+            scene,
+            object as THREE.InstancedMesh,
+            instanceId
+          );
+        /*
+        useEnemyStore
+          .getState()
+          .enemyGroup.updateInstancedColor(
+            object as THREE.InstancedMesh,
+            instanceId
+          );
+        */
       }
+      // end if instanced mesh
+      // else, is not instanced mesh
+      else {
+        while (!object.userData.mechId && object.parent) {
+          object = object.parent;
+        }
+        const topParentMechObj = object;
+        const intersectedObjectMechId = topParentMechObj.userData.mechId;
 
-      const topParentMechObj = object;
-      const intersectedObjectMechId = topParentMechObj.userData.mechId;
-      if (!intersectedObjectMechId) {
-        console.log("No mech id found");
-        return;
+        if (!intersectedObjectMechId) {
+          console.warn("No mech id found");
+          return;
+        }
+        // find mech by the mech.id
+        let intersectedMech: Mech | undefined = useEnemyStore
+          .getState()
+          .enemyGroup.enemyMechs.find(
+            (enemy) => enemy.id === intersectedObjectMechId
+          );
+        // stations
+        if (!intersectedMech) {
+          intersectedMech = stations.find(
+            (station) => station.id === intersectedObjectMechId
+          );
+        }
+        if (!intersectedMech) {
+          if (player.id === intersectedObjectMechId)
+            intersectedMech = useStore.getState().player;
+        }
+        if (!intersectedMech)
+          console.log("No mech found, id:", intersectedObjectMechId);
+        intersectedMech?.explode();
       }
-      // find mech by the mech.id
-      let intersectedMech: Mech | undefined = useEnemyStore
-        .getState()
-        .enemyGroup.enemyMechs.find(
-          (enemy) => enemy.id === intersectedObjectMechId
-        );
-      // stations
-      if (!intersectedMech) {
-        intersectedMech = stations.find(
-          (station) => station.id === intersectedObjectMechId
-        );
-      }
-      if (!intersectedMech) {
-        if (player.id === intersectedObjectMechId)
-          intersectedMech = useStore.getState().player;
-      }
-
-      intersectedMech?.explode();
     }
   };
 
@@ -191,32 +222,18 @@ const TestEnemyAttackScene = () => {
   useEffect(() => {
     if (stations[0]) {
       stations[0].object3d.position.set(0, 0, 500);
-      setTimeout(() => {
-        stations[0].explode();
-      }, 3000);
     }
   }, [stations]);
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
-    //
-    // testing explosion animation
     player.updateMechUseFrame(delta);
-    // updateMechUseFrame for each enemy
-    //useEnemyStore.getState().enemyGroup.enemyMechs.forEach((enemy) => {
-    //  enemy.updateMechUseFrame(delta);
-    //});
-    useEnemyStore.getState().enemyGroup.enemyMechs[0].updateMechUseFrame(delta);
 
     useEnemyStore.getState().enemyGroup.enemyMechs.forEach((enemy: Mech) => {
       if (Math.random() > 0.99) {
         enemy.fireWeapon();
       }
     });
-
-    if (stations[0]) {
-      stations[0].updateMechUseFrame(delta);
-    }
   }, -2); //render order set to be before Particles and ScannerReadout
 
   return (
@@ -231,20 +248,14 @@ const TestEnemyAttackScene = () => {
       <pointLight intensity={1} decay={0} position={[1000, 1000, -1000]} />
       <ambientLight intensity={0.4} />
       <Particles />
+      <ObbTest ref={obbBoxRefs} />
       <Stations />
       <EnemyMechs />
-      <ObbTest ref={obbBoxRefs} />
       <object3D
         ref={(mechRef) => {
           player.assignObject3dComponentRef(mechRef);
         }}
-        /*
-        onClick={() => {
-          player.explode();
-        }}
-        */
       />
-
       {/*
       <mesh geometry={track}>
         <meshBasicMaterial color="red" />

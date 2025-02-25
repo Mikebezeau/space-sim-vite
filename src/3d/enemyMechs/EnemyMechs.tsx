@@ -1,6 +1,6 @@
 import React, { memo, useEffect } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import InstancedMechs from "./InstancedMechs";
@@ -15,11 +15,14 @@ const EnemyMechs = () => {
     useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
 
-  const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
+  const enemyGroup = useEnemyStore((state) => state.enemyGroup);
+  const enemies = enemyGroup.enemyMechs;
+
+  const { scene } = useThree();
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
-    useEnemyStore.getState().enemyGroup.boidController?.update(delta);
+    enemyGroup.updateUseFrame(delta, scene);
   });
 
   return (

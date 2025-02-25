@@ -3,7 +3,7 @@ import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
 import MechBP from "../mechBP/MechBP";
-import useMechBpStore from "../../stores/mechBpStore";
+import useMechBpBuildStore from "../../stores/mechBpBuildStore";
 import useParticleStore from "../../stores/particleStore";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
@@ -31,25 +31,27 @@ const MECH_STATE = {
 
 interface mechInt {
   setBuildObject3d: () => void;
-  addMeshToBuiltObject3d: (mesh?: THREE.Mesh) => void;
-  ifBuildCompleteUpdateMech: (mesh?: THREE.Mesh) => void;
-  //
-  cloneToObject3d: () => void;
   // assign mech to object3d ref from in scene component
   assignObject3dComponentRef: (
     object3d: THREE.Object3D | null,
     isLoadingModelCount?: number
   ) => void;
-  //
+  // additional meshes to add to builtObject3d
+  addMeshToBuiltObject3d: (mesh?: THREE.Mesh) => void;
+  // check if all meshes are loaded and set up mech properties
+  ifBuildCompleteInitializeMech: (mesh?: THREE.Mesh) => void;
+  // populate object3d with all Mech elements
+  cloneToObject3d: () => void;
+  // update obb position
   updateObb: () => void;
   setObject3dCenterOffset: () => void;
   setMergedBufferGeom: () => void;
   setMergedBufferGeomColorsList: (geomColorList: THREE.Color[]) => void;
   setExplosionMeshFromBufferGeom: () => void;
   //
-  explode: () => void;
-  updateMechUseFrame: (delta: number) => void;
-  updateExplosionUseFrame: (delta: number) => void;
+  explode: (scene?: THREE.Scene) => void;
+  updateMechUseFrame: (delta: number, scene?: THREE.Scene) => void;
+  updateExplosionUseFrame: (delta: number, scene?: THREE.Scene) => void;
   fireWeapon: (targetQuaternoin: THREE.Quaternion) => void;
 }
 
@@ -102,9 +104,11 @@ class Mech implements mechInt {
   constructor(
     mechDesign: any,
     useInstancedMesh: boolean = false,
-    isPlayer: boolean = false // just in case we need to know for constructor
+    isPlayer: boolean = false, // just in case we need to know for constructor
+    isStation: boolean = false // testing
   ) {
     this.id = uuidv4();
+    if (isStation) console.log("Station created:", this.id);
     this.isPlayer = isPlayer;
     this.isObject3dBuilt = false;
     this.mechState = MECH_STATE.MOVING;
@@ -156,16 +160,55 @@ class Mech implements mechInt {
     // reset if needed for new build
     this.waitObject3dLoadMeshTotal = 0;
     this.addedSceneryObjects3d.clear();
-    //  getting / creating built mech object3d from useMechBpStore dictionary
-    this.builtObject3d = useMechBpStore
+    //  getting / creating built mech object3d from useMechBpBuildStore dictionary
+    const builtObj = useMechBpBuildStore
       .getState()
-      .getCreateMechBpBuild(this._mechBP).object3d;
+      .getCreateMechBpBuild(this._mechBP)?.object3d;
+
+    if (builtObj) {
+      this.builtObject3d = builtObj.clone();
+    }
     /*
     // if not using object3d dictionary, build object3d with mechBP build function:
     this.builtObject3d = this._mechBP.buildObject3d(this.object3d);
     */
     // if everything is loaded, set setMergedBufferGeom setExplosionMeshFromBufferGeom hitbox and obb
-    this.ifBuildCompleteUpdateMech();
+    this.ifBuildCompleteInitializeMech();
+  }
+
+  assignObject3dComponentRef(
+    object3dRef: THREE.Object3D | null,
+    isLoadingModelCount: number = 0
+  ) {
+    // if cleaning up object3d ref in component
+    if (object3dRef === null) {
+      // clean up if needed here i.e. in future for enemy mechs that are destroyed
+      return;
+    }
+
+    if (this.useInstancedMesh) {
+      console.warn(
+        "assignObject3dComponentRef: cannot assign object3dRef to instanced mesh mech"
+      );
+      return;
+    }
+
+    this.waitObject3dLoadMeshTotal = isLoadingModelCount;
+    // Object3D ref from scene component has been passed to link to this Mech
+    // changes to this.object3d will now update the object in the scene
+    const keepPosition = this.object3d.position.clone();
+    const keepRotation = this.object3d.rotation.clone();
+    this.object3d = object3dRef;
+    this.object3d.position.copy(keepPosition);
+    this.object3d.rotation.copy(keepRotation);
+    // make sure object3d is empty
+    this.object3d.clear();
+    // populate this.object3d with all Mech elements
+    this.cloneToObject3d();
+    // note: this.object3d is the object3d ref from the scene component
+    // when the scene component is unmounted, this object3d will be disposed - hence clone() is used
+    // add this.id to object3d userData to assist hit detection functions
+    this.object3d.userData.mechId = this.id;
   }
 
   addMeshToBuiltObject3d(mesh?: THREE.Mesh) {
@@ -179,10 +222,10 @@ class Mech implements mechInt {
       //mesh = CSG.union(mesh, geometry);
       this.addedSceneryObjects3d.add(mesh);
     }
-    this.ifBuildCompleteUpdateMech();
+    this.ifBuildCompleteInitializeMech();
   }
 
-  ifBuildCompleteUpdateMech() {
+  ifBuildCompleteInitializeMech() {
     if (
       this.addedSceneryObjects3d.children.length ===
       this.waitObject3dLoadMeshTotal
@@ -191,18 +234,19 @@ class Mech implements mechInt {
         // reset this.builtObject3d with clone of mechBP build Object3D
         // so that we can add additional scenery meshes to it without
         // changing the origional mechBP build
-        this.builtObject3d = useMechBpStore
+        const builtObj = useMechBpBuildStore
           .getState()
           .getCreateMechBpBuild(this._mechBP)
-          .object3d.clone();
+          ?.object3d.clone();
+
+        if (builtObj) this.builtObject3d = builtObj.clone();
         // add all scenery meshes to builtObject3d
         this.builtObject3d.add(this.addedSceneryObjects3d);
       }
       this.setMergedBufferGeom();
-      if (!this.useInstancedMesh) {
-        // explosion geometry and shader testing
-        this.setExplosionMeshFromBufferGeom();
-      }
+      // explosion geometry and shader testing
+      this.setExplosionMeshFromBufferGeom();
+
       // mech bounding box
       const hitBox = new THREE.Box3();
       //this.builtObject3d must have position set to 0,0,0 for hitBox to be correct
@@ -228,18 +272,9 @@ class Mech implements mechInt {
       this.object3d.clear(); // just in case, clear children
       // add this.id to object3d userData to assist hit detection functions
       this.object3d.userData.mechId = this.id;
-      if (this.isPlayer) {
-        console.log("player mechId", this.id);
-      }
       // finished setting up object3d
       this.isObject3dBuilt = true;
-
-      // for testing this.bufferGeom
-      /*
-      this.object3d.add(
-        new THREE.Mesh(this.bufferGeom!, mechMaterial.selectMaterial)
-      );
-*/
+      // clone mech build into object
       this.cloneToObject3d();
     }
   }
@@ -253,41 +288,6 @@ class Mech implements mechInt {
       new THREE.Mesh(this.bufferGeom!, mechMaterial.selectMaterial)
     );
     */
-  }
-
-  assignObject3dComponentRef(
-    object3d: THREE.Object3D | null,
-    isLoadingModelCount: number = 0
-  ) {
-    // if cleaning up object3d ref in component
-    if (object3d === null) {
-      // clean up if needed here i.e. in future for enemy mechs that are destroyed
-      return;
-    }
-
-    if (this.useInstancedMesh) {
-      console.warn(
-        "assignObject3dComponentRef: cannot assign object3dRef to instanced mesh mech"
-      );
-      return;
-    }
-
-    this.waitObject3dLoadMeshTotal = isLoadingModelCount;
-    // Object3D ref from scene component has been passed to link to this Mech
-    // changes to this.object3d will now update the object in the scene
-    const keepPosition = this.object3d.position.clone();
-    const keepRotation = this.object3d.rotation.clone();
-    this.object3d = object3d;
-    this.object3d.position.copy(keepPosition);
-    this.object3d.rotation.copy(keepRotation);
-    // make sure object3d is empty
-    this.object3d.clear();
-    // populate this.object3d with all Mech elements
-    this.cloneToObject3d();
-    // note: this.object3d is the object3d ref from the scene component
-    // when the scene component is unmounted, this object3d will be disposed - hence clone() is used
-    // add this.id to object3d userData to assist hit detection functions
-    this.object3d.userData.mechId = this.id;
   }
 
   updateObb() {
@@ -322,19 +322,26 @@ class Mech implements mechInt {
     if (this.builtObject3d.children.length > 0) {
       this.bufferGeom?.dispose();
 
-      let bufferGeometry: THREE.BufferGeometry | null = null;
-      // by default comming from mechBpStore dictionary
-      bufferGeometry = useMechBpStore
-        .getState()
-        .getCreateMechBpBuild(this._mechBP).bufferGeometry;
-      // if additional scenery objects have been added
-      // merge all geometries into one buffer geometry
-      if (this.addedSceneryObjects3d.children.length > 0) {
+      let bufferGeometry: THREE.BufferGeometry | null | undefined = null;
+
+      // by default use mechBpBuildStore dictionary bufferGeometry
+      if (
+        this.builtObject3d ===
+        useMechBpBuildStore.getState().getCreateMechBpBuild(this._mechBP)
+          ?.object3d
+      ) {
+        bufferGeometry = useMechBpBuildStore
+          .getState()
+          .getCreateMechBpBuild(this._mechBP)?.bufferGeometry;
+      }
+      // else if non-standard builtObject3d create new buffer geometry
+      else {
         // getMergedBufferGeom - remove extra geometry attributes and merge all geometries
         bufferGeometry = getMergedBufferGeom(this.builtObject3d);
       }
-      this.bufferGeom = bufferGeometry;
-      if (this.bufferGeom === null) {
+      if (bufferGeometry) {
+        this.bufferGeom = bufferGeometry;
+      } else if (this.bufferGeom === null) {
         console.error("Mech.setMergedBufferGeom(): bufferGeom not set");
       }
     }
@@ -363,30 +370,53 @@ class Mech implements mechInt {
         // not using material array ( <THREE.Material[]> ) so treat material as single material
         (<THREE.Material>this.explosionMesh.material)?.dispose();
       }
-      // get simplified geometry for explosion mesh using useLoaderStore bufferGeom if possible
-      const simplifiedGeometry =
-        this.addedSceneryObjects3d.children.length > 0
-          ? // accounting for additional GLB models loaded into addedSceneryObjects3d
-            useLoaderStore.getState().getSimplifiedGeometry(this.bufferGeom)
-          : // using base mechBP geometry from mechBpStore
-            useMechBpStore.getState().getCreateMechBpBuild(this._mechBP)
-              .simplifiedGeometry;
 
-      if (simplifiedGeometry) {
-        // getTessellatedExplosionMesh - add vertices to break up large planes
-        this.explosionMesh = getTessellatedExplosionMesh(
-          expolsionShaderMaterial.clone(),
-          simplifiedGeometry
-        );
+      const expMesh = useMechBpBuildStore
+        .getState()
+        .getCreateMechBpBuild(this._mechBP)?.explosionMesh;
+      if (expMesh) {
+        // get simplified geometry for explosion mesh using useLoaderStore bufferGeom if possible
+        this.explosionMesh =
+          this.addedSceneryObjects3d.children.length > 0
+            ? // accounting for additional GLB models loaded into addedSceneryObjects3d
+              // TODO move getSimplifiedGeometry to mechGeometryUtil
+              getTessellatedExplosionMesh(
+                expolsionShaderMaterial.clone(),
+                useLoaderStore.getState().getSimplifiedGeometry(this.bufferGeom)
+              )
+            : // using base explosionMesh from mechBpBuildStore
+              // TODO looks like this clone is not working correctly
+              //expMesh.clone();
+              getTessellatedExplosionMesh(
+                expolsionShaderMaterial.clone(),
+                useLoaderStore.getState().getSimplifiedGeometry(this.bufferGeom)
+              );
       } else {
-        console.error(
-          "Mech.setExplosionMeshFromBufferGeom(): simplifiedGeometry not set"
-        );
+        console.error("Mech.explode(): explosionMesh not set");
       }
+    } else {
+      console.error(
+        "Mech.setExplosionMeshFromBufferGeom(): bufferGeom not set"
+      );
     }
   }
 
-  explode() {
+  explode(scene?: THREE.Scene) {
+    if (scene) {
+      // add object3d to scene if not already added
+      if (!scene.children.find((obj) => obj.id === this.object3d.id)) {
+        scene.add(this.object3d);
+      }
+    }
+    useParticleStore.getState().effects.addExplosion(
+      this.object3d.position,
+      6000,
+      this._mechBP.scale / 5, // increase size of particles according to scale of mech
+      this._mechBP.scale * 50, // increase spread speed according to scale of mech
+      0.5, // lifetime in seconds
+      useParticleStore.getState().colors.white
+    );
+
     this.mechState = MECH_STATE.EXPLODING;
     this.timeCounter = 0;
     if (this.explosionMesh) {
@@ -397,16 +427,24 @@ class Mech implements mechInt {
       (<THREE.ShaderMaterial>this.explosionMesh.material).uniforms.size.value =
         this._mechBP.scale;
     } else {
-      console.log("Mech.explode(): explosionMesh not set"); //, this.explosionMesh);
+      // add the default explosion mesh from mechBpBuildStore dictionary
+      const explosionMesh = useMechBpBuildStore
+        .getState()
+        .getCreateMechBpBuild(this._mechBP)?.explosionMesh;
+
+      if (explosionMesh) this.object3d.add(explosionMesh.clone());
+      else {
+        console.error("Mech.explode(): explosionMesh not set");
+      }
     }
   }
 
-  updateMechUseFrame(delta: number) {
+  updateMechUseFrame(delta: number, scene?: THREE.Scene) {
     if (!this.isObject3dBuilt) return null;
-    this.updateExplosionUseFrame(delta);
+    this.updateExplosionUseFrame(delta, scene);
   }
 
-  updateExplosionUseFrame(delta: number) {
+  updateExplosionUseFrame(delta: number, scene?: THREE.Scene) {
     if (this.mechState !== MECH_STATE.EXPLODING) return;
     this.timeCounter += delta;
     const explosionTimeMax = (1 + this._mechBP.scale) / 2;
@@ -415,6 +453,19 @@ class Mech implements mechInt {
     if (explosionTimeNormalized > 1) {
       this.mechState = MECH_STATE.DEAD;
       this.object3d.clear();
+
+      if (
+        this.useInstancedMesh &&
+        scene?.children.find((obj) => obj.id === this.object3d.id)
+      ) {
+        scene.remove(this.object3d);
+        // TODO dispose explosionMesh and other cleanup for Mechs
+        if (this.explosionMesh !== null) {
+          this.explosionMesh.geometry?.dispose();
+          // not using material array ( <THREE.Material[]> ) so treat material as single material
+          (<THREE.Material>this.explosionMesh.material)?.dispose();
+        }
+      }
 
       //TESTING: reset mech to original state
       this.mechState = MECH_STATE.IDLE;
@@ -431,33 +482,33 @@ class Mech implements mechInt {
       )).uniforms.timeNorm.value = explosionTimeNormalized;
     }
 
-    const scale = Math.pow(this._mechBP.scale, 3) / 5; // explosion size
+    const scale = Math.pow(this._mechBP.scale, 2) / 5; // explosion size
     // add explosion particles
     const deltaFPS = delta * FPS; // number of particles created adjusted by deltaFPS
     const numParticles1 =
-      Math.pow(3 * (1 - explosionTimeNormalized * 3), 3) *
+      Math.pow(8 * (1 - explosionTimeNormalized * 3), 3) *
       deltaFPS *
       (scale / 3);
-    const numParticles2 = numParticles1 * 0.5;
+    const numParticles2 = numParticles1 * 1;
 
     if (numParticles1 > 0) {
       useParticleStore.getState().effects.addExplosion(
         this.object3d.position,
         numParticles1,
-        Math.random() * scale, // increase size of particles according to scale of mech
+        Math.random() * scale * 0.75, // increase size of particles according to scale of mech
         Math.random() * scale * 10 * (1 - explosionTimeNormalized), // increase spread speed according to scale of mech
         1, // lifetime in seconds
-        useParticleStore.getState().colors.red
+        useParticleStore.getState().colors.neonBlue
       );
       useParticleStore
         .getState()
         .effects.addExplosion(
           this.object3d.position,
           numParticles2,
-          (Math.random() * scale) / 2,
+          Math.random() * scale * 0.5,
           Math.random() * scale * 20 * (1 - explosionTimeNormalized),
-          1,
-          useParticleStore.getState().colors.yellow
+          1.6,
+          useParticleStore.getState().colors.purple
         );
     }
   }

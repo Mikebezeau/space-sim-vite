@@ -139,7 +139,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
       0.1
     );
 */
-    // TODO get marerials from mechBpStore
+    // TODO get marerials from mechBpBuildStore
     sceneryMesh.material = new MeshLambertMaterial({ color: "white" });
     // @ts-ignore material is not an array in this case
     sceneryMesh.material.flatShading = true;

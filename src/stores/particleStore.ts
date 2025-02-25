@@ -28,9 +28,12 @@ interface particleStoreState {
   //featheredSpriteSrc: Texture;
   //smokeTexture: Texture;
   colors: {
+    black: Color;
     blue: Color;
     green: Color;
     grey: Color;
+    neonBlue: Color;
+    purple: Color;
     red: Color;
     white: Color;
     yellow: Color;
@@ -109,9 +112,12 @@ dummyObj.add(dummyChildObj);
 
 const useParticleStore = create<particleStoreState>()((set, get) => ({
   colors: {
+    black: new Color(0x000000),
     blue: new Color(0xaaaaff),
     green: new Color(0xaaffaa),
     grey: new Color(0xaaaaaa),
+    neonBlue: new Color(0x00ffff),
+    purple: new Color(0xff00ff),
     red: new Color(0xff0000),
     white: new Color(0xffffff),
     yellow: new Color(0xffff00),

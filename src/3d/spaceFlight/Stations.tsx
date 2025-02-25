@@ -10,7 +10,7 @@ interface StationInt {
   station: SpaceStationMech;
 }
 
-const Station = (props: StationInt) => {
+const Station = memo((props: StationInt) => {
   const { station } = props;
 
   // V update render info for performance monitoring
@@ -27,8 +27,9 @@ const Station = (props: StationInt) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     if (stationGroupRef.current) {
       const r = stationGroupRef.current.rotation.y + delta / 30;
-      //stationGroupRef.current.rotation.set(0, r, 0);
+      stationGroupRef.current.rotation.set(0, r, 0);
     }
+    station.updateMechUseFrame(delta);
   });
 
   const SceneryObjects = [
@@ -93,15 +94,15 @@ const Station = (props: StationInt) => {
       ))}
     </>
   );
-};
+});
 
 function Stations() {
   const stations = useStore((state) => state.stations);
 
   return (
     <>
-      {stations?.map((station, index) => (
-        <Station key={index} station={station} />
+      {stations?.map((station) => (
+        <Station key={station.id} station={station} />
       ))}
     </>
   );

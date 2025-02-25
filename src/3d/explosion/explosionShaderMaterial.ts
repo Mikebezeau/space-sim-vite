@@ -57,6 +57,7 @@ void main() {
 const expolsionShaderMaterial = new ShaderMaterial({
   transparent: true,
   side: DoubleSide,
+  //flatShading: true,
   uniforms: {
     timeNorm: { value: 0.0 },
     size: { value: 1.0 },

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 
-const NUM_ENEMIES = 100;
+const NUM_ENEMIES = 600;
 
 interface enemyStoreState {
   enemyGroup: EnemyMechGroup;

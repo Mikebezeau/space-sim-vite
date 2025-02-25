@@ -14,7 +14,7 @@ class SpaceStationMech extends Mech implements spaceStationMechInt {
     name: string,
     ports: { x: number; y: number; z: number }[]
   ) {
-    super(mechDesigns.station[stationMechBPindex]);
+    super(mechDesigns.station[stationMechBPindex], false, true);
     this.type = type;
     this.name = name;
     this.ports = ports;

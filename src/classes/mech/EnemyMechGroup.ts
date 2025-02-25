@@ -1,5 +1,6 @@
-import { Vector3 } from "three";
+import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
+import useParticleStore from "../../stores/particleStore";
 import EnemyMechBoid from "./EnemyMechBoid";
 import mechDesigns from "../../equipment/data/mechDesigns";
 import BoidController from "../BoidController";
@@ -8,14 +9,33 @@ export interface enemyMechGroupInt {
   getLeaderId: () => string | null;
   genBoidEnemies: () => void;
   groupEnemies: () => void;
+  addInstancedMeshRef: (
+    mechBpId: string,
+    instancedMesh: THREE.InstancedMesh
+  ) => void;
+  getInstancedMeshRef: (mechBpId: string) => THREE.InstancedMesh | undefined;
+  getInstancedMeshEnemies: (mechBpId: string) => EnemyMechBoid[] | undefined;
+
+  explodeInstancedEnemy: (
+    scene: THREE.Scene,
+    instancedMesh: THREE.InstancedMesh,
+    instanceId: number
+  ) => void;
+  updateLeaderColor: () => void;
+  updateInstancedColor: (
+    instancedMesh: THREE.InstancedMesh,
+    instanceId: number
+  ) => void;
+  updateUseFrame: (delta: number, scene: THREE.Scene) => void; // require scene to add remove instanced mech objects
 }
 
 class EnemyMechGroup implements enemyMechGroupInt {
   id: string;
   numEnemies: number;
   tacticOrder: number;
-  enemyGroupWorldPosition: Vector3;
+  enemyGroupWorldPosition: THREE.Vector3;
   enemyMechs: EnemyMechBoid[] = [];
+  instancedMeshRefs: THREE.InstancedMesh[] = [];
   boidController: BoidController | null;
 
   constructor(numEnemies: number = 100) {
@@ -23,7 +43,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
     this.numEnemies = numEnemies;
     this.tacticOrder = 0; //0 = follow leader, 1 = attack player
     // enemy group world position
-    this.enemyGroupWorldPosition = new Vector3();
+    this.enemyGroupWorldPosition = new THREE.Vector3();
     // generate enemy mechs objects
     this.genBoidEnemies();
     // set enemy positions
@@ -95,6 +115,68 @@ class EnemyMechGroup implements enemyMechGroupInt {
       ) {
         enemy.groupLeaderId = bossMechId;
       }
+    });
+  }
+
+  addInstancedMeshRef(
+    mechBpId: string,
+    instancedMesh: THREE.InstancedMesh | null
+  ) {
+    if (instancedMesh === null) return; // TODO remove from array - will have to use ids
+    // identify mesh by mechBpId
+    instancedMesh.userData.mechBpId = mechBpId;
+    // remove from array if instancedMesh=>instancedMesh.userData.mechBpId exists
+    this.instancedMeshRefs = this.instancedMeshRefs.filter(
+      (mesh) => mesh.userData.mechBpId !== mechBpId
+    );
+    // add to array
+    this.instancedMeshRefs.push(instancedMesh);
+  }
+
+  getInstancedMeshRef(mechBpId: string) {
+    return this.instancedMeshRefs.find(
+      (mesh) => mesh.userData.mechBpId === mechBpId
+    );
+  }
+
+  getInstancedMeshEnemies(mechBpId: string) {
+    return this.enemyMechs.filter(
+      (enemyMech) => enemyMech._mechBP.id === mechBpId
+    );
+  }
+
+  explodeInstancedEnemy(
+    scene: THREE.Scene,
+    instancedMesh: THREE.InstancedMesh,
+    instanceId: number
+  ) {
+    const mechBpId = instancedMesh.userData.mechBpId;
+    instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
+    instancedMesh.geometry.attributes.isDead.needsUpdate = true;
+    this.getInstancedMeshEnemies(mechBpId)[instanceId].explode(scene);
+  }
+
+  updateLeaderColor() {
+    this.instancedMeshRefs.forEach((instancedMesh) => {
+      // TODO
+    });
+  }
+
+  updateInstancedColor(instancedMesh: THREE.InstancedMesh, instanceId: number) {
+    //const color = new Color();
+    //instancedMesh.getColorAt(instanceId, color);// this line dosn't work for instanced mesh with no color
+    instancedMesh.setColorAt(
+      instanceId,
+      useParticleStore.getState().colors.black
+    );
+    instancedMesh.instanceColor!.needsUpdate = true;
+  }
+
+  updateUseFrame(delta: number, scene: THREE.Scene) {
+    this.boidController?.update(delta);
+
+    this.enemyMechs.forEach((enemy) => {
+      enemy.updateMechUseFrame(delta, scene);
     });
   }
 }
