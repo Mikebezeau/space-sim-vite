@@ -30,7 +30,7 @@ interface devStoreState {
   showObbBox: boolean;
   obbTestRerenderToggle: boolean;
   obbTestToggle: () => void;
-  showBoidVectors: boolean; // TODO show vector arrows in BuildMech
+  showBoidVectors: boolean;
   boidAlignmentMod: number;
   boidSeparationMod: number;
   boidCohesionMod: number;

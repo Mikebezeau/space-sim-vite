@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import useStore from "../../stores/store";
-import useHudTargtingGalaxyMapStore from "../../stores/hudTargetingGalaxyMapStore";
+import useStore from "../stores/store";
+import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 
 //planet shape
 const geometryPlanet = new THREE.SphereGeometry(5, 12, 12);

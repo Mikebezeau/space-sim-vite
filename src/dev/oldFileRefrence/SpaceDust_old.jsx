@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useRef, useEffect } from "react";
-import useStore from "../../stores/store";
-import { SCALE } from "../../constants/constants";
+import useStore from "../stores/store";
+import { SCALE } from "../constants/constants";
 
 export default function SpaceDust() {
   useStore.getState().updateRenderInfo("SpaceDust");

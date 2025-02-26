@@ -2,16 +2,16 @@ import React, { useRef } from "react";
 import { Group, Mesh } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import SolarSystem from "../../3d/solarSystem/SolarSystem";
-import Stations from "../../3d/spaceFlight/Stations";
-import PlayerMech from "../../3d/spaceFlight/PlayerMech";
+import Stations from "../../3d/mechs/Stations";
+import PlayerMech from "../../3d/mechs/playerMech/PlayerMech";
 import WeaponFire from "../../3d/WeaponFire";
-import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
+import SpaceFlightHud from "../../3d/HUD/SpaceFlightHud";
 import Particles from "../../3d/Particles";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useEnemyStore from "../../stores/enemyStore";
-import EnemyMechs from "../../3d/enemyMechs/EnemyMechs";
-import ObbTest from "./dev/ObbTest";
+import EnemyMechs from "../../3d/mechs/enemyMechs/EnemyMechs";
+import ObbTest from "../../3d/mechs/ObbTest";
 
 const SpaceFlightPlanetsScene = () => {
   useStore.getState().updateRenderInfo("SpaceFlightPlanetsScene");
@@ -53,7 +53,7 @@ const SpaceFlightPlanetsScene = () => {
         enemyWorldPosition.z - playerWorldOffsetPosition.z
       );
     }
-  }, -2); //render order set to be before Particles and ScannerReadout positioning
+  }, -2); //render order set to be before Particles and HudTargets positioning
 
   return (
     <>

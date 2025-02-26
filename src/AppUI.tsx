@@ -5,7 +5,7 @@ import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
 import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
-import FlightHUD from "./uiHUD/FlightHUD";
+import FlightHud from "./uiHUD/FlightHud";
 import Cockpit from "./uiCockpit/Cockpit";
 import {
   ActionModeControls,
@@ -15,9 +15,9 @@ import SpeedReadout from "./uiCockpit/display/SpeedReadout";
 import ShieldsReadout from "./uiCockpit/display/ShieldsReadout";
 import WeaponsReadout from "./uiCockpit/display/WeaponsReadout";
 import MainMenu from "./uiTitleScreen/MainMenu";
-import GalaxyMapMenu from "./menuComponents/GalaxyMapMenu";
-import StationDockMenu from "./menuComponents/StationDockMenu";
-import EquipmentMenu from "./menuComponents/EquipmentMenu";
+import GalaxyMapMenu from "./uiMenuComponents/GalaxyMapMenu";
+import StationDockMenu from "./uiMenuComponents/StationDockMenu";
+import EquipmentMenu from "./uiMenuComponents/EquipmentMenu";
 //import CustomCursor from "./CustomCursor";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
@@ -70,7 +70,7 @@ const AppUI = () => {
                   <ShieldsReadout />
                   <WeaponsReadout />
                 </div>
-                <FlightHUD />
+                <FlightHud />
               </>
             )}
             {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}

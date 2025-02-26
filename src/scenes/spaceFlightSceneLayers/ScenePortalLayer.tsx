@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Scene } from "three";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import useStore from "../stores/store";
+import useStore from "../../stores/store";
 
 interface ScenePortalLayerInt {
   autoClear?: boolean;

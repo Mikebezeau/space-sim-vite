@@ -1,12 +1,12 @@
 import React, { memo, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import useStore from "../../stores/store";
-import useEnemyStore from "../../stores/enemyStore";
+import useStore from "../../../stores/store";
+import useEnemyStore from "../../../stores/enemyStore";
 import InstancedMechs from "./InstancedMechs";
 
-import { SCENERY_TYPE } from "../../stores/loaderStore";
-import Scenery from "../../3d/spaceFlight/Scenery";
+import { LOAD_MODEL_3D_SRC } from "../../../stores/loaderStore";
+import Model3d from "../../Model3d";
 
 const EnemyMechs = () => {
   const componentName = "EnemyMechs";
@@ -23,7 +23,7 @@ const EnemyMechs = () => {
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     enemyGroup.updateUseFrame(delta, scene);
-  }, -2); //render order set to be before Particles and ScannerReadout
+  }, -2); //render order set to be before Particles and HudTargets
 
   return (
     <>
@@ -37,7 +37,7 @@ const EnemyMechs = () => {
                   ref={(mechRef: THREE.Object3D) => {
                     if (mechRef === null) return;
                     // test: way to add Object3Ds on the fly
-                    // isWaitLoadModelsTotal: number of Scenery objects loading below
+                    // isWaitLoadModelsTotal: number of Model3d objects loading below
                     const isWaitLoadModelsTotal = 1;
                     enemyMech.assignObject3dComponentRef(
                       mechRef,
@@ -45,10 +45,10 @@ const EnemyMechs = () => {
                     );
                   }}
                 />
-                <Scenery
+                <Model3d
                   scale={25}
                   castSelfShadows
-                  sceneryType={SCENERY_TYPE.artifact.triangleThing}
+                  model3dSrc={LOAD_MODEL_3D_SRC.artifact.triangleThing}
                   onLoadUpdateMech={enemyMech}
                 />
               </React.Fragment>

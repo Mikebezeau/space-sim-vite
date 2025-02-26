@@ -78,7 +78,7 @@ class Mech implements mechInt {
   _mechBP: MechBP;
   // threejs
   object3d: THREE.Object3D;
-  addedSceneryObjects3d: THREE.Object3D;
+  addedModel3dObjects: THREE.Object3D;
   builtObject3d: THREE.Object3D;
   waitObject3dLoadMeshTotal: number;
   bufferGeom: THREE.BufferGeometry | null;
@@ -123,7 +123,7 @@ class Mech implements mechInt {
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
     this.object3d = new THREE.Object3D(); // set from ref, updating this will update the object on screen for non-instanced mesh
     this.object3d.userData.mechId = this.id; // this gets set again when object3d is replaced for non-instanced mesh
-    this.addedSceneryObjects3d = new THREE.Object3D(); // added meshes
+    this.addedModel3dObjects = new THREE.Object3D(); // added meshes
     //this.builtObject3d set at end of constructor
     this.waitObject3dLoadMeshTotal = 0; // total number of models to be loaded
     this.bufferGeom = null; // merged geometry for instanced mesh
@@ -159,10 +159,10 @@ class Mech implements mechInt {
   }
 
   setBuildObject3d() {
-    // waitObject3dLoadMeshTotal, addedSceneryObjects3d:
+    // waitObject3dLoadMeshTotal, addedModel3dObjects:
     // reset if needed for new build
     this.waitObject3dLoadMeshTotal = 0;
-    this.addedSceneryObjects3d.clear();
+    this.addedModel3dObjects.clear();
     //  getting / creating built mech object3d from useMechBpBuildStore dictionary
     const builtObj = useMechBpBuildStore
       .getState()
@@ -216,26 +216,26 @@ class Mech implements mechInt {
 
   addMeshToBuiltObject3d(mesh?: THREE.Mesh) {
     if (
-      this.addedSceneryObjects3d.children.length ===
+      this.addedModel3dObjects.children.length ===
       this.waitObject3dLoadMeshTotal
     ) {
       // all additional meshes already loaded
       return;
     } else if (mesh !== undefined) {
       //mesh = CSG.union(mesh, geometry);
-      this.addedSceneryObjects3d.add(mesh);
+      this.addedModel3dObjects.add(mesh);
     }
     this.ifBuildCompleteInitializeMech();
   }
 
   ifBuildCompleteInitializeMech() {
     if (
-      this.addedSceneryObjects3d.children.length ===
+      this.addedModel3dObjects.children.length ===
       this.waitObject3dLoadMeshTotal
     ) {
-      if (this.addedSceneryObjects3d.children.length > 0) {
+      if (this.addedModel3dObjects.children.length > 0) {
         // reset this.builtObject3d with clone of mechBP build Object3D
-        // so that we can add additional scenery meshes to it without
+        // so that we can add additional model meshes to it without
         // changing the origional mechBP build
         const builtObj = useMechBpBuildStore
           .getState()
@@ -243,8 +243,8 @@ class Mech implements mechInt {
           ?.object3d.clone();
 
         if (builtObj) this.builtObject3d = builtObj.clone();
-        // add all scenery meshes to builtObject3d
-        this.builtObject3d.add(this.addedSceneryObjects3d);
+        // add all model meshes to builtObject3d
+        this.builtObject3d.add(this.addedModel3dObjects);
       }
       this.setMergedBufferGeom();
       // explosion geometry and shader testing
@@ -317,8 +317,6 @@ class Mech implements mechInt {
     this.obbRotationHelper.setFromMatrix3(this.obbPositioned.rotation);
   }
 
-  // set the position of object3d so that the geometry is centered at the position
-  // TODO is this throwing off the obb when scenery models are added?
   setObject3dCenterOffset() {
     this.object3dCenterOffset.position.copy(this.object3d.position);
     this.object3dCenterOffset.rotation.copy(this.object3d.rotation);
@@ -389,8 +387,8 @@ class Mech implements mechInt {
       if (expMesh) {
         // get simplified geometry for explosion mesh using useLoaderStore bufferGeom if possible
         this.explosionMesh =
-          this.addedSceneryObjects3d.children.length > 0
-            ? // accounting for additional GLB models loaded into addedSceneryObjects3d
+          this.addedModel3dObjects.children.length > 0
+            ? // accounting for additional GLB models loaded into addedModel3dObjects
               // TODO move getSimplifiedGeometry to mechGeometryUtil
               getTessellatedExplosionMesh(
                 expolsionShaderMaterial.clone(),

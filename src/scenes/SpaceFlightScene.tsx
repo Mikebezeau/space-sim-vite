@@ -1,9 +1,9 @@
 import React from "react";
 import { useEffect } from "react";
 import useStore from "../stores/store";
-import ScenePortalLayer from "./ScenePortalLayer";
-import SpaceFlightPlanetsScene from "./spaceFlight/SpaceFlightPlanetsScene";
-import StarsBackgroundScene from "./spaceFlight/StarsBackgroundScene";
+import ScenePortalLayer from "./spaceFlightSceneLayers/ScenePortalLayer";
+import SpaceFlightPlanetsScene from "./spaceFlightSceneLayers/SpaceFlightPlanetsScene";
+import StarsBackgroundScene from "./spaceFlightSceneLayers/StarsBackgroundScene";
 
 const SpaceFlightScene = () => {
   const componentName = "SpaceFlightScene";

@@ -22,7 +22,7 @@ import glbSolar1 from "/models/ss/ss_solar1.glb";
 // @ts-ignore
 import warShip from "/models/mech/warShip.glb";
 
-export const SCENERY_TYPE = {
+export const LOAD_MODEL_3D_SRC = {
   artifact: {
     gate: glbGate,
     pod: glbPod,
@@ -45,7 +45,7 @@ interface loaderStoreState {
     reductionRatio?: number
   ) => BufferGeometry;
 
-  updateScenery: (
+  updateModel3dObject: (
     object: any,
     addToRef: any,
     scale: number,
@@ -53,7 +53,7 @@ interface loaderStoreState {
     rotation: { x: number; y: number; z: number },
     onLoadUpdateMech: Mech | null
   ) => void;
-  loadScenery: (
+  loadModel3d: (
     addToRef: any,
     url: string,
     scale: number,
@@ -79,7 +79,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
     return simplifiedGeometry;
   },
 
-  loadScenery: (
+  loadModel3d: (
     addToRef: any,
     url: string,
     scale: number,
@@ -87,8 +87,8 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
     rotation: { x: number; y: number; z: number },
     onLoadUpdateMech: Mech | null
   ) => {
-    const sceneryCallback = (object: any) => {
-      get().updateScenery(
+    const model3dLoadCallback = (object: any) => {
+      get().updateModel3dObject(
         object,
         addToRef,
         scale,
@@ -97,7 +97,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
         onLoadUpdateMech
       );
     };
-    get().loadModel(url, sceneryCallback);
+    get().loadModel(url, model3dLoadCallback);
   },
 
   loadModel: (url: string, callback: (object: any) => void) => {
@@ -109,7 +109,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
     );
   },
 
-  updateScenery: (
+  updateModel3dObject: (
     object,
     addToRef,
     scale,
@@ -127,28 +127,28 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
         });
       }
     });
-    const sceneryMesh = new Mesh();
-    sceneryMesh.position.set(position.x, position.y, position.z);
-    sceneryMesh.rotation.set(rotation.x, rotation.y, rotation.z);
+    const model3dMesh = new Mesh();
+    model3dMesh.position.set(position.x, position.y, position.z);
+    model3dMesh.rotation.set(rotation.x, rotation.y, rotation.z);
 
-    sceneryMesh.geometry = BufferGeometryUtils.mergeGeometries(geometries);
-    sceneryMesh.geometry.scale(scale, scale, scale);
+    model3dMesh.geometry = BufferGeometryUtils.mergeGeometries(geometries);
+    model3dMesh.geometry.scale(scale, scale, scale);
     /*
-    sceneryMesh.geometry = get().getSimplifiedGeometry(
-      sceneryMesh.geometry,
+    model3dMesh.geometry = get().getSimplifiedGeometry(
+      model3dMesh.geometry,
       0.1
     );
 */
     // TODO get marerials from mechBpBuildStore
-    sceneryMesh.material = new MeshLambertMaterial({ color: "white" });
+    model3dMesh.material = new MeshLambertMaterial({ color: "white" });
     // @ts-ignore material is not an array in this case
-    sceneryMesh.material.flatShading = true;
+    model3dMesh.material.flatShading = true;
     //
-    sceneryMesh.updateWorldMatrix(true, true);
+    model3dMesh.updateWorldMatrix(true, true);
     if (onLoadUpdateMech !== null) {
-      onLoadUpdateMech.addMeshToBuiltObject3d(sceneryMesh);
+      onLoadUpdateMech.addMeshToBuiltObject3d(model3dMesh);
     } else {
-      addToRef.current?.add(sceneryMesh);
+      addToRef.current?.add(model3dMesh);
     }
   },
 }));

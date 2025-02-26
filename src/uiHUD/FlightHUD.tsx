@@ -2,9 +2,9 @@ import React, { useEffect, useRef } from "react";
 import useStore from "../stores/store";
 import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import useWindowResize from "../hooks/useWindowResize";
-import TargetHUD from "./TargetHUD";
+import FlightHudTarget from "./FlightHudTarget";
 
-const FlightHUD = () => {
+const FlightHud = () => {
   const playerCurrentStarIndex = useStore(
     (state) => state.playerCurrentStarIndex
   );
@@ -77,7 +77,7 @@ const FlightHUD = () => {
         className={`opacity-50 absolute border-2 border-green-500 rounded-full`}
       />
       {htmlHudTargets.map((target) => (
-        <TargetHUD
+        <FlightHudTarget
           key={`${target.objectType}-${target.objectIndex}`}
           target={target}
         />
@@ -86,4 +86,4 @@ const FlightHUD = () => {
   );
 };
 
-export default FlightHUD;
+export default FlightHud;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, Suspense } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { extend, useThree, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";

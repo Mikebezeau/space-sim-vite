@@ -2,7 +2,7 @@ import React from "react";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 //import SystemMap from "./SystemMap";
-import ScannerReadout from "./ScannerReadout";
+import HudTargets from "./HudTargets";
 import { PLAYER } from "../../constants/constants";
 
 const SpaceFlightHud = () => {
@@ -14,7 +14,7 @@ const SpaceFlightHud = () => {
 
   return (
     <>
-      <ScannerReadout />
+      <HudTargets />
       {playerControlMode === PLAYER.controls.scan ? (
         <>{/*<SystemMap showPlayer={true} />*/}</>
       ) : null}

@@ -1,25 +1,19 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
-//import { EffectComposer } from "@react-three/postprocessing";
 import { useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import ScenePortalLayer from "./ScenePortalLayer";
-//import SpaceFlightPlanetsScene from "./spaceFlight/SpaceFlightPlanetsScene";
-import StarsBackgroundScene from "./spaceFlight/StarsBackgroundScene";
-import BuildMech from "../3d/buildMech/BuildMech";
+import ScenePortalLayer from "./spaceFlightSceneLayers/ScenePortalLayer";
+import StarsBackgroundScene from "./spaceFlightSceneLayers/StarsBackgroundScene";
 import SolarSystem from "../3d/solarSystem/SolarSystem";
-import Stations from "../3d/spaceFlight/Stations";
-//import TransparentEffect from "../3d/effects/TransparentEffect";
-//import GlitchEffect from "../3d/effects/GlitchEffect";
+import Stations from "../3d/mechs/Stations";
 import { PLAYER } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/solarSystemConstants";
 
 const NewCampaignScene = () => {
   useStore.getState().updateRenderInfo("NewCampaignScene");
 
-  const { camera } = useThree();
   const player = useStore((state) => state.player);
   const { setPlayerPosition, setPlayerCurrentStarIndex } = useStore(
     (state) => state.actions
@@ -33,6 +27,8 @@ const NewCampaignScene = () => {
 
   const playerMechRef = useRef<THREE.Object3D | null>(null);
   const cameraControlsRef = useRef<any>(null);
+
+  const { camera } = useThree();
 
   const sceneTime = useRef(0);
 
@@ -101,11 +97,6 @@ const NewCampaignScene = () => {
             />
             <SolarSystem />
             <Stations />
-            {/*}
-            <EffectComposer autoClear={false}>
-              <TransparentEffect />
-            </EffectComposer>
-            */}
           </>
         }
       />

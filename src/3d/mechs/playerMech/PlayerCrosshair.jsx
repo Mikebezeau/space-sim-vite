@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import useStore from "../../stores/store";
-import usePlayerControlsStore from "../../stores/playerControlsStore";
-import { setVisible } from "../../util/gameUtil";
-import { PLAYER } from "../../constants/constants";
+import useStore from "../../../stores/store";
+import usePlayerControlsStore from "../../../stores/playerControlsStore";
+import { setVisible } from "../../../util/gameUtil";
+import { PLAYER } from "../../../constants/constants";
 
 const lightgreen = new THREE.Color("lightgreen");
 //const hotpink = new THREE.Color("hotpink");

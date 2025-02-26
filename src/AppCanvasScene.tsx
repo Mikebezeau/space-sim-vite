@@ -12,8 +12,8 @@ import BuildMechEquipment from "./3d/buildMech/BuildMechEquipment";
 import GalaxyMap from "./galaxy/GalaxyMap";
 import { PLAYER } from "./constants/constants";
 
-import TestPlanetScene from "./scenes/TestPlanetScene";
-import TestEnemyAttackScene from "./scenes/TestEnemyAttackScene";
+import TestPlanetScene from "./scenes/testing/TestPlanetScene";
+import TestEnemyAttackScene from "./scenes/testing/TestEnemyAttackScene";
 
 const AppCanvasScene = () => {
   const componentName = "AppCanvasScene";

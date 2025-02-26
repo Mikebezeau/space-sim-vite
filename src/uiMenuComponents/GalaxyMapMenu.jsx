@@ -1,6 +1,6 @@
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { PLAYER } from "../constants/constants";
-import CyberButton from "../menuComponents/common/CyberButton";
+import CyberButton from "../uiMenuComponents/common/CyberButton";
 import StarInfoCard from "../galaxy/StarInfoCard";
 
 const GalaxyMapMenu = () => {

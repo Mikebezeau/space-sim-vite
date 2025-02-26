@@ -1,21 +1,21 @@
 import React, { useRef } from "react";
 import { Group } from "three";
-import useLoaderStore from "../../stores/loaderStore";
-import Mech from "../../classes/mech/Mech";
+import useLoaderStore from "../stores/loaderStore";
+import Mech from "../classes/mech/Mech";
 
-type sceneryInt = {
+type model3dInt = {
   castSelfShadows?: boolean;
-  sceneryType: string;
+  model3dSrc: string;
   scale?: number;
   position?: { x: number; y: number; z: number };
   rotation?: { x: number; y: number; z: number };
   onLoadUpdateMech?: Mech; //(object: Object3D) => void;
 };
 
-const Scenery = (props: sceneryInt) => {
+const Model3d = (props: model3dInt) => {
   const {
     castSelfShadows = false, // TODO
-    sceneryType,
+    model3dSrc,
     scale = 1,
     position = { x: 0, y: 0, z: 0 },
     rotation = { x: 0, y: 0, z: 0 },
@@ -26,9 +26,9 @@ const Scenery = (props: sceneryInt) => {
 
   useLoaderStore
     .getState()
-    .loadScenery(
+    .loadModel3d(
       groupRef,
-      sceneryType,
+      model3dSrc,
       scale,
       position,
       rotation,
@@ -38,4 +38,4 @@ const Scenery = (props: sceneryInt) => {
   return onLoadUpdateMech ? null : <group ref={groupRef} />;
 };
 
-export default Scenery;
+export default Model3d;

@@ -2,19 +2,19 @@ import React, { useEffect, useRef } from "react";
 import { Vector3 } from "three";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-import useStore from "../stores/store";
-import useDevStore from "../stores/devStore";
-import TestPlanet from "../3d/solarSystem/TestPlanet";
-import StarClass from "../classes/solarSystem/Star";
-import PlanetClass from "../classes/solarSystem/Planet";
-import { PLANET_TYPE_DATA } from "../constants/solarSystemConstants";
+import useStore from "../../stores/store";
+import useDevStore from "../../stores/devStore";
+import TestPlanet from "../../3d/solarSystem/TestPlanet";
+import StarClass from "../../classes/solarSystem/Star";
+import PlanetClass from "../../classes/solarSystem/Planet";
+import { PLANET_TYPE_DATA } from "../../constants/solarSystemConstants";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 import {
   //PLANET_TYPE_DATA,
   typeTextureMapOptions,
-} from "../constants/solarSystemConstants";
+} from "../../constants/solarSystemConstants";
 
 const TestPlanetScene = () => {
   useStore.getState().updateRenderInfo("TestPlanetScene");

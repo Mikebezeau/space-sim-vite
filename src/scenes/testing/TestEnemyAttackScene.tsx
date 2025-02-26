@@ -1,23 +1,22 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-import useStore from "../stores/store";
-import useEnemyStore from "../stores/enemyStore";
-import useDevStore from "../stores/devStore";
-import Stations from "../3d/spaceFlight/Stations";
-import EnemyMechs from "../3d/enemyMechs/EnemyMechs";
-import Particles from "../3d/Particles";
-import Mech, { MECH_STATE } from "../classes/mech/Mech";
-import ObbTest from "../scenes/spaceFlight/dev/ObbTest";
-import { flipRotation } from "../util/cameraUtil";
+import useStore from "../../stores/store";
+import useEnemyStore from "../../stores/enemyStore";
+import useDevStore from "../../stores/devStore";
+import Stations from "../../3d/mechs/Stations";
+import EnemyMechs from "../../3d/mechs/enemyMechs/EnemyMechs";
+import Particles from "../../3d/Particles";
+import Mech from "../../classes/mech/Mech";
+import ObbTest from "../../3d/mechs/ObbTest";
 
-import { track, geometry2 } from "../util/track";
+import { track, geometry2 } from "../../util/track";
 import { setCustomData } from "r3f-perf";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 //import PlayerMech from "../classes/mech/PlayerMech";
-import PlayerMech from "../3d/spaceFlight/PlayerMech";
+import PlayerMech from "../../3d/mechs/playerMech/PlayerMech";
 
 const TestEnemyAttackScene = () => {
   const player = useStore((state) => state.player);
@@ -225,7 +224,7 @@ const TestEnemyAttackScene = () => {
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     player.updateMechUseFrame(delta); // have added player object manually below
-  }, -2); //render order set to be before Particles and ScannerReadout
+  }, -2); //render order set to be before Particles and HudTargets
 */
 
   return (

@@ -6,7 +6,7 @@ import usePlayerControlsStore from "../stores/playerControlsStore";
 import { typeStarData } from "../solarSystemGen/genStarData";
 import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
-//import CyberMenuBorder from "../menuComponents/common/CyberMenuBorder";
+//import CyberMenuBorder from "../uiMenuComponents/common/CyberMenuBorder";
 
 const StarInfoCard = () => {
   const switchScreen = usePlayerControlsStore(

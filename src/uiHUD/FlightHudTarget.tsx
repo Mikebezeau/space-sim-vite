@@ -7,7 +7,7 @@ type targetHUDInt = {
   target: htmlHudTargetType;
 };
 
-const TargetHUD = (props: targetHUDInt) => {
+const FlightHudTarget = (props: targetHUDInt) => {
   const { target } = props;
 
   const targetDiameterPx = useHudTargtingGalaxyMapStore(
@@ -41,4 +41,4 @@ const TargetHUD = (props: targetHUDInt) => {
   );
 };
 
-export default TargetHUD;
+export default FlightHudTarget;

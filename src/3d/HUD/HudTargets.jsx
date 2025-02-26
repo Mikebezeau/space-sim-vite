@@ -72,8 +72,9 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 */
 
 // TODO old code, make TS and clean
-const ScannerReadout = () => {
-  useStore.getState().updateRenderInfo("ScannerReadout");
+// split file into planets and mech targets
+const HudTargets = () => {
+  useStore.getState().updateRenderInfo("HudTargets");
 
   const { camera } = useThree();
 
@@ -254,7 +255,7 @@ const ScannerReadout = () => {
   );
 };
 
-export default ScannerReadout;
+export default HudTargets;
 
 function placeTarget(
   dummyObj,

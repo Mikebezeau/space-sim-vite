@@ -2,9 +2,9 @@ import React, { memo, useEffect, useRef } from "react";
 import { Group, Object3D } from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
-import { SCENERY_TYPE } from "../../stores/loaderStore";
-import Scenery from "./Scenery";
 import SpaceStationMech from "../../classes/mech/SpaceStationMech";
+import Model3d from "../Model3d";
+import { LOAD_MODEL_3D_SRC } from "../../stores/loaderStore";
 
 interface StationInt {
   station: SpaceStationMech;
@@ -32,46 +32,46 @@ const Station = memo((props: StationInt) => {
     station.updateMechUseFrame(delta);
   });
 
-  const SceneryObjects = [
-    <Scenery
+  const loadModel3dObjects = [
+    <Model3d
       castSelfShadows
-      sceneryType={SCENERY_TYPE.junk.brokenDish}
+      model3dSrc={LOAD_MODEL_3D_SRC.junk.brokenDish}
       scale={40}
       position={{ x: -6, y: 110, z: 0 }}
       rotation={{ x: 0, y: 0, z: 0.6 }}
       onLoadUpdateMech={station}
     />,
 
-    <Scenery
+    <Model3d
       castSelfShadows
-      sceneryType={SCENERY_TYPE.ss.coms1}
+      model3dSrc={LOAD_MODEL_3D_SRC.ss.coms1}
       scale={6}
       position={{ x: 0, y: 60, z: 0 }}
       rotation={{ x: 0, y: 0, z: Math.PI / 2 }}
       onLoadUpdateMech={station}
     />,
 
-    <Scenery
+    <Model3d
       castSelfShadows
-      sceneryType={SCENERY_TYPE.ss.dockingBay}
+      model3dSrc={LOAD_MODEL_3D_SRC.ss.dockingBay}
       scale={6}
       position={{ x: 0, y: -60, z: 0 }}
       rotation={{ x: 0, y: 0, z: 0 }}
       onLoadUpdateMech={station}
     />,
 
-    <Scenery
+    <Model3d
       castSelfShadows
-      sceneryType={SCENERY_TYPE.ss.dockingBay}
+      model3dSrc={LOAD_MODEL_3D_SRC.ss.dockingBay}
       scale={6}
       position={{ x: 0, y: -60, z: 0 }}
       rotation={{ x: 0, y: Math.PI, z: 0 }}
       onLoadUpdateMech={station}
     />,
 
-    <Scenery
+    <Model3d
       castSelfShadows
-      sceneryType={SCENERY_TYPE.artifact.gate}
+      model3dSrc={LOAD_MODEL_3D_SRC.artifact.gate}
       scale={50}
       position={{ x: 0, y: -60, z: 0 }}
       rotation={{ x: 0, y: Math.PI, z: 0 }}
@@ -85,12 +85,12 @@ const Station = memo((props: StationInt) => {
         rotation={[Math.PI / 2, 0, Math.PI / 2]}
         ref={(mechRef: Object3D) => {
           if (mechRef === null) return;
-          const isWaitLoadModelsTotal = SceneryObjects.length; // number of Scenery objects loading
+          const isWaitLoadModelsTotal = loadModel3dObjects.length; // number of Model3d objects loading
           station.assignObject3dComponentRef(mechRef, isWaitLoadModelsTotal);
         }}
       />
-      {SceneryObjects.map((scenery, index) => (
-        <React.Fragment key={index}>{scenery}</React.Fragment>
+      {loadModel3dObjects.map((model3d, index) => (
+        <React.Fragment key={index}>{model3d}</React.Fragment>
       ))}
     </>
   );

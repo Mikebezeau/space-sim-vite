@@ -5,7 +5,6 @@ import useParticleStore from "./particleStore";
 import MechWeapon from "../classes/mechBP/weaponBP/MechWeapon";
 import { equipData } from "../equipment/data/equipData";
 import { WEAPON_FIRE_SPEED } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
 
 export type weaponFireType = {
   id: string;

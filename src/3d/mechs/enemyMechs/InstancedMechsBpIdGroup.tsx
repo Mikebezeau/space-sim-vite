@@ -1,10 +1,10 @@
 import React, { memo, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import useEnemyStore from "../../stores/enemyStore";
-import useMechBpBuildStore from "../../stores/mechBpBuildStore";
-import Mech from "../../classes/mech/Mech";
-import { MECH_STATE } from "../../classes/mech/Mech";
+import useEnemyStore from "../../../stores/enemyStore";
+import useMechBpBuildStore from "../../../stores/mechBpBuildStore";
+import Mech from "../../../classes/mech/Mech";
+import { MECH_STATE } from "../../../classes/mech/Mech";
 
 interface InstancedMechsInt {
   mechBpId: string;

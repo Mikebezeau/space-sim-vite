@@ -1,5 +1,5 @@
 import React, { memo, useRef } from "react";
-import useEnemyStore from "../../stores/enemyStore";
+import useEnemyStore from "../../../stores/enemyStore";
 import InstancedMechsBpIdGroup from "./InstancedMechsBpIdGroup";
 
 const InstancedMechs = () => {

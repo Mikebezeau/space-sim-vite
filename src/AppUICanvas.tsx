@@ -3,7 +3,6 @@ import { createRoot } from "@react-three/fiber";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import BuildMech from "./3d/buildMech/BuildMech";
-//import PlanetScanReadout from "./3d/spaceFlight/PlanetScanReadout";
 import { PLAYER } from "./constants/constants";
 
 const MyCanvas = (props) => {
@@ -61,12 +60,7 @@ const AppUICanvas = () => {
           playerScreen === PLAYER.screen.flight ? (
             <>
               {playerControlMode === PLAYER.controls.scan ? (
-                <>
-                  {/*}
-                <group scale={0.1} position={[0, 0, -20]}>
-                  <PlanetScanReadout />
-                </group>*/}
-                </>
+                <></>
               ) : (
                 <group
                   scale={0.2}

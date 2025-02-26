@@ -6,7 +6,6 @@ import Floor from "./Floor";
 import GridsContainer from "./GridsContainer";
 import useMainUIStore from "./useMainUIStore";
 import ZoomController from "./zoomEffects/ZoomController";
-//import BuildMech from "../3d/buildMech/BuildMech";
 import { SCALE } from "../constants/constants";
 
 export default function UiMainScene() {
@@ -45,9 +44,7 @@ export default function UiMainScene() {
         position={[0, 0, -5]}
         rotation={[-Math.PI / 7, 0, Math.PI / 4]}
         scale={SCALE}
-      >
-        {/*<BuildMech mechBP={stations[0]?.mechBP} isWireFrame={true} />*/}
-      </group>
+      ></group>
     </>
   );
 }

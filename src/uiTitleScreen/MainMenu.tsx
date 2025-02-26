@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import CyberMenuBorder from "../menuComponents/common/CyberMenuBorder";
-import CyberButton from "../menuComponents/common/CyberButton";
+import CyberMenuBorder from "../uiMenuComponents/common/CyberMenuBorder";
+import CyberButton from "../uiMenuComponents/common/CyberButton";
 //import ButtonIcon from "./ButtonIcon";
 import { PLAYER } from "../constants/constants";
 import TitleScreenBackground from "./TitleScreenBackground";
