@@ -3,7 +3,7 @@ import { Group, Object3D } from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import SpaceStationMech from "../../classes/mech/SpaceStationMech";
-import Model3d from "../Model3d";
+import LoadModel3d from "../LoadModel3d";
 import { LOAD_MODEL_3D_SRC } from "../../stores/loaderStore";
 
 interface StationInt {
@@ -33,7 +33,7 @@ const Station = memo((props: StationInt) => {
   });
 
   const loadModel3dObjects = [
-    <Model3d
+    <LoadModel3d
       castSelfShadows
       model3dSrc={LOAD_MODEL_3D_SRC.junk.brokenDish}
       scale={40}
@@ -42,7 +42,7 @@ const Station = memo((props: StationInt) => {
       onLoadUpdateMech={station}
     />,
 
-    <Model3d
+    <LoadModel3d
       castSelfShadows
       model3dSrc={LOAD_MODEL_3D_SRC.ss.coms1}
       scale={6}
@@ -51,7 +51,7 @@ const Station = memo((props: StationInt) => {
       onLoadUpdateMech={station}
     />,
 
-    <Model3d
+    <LoadModel3d
       castSelfShadows
       model3dSrc={LOAD_MODEL_3D_SRC.ss.dockingBay}
       scale={6}
@@ -60,7 +60,7 @@ const Station = memo((props: StationInt) => {
       onLoadUpdateMech={station}
     />,
 
-    <Model3d
+    <LoadModel3d
       castSelfShadows
       model3dSrc={LOAD_MODEL_3D_SRC.ss.dockingBay}
       scale={6}
@@ -69,7 +69,7 @@ const Station = memo((props: StationInt) => {
       onLoadUpdateMech={station}
     />,
 
-    <Model3d
+    <LoadModel3d
       castSelfShadows
       model3dSrc={LOAD_MODEL_3D_SRC.artifact.gate}
       scale={50}
@@ -85,7 +85,7 @@ const Station = memo((props: StationInt) => {
         rotation={[Math.PI / 2, 0, Math.PI / 2]}
         ref={(mechRef: Object3D) => {
           if (mechRef === null) return;
-          const isWaitLoadModelsTotal = loadModel3dObjects.length; // number of Model3d objects loading
+          const isWaitLoadModelsTotal = loadModel3dObjects.length; // number of LoadModel3d objects loading
           station.assignObject3dComponentRef(mechRef, isWaitLoadModelsTotal);
         }}
       />

@@ -3,7 +3,7 @@ import { Group } from "three";
 import useLoaderStore from "../stores/loaderStore";
 import Mech from "../classes/mech/Mech";
 
-type model3dInt = {
+type loadModel3dInt = {
   castSelfShadows?: boolean;
   model3dSrc: string;
   scale?: number;
@@ -12,7 +12,7 @@ type model3dInt = {
   onLoadUpdateMech?: Mech; //(object: Object3D) => void;
 };
 
-const Model3d = (props: model3dInt) => {
+const LoadModel3d = (props: loadModel3dInt) => {
   const {
     castSelfShadows = false, // TODO
     model3dSrc,
@@ -38,4 +38,4 @@ const Model3d = (props: model3dInt) => {
   return onLoadUpdateMech ? null : <group ref={groupRef} />;
 };
 
-export default Model3d;
+export default LoadModel3d;

@@ -6,7 +6,7 @@ import useEnemyStore from "../../../stores/enemyStore";
 import InstancedMechs from "./InstancedMechs";
 
 import { LOAD_MODEL_3D_SRC } from "../../../stores/loaderStore";
-import Model3d from "../../Model3d";
+import LoadModel3d from "../../LoadModel3d";
 
 const EnemyMechs = () => {
   const componentName = "EnemyMechs";
@@ -37,7 +37,7 @@ const EnemyMechs = () => {
                   ref={(mechRef: THREE.Object3D) => {
                     if (mechRef === null) return;
                     // test: way to add Object3Ds on the fly
-                    // isWaitLoadModelsTotal: number of Model3d objects loading below
+                    // isWaitLoadModelsTotal: number of LoadModel3d objects loading below
                     const isWaitLoadModelsTotal = 1;
                     enemyMech.assignObject3dComponentRef(
                       mechRef,
@@ -45,7 +45,7 @@ const EnemyMechs = () => {
                     );
                   }}
                 />
-                <Model3d
+                <LoadModel3d
                   scale={25}
                   castSelfShadows
                   model3dSrc={LOAD_MODEL_3D_SRC.artifact.triangleThing}
