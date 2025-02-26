@@ -22,38 +22,35 @@ const WeaponFire = () => {
   const arrowHelper = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
 
   useEffect(() => {
-    //scene.add(arrowHelper.current);
-    // TODO move this
-    // make enemyWorldPosition equal to playerWorldOffsetPosition to start battle
-    // this should be the other way around, and also recalculate the new player position
-    // i think a function exists for all this already
-
     useStore
       .getState()
       .setNewPlayerPosition(
         useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition
       );
-
-    return () => {
-      scene.remove(arrowHelper.current);
-    };
-  }, []);
+  }, []); // each time a battle starts update player position
 
   const dummyRaycaster = new THREE.Raycaster();
   dummyRaycaster.params.Points.threshold = 0.01;
   dummyRaycaster.near = 0.1;
 
-  // TODO this might not get updated when new enemy is added
+  // these object refrences do not change during the battle
   const objectsToTest = [
     //player.object3d,
     ...enemyGroup.enemyMechs.map(
       (
-        enemy: Mech // TODO change map to filter
+        enemy: Mech // TODO change map to filter - do not check exploding or dead mechs
       ) => (enemy.useInstancedMesh ? null : enemy.object3d)
     ),
     // instanceed meshes
     ...instancedMeshRefs.map((instancedMesh) => instancedMesh),
   ];
+
+  useEffect(() => {
+    //scene.add(arrowHelper.current);
+    return () => {
+      //  scene.remove(arrowHelper.current);
+    };
+  }, []);
 
   useFrame((_, delta) => {
     const deltaFPS = delta * FPS;
@@ -63,10 +60,9 @@ const WeaponFire = () => {
     weaponFireList.forEach((weaponFire, i) => {
       const timeElapsed = Date.now() - weaponFire.timeStart;
       ray.origin.set(
-        // weird, why divide by speed?
-        weaponFire.position.x + (weaponFire.velocity.x / 500) * timeElapsed, //+ (acceleration * timeElapsed * timeElapsed)
-        weaponFire.position.y + (weaponFire.velocity.y / 500) * timeElapsed,
-        weaponFire.position.z + (weaponFire.velocity.z / 500) * timeElapsed
+        weaponFire.position.x + (weaponFire.velocity.x * timeElapsed) / 1000, //+ (acceleration * timeElapsed * timeElapsed)
+        weaponFire.position.y + (weaponFire.velocity.y * timeElapsed) / 1000,
+        weaponFire.position.z + (weaponFire.velocity.z * timeElapsed) / 1000
       );
       ray.direction
         .set(
@@ -81,7 +77,7 @@ const WeaponFire = () => {
         arrowHelper.current.setDirection(ray.direction);
         arrowHelper.current.setLength(weaponFire.weaponFireSpeed / 10);
       }
-      dummyRaycaster.far = weaponFire.weaponFireSpeed; // TODO deltaFPS multiplication
+      dummyRaycaster.far = weaponFire.weaponFireSpeed / 60; // TODO deltaFPS multiplication
       dummyRaycaster.set(ray.origin, ray.direction);
       const intersects = dummyRaycaster.intersectObjects(
         objectsToTest.filter((obj) => obj !== null),

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import MechBP from "../mechBP/MechBP";
 import useMechBpBuildStore from "../../stores/mechBpBuildStore";
 import useParticleStore from "../../stores/particleStore";
+import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
   // TODO move getSimplifiedGeometry to mechGeometryUtil
@@ -13,7 +14,6 @@ import {
   getMergedBufferGeomColor,
   getTessellatedExplosionMesh,
 } from "../../util/mechGeometryUtil";
-import { equipData } from "../../equipment/data/equipData";
 import useLoaderStore from "../../stores/loaderStore";
 import { FPS } from "../../constants/constants";
 import { mechMaterial } from "../../constants/mechMaterialConstants";
@@ -414,7 +414,13 @@ class Mech implements mechInt {
   }
 
   explode(scene?: THREE.Scene) {
-    if (this.mechState === MECH_STATE.explode) return;
+    if (
+      this.mechState === MECH_STATE.explode ||
+      this.mechState === MECH_STATE.dead
+    ) {
+      console.warn("Mech.explode(): mech already explode/dead");
+      return;
+    }
     this.mechState = MECH_STATE.explode;
     this.timeCounter = 0;
 
@@ -549,7 +555,7 @@ class Mech implements mechInt {
 
   fireWeapon(targetQuaternoin?: THREE.Quaternion) {
     if (this.mechBP?.weaponList) {
-      //
+      // TODO add these to the class instead of const above
       weaponFireMechParentObj.position.copy(this.object3d.position);
       weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
       // get quaternion
@@ -560,34 +566,38 @@ class Mech implements mechInt {
       weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
 
       // for each weapon type array
-      this.mechBP.weaponList.forEach((weapon: any) => {
+      this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
+        // TODO i dont think servoOffset is needed - weapons are always positioned from 0,0,0
+        /*
         weapon.servoOffset = this.mechBP.servoList.find(
           (s) => s.id === weapon.locationServoId
         )?.offset;
-        if (weapon.servoOffset) {
-          // TODO find better way to calculate weapon position
-          // - use weapon.offset and weaponFireMechParentObj.rotation
-          // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
-          // it's position is relative to weaponFireMechParentObj
-          weaponFireWeaponChildObj.position.copy(weapon.offset);
-          weaponFireWeaponChildObj.getWorldPosition(weaponWorldPositionVec);
+        */
+        //if (weapon.servoOffset) {
+        // TODO find better way to calculate weapon position
+        // - use weapon.offset and weaponFireMechParentObj.rotation
+        // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
+        // it's position is relative to weaponFireMechParentObj
+        weaponFireWeaponChildObj.position.copy(weapon.offset);
+        weaponFireWeaponChildObj.getWorldPosition(weaponWorldPositionVec);
 
-          // fire weapon / add weaponFire to weaponFireList for hit detection
-          useWeaponFireStore
-            .getState()
-            .fireWeapon(weapon, weaponWorldPositionVec, weaponFireEuler);
+        // fire weapon / add weaponFire to weaponFireList for hit detection
+        useWeaponFireStore
+          .getState()
+          .fireWeapon(weapon, weaponWorldPositionVec, weaponFireEuler);
 
-          // if player show fire effect
-          if (this.isPlayer) {
-            useParticleStore.getState().playerEffects.addWeaponFireFlash(
-              //this.object3d.position,
-              weaponFireWeaponChildObj.position,
-              this.object3d.rotation
-            );
-          }
-        } else {
-          //console.error("servoOffset not found for weapon", weapon);
+        // if player show fire effect
+        if (this.isPlayer) {
+          useParticleStore.getState().playerEffects.addWeaponFireFlash(
+            // player effects are centered on player position
+            weaponFireWeaponChildObj.position,
+            this.object3d.rotation
+          );
         }
+        /*
+        } else {
+          console.warn("servoOffset not found for weapon", weapon);
+        }*/
       });
     }
   }

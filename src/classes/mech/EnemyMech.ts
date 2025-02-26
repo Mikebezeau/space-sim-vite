@@ -1,9 +1,11 @@
+import * as THREE from "three";
 import Mech from "./Mech";
 import mechDesigns from "../../equipment/data/mechDesigns";
 
 export interface enemyMechInt {
   getIsLeader: () => boolean;
   getHasGroup: () => boolean;
+  explode: (scene) => void;
 }
 
 class EnemyMech extends Mech implements enemyMechInt {
@@ -31,6 +33,11 @@ class EnemyMech extends Mech implements enemyMechInt {
 
   getHasGroup() {
     return this.groupLeaderId !== null;
+  }
+
+  explode(scene?: THREE.Scene) {
+    console.log("EnemyMech.explode()");
+    super.explode(scene);
   }
 }
 

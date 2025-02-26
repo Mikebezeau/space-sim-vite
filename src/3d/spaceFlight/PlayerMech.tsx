@@ -1,23 +1,18 @@
 import React, { memo, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { BoxGeometry, FrontSide, Object3D, ShaderMaterial } from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useParticleStore from "../../stores/particleStore";
-import useEnemyStore from "../../stores/enemyStore";
 import PlayerCrosshair from "./PlayerCrosshair";
-//import BuildMech from "../buildMech/BuildMech";
 import Particles from "../Particles";
-import Mech from "../../classes/mech/Mech";
 import { setVisible } from "../../util/gameUtil";
 import { FPS, PLAYER } from "../../constants/constants";
 //import { setCustomData } from "r3f-perf";
 
 const PlayerMech = () => {
   useStore.getState().updateRenderInfo("PlayerMech");
-
-  const { camera, gl, scene } = useThree();
 
   const player = useStore((state) => state.player);
   //const weaponFireLightTimer = useStore((state) => state.weaponFireLightTimer);
@@ -38,137 +33,6 @@ const PlayerMech = () => {
   const playerMechRef = useRef<any>(null);
   const secondaryGroupRef = useRef<THREE.Group | null>(null);
   const weaponFireLight = useRef<THREE.PointLight | null>(null);
-
-  //
-  const arrowHelper = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
-  useEffect(() => {
-    //scene.add(arrowHelper.current);
-    return () => {
-      scene.remove(arrowHelper.current);
-    };
-  }, []);
-  const handleMouseClick = (event: MouseEvent) => {
-    const { clientX, clientY } = event;
-    const width = gl.domElement.clientWidth;
-    const height = gl.domElement.clientHeight;
-
-    const mouse = new THREE.Vector2(
-      (clientX / width) * 2 - 1,
-      -(clientY / height) * 2 + 1
-    );
-    /*
-    const raycaster = new THREE.Raycaster(
-      player.object3d.getWorldPosition(new THREE.Vector3(0, 0, 0)),
-      player.object3d.getWorldDirection(new THREE.Vector3(0, 0, 0))
-    );
-    */
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera);
-    raycaster.params.Points.threshold = 0.01;
-    raycaster.near = 0.1;
-    raycaster.far = 10000;
-
-    arrowHelper.current.position.copy(raycaster.ray.origin);
-    arrowHelper.current.setDirection(raycaster.ray.direction);
-    arrowHelper.current.setLength(50);
-
-    const objectsToTest = [
-      //player.object3d,
-      ...useStore.getState().stations.map((station) => station.object3d),
-      ...useEnemyStore
-        .getState()
-        .enemyGroup.enemyMechs.map((enemy: Mech) =>
-          enemy.useInstancedMesh ? null : enemy.object3d
-        ),
-      // instanceed meshes
-      ...useEnemyStore
-        .getState()
-        .enemyGroup.instancedMeshRefs.map((instancedMesh) => instancedMesh),
-    ];
-    const intersects = raycaster.intersectObjects(
-      objectsToTest.filter((obj) => obj !== null),
-      true
-    );
-
-    if (intersects.length > 0) {
-      const intersectedObject = intersects[0].object;
-      if (!intersectedObject) return;
-
-      let object = intersects[0].object;
-
-      if (object instanceof THREE.InstancedMesh) {
-        const instanceId = intersects[0].instanceId;
-        if (typeof instanceId === "undefined") {
-          console.warn("instanceId undefined");
-          return;
-        }
-        // expolde mech in enemyGroup corresponding to InstancedMesh object and instanceId
-        useEnemyStore
-          .getState()
-          .enemyGroup.explodeInstancedEnemy(
-            scene,
-            object as THREE.InstancedMesh,
-            instanceId
-          );
-        /*
-        useEnemyStore
-          .getState()
-          .enemyGroup.updateInstancedColor(
-            object as THREE.InstancedMesh,
-            instanceId
-          );
-        */
-      }
-      // end if instanced mesh
-      // else, is not instanced mesh
-      else {
-        while (!object.userData.mechId && object.parent) {
-          object = object.parent;
-        }
-        const topParentMechObj = object;
-        const intersectedObjectMechId = topParentMechObj.userData.mechId;
-
-        if (!intersectedObjectMechId) {
-          console.warn("No mech id found");
-          return;
-        }
-        // find mech by the mech.id
-        let intersectedMech: Mech | undefined = useEnemyStore
-          .getState()
-          .enemyGroup.enemyMechs.find(
-            (enemy) => enemy.id === intersectedObjectMechId
-          );
-        // stations
-        if (!intersectedMech) {
-          intersectedMech = useStore
-            .getState()
-            .stations.find((station) => station.id === intersectedObjectMechId);
-        }
-        /*
-        //hitting self
-        if (!intersectedMech) {
-          if (player.id === intersectedObjectMechId){
-            intersectedMech = useStore.getState().player;
-          }
-        }
-        */
-        if (!intersectedMech)
-          console.log("No mech found, id:", intersectedObjectMechId);
-        intersectedMech?.explode();
-      }
-    }
-  };
-
-  useEffect(() => {
-    //window.addEventListener("click", handleMouseClick);
-    return () => {
-      window.removeEventListener("click", handleMouseClick);
-    };
-  }, []);
-
-  //
-
-  //
 
   const particleOriginObj = new Object3D();
   let speed: number,

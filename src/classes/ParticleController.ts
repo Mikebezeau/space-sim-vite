@@ -5,7 +5,8 @@ const UPDATEABLE_ATTRIBUTES = [
   "aSprite",
   "aDesign",
   "positionStart",
-  "startTime",
+  // TODO rename uTime to uTimeElapsed
+  "startTime", // TODO remove - not using this - uTime starts at 0 and is updated each frame
   "velocity",
   "acceleration",
   "aAngle",
@@ -265,7 +266,7 @@ class ParticleController implements ParticleControllerInt {
   update(delta: number) {
     this.time += delta;
     this.material.uniforms.uTime.value = this.time;
-    if (this.onTick) this.onTick(this, this.time);
+    if (this.onTick) this.onTick(this, this.time); // optional callback
     this.geometryUpdate();
   }
 

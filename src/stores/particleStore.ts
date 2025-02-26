@@ -123,10 +123,12 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
     white: new Color(0xffffff),
     yellow: new Color(0xffff00),
   },
+  // particle effecs - static positioned at playerWorldOffsetPosition
   particleController: new ParticleController({
     particleSpriteTex: starSpriteTex,
     particleSpriteTex1: smokeTexture,
   }),
+  // particle effects - dynamic position that is set to player position each frame
   playerParticleController: new ParticleController({
     maxParticles: 20000,
     particleSpriteTex: starSpriteTex,
