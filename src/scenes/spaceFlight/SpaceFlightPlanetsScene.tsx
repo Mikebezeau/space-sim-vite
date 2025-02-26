@@ -4,6 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import SolarSystem from "../../3d/solarSystem/SolarSystem";
 import Stations from "../../3d/spaceFlight/Stations";
 import PlayerMech from "../../3d/spaceFlight/PlayerMech";
+import WeaponFire from "../../3d/WeaponFire";
 import SpaceFlightHud from "../../3d/spaceFlight/SpaceFlightHud";
 import Particles from "../../3d/Particles";
 import useStore from "../../stores/store";
@@ -58,6 +59,7 @@ const SpaceFlightPlanetsScene = () => {
     <>
       <ambientLight intensity={0.2} />
       <PlayerMech />
+      <WeaponFire />
       <SpaceFlightHud />
       {/* TODO particle system - spawn particle - do check to make sure only local particles are spawned */}
       <Particles />

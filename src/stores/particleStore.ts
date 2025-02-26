@@ -106,6 +106,7 @@ interface particleStoreState {
 }
 
 // TODO move these reusable objects to a bettr location
+const dummyVec3 = new Vector3();
 const dummyObj = new Object3D();
 const dummyChildObj = new Object3D();
 dummyObj.add(dummyChildObj);
@@ -436,13 +437,13 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
       //dummyChildObj is a child of dummyObj
       dummyChildObj.position.copy(position);
       // get relative position of dummyChildObj to dummyObj
-      dummyChildObj.getWorldPosition(position);
-      if (get().particleController) {
+      dummyChildObj.getWorldPosition(dummyVec3);
+      if (get().playerParticleController) {
         for (let i = 0; i < numParticles; i++) {
-          get().particleController.spawnParticle({
+          get().playerParticleController.spawnParticle({
             sprite: DESIGN_TYPE.circle,
             //sprite: SPRITE_TYPE.smoke,
-            position: position,
+            position: dummyVec3,
             velocity: {
               x: (Math.random() - 0.5) * spread,
               y: (Math.random() - 0.5) * spread,

@@ -18,6 +18,7 @@ import useLoaderStore from "../../stores/loaderStore";
 import { FPS } from "../../constants/constants";
 import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
+import useWeaponFireStore from "../../stores/weaponFireStore";
 
 //import { setCustomData } from "r3f-perf";
 
@@ -413,6 +414,7 @@ class Mech implements mechInt {
   }
 
   explode(scene?: THREE.Scene) {
+    if (this.mechState === MECH_STATE.explode) return;
     this.mechState = MECH_STATE.explode;
     this.timeCounter = 0;
 
@@ -427,7 +429,7 @@ class Mech implements mechInt {
     // adding immediate explosion particles
     useParticleStore.getState().effects.addExplosion(
       this.object3d.position,
-      6000,
+      3000,
       this._mechBP.scale / 5, // increase size of particles according to scale of mech
       this._mechBP.scale * 50, // increase spread speed according to scale of mech
       0.5, // lifetime in seconds
@@ -506,11 +508,13 @@ class Mech implements mechInt {
     // if explosionTimeNormalized is greater than 1, mech is dead
     if (explosionTimeNormalized > 1) {
       this.setMechDead(scene);
+      /*
       //TESTING: reset mech to original state
       if (!this.useInstancedMesh) {
         this.mechState = MECH_STATE.idle;
         this.cloneToObject3d();
       }
+      */
       // exit function
       return;
     }
@@ -524,6 +528,7 @@ class Mech implements mechInt {
     this.mechState = MECH_STATE.dead;
     this.object3d.clear();
     // position mech object far away to not interfear with scene
+    // TODO the boidcontroller gets messed up when object is moved far away
     //this.object3d.position.set(this.object3d.position.x + 100000, 0, 0);
 
     if (
@@ -531,13 +536,15 @@ class Mech implements mechInt {
       scene?.children.find((obj) => obj.id === this.object3d.id)
     ) {
       scene.remove(this.object3d);
-      // TODO dispose explosionMesh and other cleanup for Mechs
-      if (this.explosionMesh !== null) {
-        this.explosionMesh.geometry?.dispose();
-        // not using material array ( <THREE.Material[]> ) so treat material as single material
-        (<THREE.Material>this.explosionMesh.material)?.dispose();
-      }
     }
+    /*
+    // TODO dispose explosionMesh and other cleanup for Mechs
+    if (this.explosionMesh !== null) {
+      this.explosionMesh.geometry?.dispose();
+      // not using material array ( <THREE.Material[]> ) so treat material as single material
+      (<THREE.Material>this.explosionMesh.material)?.dispose();
+    }
+    */
   }
 
   fireWeapon(targetQuaternoin?: THREE.Quaternion) {
@@ -560,30 +567,23 @@ class Mech implements mechInt {
         if (weapon.servoOffset) {
           // TODO find better way to calculate weapon position
           // - use weapon.offset and weaponFireMechParentObj.rotation
-          // weaponFireMechParentObj id a shild of weaponFireMechParentObj, so it's position is relative to weaponFireMechParentObj
+          // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
+          // it's position is relative to weaponFireMechParentObj
           weaponFireWeaponChildObj.position.copy(weapon.offset);
           weaponFireWeaponChildObj.getWorldPosition(weaponWorldPositionVec);
-          if (weapon.weaponType === equipData.weaponType.beam) {
-            useParticleStore
-              .getState()
-              .effects.addLaser(weaponWorldPositionVec, weaponFireEuler);
-          } else if (weapon.weaponType === equipData.weaponType.projectile) {
-            useParticleStore
-              .getState()
-              .effects.addBullet(weaponWorldPositionVec, weaponFireEuler);
-          } else if (weapon.weaponType === equipData.weaponType.missile) {
-            useParticleStore
-              .getState()
-              .effects.addMissile(weaponWorldPositionVec, weaponFireEuler);
-          }
+
+          // fire weapon / add weaponFire to weaponFireList for hit detection
+          useWeaponFireStore
+            .getState()
+            .fireWeapon(weapon, weaponWorldPositionVec, weaponFireEuler);
+
           // if player show fire effect
           if (this.isPlayer) {
-            useParticleStore
-              .getState()
-              .playerEffects.addWeaponFireFlash(
-                weaponFireWeaponChildObj.position,
-                weaponFireMechParentObj.rotation
-              );
+            useParticleStore.getState().playerEffects.addWeaponFireFlash(
+              //this.object3d.position,
+              weaponFireWeaponChildObj.position,
+              this.object3d.rotation
+            );
           }
         } else {
           //console.error("servoOffset not found for weapon", weapon);

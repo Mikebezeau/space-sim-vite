@@ -118,12 +118,7 @@ const TestEnemyAttackScene = () => {
     );
     //player.object3d.rotation.setFromQuaternion(flipRotation(camera.quaternion));
     player.fireWeapon();
-    /*
-    const raycaster = new THREE.Raycaster(
-      player.object3d.getWorldPosition(new THREE.Vector3(0, 0, 0)),
-      player.object3d.getWorldDirection(new THREE.Vector3(0, 0, 0))
-    );
-    */
+
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
     raycaster.params.Points.threshold = 0.01;

@@ -73,7 +73,7 @@ interface storeState {
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
   // therefore do not really need to use getPlayer
-  getPlayer: () => PlayerMech;
+  getPlayer: () => PlayerMech; // TODO don't need getPlayer
   playerPropUpdate: boolean; // used to re-render player prop based menu components
   togglePlayerPropUpdate: () => void;
   // used to shift positions over large distances to a local space
