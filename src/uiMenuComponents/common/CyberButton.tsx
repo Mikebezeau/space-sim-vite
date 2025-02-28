@@ -1,54 +1,49 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 
-interface CyberButtonInt {
+interface cyberButtonInt {
   title: string;
   index?: number;
-  mainClassName?: string;
-  tagClassName?: string;
+  mainStyle?: any;
+  tagStyle?: any;
   onClick: () => void;
 }
 
-const CyberButton = (props: CyberButtonInt) => {
+const CyberButton = (props: cyberButtonInt) => {
   const {
     title,
     index = 0,
-    mainClassName = "",
-    tagClassName = "",
+    mainStyle = null,
+    tagStyle = null,
     onClick,
   } = props;
 
-  const [isGlitch, setIsGlitch] = useState(false);
+  const glitchRef = useRef<HTMLSpanElement | null>(null);
 
   const buttonGlitchOnClickAction = (onClick: () => void) => {
-    setIsGlitch(true);
-    setTimeout(onClick, 250);
+    glitchRef.current?.classList.remove("glitch-once");
+    setTimeout(() => {
+      glitchRef.current?.classList.add("glitch-once");
+    }, 50);
+    onClick();
   };
 
   return (
     <div
-      className={`${mainClassName}`}
-      style={{
-        clipPath: `polygon(
-        0px 0px,
-        0px 100%,
-        100% 100%,
-        100% 0px)`,
-      }}
+      className={`pointer-events-auto cursor-pointer cybr-btn w-full pl-[10%]`}
+      style={mainStyle}
+      onClick={() => buttonGlitchOnClickAction(onClick)}
     >
-      <div
-        className={`pl-[10%] cybr-btn`}
-        onClick={() => buttonGlitchOnClickAction(onClick)}
+      {title}
+      <span
+        ref={glitchRef}
+        aria-hidden
+        className={`cybr-btn__glitch glitch-once pl-[10%]`}
       >
         {title}
-        {isGlitch && (
-          <span aria-hidden className={`cybr-btn__glitch ${mainClassName}`}>
-            {title}
-          </span>
-        )}
-        <span aria-hidden className={`cybr-btn__tag ${tagClassName}`}>
-          X{index + 12}
-        </span>
-      </div>
+      </span>
+      <span aria-hidden className={`cybr-btn__tag`} style={tagStyle}>
+        X{index + 12}
+      </span>
     </div>
   );
 };

@@ -24,7 +24,7 @@ const WeaponFire = () => {
   useEffect(() => {
     useStore
       .getState()
-      .setNewPlayerPosition(
+      .setPlayerWorldPosition(
         useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition
       );
   }, []); // each time a battle starts update player position

@@ -1,3 +1,4 @@
+/* button style 1 - simple cyberpunk */
 .button-cyber {
   position: relative;
   border: 0;
@@ -27,6 +28,7 @@
   background-color: rgba(0, 255, 94, 0.484);
 }
 
+/* button style 2 - glitch cyberpunk */
 .clip-path-cyber {
   clip-path: polygon(
     0% 0%,
@@ -58,20 +60,20 @@
 }
 
 .cybr-btn {
+  --primary-hue: 0;
+  --primary-lightness: 0;
   --primary: hsl(
     var(--primary-hue),
     85%,
     calc(var(--primary-lightness, 50) * 1%)
   );
-  --shadow-primary: hsl(var(--shadow-primary-hue), 90%, 50%);
-  --primary-hue: 0;
-  --primary-lightness: 50;
+  --text-and-glitch-color-hue: 90;
+  --shadow-secondary-hue: 0;
+  --text-and-glitch-color: hsl(var(--text-and-glitch-color-hue), 90%, 100%);
+  --shadow-secondary: hsl(var(--shadow-secondary-hue), 90%, 100%);
   --color: hsl(0, 0%, 100%);
   --font-size: 26px;
-  --shadow-primary-hue: 180;
   --label-size: 9px;
-  --shadow-secondary-hue: 60;
-  --shadow-secondary: hsl(var(--shadow-secondary-hue), 90%, 60%);
   --clip: polygon(
     0 0,
     100% 0,
@@ -83,8 +85,8 @@
     15px 100%,
     0 calc(100% - 15px)
   );
-  --border: 4px;
-  --shimmy-distance: 1;
+  --border: 2px;
+  --shimmy-distance: 30;
   --clip-one: polygon(
     0 2%,
     100% 2%,
@@ -180,7 +182,7 @@
 }
 
 .cybr-btn:hover {
-  color: var(--shadow-primary);
+  color: #0fe3ff; /*var(--text-and-glitch-color);*/
 }
 
 .cybr-btn:after,
@@ -189,14 +191,14 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  right: 4px;
   bottom: 0;
   clip-path: var(--clip);
   z-index: -1;
 }
 
 .cybr-btn:before {
-  background: var(--shadow-primary);
+  background: var(--text-and-glitch-color);
   transform: translate(var(--border), 0);
 }
 
@@ -222,10 +224,13 @@
   left: calc(var(--border) * -1);
   right: calc(var(--border) * -1);
   bottom: calc(var(--border) * -1);
-  background: var(--shadow-primary);
-  text-shadow: 2px 2px var(--shadow-primary), -2px -2px var(--shadow-secondary);
+  background: var(--text-and-glitch-color);
+  /* 
+  text-shadow: 2px 2px var(--text-and-glitch-color),
+    -2px -2px var(--shadow-secondary);
+  */
   clip-path: var(--clip);
-  animation: glitch 1000ms infinite;
+  /*animation: glitch 1000ms infinite;*/
   display: block; /*none;*/
 }
 

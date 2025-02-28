@@ -11,7 +11,7 @@
 }
 
 @font-face {
-  font-family: "14SegmentLED"; /* TODO not working */
+  font-family: "14SegmentLED";
   src: local("14SegmentLED"),
     url("../assets/fonts/14SegmentLED.ttf") format("truetype");
   font-style: normal;
@@ -46,15 +46,8 @@
 }
 
 @font-face {
-  font-family: "DigitalDismay";
-  src: local("DigitalDismay"),
-    url("../assets/fonts/DigitalDismay.otf") format("opentype");
-  font-style: normal;
-}
-
-@font-face {
   font-family: "DS-DIGIT";
-  src: local("DS-DIGIT"), url("../assets/fonts/DS-DIGIT.ttf") format("truetype");
+  src: local("DS-DIGIT"), url("../assets/fonts/DS-DIGIB.ttf") format("truetype");
   font-style: normal;
 }
 

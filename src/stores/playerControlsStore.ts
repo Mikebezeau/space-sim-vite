@@ -71,9 +71,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
     // testing
-    //playerScreen: PLAYER.screen.mainMenu,
+    playerScreen: PLAYER.screen.mainMenu,
     //playerScreen: PLAYER.screen.newCampaign,
-    playerScreen: PLAYER.screen.flight,
+    //playerScreen: PLAYER.screen.flight,
     //playerScreen: PLAYER.screen.equipmentBuild,
     //playerScreen: PLAYER.screen.galaxyMap,
     getPlayerState: () => {
@@ -178,7 +178,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         if (get().playerWarpToPosition !== null) {
           /*
           // warp to target immediately TODO add GUI dev setting for this
-          useStore.getState().setNewPlayerPosition(get().playerWarpToPosition!);
+          useStore.getState().setPlayerWorldPosition(get().playerWarpToPosition!);
           get().playerWarpToPosition = null;
           */
 

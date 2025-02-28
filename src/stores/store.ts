@@ -80,7 +80,7 @@ interface storeState {
   playerWorldPosition: THREE.Vector3;
   // maximum local distances should be less than 65500 units for float accuracy
   playerWorldOffsetPosition: THREE.Vector3;
-  setNewPlayerPosition: (
+  setPlayerWorldPosition: (
     newPosition: THREE.Vector3 | { x: number; y: number; z: number }
   ) => void;
   playerPositionUpdated: () => { x: number; y: number; z: number };
@@ -101,10 +101,7 @@ interface storeState {
     setPlayerPosition: (positionVec3: THREE.Vector3) => void;
 
     getPlayerCurrentStarIndex: () => number;
-    setPlayerCurrentStarIndex: (
-      playerCurrentStarIndex: number,
-      initBackgroundStars?: boolean
-    ) => void;
+    setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
 
     toggleSound: (sound?: boolean) => void;
     updateMouse: (event: MouseEvent) => void;
@@ -177,11 +174,7 @@ const useStore = create<storeState>()((set, get) => ({
     // set planet texture map renderer
     useGenFboTextureStore.getState().initComputeRenderer(renderer);
     // set planets, asteroids, stations, etc. for player start location
-    const initBackgroundStars = false; // set to false to avoid double star position generation
-    get().actions.setPlayerCurrentStarIndex(
-      PLAYER_START.system,
-      initBackgroundStars
-    );
+    get().actions.setPlayerCurrentStarIndex(PLAYER_START.system);
     set(() => ({ isSolarSystemInit: true }));
     set(() => ({
       isGameStoreInit: get().isGalaxyInit && get().isSolarSystemInit,
@@ -242,7 +235,7 @@ const useStore = create<storeState>()((set, get) => ({
   },
   playerWorldPosition: new THREE.Vector3(),
   playerWorldOffsetPosition: new THREE.Vector3(),
-  setNewPlayerPosition: (worldPosition) => {
+  setPlayerWorldPosition: (worldPosition) => {
     // local space position (always keep within 65000 of (0,0,0))
     get().player.object3d.position.set(0, 0, 0);
     // player world space offset position for placing other objects relative to player object3d
@@ -394,7 +387,7 @@ const useStore = create<storeState>()((set, get) => ({
           y: player.object3d.position.y,
           z: player.object3d.position.z,
         };
-        get().setNewPlayerPosition(targetWarpPosition);
+        get().setPlayerWorldPosition(targetWarpPosition);
       }
     },
     warpToPlanet() {
@@ -431,7 +424,7 @@ const useStore = create<storeState>()((set, get) => ({
           y: player.object3d.position.y,
           z: player.object3d.position.z,
         };
-        get().setNewPlayerPosition(targetWarpPosition);
+        get().setPlayerWorldPosition(targetWarpPosition);
       }
       */
     },
@@ -452,10 +445,7 @@ const useStore = create<storeState>()((set, get) => ({
     getPlayerCurrentStarIndex: () => get().playerCurrentStarIndex!,
 
     // slecting star in galaxy map
-    setPlayerCurrentStarIndex(
-      playerCurrentStarIndex,
-      initBackgroundStars = true
-    ) {
+    setPlayerCurrentStarIndex(playerCurrentStarIndex) {
       // playerCurrentStarIndex set at end, then triggering render of solar system related components
       // update background stars
       get().galaxy.setBackgroundStarsPosition(playerCurrentStarIndex);
@@ -519,7 +509,7 @@ const useStore = create<storeState>()((set, get) => ({
       }
 
       // setting new local position for player
-      get().setNewPlayerPosition(startPosition);
+      get().setPlayerWorldPosition(startPosition);
       // set player looking direction
       get().player.object3d.lookAt(startPosCelestialBody.object3d.position);
 

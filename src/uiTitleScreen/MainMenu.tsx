@@ -15,31 +15,37 @@ import stationSrc from "/images/station.jpg";
 const MainMenu = () => {
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
 
+  const delayedSwitchScreen = (screenConstNum: number) => {
+    setTimeout(() => {
+      switchScreen(screenConstNum);
+    }, 250);
+  };
+
   const menuItems = [
     {
       title: "New Campaign",
       onClick: () => {
-        switchScreen(PLAYER.screen.newCampaign);
+        delayedSwitchScreen(PLAYER.screen.newCampaign);
       },
     },
     {
       title: "Space Flight",
       onClick: () => {
-        switchScreen(PLAYER.screen.flight);
+        delayedSwitchScreen(PLAYER.screen.flight);
       },
     },
     /*
     {
       title: "Battle",
       onClick: () => {
-        switchScreen(PLAYER.screen.flight);
+        delayedSwitchScreen(PLAYER.screen.flight);
       },
     },
     */
     {
       title: "Design",
       onClick: () => {
-        switchScreen(PLAYER.screen.equipmentBuild);
+        delayedSwitchScreen(PLAYER.screen.equipmentBuild);
       },
     },
   ];
@@ -54,9 +60,10 @@ const MainMenu = () => {
 
   return (
     <div
-      className={`absolute top-0 right-0 left-0 bottom-0 bg-white transition-opacity duration-500 ${
-        /* fade in initially */ isInitLoaded ? "opacity-100" : "opacity-0"
-      }`}
+      className={`absolute top-0 right-0 left-0 bottom-0 bg-white 
+        transition-opacity duration-200 ${
+          /* fade in initially */ isInitLoaded ? "opacity-100" : "opacity-0"
+        }`}
     >
       <TitleScreenBackground isTitleImgLoaded={isTitleImgLoaded}>
         <img
@@ -64,22 +71,32 @@ const MainMenu = () => {
           onLoad={() => {
             setIsTitleImgLoaded(true);
           }}
-          className="absolute top-[40%] -mt-[200px] sm:-mt-[60px] sm:top-20 left-[5%] sm:left-[50%] sm:-ml-[37vh] w-[90%] sm:w-[75vh] transition-opacity duration-1000"
+          className="hidden absolute top-[40%] -mt-[200px] sm:-mt-[60px] sm:top-20 left-[5%] sm:left-[50%] sm:-ml-[37vh] w-[90%] sm:w-[75vh] 
+          transition-opacity duration-300"
         />
-        {/*
-        <div className="absolute top-[calc(60vw+50px)] sm:top-[50vh] left-1/2 h-2 w-fit transition-opacity duration-1000">
+        <div
+          style={{ marginTop: isShowMenu ? "-16vh" : 0 }}
+          className="absolute top-[calc(40vw+50px)] sm:top-[30vh] left-1/2 h-2 w-fit 
+           transition-all duration-1000"
+        >
           <div
-            className="-ml-[50%] glitch text-black opacity-80 text-[#0083a3] tracking-wide text-5xl sm:text-7xl"
+            /*
+            395equalizer2 - old dos font
+            ARCADE - dot matrix
+            CyberAlert - cyberpunk awesome
+            quadaptor - cyberpunk flowing
+            */
+            className="glitch font-['CyberAlert'] opacity-80 -ml-[50%] 
+            text-slate-600 tracking-wide text-7xl sm:text-[20vh]"
             data-text="MACHINE"
           >
             MACHINE
           </div>
         </div>
-        */}
-        <div className="absolute w-80 bottom-[15%] left-1/2 -ml-40">
+        <div className="absolute w-80 bottom-[35%] left-1/2 -ml-40">
           <CyberButton
             title={"Start"}
-            tagClassName={"text-black"}
+            tagStyle={{ color: "black" }}
             onClick={() => setIsShowMenu(true)}
           />
         </div>
@@ -106,7 +123,7 @@ const MainMenu = () => {
                   <CyberButton
                     key={menuItem.title}
                     title={menuItem.title}
-                    mainClassName="mb-6"
+                    mainStyle={{ marginBottom: "24px" }}
                     index={index}
                     onClick={menuItem.onClick}
                   />

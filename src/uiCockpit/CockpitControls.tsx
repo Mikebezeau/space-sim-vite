@@ -2,6 +2,7 @@ import React from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
+import CyberButton from "../uiMenuComponents/common/CyberButton";
 //@ts-ignore
 import controls from "../assets/icons/controls.svg";
 //@ts-ignore
@@ -99,53 +100,25 @@ export const ActionWarpToPlanetPopupHUD = () => {
   );
 
   return focusPlanetIndex !== null ? (
-    <>
-      {/*IS_MOBILE ? (
-        <div
-          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
-          onClick={warpToPlanet}
-        >
-          <span className="button-cyber-content">
-            <img
-              src={warp}
-              alt="cancel controls icon"
-              className="w-[10vh] h-[10vh] pointer-events-none"
-            />
-          </span>
-        </div>
-      ) : (*/}
-      <>
-        <div
-          className="pointer-events-auto w-40 h-10 -ml-20 cursor-pointer"
-          onClick={isScanDistanceToPlanet ? scanPlanet : warpToPlanet}
-        >
-          <div className="w-full cybr-btn bg-blue-500" onClick={() => {}}>
-            {isScanDistanceToPlanet ? "Scan Planet" : "Engage Warp"}
-            <span aria-hidden className="cybr-btn__glitch glitch-once pl-[10%]">
-              {isScanDistanceToPlanet
-                ? scanPlanetProgress > 0
-                  ? scanPlanetProgress * 10 + "%"
-                  : "Scan Planet"
-                : "Engage Warp"}
-            </span>
-            <span aria-hidden className="cybr-btn__tag">
-              X12
-            </span>
-          </div>
-        </div>
-        <div className="arrow">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        {/*<img
-            src={warp}
-            alt="cancel controls icon"
-            className="w-full h-full pointer-events-none"
-          />*/}
-      </>
-      {/*)}*/}
-    </>
+    <div className="w-60 h-16 -ml-32">
+      <CyberButton
+        title={
+          isScanDistanceToPlanet
+            ? scanPlanetProgress > 0
+              ? scanPlanetProgress * 10 + "%"
+              : "Scan Planet"
+            : "Engage Warp"
+        }
+        mainStyle={{ marginBottom: "40px" }}
+        index={7}
+        onClick={isScanDistanceToPlanet ? scanPlanet : warpToPlanet}
+      />
+      <div className="arrow">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
   ) : null;
 };
 
