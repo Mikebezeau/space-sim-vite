@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import AppUI from "./AppUI";
-//import AppCanvas from "./AppCanvas";
-//import useStore from "./stores/store";
-//import AppLoadingManager from "./AppLoadingManager";
-//import AppLoadingScreen from "./AppLoadingScreen";
+import AppCanvas from "./AppCanvas";
+import useStore from "./stores/store";
+import AppLoadingManager from "./AppLoadingManager";
+import AppLoadingScreen from "./AppLoadingScreen";
 
 //import useNoContextMenu from "./hooks/useNoContextMenu";
 //import useWindowResize from "./hooks/useWindowResize";
@@ -12,9 +12,9 @@ import "./css/lilGui.css";
 
 function App() {
   const componentName = "App";
-  //useStore.getState().updateRenderInfo(componentName);
+  useStore.getState().updateRenderInfo(componentName);
   useEffect(() => {
-    //useStore.getState().updateRenderDoneInfo(componentName);
+    useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
 
   //useNoContextMenu();
@@ -25,9 +25,9 @@ function App() {
 */
   return (
     <>
-      {/*<AppCanvas />
+      <AppCanvas />
       <AppLoadingScreen />
-      <AppLoadingManager />*/}
+      <AppLoadingManager />
       <AppUI />
     </>
   );

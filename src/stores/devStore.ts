@@ -10,6 +10,7 @@ import {
   PLANET_TYPE,
   PLANET_TYPE_DATA,
 } from "../constants/solarSystemConstants";
+import { roundTenth } from "../util/gameUtil";
 
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
@@ -17,6 +18,9 @@ import Planet from "../classes/solarSystem/Planet";
 import { typePlanetData } from "../solarSystemGen/genPlanetData";
 
 interface devStoreState {
+  logRenderCheck: () => void;
+  logMemoryCheck: () => void;
+  //
   testScreen: { [id: string]: boolean };
   setTestScreen: (id: string) => void;
   getIsTestScreen: () => boolean;
@@ -40,6 +44,31 @@ interface devStoreState {
 }
 
 const useDevStore = create<devStoreState>()((set, get) => ({
+  // log render check
+  logRenderCheck: () => {
+    // get list of keys and values ordered by values highest first
+    const renderCount = Object.entries(useStore.getState().renderCount).sort(
+      // @ts-ignore
+      (a, b) => b[1] - a[1]
+    );
+    console.log("render", ...renderCount);
+  },
+  // log memory check
+  logMemoryCheck: () => {
+    const { jsHeapSizeLimit, totalJSHeapSize, usedJSHeapSize } =
+      //@ts-ignore
+      performance.memory;
+
+    console.log(
+      "jsHeapSizeLimit: ",
+      roundTenth(jsHeapSizeLimit / 1000000),
+      "totalJSHeapSize: ",
+      roundTenth(totalJSHeapSize / 1000000),
+      "usedJSHeapSize: ",
+      roundTenth(usedJSHeapSize / 1000000)
+    );
+  },
+  //
   testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
   setTestScreen: (screen?) => {
     // set all to false

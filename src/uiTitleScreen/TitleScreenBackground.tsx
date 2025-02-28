@@ -25,7 +25,6 @@ const TitleScreenBackground = (props) => {
           flipOpacitySkele === 0 ? 0.7 : 0.3 - i / 20;
         skeletonRef.current.style.opacity = flipOpacitySkele.toString();
         robotRef.current.style.opacity = flipOpacityRobo.toString();
-        console.log("flicker", skeletonRef.current.style.opacity);
       }
 
       if (callRecursive) {
@@ -41,7 +40,6 @@ const TitleScreenBackground = (props) => {
     }, time);
     if (callRecursive) {
       timeoutId.current = newTimeoutId;
-      console.log(timeoutId.current);
     }
   };
 

@@ -12,6 +12,8 @@ const LilGui = () => {
   );
 
   const controls = {
+    perfRenderCheck: false,
+    perfMemoryCheck: false,
     enemyTest: false,
     viewTitleScreen: false,
     viewStationScreen: false,
@@ -29,6 +31,25 @@ const LilGui = () => {
       controls.enemyTest = false;
       useDevStore.getState().setTestScreen("enemyTest");
     });
+
+    const folderPerf = gui.addFolder("Performance");
+    folderPerf.open(true);
+
+    folderPerf
+      .add(controls, "perfRenderCheck")
+      .name("View Render Count")
+      .onChange(() => {
+        controls.perfRenderCheck = false;
+        devStoreState.logRenderCheck();
+      });
+
+    folderPerf
+      .add(controls, "perfMemoryCheck")
+      .name("View Memory Usage")
+      .onChange(() => {
+        controls.perfMemoryCheck = false;
+        devStoreState.logMemoryCheck();
+      });
 
     const folderPage = gui.addFolder("Page");
     folderPage.open(false);

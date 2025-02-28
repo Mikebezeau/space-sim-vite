@@ -149,8 +149,9 @@ const useStore = create<storeState>()((set, get) => ({
     }
 
     const count = get().renderCount[componentName];
-    if (count === 100) {
-      console.log("WARNING RENDER COUNT > 100", componentName);
+    if (count > 100) {
+      console.warn("RENDER COUNT > 100", componentName);
+      console.log("RENDER COUNT > 100", componentName);
     }
   },
   updateRenderDoneInfo: (componentName: string) => {
