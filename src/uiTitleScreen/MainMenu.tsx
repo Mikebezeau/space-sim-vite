@@ -86,14 +86,14 @@ const MainMenu = () => {
             CyberAlert - cyberpunk awesome
             quadaptor - cyberpunk flowing
             */
-            className="glitch font-['CyberAlert'] opacity-80 -ml-[50%] 
-            text-slate-600 tracking-wide text-7xl sm:text-[20vh]"
+            className="font-['CyberAlert'] opacity-80 -ml-[50%] 
+            text-slate-600 tracking-wide text-5xl md:text-[10vw]"
             data-text="MACHINE"
           >
             MACHINE
           </div>
         </div>
-        <div className="absolute w-80 bottom-[35%] left-1/2 -ml-40">
+        <div className="z-10 absolute w-80 bottom-[35%] left-1/2 -ml-40">
           <CyberButton
             title={"Start"}
             tagStyle={{ color: "black" }}
@@ -103,7 +103,7 @@ const MainMenu = () => {
       </TitleScreenBackground>
 
       <div
-        className={`absolute top-0 right-0 left-0 bottom-0 bg-black transition-opacity duration-1000 ${
+        className={`z-20 absolute top-0 right-0 left-0 bottom-0 bg-black transition-opacity duration-1000 ${
           isShowMenu ? "opacity-100" : "opacity-0"
         }`}
       >

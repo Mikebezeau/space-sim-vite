@@ -70,8 +70,8 @@ const Part = (props: PartInt) => {
             ) : isWeaponInstance ? (
               "Weapon >"
             ) : part.servoShapes.length > 0 ? (
-              <div className="pointer-events-auto button-cyber w-[4vh] h-[4vh]">
-                <span className="button-cyber-content">
+              <div className="pointer-events-auto icon-button-cyber w-[4vh] h-[4vh]">
+                <span className="icon-button-cyber-content">
                   <img
                     src={openList}
                     alt="camera icon"

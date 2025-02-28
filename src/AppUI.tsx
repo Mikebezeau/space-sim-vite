@@ -22,6 +22,7 @@ import EquipmentMenu from "./uiMenuComponents/EquipmentMenu";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
 import "./css/glitch.css";
+import "./css/glitchImage.css";
 import "./css/arrowsAnimate.css";
 
 const AppUI = () => {

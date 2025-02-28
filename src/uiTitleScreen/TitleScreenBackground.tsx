@@ -1,23 +1,57 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 // @ts-ignore
-import skeleton from "/images/skeleton.jpg";
+import skeletonSrc from "/images/skeleton.jpg";
 // @ts-ignore
-import robot from "/images/robot2.jpg";
+import robotSrc from "/images/robot2.jpg";
 
 const TitleScreenBackground = (props) => {
   const { isTitleImgLoaded = true } = props;
+  const timeoutId = useRef<number | null>(null);
   const skeletonRef = useRef<HTMLImageElement | null>(null);
   const robotRef = useRef<HTMLImageElement | null>(null);
 
-  // make the robot image flicker randomly
+  // make images flicker randomly
+  const flicker = (
+    callRecursive: boolean = false,
+    time: number,
+    i: number = 0
+  ) => {
+    const newTimeoutId = setTimeout(() => {
+      // do the flickering
+      if (skeletonRef.current && robotRef.current) {
+        const flipOpacitySkele: number =
+          skeletonRef.current.style.opacity === "0" ? 0.1 + i / 20 : 0;
+        const flipOpacityRobo: number =
+          flipOpacitySkele === 0 ? 0.7 : 0.3 - i / 20;
+        skeletonRef.current.style.opacity = flipOpacitySkele.toString();
+        robotRef.current.style.opacity = flipOpacityRobo.toString();
+        console.log("flicker", skeletonRef.current.style.opacity);
+      }
+
+      if (callRecursive) {
+        // flicker the images
+        for (let i = 1; i <= 5; i++) {
+          const flickerTime = Math.random() * 500 * i + (i === 5 ? 400 : 0);
+          flicker(false, flickerTime, i);
+        }
+
+        // call recursive again
+        flicker(true, Math.random() * 2000 + 5000);
+      }
+    }, time);
+    if (callRecursive) {
+      timeoutId.current = newTimeoutId;
+      console.log(timeoutId.current);
+    }
+  };
+
   useEffect(() => {
-    const flicker = () => {
-      setInterval(() => {
-        robotRef.current!.style.opacity = Math.random() > 0.5 ? "50%" : "100%";
-        flicker();
-      }, Math.random() * 1000);
+    flicker(true, Math.random() * 1000 + 2000);
+
+    return () => {
+      console.log("clear flicker", timeoutId.current);
+      clearTimeout(timeoutId.current!);
     };
-    flicker();
   }, []);
 
   return (
@@ -25,25 +59,59 @@ const TitleScreenBackground = (props) => {
       className={`absolute w-full h-full bg-white transition-opacity duration-1000 
       ${/* fade in on */ isTitleImgLoaded ? "opacity-100" : "opacity-0"}`}
     >
-      {/* 
       <img
-        src={robot}
-        className="invert rotate-[-7deg] opacity-0 md:opacity-50 absolute top-1/2 md:-right-[62vh] min-w-[140vh] w-[140vh] -mt-[55vh]"
-      />*/}
-      <img
-        src={skeleton} //opacity-30
-        ref={skeletonRef}
-        className="invert opacity-90 absolute 
-        top-1/2 -left-[36vh] 
-        min-w-[110vh] w-[110vh] -mt-[57vh]"
-      />
-      <img
-        src={robot} //opacity-50
+        src={robotSrc} //opacity-50
         ref={robotRef}
-        className="glitch scale-x-[-1] invert rotate-[-5deg] opacity-50 absolute 
-        top-1/2 -left-[45vh] 
-        min-w-[140vh] w-[140vh] -mt-[55vh]"
+        className="scale-x-[-1] invert rotate-[-9deg] absolute 
+      top-1/2 -left-[45vh] 
+      min-w-[140vh] w-[140vh] -mt-[55vh]"
+        style={{ opacity: 0.7 }}
       />
+      <div
+        ref={skeletonRef}
+        className="glitch-image--variables"
+        style={{ opacity: 0 }}
+      >
+        <div
+          className="glitch glitch--vertical glitch--style-3 
+            invert absolute
+            h-full 
+            min-w-[110vh] w-[110vh] 
+            -top-[8vh] 
+            -left-[38vh] "
+        >
+          <div
+            className="glitch__img"
+            style={{
+              backgroundImage: `url(${skeletonSrc})`,
+            }}
+          ></div>
+          <div
+            className="glitch__img"
+            style={{
+              backgroundImage: `url(${skeletonSrc})`,
+            }}
+          ></div>
+          <div
+            className="glitch__img"
+            style={{
+              backgroundImage: `url(${skeletonSrc})`,
+            }}
+          ></div>
+          <div
+            className="glitch__img"
+            style={{
+              backgroundImage: `url(${skeletonSrc})`,
+            }}
+          ></div>
+          <div
+            className="glitch__img"
+            style={{
+              backgroundImage: `url(${skeletonSrc})`,
+            }}
+          ></div>
+        </div>
+      </div>
       {props.children}
     </div>
   );

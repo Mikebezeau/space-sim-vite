@@ -32,8 +32,8 @@ export const ActionShoot = () => {
   );
 
   return (
-    <div className="button-cyber w-[10vh] h-[10vh]">
-      <span className="button-cyber-content">
+    <div className="icon-button-cyber w-[10vh] h-[10vh]">
+      <span className="icon-button-cyber-content">
         <img
           src={crosshair}
           alt="shoot icon"
@@ -71,10 +71,10 @@ const ActionCancelPilot = () => {
 
   return (
     <div
-      className="button-cyber w-[10vh] h-[10vh]"
+      className="icon-button-cyber w-[10vh] h-[10vh]"
       onClick={() => actionModeSelect(PLAYER.action.inspect)}
     >
-      <span className="button-cyber-content">
+      <span className="icon-button-cyber-content">
         <img
           src={rightClick}
           alt="cancel controls icon"
@@ -206,10 +206,10 @@ export const CockpitControlMode = () => {
     <>
       {playerControlMode !== PLAYER.controls.combat && (
         <div
-          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+          className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
           onClick={() => controlModeSelect(PLAYER.controls.combat)}
         >
-          <span className="button-cyber-content">
+          <span className="icon-button-cyber-content">
             <img
               src={sword}
               alt="comabt mode icon"
@@ -220,10 +220,10 @@ export const CockpitControlMode = () => {
       )}
       {playerControlMode !== PLAYER.controls.scan && (
         <div
-          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+          className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
           onClick={() => controlModeSelect(PLAYER.controls.scan)}
         >
-          <span className="button-cyber-content">
+          <span className="icon-button-cyber-content">
             <img
               src={radarDish}
               alt="radar icon"
@@ -243,10 +243,10 @@ export const CockpitControlMap = () => {
 
   return (
     <div
-      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+      className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
       onClick={() => switchScreen(PLAYER.screen.galaxyMap)}
     >
-      <span className="button-cyber-content">
+      <span className="icon-button-cyber-content">
         <img
           src={stars}
           alt="stars icon"
@@ -267,7 +267,7 @@ export const CockpitControlWarp = () => {
 
   return (
     <div
-      className={`pointer-events-auto button-cyber w-[10vh] h-[10vh] ${
+      className={`pointer-events-auto icon-button-cyber w-[10vh] h-[10vh] ${
         !selectedWarpStar && "opacity-50"
       }`}
       onClick={() => {
@@ -277,7 +277,9 @@ export const CockpitControlWarp = () => {
       }}
     >
       <span
-        className={`button-cyber-content ${selectedWarpStar && "bg-green-500"}`}
+        className={`icon-button-cyber-content ${
+          selectedWarpStar && "bg-green-500"
+        }`}
       >
         <img
           src={warp}
@@ -299,7 +301,7 @@ export const CockpitControlView = () => {
 
   return (
     <div
-      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+      className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
       onClick={() =>
         viewModeSelect(
           playerViewMode === PLAYER.view.firstPerson
@@ -308,7 +310,7 @@ export const CockpitControlView = () => {
         )
       }
     >
-      <span className="button-cyber-content">
+      <span className="icon-button-cyber-content">
         <img
           src={camera}
           alt="camera icon"
@@ -336,7 +338,7 @@ export const CockpitControlDockStation = () => {
 
   return (
     <div
-      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+      className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
       onClick={() => {
         if (isStationCloseEnoughToDock()) {
           switchScreen(PLAYER.screen.dockedStation);
@@ -345,7 +347,7 @@ export const CockpitControlDockStation = () => {
         }
       }}
     >
-      <span className="button-cyber-content">
+      <span className="icon-button-cyber-content">
         <img
           src={satellite}
           alt="station icon"
@@ -363,10 +365,10 @@ export const CockpitControlEquip = () => {
 
   return (
     <div
-      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+      className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
       onClick={() => switchScreen(PLAYER.screen.equipmentBuild)}
     >
-      <span className="button-cyber-content">
+      <span className="icon-button-cyber-content">
         <img
           src={gear}
           alt="gear icon"

@@ -83,10 +83,10 @@ const MonitorReadout = () => {
           <Fragment key={item}>
             <div
               onClick={() => handleSectionChange(item)}
-              className="pointer-events-auto button-cyber w-[20px] h-10 ml-[1px] mb-1"
+              className="pointer-events-auto icon-button-cyber w-[20px] h-10 ml-[1px] mb-1"
             >
               <span
-                className={`button-cyber-content rounded-tr-full ${
+                className={`icon-button-cyber-content rounded-tr-full ${
                   selectedSection === item && "bg-cyan-400"
                 }`}
               />

@@ -6,6 +6,8 @@ import usePlayerControlsStore from "../stores/playerControlsStore";
 import { typeStarData } from "../solarSystemGen/genStarData";
 import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
+//TSX
+import CyberButton from "../uiMenuComponents/common/CyberButton";
 //import CyberMenuBorder from "../uiMenuComponents/common/CyberMenuBorder";
 
 const StarInfoCard = () => {
@@ -116,7 +118,8 @@ const StarInfoCard = () => {
           asteroidBelts:{" "}
           {starInfoRef.current?.orbitalZonesData.asteroidBelts.length}
         </p>
-        <p>planets: {planetDataRef.current?.length}</p>
+        <br />
+        <p>PLANETS: {planetDataRef.current?.length}</p>
         {planetDataRef.current?.map((planet, i) => (
           <p key={i}>
             {planet.planetType.class} Dst:
@@ -127,17 +130,14 @@ const StarInfoCard = () => {
         {
           // display 'Set warp target' button if viewing target star
           viewStarIndex === showInfoTargetStarIndex && (
-            <div
-              className="button-cyber pointer-events-auto h-14 w-28 sm:w-28 mt-4"
+            <CyberButton
+              title={"Set warp target"}
+              //tagStyle={{ color: "black" }}
               onClick={() => {
                 setSelectedWarpStar(viewStarIndex);
                 switchScreen(PLAYER.screen.flight);
               }}
-            >
-              <div className="button-cyber-content px-4 py-1">
-                Set warp target
-              </div>
-            </div>
+            />
           )
         }
       </div>

@@ -10,10 +10,10 @@ const ButtonIcon = (props: ButtonIconInt) => {
 
   return (
     <div
-      className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+      className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
       onClick={onClick}
     >
-      <span className="button-cyber-content">
+      <span className="icon-button-cyber-content">
         <img
           src={iconSrc}
           alt="camera icon"

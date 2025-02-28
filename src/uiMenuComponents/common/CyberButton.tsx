@@ -19,11 +19,11 @@ const CyberButton = (props: cyberButtonInt) => {
 
   const glitchRef = useRef<HTMLSpanElement | null>(null);
 
-  const buttonGlitchOnClickAction = (onClick: () => void) => {
+  const glitchBeforeOnClick = (onClick: () => void) => {
     glitchRef.current?.classList.remove("glitch-once");
     setTimeout(() => {
       glitchRef.current?.classList.add("glitch-once");
-    }, 50);
+    }, 60);
     onClick();
   };
 
@@ -31,7 +31,7 @@ const CyberButton = (props: cyberButtonInt) => {
     <div
       className={`pointer-events-auto cursor-pointer cybr-btn w-full pl-[10%]`}
       style={mainStyle}
-      onClick={() => buttonGlitchOnClickAction(onClick)}
+      onClick={() => glitchBeforeOnClick(onClick)}
     >
       {title}
       <span

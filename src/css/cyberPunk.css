@@ -1,5 +1,5 @@
-/* button style 1 - simple cyberpunk */
-.button-cyber {
+/* icon-button-cyber - simple icon button */
+.icon-button-cyber {
   position: relative;
   border: 0;
   outline: none;
@@ -11,7 +11,7 @@
   clip-path: polygon(92% 0, 100% 25%, 100% 100%, 8% 100%, 0% 75%, 0 0);
 }
 
-.button-cyber-content {
+.icon-button-cyber-content {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,11 +24,11 @@
   clip-path: polygon(92% 0, 100% 25%, 100% 100%, 8% 100%, 0% 75%, 0 0);
 }
 
-.button-cyber-content:hover {
+.icon-button-cyber-content:hover {
   background-color: rgba(0, 255, 94, 0.484);
 }
 
-/* button style 2 - glitch cyberpunk */
+/* container - cyberpunk border */
 .clip-path-cyber {
   clip-path: polygon(
     0% 0%,
@@ -59,6 +59,7 @@
   );
 }
 
+/* button - glitch cyberpunk */
 .cybr-btn {
   --primary-hue: 0;
   --primary-lightness: 0;
@@ -230,12 +231,12 @@
     -2px -2px var(--shadow-secondary);
   */
   clip-path: var(--clip);
-  /*animation: glitch 1000ms infinite;*/
+  /*animation: glitch-anim 1000ms infinite;*/
   display: block; /*none;*/
 }
 
 .cybr-btn__glitch.glitch-once {
-  animation: glitch 100ms 1;
+  animation: glitch-anim 100ms 1;
 }
 /*
 .cybr-btn:hover .cybr-btn__glitch {
@@ -254,7 +255,7 @@
   z-index: -1;
 }
 
-@keyframes glitch {
+@keyframes glitch-anim {
   0% {
     clip-path: var(--clip-one);
   }

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { createRoot } from "@react-three/fiber";
-import useStore from "./stores/store";
-import usePlayerControlsStore from "./stores/playerControlsStore";
-import BuildMech from "./3d/buildMech/BuildMech";
-import { PLAYER } from "./constants/constants";
+import useStore from "../../stores/store";
+import usePlayerControlsStore from "../../stores/playerControlsStore";
+import BuildMech from "../../3d/buildMech/BuildMech";
+import { PLAYER } from "../../constants/constants";
 
 const MyCanvas = (props) => {
   const canvas = useRef<HTMLCanvasElement | null>(null);

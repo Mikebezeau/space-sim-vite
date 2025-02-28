@@ -296,10 +296,10 @@ const EquipmentMenu = () => {
       )}
       <div className="absolute bottom-4 right-4">
         <div
-          className="pointer-events-auto button-cyber w-[10vh] h-[10vh]"
+          className="pointer-events-auto icon-button-cyber w-[10vh] h-[10vh]"
           onClick={() => resetCamera()}
         >
-          <span className="button-cyber-content">
+          <span className="icon-button-cyber-content">
             <img
               src={camera}
               alt="camera icon"
