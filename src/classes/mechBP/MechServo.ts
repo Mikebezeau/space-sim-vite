@@ -99,6 +99,10 @@ class MechServo extends MechServoShape implements MechServoInt {
   }
 
   buildServoObject3d(color = "#ffffff") {
+    // going to group all Object3d's for this servo by color
+    // and then merge geometries for each color group
+    // each color group will use a shared material for that color
+    // stored in the useMechBpStore materialDictionary
     const baseScaleGroup = new THREE.Group();
     baseScaleGroup.add(this.recursiveBuildObject3d(this.color || color));
     // only make this group scale size adjustment once for top level

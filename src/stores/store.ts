@@ -77,9 +77,9 @@ interface storeState {
   playerPropUpdate: boolean; // used to re-render player prop based menu components
   togglePlayerPropUpdate: () => void;
   // used to shift positions over large distances to a local space
-  playerWorldPosition: THREE.Vector3;
+  playerLocalSpacePosition: THREE.Vector3;
   // maximum local distances should be less than 65500 units for float accuracy
-  playerWorldOffsetPosition: THREE.Vector3;
+  playerLocalOffsetPosition: THREE.Vector3;
   setPlayerWorldPosition: (
     newPosition: THREE.Vector3 | { x: number; y: number; z: number }
   ) => void;
@@ -104,10 +104,12 @@ interface storeState {
     setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
 
     toggleSound: (sound?: boolean) => void;
+    setShoot: (value: boolean) => void;
     updateMouse: (event: MouseEvent) => void;
     updateTouchMobileMoveShip: (event: TouchEvent) => void;
   };
   mutation: {
+    shoot: boolean;
     mouse: THREE.Vector2;
     mouseScreen: THREE.Vector2;
     //ongoingTouches: any[];
@@ -234,21 +236,21 @@ const useStore = create<storeState>()((set, get) => ({
       playerPropUpdate: !get().playerPropUpdate,
     });
   },
-  playerWorldPosition: new THREE.Vector3(),
-  playerWorldOffsetPosition: new THREE.Vector3(),
+  playerLocalSpacePosition: new THREE.Vector3(),
+  playerLocalOffsetPosition: new THREE.Vector3(),
   setPlayerWorldPosition: (worldPosition) => {
     // local space position (always keep within 65000 of (0,0,0))
     get().player.object3d.position.set(0, 0, 0);
     // player world space offset position for placing other objects relative to player object3d
-    get().playerWorldOffsetPosition.set(
+    get().playerLocalOffsetPosition.set(
       worldPosition.x,
       worldPosition.y,
       worldPosition.z
     );
-    get().playerWorldPosition.copy(get().playerWorldOffsetPosition);
+    get().playerLocalSpacePosition.copy(get().playerLocalOffsetPosition);
   },
   playerPositionUpdated: () => {
-    // if playerWorldOffsetPosition changes return the difference
+    // if playerLocalOffsetPosition changes return the difference
     // if player.object3d.position grows to far from (0,0,0)
     if (
       Math.abs(get().player.object3d.position.x) > 25000 ||
@@ -261,20 +263,22 @@ const useStore = create<storeState>()((set, get) => ({
         y: dummyVec3.y,
         z: dummyVec3.z,
       };
-      // playerWorldOffsetPosition for placing other objects relative to player object3d
-      get().playerWorldOffsetPosition.set(
-        get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
-        get().playerWorldOffsetPosition.y + get().player.object3d.position.y,
-        get().playerWorldOffsetPosition.z + get().player.object3d.position.z
+      // playerLocalOffsetPosition for placing other objects relative to player object3d
+      get().playerLocalOffsetPosition.set(
+        get().playerLocalOffsetPosition.x + get().player.object3d.position.x,
+        get().playerLocalOffsetPosition.y + get().player.object3d.position.y,
+        get().playerLocalOffsetPosition.z + get().player.object3d.position.z
       );
-      get().playerWorldPosition.copy(get().playerWorldOffsetPosition);
+      // playerLocalSpacePosition is player position in the local space cube
+      get().playerLocalSpacePosition.copy(get().playerLocalOffsetPosition);
       get().player.object3d.position.set(0, 0, 0);
       return offsetPositionDelta;
     } else {
-      get().playerWorldPosition.set(
-        get().playerWorldOffsetPosition.x + get().player.object3d.position.x,
-        get().playerWorldOffsetPosition.y + get().player.object3d.position.y,
-        get().playerWorldOffsetPosition.z + get().player.object3d.position.z
+      // update player position in local player space
+      get().playerLocalSpacePosition.set(
+        get().playerLocalOffsetPosition.x + get().player.object3d.position.x,
+        get().playerLocalOffsetPosition.y + get().player.object3d.position.y,
+        get().playerLocalOffsetPosition.z + get().player.object3d.position.z
       );
       return { x: 0, y: 0, z: 0 };
     }
@@ -311,6 +315,7 @@ const useStore = create<storeState>()((set, get) => ({
       () => 0.5 + Math.random() * 0.5
     ),
     */
+    shoot: false,
     mouse: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
     mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
   },
@@ -542,6 +547,11 @@ const useStore = create<storeState>()((set, get) => ({
       set({ sound });
     },
 
+    setShoot(value: boolean) {
+      // update shoot value, not using set
+      get().mutation.shoot = value;
+    },
+
     updateMouse({ clientX: x, clientY: y }) {
       // save mouse position (-0.5 to 0.5) based on location on screen
       // limiting the clinetX and clientY to center HUD circle area (80% verticle height)
@@ -570,6 +580,7 @@ const useStore = create<storeState>()((set, get) => ({
         mouseX = 0.5 * Math.cos(angle);
         mouseY = 0.5 * Math.sin(angle);
       }
+      // update x, y mouse position
       get().mutation.mouse.set(mouseX, mouseY);
       // save x, y pixel position on screen
       get().mutation.mouseScreen.set(x, y);

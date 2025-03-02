@@ -6,7 +6,6 @@ import { PLAYER_START } from "../../constants/constants";
 interface playerMechInt {
   storeSpaceLocation(): void;
   resetSpaceLocation(): void;
-  //fireWeapon(): void;
 }
 
 class PlayerMech extends Mech implements playerMechInt {
@@ -36,6 +35,7 @@ class PlayerMech extends Mech implements playerMechInt {
     this.object3d.rotation.copy(this.locationInfo.saveSpaceObject3d.rotation);
   }
   // fire weapon
+  // TODO add WEAPON group / fire mode code here
   /*
   fireWeapon=()=> {
     super.fireWeapon(true); // flag isPlayer = true

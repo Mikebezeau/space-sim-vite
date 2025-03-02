@@ -22,6 +22,7 @@ const WeaponFire = () => {
   const arrowHelper = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
 
   useEffect(() => {
+    // TODO impliment this properly - only when a battle is starting
     useStore
       .getState()
       .setPlayerWorldPosition(

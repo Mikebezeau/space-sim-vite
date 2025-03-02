@@ -329,10 +329,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       // towards where player wants to look
       setPlayerCameraRotation: (camera) => {
         // additional camera rotation based on mouse position (looking around)
-        // TODO standardize this function similar use in hudTargtingGalaxyMapStore -> setSelectedTargetIndex -> fireWeapon
-        // the signs for x, y are reversed for camera adjustment because camera angle is always reversed
+        // TODO standardize this function similar use in hudTargtingGalaxyMapStore -> setSelectedTargetIndex -> updateFireWeaponGroup?
         adjustCameraViewQuat.setFromAxisAngle(
           {
+            // the sign for x is reversed for camera adjustment because camera angle is always reversed
             x: -get().flightCameraLookRotation.rotateY * 0.4,
             y: get().flightCameraLookRotation.rotateX * 0.4,
             z: 0,
@@ -340,11 +340,26 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           Math.PI / 2
         );
         camera.quaternion.multiply(adjustCameraViewQuat).normalize();
+        // TODO testing weapon fire
+        adjustCameraViewQuat.setFromAxisAngle(
+          {
+            // the sign for x is reversed for camera adjustment because camera angle is always reversed
+            x: get().flightCameraLookRotation.rotateY * 0.4,
+            y: get().flightCameraLookRotation.rotateX * 0.4,
+            z: 0,
+          },
+          Math.PI / 2
+        );
+        if (useStore.getState().mutation.shoot) {
+          useStore
+            .getState()
+            .player.updateFireWeaponGroup(adjustCameraViewQuat);
+        }
       },
 
       // called each frame to update player mech and camera
       updatePlayerMechAndCamera: (delta, camera) => {
-        // TODO cap delta to 100ms here?
+        // TODO cap delta to 100ms here, standard deltaFPS get function
         const deltaFPS = delta * FPS;
         // TODO warping make cool animation
         if (get().playerWarpToPosition !== null) {

@@ -21,7 +21,7 @@ const dummyVec3 = new THREE.Vector3();
 interface weaponFireStoreState {
   weaponFireLightTimer: number; // TODO updat light in PlayerMech
   weaponFireList: weaponFireType[];
-  fireWeapon: (
+  addWeaponFire: (
     weapon: MechWeapon,
     position: THREE.Vector3,
     euler: THREE.Euler
@@ -42,7 +42,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
   weaponFireLightTimer: 0,
   weaponFireList: [],
 
-  fireWeapon: (weapon, position, euler) => {
+  addWeaponFire: (weapon, position, euler) => {
     let weaponFireSpeed: number = 0;
     if (weapon.weaponType === equipData.weaponType.beam) {
       weaponFireSpeed = WEAPON_FIRE_SPEED.beam;
@@ -61,20 +61,21 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
 
     const id = "";
     // using same style as particleStore
-    const pos = { x: position.x, y: position.y, z: position.z };
+    //const posCoords = { x: position.x, y: position.y, z: position.z };
     dummyVec3.set(0, 0, 1).applyEuler(euler).multiplyScalar(weaponFireSpeed);
     const velocity = { x: dummyVec3.x, y: dummyVec3.y, z: dummyVec3.z };
     const timeEnd = Date.now() + 2000; //weapon.range() / (weaponFireSpeed / 60); // TODO FPS
 
     get().addToWeaponFireList({
       id,
-      position: pos,
+      position: position,
       velocity,
       weaponFireSpeed,
       timeStart: Date.now(),
       timeEnd,
     }); // TODO direction can be changed to Euler
   },
+
   addToWeaponFireList: (args) => {
     //console.log("addToWeaponFireList", get().weaponFireList.length);
     const { id, position, velocity, weaponFireSpeed, timeStart, timeEnd } =
@@ -94,6 +95,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       ],
     }));
   },
+
   removeOldWeaponFire: () => {
     set((state) => ({
       weaponFireList: state.weaponFireList.filter(
@@ -102,6 +104,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       ),
     }));
   },
+
   updateWeaponFireUseFrame: (deltaFPS) => {
     get().removeOldWeaponFire();
     // TODO place hit detection in here

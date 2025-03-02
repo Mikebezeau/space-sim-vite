@@ -64,8 +64,14 @@ class MechWeapon extends MechServo implements MechWeaponInt {
   SPeff: number = 0;
   wEff: number = 0;
   //properties for controlling weapon fire
-  active: boolean = false;
-  ready: boolean = true;
+  weaponFireData: {
+    fireGroupId: number;
+    orderNumber: number;
+    isReady: boolean;
+    isFireModeChain: boolean;
+    chainModeDelayedTimeToFire: number;
+    timeToReload: number;
+  };
   //properties for weapon stats
   data: {
     damageRange: number;
@@ -126,6 +132,14 @@ class MechWeapon extends MechServo implements MechWeaponInt {
     // also properties and methods for altering this parent servo/servo shape lists:
     //  -> offset, rotation, scaleAdjust, shape, color
     super();
+    this.weaponFireData = {
+      fireGroupId: 999,
+      orderNumber: 0,
+      isReady: true,
+      isFireModeChain: true,
+      chainModeDelayedTimeToFire: 0,
+      timeToReload: 0,
+    };
     // must set data object, or properties will not be transferred (doing this way to enforce type casting)
     this.data = { ...DEFAULT_DATA };
     // arrays not set up for transfer in transferProperties, set ammo list directly for now

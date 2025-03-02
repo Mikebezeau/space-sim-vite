@@ -18,8 +18,8 @@ const SpaceFlightPlanetsScene = () => {
 
   const { camera } = useThree();
 
-  const playerWorldOffsetPosition = useStore(
-    (state) => state.playerWorldOffsetPosition
+  const playerLocalOffsetPosition = useStore(
+    (state) => state.playerLocalOffsetPosition
   );
   const updatePlayerMechAndCamera = usePlayerControlsStore(
     (state) => state.updateFrame.updatePlayerMechAndCamera
@@ -35,22 +35,22 @@ const SpaceFlightPlanetsScene = () => {
 
   useFrame((_, delta) => {
     // must call updatePlayerMechAndCamera before
-    // adjustments with playerWorldOffsetPosition position
+    // adjustments with playerLocalOffsetPosition position
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     updatePlayerMechAndCamera(delta, camera);
 
     if (relativePlayerGroupRef.current) {
       relativePlayerGroupRef.current.position.set(
-        -playerWorldOffsetPosition.x,
-        -playerWorldOffsetPosition.y,
-        -playerWorldOffsetPosition.z
+        -playerLocalOffsetPosition.x,
+        -playerLocalOffsetPosition.y,
+        -playerLocalOffsetPosition.z
       );
     }
     if (enemyRelativePlayerGroupRef.current) {
       enemyRelativePlayerGroupRef.current.position.set(
-        enemyWorldPosition.x - playerWorldOffsetPosition.x,
-        enemyWorldPosition.y - playerWorldOffsetPosition.y,
-        enemyWorldPosition.z - playerWorldOffsetPosition.z
+        enemyWorldPosition.x - playerLocalOffsetPosition.x,
+        enemyWorldPosition.y - playerLocalOffsetPosition.y,
+        enemyWorldPosition.z - playerLocalOffsetPosition.z
       );
     }
   }, -2); //render order set to be before Particles and HudTargets positioning

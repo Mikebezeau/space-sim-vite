@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import {
   useTouchStartControls,
   useTouchMoveControls,
@@ -72,10 +71,6 @@ const SpaceFlightControlsTouch = () => {
     (state) => state.isReverseSideTouchControls
   );
 
-  const setSelectedTargetIndex = useHudTargtingGalaxyMapStore(
-    (state) => state.actions.setSelectedTargetIndex
-  );
-
   // for check if touching move control to prevent screen from moving when
   // touching throttle control and vice versa
   const moveControl = useRef(null); // for detecting if touch is on the move control
@@ -114,11 +109,9 @@ const SpaceFlightControlsTouch = () => {
     }
   });
 
-  //SHOOT LASERS
-  function handleShoot() {
-    setSelectedTargetIndex(); // selects an enemy target then triggers store: actions.shoot()
-  }
-  useTouchStartControls("btn-shoot", handleShoot);
+  //SHOOT
+  useTouchStartControls("btn-shoot", () => actions.setShoot(true));
+  useTouchEndControls("btn-shoot", () => actions.setShoot(false));
 
   //MOVE SHIP
   function handleMoveShipStart(event) {

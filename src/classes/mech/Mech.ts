@@ -56,7 +56,8 @@ interface mechInt {
   updateExplosionUseFrame: (delta: number, scene?: THREE.Scene) => void;
   isMechDead: () => boolean;
   setMechDead: (scene?: THREE.Scene) => void;
-  fireWeapon: (targetQuaternoin: THREE.Quaternion) => void;
+  updateFireWeaponGroup: (targetQuaternoin?: THREE.Quaternion) => void;
+  fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
 }
 
 // TODO move these reusable objects to a better location? perhaps a util resuse const obj file
@@ -551,7 +552,9 @@ class Mech implements mechInt {
     */
   }
 
-  fireWeapon(targetQuaternoin?: THREE.Quaternion) {
+  // TODO this function is not complete
+  // called every frame
+  updateFireWeaponGroup(targetQuaternoin?: THREE.Quaternion) {
     if (this.mechBP?.weaponList) {
       // TODO add these to the class instead of const above
       weaponFireMechParentObj.position.copy(this.object3d.position);
@@ -564,40 +567,73 @@ class Mech implements mechInt {
       weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
 
       // for each weapon type array
+      const RoF = 4; // rate of fire
+      const RoFTime = 1000 / RoF; // 1 second divided by RoF
+      // RoFTime divided by num weapons in the group
+      const rotatingGroupFireTime = RoFTime / this.mechBP.weaponList.length + 1;
+
+      // get list of weapons that are ready to fire
+      const readyWeapons = this.mechBP.weaponList.filter(
+        (weapon: MechWeapon) =>
+          weapon.weaponFireData.isReady &&
+          weapon.weaponFireData.chainModeDelayedTimeToFire < Date.now()
+      );
+      // ready all reload weapons
       this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
-        // TODO i dont think servoOffset is needed - weapons are always positioned from 0,0,0
-        /*
+        if (weapon.weaponFireData.timeToReload < Date.now()) {
+          weapon.weaponFireData.isReady = true;
+        }
+      });
+
+      // find weapon with lowest orderNumber that has not been fired if weapon is ready to fire
+      if (readyWeapons.length > 0) {
+        const weaponToFire = readyWeapons.reduce((prev, curr) =>
+          prev.orderNumber < curr.orderNumber ? prev : curr
+        );
+        this.fireWeapon(weaponToFire, weaponFireEuler);
+        weaponToFire.weaponFireData.isReady = false;
+        weaponToFire.weaponFireData.timeToReload = Date.now() + RoFTime;
+        // add delay to all weapons in the group
+        this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
+          weapon.weaponFireData.chainModeDelayedTimeToFire =
+            Date.now() + rotatingGroupFireTime;
+        });
+      }
+    }
+  }
+
+  fireWeapon(weapon: MechWeapon, weaponFireEuler: THREE.Euler) {
+    // TODO i dont think servoOffset is needed - weapons are always positioned from 0,0,0
+    /*
         weapon.servoOffset = this.mechBP.servoList.find(
           (s) => s.id === weapon.locationServoId
         )?.offset;
         */
-        //if (weapon.servoOffset) {
-        // TODO find better way to calculate weapon position
-        // - use weapon.offset and weaponFireMechParentObj.rotation
-        // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
-        // it's position is relative to weaponFireMechParentObj
-        weaponFireWeaponChildObj.position.copy(weapon.offset);
-        weaponFireWeaponChildObj.getWorldPosition(weaponWorldPositionVec);
+    //if (weapon.servoOffset) {
+    // TODO find better way to calculate weapon position
+    // - use weapon.offset and weaponFireMechParentObj.rotation
+    // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
+    // it's position is relative to weaponFireMechParentObj
+    weaponFireWeaponChildObj.position.copy(weapon.offset);
+    weaponFireWeaponChildObj.getWorldPosition(weaponWorldPositionVec);
 
-        // fire weapon / add weaponFire to weaponFireList for hit detection
-        useWeaponFireStore
-          .getState()
-          .fireWeapon(weapon, weaponWorldPositionVec, weaponFireEuler);
+    // fire weapon / add weaponFire to weaponFireList for hit detection
+    useWeaponFireStore
+      .getState()
+      .addWeaponFire(weapon, weaponWorldPositionVec, weaponFireEuler);
 
-        // if player show fire effect
-        if (this.isPlayer) {
-          useParticleStore.getState().playerEffects.addWeaponFireFlash(
-            // player effects are centered on player position
-            weaponFireWeaponChildObj.position,
-            this.object3d.rotation
-          );
-        }
-        /*
-        } else {
-          console.warn("servoOffset not found for weapon", weapon);
-        }*/
-      });
+    // if player show fire effect
+    if (this.isPlayer) {
+      useParticleStore.getState().playerEffects.addWeaponFireFlash(
+        // player effects are centered on player position
+        weaponFireWeaponChildObj.position,
+        this.object3d.rotation
+      );
     }
+    /*
+    } else {
+      console.warn("servoOffset not found for weapon", weapon);
+    }*/
   }
 }
 

@@ -33,7 +33,7 @@ const TestEnemyAttackScene = () => {
 
   const controllerOptions = { changeScreenTest: false, resetEnemies: false };
 
-  useStore.getState().playerWorldOffsetPosition.set(0, 0, 0);
+  useStore.getState().playerLocalOffsetPosition.set(0, 0, 0);
   useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition.set(0, 0, 0);
 
   const { scene } = useThree();
@@ -116,7 +116,7 @@ const TestEnemyAttackScene = () => {
       -(clientY / height) * 2 + 1
     );
     //player.object3d.rotation.setFromQuaternion(flipRotation(camera.quaternion));
-    player.fireWeapon();
+    player.updateFireWeaponGroup();
 
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);

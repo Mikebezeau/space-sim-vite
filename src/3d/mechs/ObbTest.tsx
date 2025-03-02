@@ -13,8 +13,8 @@ const ObbTest = forwardRef(function ObbTest(
 ) {
   // render tracking
   useStore.getState().updateRenderInfo("ObbTest");
-  const playerWorldOffsetPosition = useStore(
-    (state) => state.playerWorldOffsetPosition
+  const playerLocalOffsetPosition = useStore(
+    (state) => state.playerLocalOffsetPosition
   );
 
   const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
@@ -106,15 +106,15 @@ const ObbTest = forwardRef(function ObbTest(
           tempEnemyWorldPosition.set(
             enemies[i].object3d.position.x +
               enemyWorldPosition.x -
-              playerWorldOffsetPosition.x,
+              playerLocalOffsetPosition.x,
 
             enemies[i].object3d.position.y +
               enemyWorldPosition.y -
-              playerWorldOffsetPosition.y,
+              playerLocalOffsetPosition.y,
 
             enemies[i].object3d.position.z +
               enemyWorldPosition.z -
-              playerWorldOffsetPosition.z
+              playerLocalOffsetPosition.z
           );
 
           enemies[i].object3d.position;

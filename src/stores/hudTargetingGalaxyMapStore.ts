@@ -256,10 +256,10 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
               targetArray[htmlHudTarget.objectIndex!].object3d;
             // set dummyVec3 to target world position (required due to relative positioning to player)
             targetObject3d.getWorldPosition(dummyVec3);
-            // get distance to object relative to playerWorldPosition
+            // get distance to object relative to playerLocalSpacePosition
             // TODO change to Au distance measurement
             distanceToTarget = distance(
-              useStore.getState().playerWorldPosition,
+              useStore.getState().playerLocalSpacePosition,
               targetObject3d.position
             ).toFixed(0);
             // get screen position of target
@@ -333,12 +333,13 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         set({ scanningPlanetId: planetIndex });
         set({ scanPlanetProgress: 0 });
       }
-      const playerWorldPosition = useStore.getState().playerWorldPosition;
+      const playerLocalSpacePosition =
+        useStore.getState().playerLocalSpacePosition;
       const planet = useStore.getState().planets[planetIndex];
       if (planet) {
         // warp to planet distance is planet.radius * 2
         const isScanDistanceToPlanet =
-          planet.object3d.position.distanceTo(playerWorldPosition) <
+          planet.object3d.position.distanceTo(playerLocalSpacePosition) <
           planet.radius * 3;
         if (isScanDistanceToPlanet !== get().isScanDistanceToPlanet) {
           set({ isScanDistanceToPlanet });
@@ -375,45 +376,17 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
       },
       // being called when player fires weapon OLD CODE
       setSelectedTargetIndex() {
-        // weapon fire angle is based on player mouse/controls input position
-        flightCameraLookQuaternoin.setFromAxisAngle(
-          {
-            x:
-              usePlayerControlsStore.getState().flightCameraLookRotation
-                .rotateY * 0.4,
-            y:
-              usePlayerControlsStore.getState().flightCameraLookRotation
-                .rotateX * 0.4,
-            z: 0,
-          },
-          Math.PI / 2
-        ); //.normalize();//angle isn't big enough to need normalization
-        useStore.getState().player.fireWeapon(flightCameraLookQuaternoin);
         //make work for enemies as well
         //set new target for current shooter
         let targetIndex: number | null = null;
         if (get().selectedTargetIndex !== get().focusTargetIndex) {
           targetIndex = get().focusTargetIndex;
-        } /* else {
-        useWeaponFireStore
-          .getState()
-          .actions.cancelWeaponFire(get().player.mechBP);
-      }*/
+        }
         if (targetIndex !== null) {
           set(() => ({
             selectedTargetIndex: targetIndex,
           }));
-        } /*
-      useWeaponFireStore.getState().actions.shoot(
-        get().player.mechBP,
-        get().player,
-        targetIndex === null
-          ? null
-          : useEnemyStore.getState().enemyGroup.enemyMechs[targetIndex],
-        false, // auto fire
-        false, // auto aim
-        true // isPlayer
-      );*/
+        }
       },
     },
   })
