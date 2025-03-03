@@ -246,7 +246,7 @@ class DataMechBP implements DataMechBPInt {
 
   groundKMpH() {
     let KMpH = ((this.groundMA() / 21) * 1072) / 2; //alow for higher speeds out of combat for flying units
-    //let KMpH = (MA * 50 / 1000) * 300; //300 insread of 600 for realistic speed
+    //let KMpH = (MA * 50 / 1000) * 300; //300 instead of 600 for realistic speed
     //50 meters / hex : 1000 meters / Km : 1 turn = 10 seconds : 10 turns = 1 minute : 600 turns = 1 hour
     KMpH = Math.round(KMpH * 10) / 10;
     return KMpH;

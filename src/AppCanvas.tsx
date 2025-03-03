@@ -28,12 +28,10 @@ const AppCanvas = () => {
           shadows={false}
           resize={{ debounce: 1000 }}
           gl={{
-            //autoClear: false,
             logarithmicDepthBuffer: true,
             //precision: "highp", // "highp", "mediump" or "lowp"
-            // TODO use "low-power" if mobile device?
             //powerPreference: "default", // "high-performance", "low-power" or "default"
-            antialias: true,
+            antialias: navigator.gpu ? true : false,
             alpha: true,
           }}
           onCreated={({ gl, camera } /*{gl, camera, scene}*/) => {

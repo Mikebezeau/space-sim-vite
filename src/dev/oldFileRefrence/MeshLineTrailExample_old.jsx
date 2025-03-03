@@ -44,30 +44,6 @@ const Enemy = ({ enemyMechIndex }) => {
       enemyMechGroupRef.current.rotation.copy(enemyMech.object3d.rotation);
 
       trailPositionRef.current.position.copy(enemyMech.object3d.position);
-      enemyMech.setHitBox(enemyMechGroupRef.current);
-      hitBoxRef.current = enemyMech.hitBox;
-
-      enemyMech.object3d.getWorldPosition(position);
-      enemyMech.object3d.getWorldDirection(direction);
-      enemyMech.ray.origin.copy(position);
-      enemyMech.ray.direction.copy(direction);
-
-      enemyMech.servoHitNames = [];
-      enemyMech.shotsTesting.forEach((shot) => {
-        //detect if shot would hit any servo peices on the enemy mech (or weapons on weapon mounts)
-        const raycast = new THREE.Raycaster(
-          shot.ray.origin,
-          shot.ray.direction
-        );
-
-        const mesh = enemyMechGroupRef.current.children[0];
-        const intersection = raycast.intersectObject(mesh, true);
-        if (intersection.length > 0) {
-          shot.object3d.position.copy(intersection[0].point);
-          enemyMech.servoHitNames.push(intersection[0].object.name);
-          enemyMech.shotsHit.push(shot);
-        }
-      });
     }
   });
 
@@ -77,13 +53,7 @@ const Enemy = ({ enemyMechIndex }) => {
         <box3Helper box={hitBoxRef.current} color={0xffff00} />
       ) : null}
       <group ref={enemyMechGroupRef} scale={SCALE}>
-        <BuildMech
-          mechBP={enemyMech.mechBP}
-          servoHitNames={enemyMech.servoHitNames}
-          drawDistanceLevel={enemyMech.drawDistanceLevel}
-          showAxisLines={0}
-          isLeader={enemyMech.id === enemyMech.groupLeaderId}
-        />
+        <BuildMech mechBP={enemyMech.mechBP} />
       </group>
 
       <MeshLineTrail

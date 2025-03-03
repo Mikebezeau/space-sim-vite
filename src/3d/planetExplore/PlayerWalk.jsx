@@ -36,8 +36,6 @@ export default function PlayerWalk() {
   const cross = useRef();
   const target = useRef();
 
-  const servoHitNames = [];
-
   //testing
   useFrame(() => {
     if (!main.current) return null;
@@ -147,7 +145,7 @@ export default function PlayerWalk() {
       {/*<Suspense>*/}
       {/*<Mech />*/}
       {/*</Suspense>*/}
-      <BuildMech mechBP={playerMechBP} servoHitNames={servoHitNames} />
+      <BuildMech mechBP={playerMechBP} />
       <group ref={cross} position={[0, 0, 300]} name="cross">
         <mesh renderOrder={1000} material={crossMaterial}>
           <boxGeometry attach="geometry" args={[20, 1, 1]} />

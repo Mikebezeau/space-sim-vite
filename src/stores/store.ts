@@ -97,7 +97,7 @@ interface storeState {
   planetTerrain: any;
 
   actions: {
-    setSpeed: (speed: number) => void;
+    setSpeed: (speedValue: number) => void;
     setPlayerPosition: (positionVec3: THREE.Vector3) => void;
 
     getPlayerCurrentStarIndex: () => number;

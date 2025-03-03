@@ -32,7 +32,6 @@ export const randomData = (count, track, radius, size, randomScale) => {
       speed: 0,
       radius,
       t,
-      hit: new THREE.Vector3(),
       distance: 1000,
     };
   });

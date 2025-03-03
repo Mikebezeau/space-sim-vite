@@ -96,15 +96,8 @@ class Mech implements mechInt {
   obbRotationHelper: THREE.Matrix4;
   maxHalfWidth: number;
 
-  // old stuff
-  shield: { max: number; damage: number };
   speed: number;
-  drawDistanceLevel: number;
-  ray: THREE.Ray;
-  hit: THREE.Vector3;
-  shotsTesting: any[];
-  shotsHit: any[];
-  servoHitNames: string[];
+  shield: { max: number; damage: number }; // TODO placeholder
 
   constructor(
     mechDesign: any,
@@ -139,14 +132,6 @@ class Mech implements mechInt {
     this.obbGeoHelperUpdated = false;
     this.obbRotationHelper = new THREE.Matrix4();
     this.speed = 0;
-    this.drawDistanceLevel = 0; // todo: there is a built in object3d property for this
-    this.ray = new THREE.Ray(); // ray from ship for weaponFire hit detection - todo: use built in object3d raycast method
-    // hit testing
-    this.hit = new THREE.Vector3();
-    this.shotsTesting = [];
-    this.shotsHit = [];
-    this.servoHitNames = [];
-
     this.setBuildObject3d();
   }
 
@@ -321,7 +306,6 @@ class Mech implements mechInt {
   setObject3dCenterOffset() {
     this.object3dCenterOffset.position.copy(this.object3d.position);
     this.object3dCenterOffset.rotation.copy(this.object3d.rotation);
-    // todo: use translateOnAxis for simpler calculation
     this.object3dCenterOffset.translateX(this.mechCenter.x);
     this.object3dCenterOffset.translateY(this.mechCenter.y);
     this.object3dCenterOffset.translateZ(this.mechCenter.z);
