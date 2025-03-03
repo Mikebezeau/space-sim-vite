@@ -7,8 +7,6 @@ import useWeaponFireStore from "../stores/weaponFireStore";
 import Mech from "../classes/mech/Mech";
 import { FPS } from "../constants/constants";
 
-import { setCustomData } from "r3f-perf";
-
 // TODO create WeaponFire class
 const WeaponFire = () => {
   const player = useStore((state) => state.player);

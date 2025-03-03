@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 // @ts-ignore
 import skeletonSrc from "/images/skeleton.png";
 // @ts-ignore
@@ -49,7 +49,6 @@ const TitleScreenBackground = (props) => {
     flicker(true, Math.random() * 1000 + 2000);
 
     return () => {
-      console.log("clear flicker", timeoutId.current);
       clearTimeout(timeoutId.current!);
     };
   }, []);

@@ -6,7 +6,7 @@ import usePlayerControlsStore from "../../../stores/playerControlsStore";
 import PlayerCrosshair from "./PlayerCrosshair";
 import PlayerParticleEffects from "./PlayerParticleEffects";
 import { setVisible } from "../../../util/gameUtil";
-import { PLAYER } from "../../../constants/constants";
+import { COMPONENT_RENDER_ORDER, PLAYER } from "../../../constants/constants";
 
 const PlayerMech = () => {
   useStore.getState().updateRenderInfo("PlayerMech");
@@ -44,9 +44,8 @@ const PlayerMech = () => {
       secondaryGroupRef.current.position.copy(player.object3d.position);
       secondaryGroupRef.current.rotation.copy(player.object3d.rotation);
     }
-    // ordering sequence of useFrames so is after SpaceFlightPlanetsScene -> updatePlayerMechAndCamera
-    // TODO create useFrame render order constant
-  }, -1);
+    // ordering sequence of useFrames updatePlayerMechAndCamera
+  }, COMPONENT_RENDER_ORDER.postPositionsUpdate);
 
   return (
     <>
@@ -66,5 +65,4 @@ const PlayerMech = () => {
   );
 };
 
-//export default memo(PlayerMech);
 export default memo(PlayerMech);

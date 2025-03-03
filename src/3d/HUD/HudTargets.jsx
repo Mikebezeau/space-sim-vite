@@ -7,7 +7,7 @@ import useHudTargtingGalaxyMapStore from "../../stores/hudTargetingGalaxyMapStor
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { getCameraAngleDiffToPosition } from "../../util/cameraUtil";
-import { PLAYER, SCALE } from "../../constants/constants";
+import { COMPONENT_RENDER_ORDER, PLAYER } from "../../constants/constants";
 
 const worldPosition = new THREE.Vector3();
 const dummyObj = new THREE.Object3D(),
@@ -20,13 +20,9 @@ const yellow = new THREE.Color("yellow");
 const lightgreen = new THREE.Color("lightgreen");
 const red = new THREE.Color("maroon");
 
-const selectedRingGeometry = new THREE.RingGeometry(
-  0.34 * SCALE,
-  0.4 * SCALE,
-  4
-);
-const focusRingGeometry = new THREE.RingGeometry(0.28 * SCALE, 0.34 * SCALE, 4);
-const detectRingGeometry = new THREE.RingGeometry(0.2 * SCALE, 0.22 * SCALE, 4);
+const selectedRingGeometry = new THREE.RingGeometry(0.34, 0.4, 4);
+const focusRingGeometry = new THREE.RingGeometry(0.28, 0.34, 4);
+const detectRingGeometry = new THREE.RingGeometry(0.2, 0.22, 4);
 
 const selectedMaterialRing = new THREE.MeshBasicMaterial({
   color: red,
@@ -46,16 +42,8 @@ const materialPlanetRing = new THREE.MeshBasicMaterial({
   transparent: 1,
   opacity: 0.2,
 });
-const selectedArrowIndicatorGeometry = new THREE.ConeGeometry(
-  0.06 * SCALE,
-  0.5 * SCALE,
-  4
-);
-const arrowIndicatorGeometry = new THREE.ConeGeometry(
-  0.05 * SCALE,
-  0.4 * SCALE,
-  4
-);
+const selectedArrowIndicatorGeometry = new THREE.ConeGeometry(0.06, 0.5, 4);
+const arrowIndicatorGeometry = new THREE.ConeGeometry(0.05, 0.4, 4);
 const materialArrowIndicator = new THREE.MeshBasicMaterial({
   color: yellow,
   side: THREE.DoubleSide,
@@ -154,8 +142,7 @@ const HudTargets = () => {
           1 -
           Math.floor(
             (distance(enemy.object3d.position, player.object3d.position) /
-              1000000 /
-              SCALE) *
+              1000000) *
               10
           ) /
             10;
@@ -231,7 +218,7 @@ const HudTargets = () => {
         );
       }
     }
-  }, -1);
+  }, COMPONENT_RENDER_ORDER.postPositionsUpdate);
 
   return (
     <>
@@ -268,7 +255,7 @@ function placeTarget(
   isPlanet
 ) {
   targetDummyObj.copy(dummyObj);
-  targetDummyObj.translateZ(6 * (1 / distanceNormalized) * SCALE);
+  targetDummyObj.translateZ(6 * (1 / distanceNormalized));
   mesh.position.copy(targetDummyObj.position);
   mesh.rotation.copy(camera.rotation);
   if (selectedTargetIndex !== null && selectedTargetIndex === enemyIndex) {
@@ -293,11 +280,11 @@ function placeArrow(
   // position base arrow pointer location on screen
   arrowDummyObj.copy(dummyObj);
   arrowDummyObj.rotation.copy(camera.rotation);
-  arrowDummyObj.translateY(2 * SCALE);
-  arrowDummyObj.translateZ(-10 * SCALE);
+  arrowDummyObj.translateY(2);
+  arrowDummyObj.translateZ(-10);
   // position arrow to point to emeny and show relative distance
   arrowDummyObj.lookAt(enemy.object3d.position);
-  arrowDummyObj.translateZ(1 * (1 / enemy.distanceNormalized) * SCALE);
+  arrowDummyObj.translateZ(1 * (1 / enemy.distanceNormalized));
   //flip arrow so it's pointing right way
   arrowDummyObj.getWorldQuaternion(curQuat);
   targetQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);

@@ -12,6 +12,7 @@ import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useEnemyStore from "../../stores/enemyStore";
 import EnemyMechs from "../../3d/mechs/enemyMechs/EnemyMechs";
 import ObbTest from "../../3d/mechs/ObbTest";
+import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
 
 const SpaceFlightPlanetsScene = () => {
   useStore.getState().updateRenderInfo("SpaceFlightPlanetsScene");
@@ -53,7 +54,7 @@ const SpaceFlightPlanetsScene = () => {
         enemyWorldPosition.z - playerLocalOffsetPosition.z
       );
     }
-  }, -2); //render order set to be before Particles and HudTargets positioning
+  }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order - positions are updated first
 
   return (
     <>

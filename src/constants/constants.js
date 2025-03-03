@@ -1,4 +1,11 @@
 export const FPS = 60;
+
+export const COMPONENT_RENDER_ORDER = {
+  positionsUpdate: -2, // lowest is first
+  postPositionsUpdate: -1, // second lowest
+  default: 0, // default
+};
+
 export const SCALE = 1;
 
 export const SCALE_PLANET_WALK = 1;

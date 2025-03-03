@@ -5,7 +5,7 @@ import useStore from "../../../stores/store";
 import usePlayerControlsStore from "../../../stores/playerControlsStore";
 import useParticleStore from "../../../stores/particleStore";
 import Particles from "../../Particles";
-import { FPS } from "../../../constants/constants";
+import { COMPONENT_RENDER_ORDER, FPS } from "../../../constants/constants";
 
 const PlayerParticleEffects = () => {
   useStore.getState().updateRenderInfo("PlayerMechEngineParticles");
@@ -87,7 +87,7 @@ const PlayerParticleEffects = () => {
     );
 
     particleSystem.position.copy(player.object3d.position);
-  }, -1);
+  }, COMPONENT_RENDER_ORDER.postPositionsUpdate);
 
   return <Particles isPlayerParticles />;
 };

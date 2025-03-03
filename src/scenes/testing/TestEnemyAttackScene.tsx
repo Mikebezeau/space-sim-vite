@@ -220,13 +220,6 @@ const TestEnemyAttackScene = () => {
     }
   }, [stations]);
 
-  /*
-  useFrame((_, delta) => {
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
-    player.updateMechUseFrame(delta); // have added player object manually below
-  }, -2); //render order set to be before Particles and HudTargets
-*/
-
   return (
     <>
       <TrackballControls
@@ -243,13 +236,6 @@ const TestEnemyAttackScene = () => {
       <Stations />
       <EnemyMechs />
       <PlayerMech />
-      {/*}
-      <object3D
-        ref={(mechRef) => {
-          player.assignObject3dComponentRef(mechRef);
-        }}
-      />
-      */}
       {/*
       <mesh geometry={track}>
         <meshBasicMaterial color="red" />

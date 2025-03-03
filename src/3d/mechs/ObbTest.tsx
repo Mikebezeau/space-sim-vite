@@ -6,6 +6,7 @@ import useEnemyStore from "../../stores/enemyStore";
 import useParticleStore from "../../stores/particleStore";
 import useDevStore from "../../stores/devStore";
 import { MECH_STATE } from "../../classes/mech/Mech";
+import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
 
 const ObbTest = forwardRef(function ObbTest(
   props: any,
@@ -127,7 +128,7 @@ const ObbTest = forwardRef(function ObbTest(
       // reset obbNeedsUpdate for next frame
       enemies[i].obbNeedsUpdate = true;
     }
-  }, -1); // set useFrame order to -1 to run after scene object positions are updated
+  }, COMPONENT_RENDER_ORDER.postPositionsUpdate); // useFrame order set to run after object positions update
 
   return (
     <>

@@ -8,7 +8,7 @@ import ScenePortalLayer from "./spaceFlightSceneLayers/ScenePortalLayer";
 import StarsBackgroundScene from "./spaceFlightSceneLayers/StarsBackgroundScene";
 import SolarSystem from "../3d/solarSystem/SolarSystem";
 import Stations from "../3d/mechs/Stations";
-import { PLAYER } from "../constants/constants";
+import { COMPONENT_RENDER_ORDER, PLAYER } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/solarSystemConstants";
 
 const NewCampaignScene = () => {
@@ -69,7 +69,7 @@ const NewCampaignScene = () => {
       player.object3d.rotateZ((Math.PI * delta) / 100);
       camera.translateZ(-delta * 10);
     }
-  }, -1); // do this camera adjustment before StarsBackgroundScene
+  }, COMPONENT_RENDER_ORDER.postPositionsUpdate); // do this camera adjustment before StarsBackgroundScene
 
   return (
     <>

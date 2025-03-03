@@ -71,10 +71,10 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
               ref.geometry.setAttribute(
                 "isDead",
                 new THREE.InstancedBufferAttribute(
-                  // TODO why is Int8Array int array not working?
+                  // Int8Array: tried int array, does not work
                   new Float32Array(
-                    instancedEnemies.map(
-                      (mech) => 0 //mech.mechState === MECH_STATE.dead ? 1 : 0
+                    instancedEnemies.map((mech) =>
+                      mech.mechState === MECH_STATE.dead ? 1 : 0
                     )
                   ),
                   1

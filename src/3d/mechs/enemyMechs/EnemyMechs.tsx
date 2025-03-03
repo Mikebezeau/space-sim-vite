@@ -7,6 +7,7 @@ import InstancedMechs from "./InstancedMechs";
 
 import { LOAD_MODEL_3D_SRC } from "../../../stores/loaderStore";
 import LoadModel3d from "../../LoadModel3d";
+import { COMPONENT_RENDER_ORDER } from "../../../constants/constants";
 
 const EnemyMechs = () => {
   const componentName = "EnemyMechs";
@@ -23,7 +24,7 @@ const EnemyMechs = () => {
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     enemyGroup.updateUseFrame(delta, scene);
-  }, -2); //render order set to be before Particles and HudTargets
+  }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order set positions are updated first
 
   return (
     <>
