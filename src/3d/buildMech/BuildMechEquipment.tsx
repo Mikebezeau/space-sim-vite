@@ -45,8 +45,15 @@ const MechDisplay = () => {
           <object3D
             ref={(mechRef) => {
               if (mechRef) {
-                mechRef.clear();
-                editorMechBP.buildObject3d(mechRef);
+                editorMechBP.buildObject3d(
+                  mechRef,
+                  // if changing part color - do not pass editPartId
+                  // so that the color selection is reflected in build
+                  // instead of part selection highlight color
+                  editPartMenuSelect === EDIT_MENU_SELECT.color
+                    ? ""
+                    : editPartId
+                );
               }
             }}
           />

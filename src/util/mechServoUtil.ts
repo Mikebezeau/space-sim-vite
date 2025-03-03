@@ -1,6 +1,9 @@
 import { equipData } from "../equipment/data/equipData";
 import { roundTenth } from "../util/gameUtil";
 
+// TODO add base class for following 2 functions
+// MechPart
+// also - change names containing Servo to Part?
 function applyScaledWeightMult(scale, weight) {
   return roundTenth(weight * equipData.scale.weightMult[scale]);
 }

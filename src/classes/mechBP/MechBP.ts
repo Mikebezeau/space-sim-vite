@@ -5,7 +5,7 @@ import MechServoShape from "./MechServoShape";
 import MechWeapon from "./weaponBP/MechWeapon";
 
 interface MechBPInt {
-  buildObject3d: (object3d?: Object3D) => void;
+  buildObject3d: (object3d?: Object3D, editPartId?: string) => Object3D;
   getPartById: (
     id: string,
     noFirstCallArr?: MechServoShape[]
@@ -19,7 +19,7 @@ interface MechBPInt {
     arr: (MechServo | MechWeapon | MechServoShape)[],
     childId: string
   ) => boolean;
-  servoWeaponList: (servoId: string) => any[];
+  getServoWeapons: (servoId?: string) => MechWeapon[];
 }
 
 class MechBP extends DataMechBP implements MechBPInt {
@@ -27,13 +27,27 @@ class MechBP extends DataMechBP implements MechBPInt {
     super(mechBPdata);
   }
 
-  buildObject3d(object3d: Object3D = new Object3D()) {
-    //object3d.clear();
+  buildObject3d(
+    object3d: Object3D = new Object3D(),
+    editPartId: string | undefined
+  ) {
+    object3d.clear();
     this.servoList.forEach((servo: MechServo) => {
-      const servoGroup = servo.buildServoObject3d(this.color || "#ffffff");
+      const servoGroup = servo.buildServoObject3d(
+        this.color || "#ffffff",
+        editPartId
+      );
+      // TODO build weapons located on servo and add to servoGroup
+      // do not scale weapons
+      const servoWeapons = this.getServoWeapons();
+      // add built weaponsGroup to servoGroup
       object3d.add(servoGroup);
     });
+    return object3d;
   }
+
+  // TODO builbuildObject3dMerged
+  // merge
 
   // find MechServo | MechWeapon, or recursively find MechServoShape of either list by id
   // noFirstCallArr not to be provided by user
@@ -91,7 +105,7 @@ class MechBP extends DataMechBP implements MechBPInt {
     return idFound;
   }
 
-  servoWeaponList(servoId: string) {
+  getServoWeapons(servoId: string = this.id) {
     return this.weaponList.filter((w) => w.locationServoId === servoId);
   }
 }

@@ -26,6 +26,7 @@ interface MechServoShapeInt {
   geometry: () => BufferGeometry;
   recursiveBuildObject3d: (
     inheritColor: string,
+    editPartId: string | undefined,
     parentMirrored?: {
       x: boolean;
       y: boolean;
@@ -70,9 +71,9 @@ class MechServoShape implements MechServoShapeInt {
     }
   }
 
-  //TODO MAKE THHIS RECURSIVE
   recursiveBuildObject3d(
     inheritColor: string,
+    editPartId: string | undefined,
     parentMirrored: { x: boolean; y: boolean; z: boolean } = {
       x: false,
       y: false,
@@ -100,6 +101,9 @@ class MechServoShape implements MechServoShapeInt {
       z: parentMirrored.z ? !this.mirrorAxis.z : this.mirrorAxis.z,
     };
 
+    // TODO have to check if parent is selected
+    if (this.id === editPartId) this.color;
+
     // TODO if mirrored - the vertices flip changing side from front to back
     // dev testing condition to turn servo color green
     let testCondition = false;
@@ -123,7 +127,11 @@ class MechServoShape implements MechServoShapeInt {
       // nested group of servoShapes
       if (servoShape.servoShapes.length > 0) {
         servoShapesGroup.add(
-          servoShape.recursiveBuildObject3d(inheritColor, mirrorAxis)
+          servoShape.recursiveBuildObject3d(
+            inheritColor,
+            editPartId,
+            mirrorAxis
+          )
         );
       } else {
         // if going to flip the geometry, need to create a new material
@@ -152,7 +160,7 @@ class MechServoShape implements MechServoShapeInt {
           flatShading: true,
           side: THREE.DoubleSide,
         });
-        // TODO imporve inplimentation of getMaterial
+        // TODO imporve implimentation of getMaterial
         // see if color can be changed for copies of the same material
         // reuse as many materials as possible
         /*

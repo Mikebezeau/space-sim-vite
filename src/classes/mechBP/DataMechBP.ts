@@ -134,6 +134,7 @@ class DataMechBP implements DataMechBPInt {
 
   scaledMeleeBonus() {
     let meleeBonus = applyScaledWeightMult(
+      this.scale,
       equipData.hydraulics.melee[this.hydraulicsType]
     );
     return meleeBonus;

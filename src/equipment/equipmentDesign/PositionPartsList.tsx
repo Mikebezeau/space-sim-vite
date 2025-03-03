@@ -140,7 +140,7 @@ export const PositionPartsList = (props: PositionPartsListInt) => {
             }
           >
             <Part editorMechBP={editorMechBP} part={servo} />
-            {editorMechBP.servoWeaponList(servo.id).map((weapon) => (
+            {editorMechBP.getServoWeapons(servo.id).map((weapon) => (
               <div key={weapon.id} className="ml-8">
                 <span
                   className={

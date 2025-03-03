@@ -48,7 +48,7 @@ const BuildMech = forwardRef(function BuildMech(
             editPartId={editPartId}
             isWireFrame={isWireFrame}
           />
-          {mechBP.servoWeaponList(servo.id).map((weapon) => (
+          {mechBP.getServoWeapons(servo.id).map((weapon) => (
             <Fragment key={weapon.id}>
               <ServoShapes
                 servo={weapon}
