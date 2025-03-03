@@ -15,9 +15,11 @@ const CockpitPanelsRed = () => {
         transform: IS_MOBILE ? "translateZ(4vh)" : "translateZ(14vh)",
       }}
     >
-      <div className="face screen-top">
-        <PanelScreenTopRed />
-      </div>
+      {!IS_MOBILE && (
+        <div className="face screen-top">
+          <PanelScreenTopRed />
+        </div>
+      )}
       <div className="face middle-red">
         <PanelMiddleRed />
       </div>

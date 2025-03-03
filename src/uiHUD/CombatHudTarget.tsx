@@ -1,0 +1,34 @@
+import React from "react";
+import usePlayerControlsStore from "../stores/playerControlsStore";
+import { PLAYER } from "../constants/constants";
+//@ts-ignore
+import hudCrosshairOuter1 from "/images/hud/hudCrosshairOuter1.png";
+
+const CombatHudTarget = () => {
+  const playerActionMode = usePlayerControlsStore(
+    (state) => state.playerActionMode
+  );
+
+  return (
+    <>
+      {playerActionMode === PLAYER.action.manualControl && (
+        <div className="absolute w-[20vh] h-[20vh] -mt-[10vh] -ml-[10vh] left-1/2 top-1/2">
+          <img
+            src={hudCrosshairOuter1}
+            ref={(targetElement) => {
+              if (targetElement) {
+                // assign element to target
+                usePlayerControlsStore.getState().combatHudTarget =
+                  targetElement;
+              }
+            }}
+            alt="controls icon"
+            className="absolute w-full h-full"
+          />
+        </div>
+      )}
+    </>
+  );
+};
+
+export default CombatHudTarget;

@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import usePlayerControlsStore from "../../../stores/playerControlsStore";
+import { PLAYER } from "../../../constants/constants";
 
 // TODO plane in file MonitorScreen.tsx and change old MonitorScreen to SidePanelScreen.tsx
 const COMPUTOR_COMMANDS = [
@@ -30,6 +32,10 @@ const spaceTextTitle = `
 */
 
 const PanelTerminalReadout = () => {
+  const playerActionMode = usePlayerControlsStore(
+    (state) => state.playerActionMode
+  );
+
   const computerScreenContainer = useRef<HTMLDivElement>(null);
   const computerScreen = useRef<HTMLDivElement>(null);
   const computerScreenX = useRef<HTMLDivElement>(null);
@@ -149,19 +155,21 @@ const PanelTerminalReadout = () => {
       <div
         className="absolute pointer-events-auto top-0 left-0 w-full h-full p-1 whitespace-pre leading-none overflow-hidden break-words"
         onClick={() => {
-          computerScreenX.current!.style.display = "block";
-          const sc = computerScreenContainer.current;
-          sc!.style.width = "33vh";
-          sc!.style.height = "30vh";
-          sc!.style.marginTop = "-8vh";
-          sc!.style.marginLeft = "-16.3vh";
-          sc!.style.opacity = "0.6";
-          sc!.style.backgroundColor = "black";
-          sc!.style.fontSize = "0.8rem";
-          //sc!.style.fontFamily = fonts[fontCounter.current];
-          //computerScreen.current!.innerHTML = fonts[fontCounter.current];
-          fontCounter.current++;
-          if (fontCounter.current === fonts.length) fontCounter.current = 0;
+          if (playerActionMode === PLAYER.action.inspect) {
+            computerScreenX.current!.style.display = "block";
+            const sc = computerScreenContainer.current;
+            sc!.style.width = "33vh";
+            sc!.style.height = "30vh";
+            sc!.style.marginTop = "-8vh";
+            sc!.style.marginLeft = "-16.3vh";
+            sc!.style.opacity = "0.6";
+            sc!.style.backgroundColor = "black";
+            sc!.style.fontSize = "0.8rem";
+            //sc!.style.fontFamily = fonts[fontCounter.current];
+            //computerScreen.current!.innerHTML = fonts[fontCounter.current];
+            fontCounter.current++;
+            if (fontCounter.current === fonts.length) fontCounter.current = 0;
+          }
         }}
         ref={computerScreen}
       />

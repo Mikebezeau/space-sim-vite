@@ -4,7 +4,9 @@ import usePlayerControlsStore from "../stores/playerControlsStore";
 import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import CyberButton from "../uiMenuComponents/common/CyberButton";
 //@ts-ignore
-import controls from "../assets/icons/controls.svg";
+import hudCrosshair1 from "/images/hud/hudCrosshair1.png";
+//@ts-ignore
+//import controls from "../assets/icons/controls.svg";
 //@ts-ignore
 import crosshair from "../assets/icons/crosshairInner.svg";
 //@ts-ignore
@@ -56,7 +58,7 @@ const ActionControlPilot = () => {
       onClick={() => actionModeSelect(PLAYER.action.manualControl)}
     >
       <img
-        src={controls}
+        src={hudCrosshair1}
         alt="controls icon"
         className="w-full h-full pointer-events-none"
       />
@@ -167,7 +169,7 @@ export const ActionWarpToStarPopupHUD = () => {
   );
 };
 
-export const ActionModeControls = () => {
+export const ActionModeControlGroup = () => {
   const playerActionMode = usePlayerControlsStore(
     (state) => state.playerActionMode
   );
@@ -410,14 +412,21 @@ const ControlIconsColumnRight = () => {
 };
 
 export const Cockpit3rdPersonControls = () => {
+  const playerActionMode = usePlayerControlsStore(
+    (state) => state.playerActionMode
+  );
   return (
     <>
-      <div className="hidden md:block">
-        <ControlIconsRowBottom />
-      </div>
-      <div className="md:hidden">
-        <ControlIconsColumnRight />
-      </div>
+      {playerActionMode === PLAYER.action.inspect && (
+        <>
+          <div className="hidden md:block">
+            <ControlIconsRowBottom />
+          </div>
+          <div className="md:hidden">
+            <ControlIconsColumnRight />
+          </div>
+        </>
+      )}
     </>
   );
 };

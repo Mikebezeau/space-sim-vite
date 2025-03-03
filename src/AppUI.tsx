@@ -8,9 +8,10 @@ import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
 import FlightHud from "./uiHUD/FlightHud";
 import Cockpit from "./uiCockpit/Cockpit";
 import {
-  ActionModeControls,
+  ActionModeControlGroup,
   Cockpit3rdPersonControls,
 } from "./uiCockpit/CockpitControls";
+import CombatHudTarget from "./uiHUD/CombatHudTarget";
 import SpeedReadout from "./uiCockpit/display/SpeedReadout";
 import ShieldsReadout from "./uiCockpit/display/ShieldsReadout";
 import WeaponsReadout from "./uiCockpit/display/WeaponsReadout";
@@ -61,12 +62,13 @@ const AppUI = () => {
                 {playerViewMode === PLAYER.view.thirdPerson && (
                   <>
                     <Cockpit3rdPersonControls />
-                    <ActionModeControls />
+                    <ActionModeControlGroup />
                     <div className="absolute top-20 left-10">
                       <SpeedReadout />
                     </div>
                   </>
                 )}
+                <CombatHudTarget />
                 <div className="absolute top-72 right-11">
                   <ShieldsReadout />
                   <WeaponsReadout />

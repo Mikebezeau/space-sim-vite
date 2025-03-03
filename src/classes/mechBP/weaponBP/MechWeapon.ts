@@ -69,7 +69,7 @@ class MechWeapon extends MechServo implements MechWeaponInt {
     orderNumber: number;
     isReady: boolean;
     isFireModeChain: boolean;
-    chainModeDelayedTimeToFire: number;
+    chainFireTimeToFire: number;
     timeToReload: number;
   };
   //properties for weapon stats
@@ -137,7 +137,7 @@ class MechWeapon extends MechServo implements MechWeaponInt {
       orderNumber: 0,
       isReady: true,
       isFireModeChain: true,
-      chainModeDelayedTimeToFire: 0,
+      chainFireTimeToFire: 0,
       timeToReload: 0,
     };
     // must set data object, or properties will not be transferred (doing this way to enforce type casting)

@@ -2,31 +2,35 @@ import React, { useEffect, useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import CockpitPanelsRed from "./panels/CockpitPanelsRed";
-import { ActionModeControls, ControlIconsRowBottom } from "./CockpitControls";
+import {
+  ActionModeControlGroup,
+  ControlIconsRowBottom,
+} from "./CockpitControls";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
 
 const Cockpit = () => {
   useStore.getState().updateRenderInfo("Cockpit");
 
+  const playerActionMode = usePlayerControlsStore(
+    (state) => state.playerActionMode
+  );
+
   const cockpitRef = useRef<HTMLDivElement>(null);
 
   const updateView = () => {
     if (cockpitRef.current) {
-      // show or hide buttons when in pilot control mode
-      if (
-        usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
-        PLAYER.action.inspect
-      ) {
-      } else {
-      }
-
       const flightCameraLookRotation =
         usePlayerControlsStore.getState().flightCameraLookRotation;
 
       const translateX = flightCameraLookRotation.rotateX * 60;
       const translateY = -flightCameraLookRotation.rotateY * 60;
-      const translateZ = 0;
+      // TODO translateZ does nothing
+      const translateZ =
+        usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
+        PLAYER.action.manualControl
+          ? -10
+          : 0;
 
       [...cockpitRef.current.children].forEach((group: any) => {
         group.style.transform = `
@@ -64,12 +68,14 @@ const Cockpit = () => {
               IS_MOBILE ? "top-[-27vh]" : "top-[-22vh]"
             }`}
           >
-            <ControlIconsRowBottom />
+            {playerActionMode === PLAYER.action.inspect && (
+              <ControlIconsRowBottom />
+            )}
           </div>
         </div>
       </div>
 
-      <ActionModeControls />
+      <ActionModeControlGroup />
     </div>
   );
 };

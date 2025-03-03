@@ -31,6 +31,7 @@ interface playerControlStoreState {
   // within solar system warp
   playerWarpToPosition: Vector3 | null;
 
+  combatHudTarget: HTMLDivElement | null;
   playerSpeedSetting: number;
   getPlayerSpeedSetting: () => number;
   isPlayerPilotControl: () => boolean;
@@ -114,6 +115,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     // within solar system warp
     playerWarpToPosition: null,
 
+    combatHudTarget: null,
     playerSpeedSetting: 1, // used in throttle control, and updatePlayerMechAndCamera below
     getPlayerSpeedSetting: () => get().playerSpeedSetting,
     isPlayerPilotControl: () => {
@@ -312,6 +314,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           const windowAspectRatio = window.innerWidth / window.innerHeight;
           camera.translateZ((6 / windowAspectRatio + 8) * player.mechBP.scale);
           // additional camera position based on mouse position
+          // camera position moves in opposite way of mouse position
           camera.translateX(
             get().flightCameraLookRotation.rotateX *
               (4 / windowAspectRatio + 4) *

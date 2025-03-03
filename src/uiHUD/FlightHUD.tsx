@@ -1,12 +1,19 @@
 import React, { useEffect, useRef } from "react";
 import useStore from "../stores/store";
+import usePlayerControlsStore from "../stores/playerControlsStore";
 import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
 import useWindowResize from "../hooks/useWindowResize";
 import FlightHudTarget from "./FlightHudTarget";
+//@ts-ignore
+import hudCrosshairInner1 from "/images/hud/hudCrosshairInner1.png";
+import { PLAYER } from "../constants/constants";
 
 const FlightHud = () => {
   const playerCurrentStarIndex = useStore(
     (state) => state.playerCurrentStarIndex
+  );
+  const playerActionMode = usePlayerControlsStore(
+    (state) => state.playerActionMode
   );
 
   const htmlHudTargets = useHudTargtingGalaxyMapStore(
@@ -40,15 +47,6 @@ const FlightHud = () => {
       hudCircleRef.current.style.marginLeft = `-${diameter / 2}px`;
       hudCircleRef.current.style.width = `${diameter}px`;
       hudCircleRef.current.style.height = `${diameter}px`;
-
-      playerDirectionTargetRef.current.style.top = `calc( 50% -  ${
-        targetDiameterPx / 2
-      }px)`;
-      playerDirectionTargetRef.current.style.left = `calc( 50% -  ${
-        targetDiameterPx / 2
-      }px)`;
-      playerDirectionTargetRef.current.style.width = `${diameter / 20}px`;
-      playerDirectionTargetRef.current.style.height = `${diameter / 20}px`;
     }
   };
 
@@ -74,8 +72,25 @@ const FlightHud = () => {
               playerDirectionTargetRef;
           }
         }}
-        className={`opacity-50 absolute border-2 border-green-500 rounded-full`}
-      />
+        className={`absolute top-1/2 left-1/2`}
+      >
+        {playerActionMode === PLAYER.action.inspect ? (
+          <div
+            className={`opacity-50 w-[5vh] h-[5vh] -mt-[2.5vh] -ml-[2.5vh]
+              absolute border-2 border-cyan-200 rounded-full`}
+          />
+        ) : (
+          <>
+            <img
+              src={hudCrosshairInner1}
+              alt="controls icon"
+              // TODO why width w-[30vh] ?
+              className="w-[30vh] h-[20vh] -mt-[10vh] -ml-[10vh] pointer-events-none"
+            />
+          </>
+        )}
+      </div>
+
       {htmlHudTargets.map((target) => (
         <FlightHudTarget
           key={`${target.objectType}-${target.objectIndex}`}

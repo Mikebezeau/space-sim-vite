@@ -561,29 +561,33 @@ class Mech implements mechInt {
       weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
       // get quaternion
       weaponFireQuaternoin.copy(weaponFireMechParentObj.quaternion);
-      // TODO fix angle target issue
       if (targetQuaternoin)
         weaponFireQuaternoin.multiply(targetQuaternoin).normalize(); //normalization is important
       weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
-
-      // for each weapon type array
-      const RoF = 4; // rate of fire
-      const RoFTime = 1000 / RoF; // 1 second divided by RoF
-      // RoFTime divided by num weapons in the group
-      const rotatingGroupFireTime = RoFTime / this.mechBP.weaponList.length + 1;
 
       // get list of weapons that are ready to fire
       const readyWeapons = this.mechBP.weaponList.filter(
         (weapon: MechWeapon) =>
           weapon.weaponFireData.isReady &&
-          weapon.weaponFireData.chainModeDelayedTimeToFire < Date.now()
+          weapon.weaponFireData.chainFireTimeToFire < Date.now()
       );
-      // ready all reload weapons
+      // ready all reloaded weapons
       this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
         if (weapon.weaponFireData.timeToReload < Date.now()) {
           weapon.weaponFireData.isReady = true;
         }
       });
+
+      // for each weapon type array
+      const RoF = 4; // rate of fire
+      const RoFTime = 1000 / RoF; // 1 second divided by RoF
+      // RoFTime divided by num weapons in the group
+
+      // TODO add weapon burst mode value for grouped bursts
+      const burstModeNormValue = 0.5;
+
+      const groupNextFireTime =
+        (RoFTime / this.mechBP.weaponList.length) * burstModeNormValue;
 
       // find weapon with lowest orderNumber that has not been fired if weapon is ready to fire
       if (readyWeapons.length > 0) {
@@ -595,8 +599,8 @@ class Mech implements mechInt {
         weaponToFire.weaponFireData.timeToReload = Date.now() + RoFTime;
         // add delay to all weapons in the group
         this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
-          weapon.weaponFireData.chainModeDelayedTimeToFire =
-            Date.now() + rotatingGroupFireTime;
+          weapon.weaponFireData.chainFireTimeToFire =
+            Date.now() + groupNextFireTime;
         });
       }
     }

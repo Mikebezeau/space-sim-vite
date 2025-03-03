@@ -74,25 +74,6 @@ const MainMenu = () => {
           className="hidden absolute top-[40%] -mt-[200px] sm:-mt-[60px] sm:top-20 left-[5%] sm:left-[50%] sm:-ml-[37vh] w-[90%] sm:w-[75vh] 
           transition-opacity duration-300"
         />
-        <div
-          style={{ marginTop: isShowMenu ? "-16vh" : 0 }}
-          className="absolute top-[calc(40vw+50px)] sm:top-[30vh] left-1/2 h-2 w-fit 
-           transition-all duration-1000"
-        >
-          <div
-            /*
-            395equalizer2 - old dos font
-            ARCADE - dot matrix
-            CyberAlert - cyberpunk awesome
-            quadaptor - cyberpunk flowing
-            */
-            className="font-['CyberAlert'] opacity-80 -ml-[50%] 
-            text-slate-600 tracking-wide text-5xl md:text-[10vw]"
-            data-text="MACHINE"
-          >
-            MACHINE
-          </div>
-        </div>
         <div className="z-10 absolute w-80 bottom-[35%] left-1/2 -ml-40">
           <CyberButton
             title={"Start"}
@@ -137,6 +118,27 @@ const MainMenu = () => {
             </CyberMenuBorder>
           </div>
         )}
+      </div>
+      <div
+        style={{ marginTop: isShowMenu ? "-16vh" : 0 }}
+        className="z-50 absolute top-[calc(40vw+50px)] sm:top-[30vh] left-1/2 h-2 w-fit 
+           transition-all duration-1000"
+      >
+        <div
+          /*
+            395equalizer2 - old dos font
+            ARCADE - dot matrix
+            CyberAlert - cyberpunk awesome
+            quadaptor - cyberpunk flowing
+            */
+          className={`${
+            isShowMenu ? "glitch" : ""
+          } font-['CyberAlert'] opacity-80 -ml-[50%] 
+            text-slate-600 tracking-wide text-5xl md:text-[10vw]`}
+          data-text="MACHINE"
+        >
+          MACHINE
+        </div>
       </div>
     </div>
   );

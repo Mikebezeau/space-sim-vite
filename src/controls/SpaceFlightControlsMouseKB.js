@@ -42,7 +42,11 @@ const ControlsMouseKBSpaceFlight = () => {
 
   //shooting
   useMouseDown(() => {
-    actions.setShoot(true);
+    if (
+      usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
+      PLAYER.action.manualControl
+    )
+      actions.setShoot(true);
   });
   useMouseUp(() => {
     actions.setShoot(false);

@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 // @ts-ignore
-import skeletonSrc from "/images/skeleton.jpg";
+import skeletonSrc from "/images/skeleton.png";
 // @ts-ignore
-import robotSrc from "/images/robot2.jpg";
+import robotSrc from "/images/robot2.png";
+// @ts-ignore
+import bgMetalSrc from "/images/background/bgMetal.jpg";
 
 const TitleScreenBackground = (props) => {
   const { isTitleImgLoaded = true } = props;
@@ -56,7 +58,11 @@ const TitleScreenBackground = (props) => {
     <div
       className={`absolute w-full h-full bg-white transition-opacity duration-1000 
       ${/* fade in on */ isTitleImgLoaded ? "opacity-100" : "opacity-0"}`}
+      style={{
+        backgroundImage: `url(${bgMetalSrc})`,
+      }}
     >
+      <div className={`absolute w-full h-full bg-white opacity-75`} />
       <img
         src={robotSrc} //opacity-50
         ref={robotRef}
@@ -73,7 +79,7 @@ const TitleScreenBackground = (props) => {
         <div
           className="glitch glitch--vertical glitch--style-3 
             invert absolute
-            h-full 
+            h-[110%] 
             min-w-[110vh] w-[110vh] 
             -top-[8vh] 
             -left-[38vh] "
