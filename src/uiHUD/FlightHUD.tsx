@@ -58,7 +58,7 @@ const FlightHud = () => {
     <>
       <div
         ref={hudLargeOuterCirlcleRef}
-        className={`opacity-50 absolute top-1/2 left-1/2 border-2 border-white rounded-full`}
+        className={`opacity-10 absolute top-1/2 left-1/2 border-2 border-white rounded-full`}
       />
       <div
         ref={(ref) => {
@@ -74,14 +74,15 @@ const FlightHud = () => {
               absolute border-2 border-cyan-200 rounded-full"
           />
         ) : (
-          <img
-            src={hudCrosshairInner1}
-            alt="controls icon"
+          <div
+            style={{
+              backgroundSize: "100% 100%",
+              backgroundImage: `url(${hudCrosshairInner1})`,
+            }}
             // width needs to be set at 50% larger then normal for some reason
-            className="w-[30vh] h-[15vh] -mt-[7.5vh] -ml-[10vh]"
-
-            //className="w-[30vh] h-[15vh] -mt-[7.5vh] -ml-[10vh]
-            //  md:w-[45vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
+            className="bg-contain
+              w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh]
+              md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
           />
         )}
       </div>

@@ -60,7 +60,13 @@ const ActionControlPilot = () => {
       md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
       onClick={() => actionModeSelect(PLAYER.action.manualControl)}
     >
-      <img src={hudCrosshair1} alt="controls icon" className="w-full h-full" />
+      <div
+        style={{
+          backgroundSize: "100% 100%",
+          backgroundImage: `url(${hudCrosshair1})`,
+        }}
+        className="w-full h-full"
+      />
     </div>
   );
 };

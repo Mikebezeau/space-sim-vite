@@ -41,15 +41,16 @@ const ControlsMouseKBSpaceFlight = () => {
   useMouseMove(handleMouseMove);
 
   //shooting
-  useMouseDown(() => {
+  useMouseDown((e) => {
     if (
+      e.button === 0 && // left click only shoots
       usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
-      PLAYER.action.manualControl
+        PLAYER.action.manualControl
     )
       actions.setShoot(true);
   });
-  useMouseUp(() => {
-    actions.setShoot(false);
+  useMouseUp((e) => {
+    if (e.button === 0) actions.setShoot(false);
   });
 
   //mouse right click

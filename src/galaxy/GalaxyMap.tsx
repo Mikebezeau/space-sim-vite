@@ -22,35 +22,16 @@ import { IS_MOBILE } from "../constants/constants";
 import StarPoints from "./StarPoints";
 import isMouseOverStarInfoCard from "../galaxy/isMouseOverStarInfoCard";
 extend({ MeshLineGeometry, MeshLineMaterial });
-/*
-function Box(props) {
-  // This reference gives us direct access to the THREE.Mesh object
-  const ref = useRef();
-  // Hold state for hovered and clicked events
-  const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
 
-  // Return the view, these are regular Threejs elements expressed in JSX
-  return (
-    <mesh
-      {...props}
-      ref={ref}
-      scale={clicked ? 1.5 : 1}
-      onClick={(event) => click(!clicked)}
-      onPointerOver={(event) => hover(true)}
-      onPointerOut={(event) => hover(false)}
-    >
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
-    </mesh>
-  );
-}
-*/
-
+const RAYCAST_LENGTH = 10;
 const RAYCAST_THRESHOLD = 1;
 
 const GalaxyMap = () => {
   useStore.getState().updateRenderInfo("GalaxyMap");
+
+  const getStarBufferPosition = useStore(
+    (state) => state.getStarBufferPosition
+  );
 
   const { camera, scene } = useThree();
   const controlsRef = useRef<any | null>(null);
@@ -78,10 +59,9 @@ const GalaxyMap = () => {
 
   const StarPointsWithControls = () => {
     useStore.getState().updateRenderInfo("StarPointsWithControls");
+
     const { getPlayerCurrentStarIndex } = useStore((state) => state.actions);
-    const { starCoordsBuffer, starSelectedBuffer } = useStore(
-      (state) => state.galaxy
-    );
+    const { starSelectedBuffer } = useStore((state) => state.galaxy);
 
     const {
       getShowInfoTargetStarIndex,
@@ -93,22 +73,12 @@ const GalaxyMap = () => {
     const mouseMovedStart = useRef(new THREE.Vector2(0, 0));
     const mouseMovedEnd = useRef(new THREE.Vector2(0, 0));
     const mouseButtonDown = useRef(false);
-
-    // TODO this might be in store as well
-    const getStarBufferPosition = useCallback(
-      (index: number) => {
-        if (typeof starCoordsBuffer?.array === "undefined") return;
-        return new THREE.Vector3(
-          starCoordsBuffer.array[index * 3],
-          starCoordsBuffer.array[index * 3 + 1],
-          starCoordsBuffer.array[index * 3 + 2]
-        );
-      },
-      [starCoordsBuffer]
-    );
+    const raycaster = useRef(new THREE.Raycaster());
+    const fromDistanceCheckVec3 = useRef(new THREE.Vector3());
+    const toDistanceCheckVec3 = useRef(new THREE.Vector3());
 
     const viewSelectedStar = useCallback(
-      (starPointIndex) => {
+      (starPointIndex: number) => {
         if (galaxyRef.current === null) return;
         resestControlsCameraPosition(); // reset controls, camera and galaxy positions
         const centerOnStarPosition = getStarBufferPosition(starPointIndex);
@@ -135,10 +105,15 @@ const GalaxyMap = () => {
     const setSecondarySelectedStars = useCallback((starPointIndex) => {
       const centerOnStarPosition = getStarBufferPosition(starPointIndex);
       if (!centerOnStarPosition) return;
+      fromDistanceCheckVec3.current.copy(centerOnStarPosition);
+
       starSelectedBuffer.array.forEach((_, index) => {
         const secondaryStarPosition = getStarBufferPosition(index);
         if (!secondaryStarPosition) return;
-        const distance = centerOnStarPosition.distanceTo(secondaryStarPosition);
+        toDistanceCheckVec3.current.copy(secondaryStarPosition);
+        const distance = fromDistanceCheckVec3.current.distanceTo(
+          toDistanceCheckVec3.current
+        );
         if (distance < RAYCAST_THRESHOLD) {
           starSelectedBuffer.array[index] = STAR_DISPLAY_MODE.secondarySelected;
         }
@@ -172,20 +147,25 @@ const GalaxyMap = () => {
       } else resestControlsCameraPosition();
     }, [starPointsRef.current]);
 
-    const getRaycasterIntersects = (e, threshold) => {
-      // TODO create reusable Raycaster variable
-      const raycaster = new THREE.Raycaster();
-      raycaster.params.Points.threshold = threshold;
+    const getRaycasterIntersects = (
+      e: { clientX: number; clientY: number },
+      threshold: number
+    ) => {
+      raycaster.current.params.Points.threshold = threshold;
+      raycaster.current.far = RAYCAST_LENGTH;
       const pointer = new THREE.Vector2();
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(pointer, camera);
-      const intersects = raycaster.intersectObjects(scene.children, true);
+      raycaster.current.setFromCamera(pointer, camera);
+      const intersects = raycaster.current.intersectObjects(
+        scene.children,
+        true
+      );
       return intersects;
     };
 
     const getClosestIntersect = (
-      intersects,
+      intersects: any,
       limitPrimarySecondarySelected = false
     ) => {
       if (intersects.length === 0) return null;
@@ -211,6 +191,7 @@ const GalaxyMap = () => {
     };
 
     /*
+    // this is to select stars from a full galaxy view
     const setStarRaycastSelection = (e) => {
       const intersects = getRaycasterIntersects(e, RAYCAST_THRESHOLD);
       // primary selected star set to star closest to raycaster ray
@@ -307,7 +288,9 @@ const GalaxyMap = () => {
 
     // change hovered star to  selected star
     // on mobile we set and check for hovered star existance before setSelectedTargetStar
-    const setSelectedTargetStar = (e = null) => {
+    const setSelectedTargetStar = (
+      e: { clientX: number; clientY: number } | null = null
+    ) => {
       if (e && isMouseOverStarInfoCard(e)) {
         return;
       }

@@ -17,8 +17,11 @@ const CombatHudTarget = () => {
             w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
             md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
         >
-          <img
-            src={hudCrosshairOuter1}
+          <div
+            style={{
+              backgroundSize: "100% 100%",
+              backgroundImage: `url(${hudCrosshairOuter1})`,
+            }}
             ref={(targetElement) => {
               if (targetElement) {
                 // assign element to target
@@ -26,7 +29,6 @@ const CombatHudTarget = () => {
                   targetElement;
               }
             }}
-            alt="controls icon"
             className="absolute w-full h-full opacity-50"
           />
         </div>

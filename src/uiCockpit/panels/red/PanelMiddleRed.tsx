@@ -3,9 +3,7 @@ import SpeedReadout from "../../uiDisplay/SpeedReadout";
 import PanelTerminalReadout from "./PanelTerminalReadout";
 //@ts-ignore
 import cockpitImage from "/images/cockpit/panelsRed/cockpitRed2.png";
-import { IS_MOBILE } from "../../../constants/constants";
 
-// TODO plane in file MonitorScreen.tsx and change old MonitorScreen to SidePanelScreen.tsx
 const COMPUTOR_COMMANDS = [
   "VERIFY_POWER_CELLS",
   "ENGAGE_FUSION_CORE",

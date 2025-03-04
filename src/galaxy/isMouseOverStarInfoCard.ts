@@ -1,4 +1,4 @@
-const isMouseOverStarInfoCard = (e) => {
+const isMouseOverStarInfoCard = (e: { clientX: number; clientY: number }) => {
   const starInfoCard = document.querySelector("#star-info-card");
   if (starInfoCard) {
     const rect = starInfoCard.getBoundingClientRect();
