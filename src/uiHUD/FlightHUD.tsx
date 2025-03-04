@@ -20,6 +20,7 @@ const FlightHud = () => {
     (state) => state.htmlHudTargets
   );
 
+  // if player is in new solar system, update targets
   useEffect(() => {
     useHudTargtingGalaxyMapStore.getState().generateTargets();
   }, [playerCurrentStarIndex]);

@@ -315,6 +315,7 @@ const useStore = create<storeState>()((set, get) => ({
       () => 0.5 + Math.random() * 0.5
     ),
     */
+    // TODO shoot???
     shoot: false,
     mouse: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
     mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
@@ -551,27 +552,21 @@ const useStore = create<storeState>()((set, get) => ({
       // update shoot value, not using set
       get().mutation.shoot = value;
     },
-
+    // TODO move this to hudTargetingGalaxyMapStore or playercontrolstore?
     updateMouse({ clientX: x, clientY: y }) {
       // save mouse position (-0.5 to 0.5) based on location on screen
       // limiting the clinetX and clientY to center HUD circle area (80% verticle height)
-      const hudTargetingCircleRadiusPx =
-        window.innerWidth > window.innerHeight
-          ? window.innerHeight * 0.8
-          : window.innerWidth * 0.9;
-      // limit x
+
+      const hudDiameterPx =
+        useHudTargtingGalaxyMapStore.getState().hudDiameterPx;
+      // give mouseX and mouseY values between -0.5 and 0.5
+      // TODO change to -1 to 1
       let mouseX = Math.min(
-        Math.max(
-          (x - window.innerWidth / 2) / hudTargetingCircleRadiusPx,
-          -0.5
-        ),
+        Math.max((x - window.innerWidth / 2) / hudDiameterPx, -0.5),
         0.5
       );
       let mouseY = Math.min(
-        Math.max(
-          (y - window.innerHeight / 2) / hudTargetingCircleRadiusPx,
-          -0.5
-        ),
+        Math.max((y - window.innerHeight / 2) / hudDiameterPx, -0.5),
         0.5
       );
       // adjust x and y to be within circle
@@ -579,6 +574,9 @@ const useStore = create<storeState>()((set, get) => ({
         const angle = Math.atan2(mouseY, mouseX);
         mouseX = 0.5 * Math.cos(angle);
         mouseY = 0.5 * Math.sin(angle);
+        useHudTargtingGalaxyMapStore.getState().isOffHudCircle = true;
+      } else {
+        useHudTargtingGalaxyMapStore.getState().isOffHudCircle = false;
       }
       // update x, y mouse position
       get().mutation.mouse.set(mouseX, mouseY);

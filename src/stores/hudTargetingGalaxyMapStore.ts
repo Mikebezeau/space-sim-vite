@@ -46,6 +46,7 @@ interface hudTargetingGalaxyMapStoreState {
   };
 
   // CSS HUD targets
+  isOffHudCircle: boolean;
   hudDiameterPx: number;
   targetDiameterPx: number;
   setTargetDiameterPx: (targetDiameterPx: number) => void;
@@ -99,8 +100,6 @@ interface hudTargetingGalaxyMapStoreState {
 
 // reusable objects
 const dummyVec3 = new Vector3();
-//
-const flightCameraLookQuaternoin = new THREE.Quaternion();
 
 const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
   (set, get) => ({
@@ -162,6 +161,7 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         });
       }
     },
+    isOffHudCircle: false,
     playerHudCrosshairDiv: null,
     updatePlayerHudCrosshairDiv: () => {
       const mouse = useStore.getState().mutation.mouse;
