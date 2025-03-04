@@ -24,8 +24,7 @@ const FlightHud = () => {
     useHudTargtingGalaxyMapStore.getState().generateTargets();
   }, [playerCurrentStarIndex]);
 
-  const hudCircleRef = useRef<HTMLDivElement | null>(null);
-  const playerDirectionTargetRef = useRef<HTMLDivElement | null>(null);
+  const hudLargeOuterCirlcleRef = useRef<HTMLDivElement | null>(null);
 
   const setSizes = () => {
     const diameter =
@@ -39,14 +38,11 @@ const FlightHud = () => {
       .getState()
       .setTargetDiameterPx(targetDiameterPx);
 
-    if (
-      hudCircleRef.current !== null &&
-      playerDirectionTargetRef.current !== null
-    ) {
-      hudCircleRef.current.style.marginTop = `-${diameter / 2}px`;
-      hudCircleRef.current.style.marginLeft = `-${diameter / 2}px`;
-      hudCircleRef.current.style.width = `${diameter}px`;
-      hudCircleRef.current.style.height = `${diameter}px`;
+    if (hudLargeOuterCirlcleRef.current !== null) {
+      hudLargeOuterCirlcleRef.current.style.marginTop = `-${diameter / 2}px`;
+      hudLargeOuterCirlcleRef.current.style.marginLeft = `-${diameter / 2}px`;
+      hudLargeOuterCirlcleRef.current.style.width = `${diameter}px`;
+      hudLargeOuterCirlcleRef.current.style.height = `${diameter}px`;
     }
   };
 
@@ -56,20 +52,18 @@ const FlightHud = () => {
 
   useEffect(() => {
     setSizes();
-  }, [hudCircleRef.current, playerDirectionTargetRef.current]);
+  }, [hudLargeOuterCirlcleRef.current]);
 
   return (
     <>
       <div
-        ref={hudCircleRef}
+        ref={hudLargeOuterCirlcleRef}
         className={`opacity-50 absolute top-1/2 left-1/2 border-2 border-white rounded-full`}
       />
       <div
-        ref={(divElement) => {
-          if (divElement) {
-            playerDirectionTargetRef.current = divElement;
-            useHudTargtingGalaxyMapStore.getState().playerDirectionTargetDiv =
-              playerDirectionTargetRef;
+        ref={(ref) => {
+          if (ref) {
+            useHudTargtingGalaxyMapStore.getState().playerHudCrosshairDiv = ref;
           }
         }}
         className={`absolute top-1/2 left-1/2`}
@@ -80,14 +74,12 @@ const FlightHud = () => {
               absolute border-2 border-cyan-200 rounded-full`}
           />
         ) : (
-          <>
-            <img
-              src={hudCrosshairInner1}
-              alt="controls icon"
-              // TODO why width w-[30vh] ?
-              className="w-[30vh] h-[20vh] -mt-[10vh] -ml-[10vh] pointer-events-none"
-            />
-          </>
+          <img
+            src={hudCrosshairInner1}
+            alt="controls icon"
+            // TODO why width w-[30vh] ?
+            className="w-[30vh] h-[20vh] -mt-[10vh] -ml-[10vh] pointer-events-none"
+          />
         )}
       </div>
 

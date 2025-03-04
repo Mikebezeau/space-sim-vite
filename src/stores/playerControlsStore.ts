@@ -380,9 +380,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         get().updateFrame.setPlayerFixedCameraPosition(camera);
         get().updateFrame.setPlayerCameraRotation(camera);
         useHudTargtingGalaxyMapStore.getState().updateTargetHUD(camera);
-        useHudTargtingGalaxyMapStore
-          .getState()
-          .updatePlayerDirectionTargetHUD();
+        useHudTargtingGalaxyMapStore.getState().updatePlayerHudCrosshairDiv();
       },
     },
   })

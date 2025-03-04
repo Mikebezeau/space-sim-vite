@@ -55,8 +55,8 @@ interface hudTargetingGalaxyMapStoreState {
   selectedWarpStarDirection: THREE.Vector3 | null;
   setSelectedWarpStarDirection: () => void;
   // HTML HUD player direction control target
-  playerDirectionTargetDiv: React.RefObject<HTMLDivElement> | null;
-  updatePlayerDirectionTargetHUD: () => void;
+  playerHudCrosshairDiv: HTMLDivElement | null;
+  updatePlayerHudCrosshairDiv: () => void;
   // HTML HUD Targets
   generateTargets: () => void;
   getTargetPosition: (
@@ -162,15 +162,15 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
         });
       }
     },
-    playerDirectionTargetDiv: null,
-    updatePlayerDirectionTargetHUD: () => {
+    playerHudCrosshairDiv: null,
+    updatePlayerHudCrosshairDiv: () => {
       const mouse = useStore.getState().mutation.mouse;
 
-      if (get().playerDirectionTargetDiv !== null) {
-        get().playerDirectionTargetDiv!.current!.style.marginLeft = `${
+      if (get().playerHudCrosshairDiv !== null) {
+        get().playerHudCrosshairDiv!.style.marginLeft = `${
           mouse.x * get().hudDiameterPx
         }px`;
-        get().playerDirectionTargetDiv!.current!.style.marginTop = `${
+        get().playerHudCrosshairDiv!.style.marginTop = `${
           mouse.y * get().hudDiameterPx
         }px`;
       }

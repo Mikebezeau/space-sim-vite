@@ -19,7 +19,7 @@ import MainMenu from "./uiTitleScreen/MainMenu";
 import GalaxyMapMenu from "./uiMenuComponents/GalaxyMapMenu";
 import StationDockMenu from "./uiMenuComponents/StationDockMenu";
 import EquipmentMenu from "./uiMenuComponents/EquipmentMenu";
-//import CustomCursor from "./CustomCursor";
+import CustomCursor from "./CustomCursor";
 import { IS_MOBILE, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
 import "./css/glitch.css";
@@ -92,10 +92,10 @@ const AppUI = () => {
                 )}
               </>
             )}
-            {/*<CustomCursor />*/}
           </div>
         </>
       )}
+      <CustomCursor />
     </>
   );
 };

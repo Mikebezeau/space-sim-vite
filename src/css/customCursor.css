@@ -2,11 +2,11 @@
   cursor: none;
 }
 
-.ring {
+.custom-cursor {
   position: fixed;
   width: 22px;
   height: 22px;
-  border: 2px solid white;
+  border: 2px solid rgb(0, 255, 255);
   border-radius: 100%;
   transform: translate(-50%, -50%);
   /*
@@ -15,18 +15,16 @@
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
   */
-  will-change: width, height, transform, border;
   z-index: 999;
   pointer-events: none;
 }
 
-.dot {
-  position: fixed;
-  width: 8px;
-  height: 8px;
-  background-color: white;
+.custom-cursor-dot {
+  position: relative;
+  top: 6px;
+  left: 6px;
+  width: 7px;
+  height: 7px;
+  background-color: rgb(0, 255, 255);
   border-radius: 100%;
-  transform: translate(-50%, -50%);
-  z-index: 999;
-  pointer-events: none;
 }
