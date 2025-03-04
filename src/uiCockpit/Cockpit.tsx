@@ -6,7 +6,7 @@ import {
   ActionModeControlGroup,
   ControlIconsRowBottom,
 } from "./CockpitControls";
-import { IS_MOBILE, PLAYER } from "../constants/constants";
+import { FPS, IS_MOBILE, PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
 
 const Cockpit = () => {
@@ -17,52 +17,76 @@ const Cockpit = () => {
   );
 
   const cockpitRef = useRef<HTMLDivElement>(null);
+  const requestFrameIdRef = useRef<number | null>(null);
+  const zoomOffsetY = useRef<number>(0);
+
+  useEffect(() => {
+    if (cockpitRef.current) {
+      const isManualControl =
+        usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
+        PLAYER.action.manualControl;
+      // changing perspective value instead of translateZ (was not working)
+      const perspective = isManualControl ? "200px" : "400px";
+      [...cockpitRef.current.children].forEach((group: any) => {
+        group.style.perspective = perspective;
+      });
+    }
+  }, [playerActionMode]);
 
   const updateView = () => {
     if (cockpitRef.current) {
       const flightCameraLookRotation =
         usePlayerControlsStore.getState().flightCameraLookRotation;
+      const isManualControl =
+        usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
+        PLAYER.action.manualControl;
+
+      // move the cockpit down if isManualControl, back up if not
+      zoomOffsetY.current = isManualControl
+        ? zoomOffsetY.current < 20
+          ? zoomOffsetY.current + 20 / FPS / 0.5
+          : 20
+        : zoomOffsetY.current > 0
+        ? zoomOffsetY.current - 20 / FPS / 0.5
+        : 0;
 
       const translateX = flightCameraLookRotation.rotateX * 60;
-      const translateY = -flightCameraLookRotation.rotateY * 60;
-      // TODO translateZ does nothing
-      const translateZ =
-        usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
-        PLAYER.action.manualControl
-          ? -10
-          : 0;
+      const translateY =
+        -flightCameraLookRotation.rotateY * 60 * (isManualControl ? 0.5 : 1) +
+        zoomOffsetY.current;
 
       [...cockpitRef.current.children].forEach((group: any) => {
         group.style.transform = `
           translateX(${translateX}vh)
           translateY(${translateY}vh)
-          translateZ(${translateZ}vh)
           rotateX(${-flightCameraLookRotation.rotateY * 20}deg)
           rotateY(${-flightCameraLookRotation.rotateX * 40}deg)`;
         // the rotateX and rotateY are swapped because CSS rotations work that way
       });
     }
-    requestAnimationFrame(updateView);
+    requestFrameIdRef.current = requestAnimationFrame(updateView);
   };
 
   useEffect(() => {
-    if (cockpitRef.current) {
-      requestAnimationFrame(updateView);
-    }
-  }, [cockpitRef.current]);
+    if (!requestFrameIdRef.current)
+      requestFrameIdRef.current = requestAnimationFrame(updateView);
+    return () => {
+      cancelAnimationFrame(requestFrameIdRef.current!);
+    };
+  }, []);
 
   return (
     <div ref={cockpitRef} className="container-full-screen cockpit-view top-0">
-      <div className="perspective-400 preserve-3d container-full-screen top-[70vh]">
+      <div
+        className="perspective-400 preserve-3d container-full-screen top-[70vh]"
+        style={{
+          transition: "perspective 0.5s",
+        }}
+      >
         <CockpitPanelsRed />
       </div>
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
-        <div
-          className=" preserve-3d container-full-screen"
-          style={{
-            transform: "translateY(0vh) translateZ(20vh)", //IS_MOBILE ? "translateZ(-14vh)" : "translateZ(-14vh)",
-          }}
-        >
+        <div className="preserve-3d container-full-screen">
           <div
             className={`face middle absolute ${
               IS_MOBILE ? "top-[-27vh]" : "top-[-22vh]"
