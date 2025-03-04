@@ -24,7 +24,7 @@ const EnemyMechs = () => {
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     enemyGroup.updateUseFrame(delta, scene);
-  }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order set positions are updated first
+  }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order - positions are updated first
 
   return (
     <>

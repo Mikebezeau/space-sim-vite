@@ -23,7 +23,7 @@ const CombatHudTarget = () => {
               }
             }}
             alt="controls icon"
-            className="absolute w-full h-full"
+            className="absolute w-full h-full opacity-50 hover:opacity-100"
           />
         </div>
       )}

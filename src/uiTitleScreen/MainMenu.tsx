@@ -4,7 +4,7 @@ import CyberMenuBorder from "../uiMenuComponents/common/CyberMenuBorder";
 import CyberButton from "../uiMenuComponents/common/CyberButton";
 //import ButtonIcon from "./ButtonIcon";
 import { PLAYER } from "../constants/constants";
-import TitleScreenBackground from "./TitleScreenBackground";
+import TitleScreenContainer from "./TitleScreenContainer";
 // @ts-ignore
 import titleDeath from "/images/titleDeath2.png";
 // @ts-ignore
@@ -65,7 +65,7 @@ const MainMenu = () => {
           /* fade in initially */ isInitLoaded ? "opacity-100" : "opacity-0"
         }`}
     >
-      <TitleScreenBackground isTitleImgLoaded={isTitleImgLoaded}>
+      <TitleScreenContainer isTitleImgLoaded={isTitleImgLoaded}>
         <img
           src={titleDeath}
           onLoad={() => {
@@ -81,7 +81,7 @@ const MainMenu = () => {
             onClick={() => setIsShowMenu(true)}
           />
         </div>
-      </TitleScreenBackground>
+      </TitleScreenContainer>
 
       <div
         className={`z-20 absolute top-0 right-0 left-0 bottom-0 bg-black transition-opacity duration-1000 ${

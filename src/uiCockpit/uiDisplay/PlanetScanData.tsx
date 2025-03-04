@@ -41,4 +41,4 @@ const PlanetScanData = () => {
   ) : null;
 };
 
-export default PlanetScanData;
+export default React.memo(PlanetScanData);

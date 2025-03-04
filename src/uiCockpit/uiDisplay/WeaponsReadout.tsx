@@ -24,4 +24,4 @@ const WeaponsReadout = ({ isAlwaysDisplay = false }) => {
   );
 };
 
-export default WeaponsReadout;
+export default React.memo(WeaponsReadout);

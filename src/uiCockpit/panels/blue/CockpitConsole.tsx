@@ -23,4 +23,4 @@ const CockpitConsole = () => {
   );
 };
 
-export default CockpitConsole;
+export default React.memo(CockpitConsole);

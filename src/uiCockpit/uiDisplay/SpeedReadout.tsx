@@ -23,4 +23,4 @@ const SpeedReadout = () => {
   );
 };
 
-export default SpeedReadout;
+export default React.memo(SpeedReadout);

@@ -6,7 +6,7 @@ import robotSrc from "/images/robot2.png";
 // @ts-ignore
 import bgMetalSrc from "/images/background/bgMetal.jpg";
 
-const TitleScreenBackground = (props) => {
+const TitleScreenContainer = (props) => {
   const { isTitleImgLoaded = true } = props;
   const timeoutId = useRef<number | null>(null);
   const skeletonRef = useRef<HTMLImageElement | null>(null);
@@ -120,4 +120,4 @@ const TitleScreenBackground = (props) => {
   );
 };
 
-export default TitleScreenBackground;
+export default TitleScreenContainer;

@@ -321,4 +321,4 @@ const MonitorReadout = () => {
   );
 };
 
-export default MonitorReadout;
+export default React.memo(MonitorReadout);

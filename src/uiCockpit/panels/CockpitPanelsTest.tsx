@@ -79,4 +79,4 @@ const CockpitPanelsTest = () => {
   );
 };
 
-export default CockpitPanelsTest;
+export default React.memo(CockpitPanelsTest);

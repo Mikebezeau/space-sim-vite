@@ -25,4 +25,4 @@ const PanelScreenTopRed = () => {
   );
 };
 
-export default PanelScreenTopRed;
+export default React.memo(PanelScreenTopRed);

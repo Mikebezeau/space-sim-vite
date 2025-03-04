@@ -1,7 +1,7 @@
 import React from "react";
 //@ts-ignore
 import screenBImage from "/images/cockpit/panelsBlue/screenB.png";
-import MonitorReadout from "../../display/MonitorReadout";
+import MonitorReadout from "../../uiDisplay/MonitorReadout";
 
 const CockpitRight = () => {
   return (

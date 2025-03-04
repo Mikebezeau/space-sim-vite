@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import SpeedReadout from "../../display/SpeedReadout";
+import SpeedReadout from "../../uiDisplay/SpeedReadout";
 import PanelTerminalReadout from "./PanelTerminalReadout";
 //@ts-ignore
 import cockpitImage from "/images/cockpit/panelsRed/cockpitRed2.png";
@@ -173,4 +173,4 @@ const PanelMiddleRed = () => {
   );
 };
 
-export default PanelMiddleRed;
+export default React.memo(PanelMiddleRed);

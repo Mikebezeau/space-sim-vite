@@ -29,4 +29,4 @@ const ShieldsReadout = ({ isAlwaysDisplay = false }) => {
   );
 };
 
-export default ShieldsReadout;
+export default React.memo(ShieldsReadout);

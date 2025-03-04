@@ -39,4 +39,4 @@ const SunScanData = () => {
   ) : null;
 };
 
-export default SunScanData;
+export default React.memo(SunScanData);

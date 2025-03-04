@@ -80,4 +80,4 @@ const Cockpit = () => {
   );
 };
 
-export default Cockpit;
+export default React.memo(Cockpit);

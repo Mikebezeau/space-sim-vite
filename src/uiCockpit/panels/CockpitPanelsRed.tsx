@@ -46,4 +46,4 @@ const CockpitPanelsRed = () => {
   );
 };
 
-export default CockpitPanelsRed;
+export default React.memo(CockpitPanelsRed);

@@ -1,6 +1,6 @@
 import React from "react";
-import SunScanData from "../../display/SunScanData";
-import PlanetScanData from "../../display/PlanetScanData";
+import SunScanData from "../../uiDisplay/SunScanData";
+import PlanetScanData from "../../uiDisplay/PlanetScanData";
 //@ts-ignore
 import screenBImage from "/images/cockpit/panelsBlue/screenB.png";
 

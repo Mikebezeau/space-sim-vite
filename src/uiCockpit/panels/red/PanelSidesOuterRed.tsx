@@ -16,4 +16,4 @@ const PanelSidesOuterRed = ({ isLeft = false }) => {
   );
 };
 
-export default PanelSidesOuterRed;
+export default React.memo(PanelSidesOuterRed);

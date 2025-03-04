@@ -11,4 +11,4 @@ const PanelBottomRed = () => {
   );
 };
 
-export default PanelBottomRed;
+export default React.memo(PanelBottomRed);
