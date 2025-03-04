@@ -1,68 +1,12 @@
 import React, { useEffect, useRef } from "react";
-//import MonitorReadout from "../../MonitorReadout";
+import MonitorImageReadout, {
+  imageSrcArray1,
+  imageSrcArray2,
+} from "../../uiDisplay/MonitorImageReadout";
 //@ts-ignore
 import cockpitRightRed from "/images/cockpit/panelsRed/cockpitRightRed.png";
-// @ts-ignore
-import screenMenuOptions from "/images/sreenWindowImages/screenMenuOptions.png";
-// @ts-ignore
-import screenViewShips from "/images/sreenWindowImages/screenViewShips.png";
-// @ts-ignore
-import selectShip from "/images/sreenWindowImages/selectShip.png";
-// @ts-ignore
-import solarMap from "/images/sreenWindowImages/solarMap.png";
-// @ts-ignore
-import solarMap2 from "/images/sreenWindowImages/solarMap2.png";
-
-// @ts-ignore
-import screenMenuSymbols from "/images/sreenWindowImages/screenMenuSymbols.png";
-// @ts-ignore
-import screenMenuTabletCircles from "/images/sreenWindowImages/screenMenuTabletCircles.png";
-// @ts-ignore
-import screenMenuTactics from "/images/sreenWindowImages/screenMenuTactics.png";
-// @ts-ignore
-import screenMenuTactics2 from "/images/sreenWindowImages/screenMenuTactics2.png";
-// @ts-ignore
-import screenMenuTactics3 from "/images/sreenWindowImages/screenMenuTactics3.png";
-
-const imageSrcArrayRight = [
-  screenMenuSymbols,
-  screenMenuTabletCircles,
-  screenMenuTactics,
-  screenMenuTactics2,
-  screenMenuTactics3,
-];
-
-const imageSrcArrayLeft = [
-  screenMenuOptions,
-  screenViewShips,
-  selectShip,
-  solarMap,
-  solarMap2,
-];
 
 const PanelSidesRed = ({ isLeft = false }) => {
-  const screenImageRef = useRef<HTMLImageElement | null>(null);
-  const timeoutRef = useRef<number | null>(null);
-
-  const ChangeRandomImage = () => {
-    const imgArray = isLeft ? imageSrcArrayLeft : imageSrcArrayRight;
-    const randomImage = imgArray[Math.floor(Math.random() * imgArray.length)];
-    if (screenImageRef.current !== null)
-      screenImageRef.current.src = randomImage;
-
-    timeoutRef.current = setTimeout(() => {
-      ChangeRandomImage();
-    }, Math.random() * 2000 + 3000);
-  };
-
-  useEffect(() => {
-    if (timeoutRef.current === null) ChangeRandomImage();
-    return () => {
-      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    };
-  }, []);
-
   return (
     <>
       <div
@@ -72,15 +16,16 @@ const PanelSidesRed = ({ isLeft = false }) => {
         style={{ backgroundImage: `url(${cockpitRightRed})` }}
       />
       <div className={`${isLeft && "scale-x-[-1]"}`}>
-        <img
-          ref={screenImageRef}
-          src={isLeft ? screenMenuSymbols : screenMenuOptions}
+        <div
           className="absolute w-[9vh] h-[11vh] border-2 border-black opacity-30"
           style={{
             transform: `translateX(22vh) translateY(4vh) rotateX(-34deg) rotateY(-17deg) rotateZ(-11deg)`,
           }}
-          alt="city info"
-        />
+        >
+          <MonitorImageReadout
+            imageSrcArray={isLeft ? imageSrcArray1 : imageSrcArray2}
+          />
+        </div>
       </div>
       {/*
         {isLeft && (

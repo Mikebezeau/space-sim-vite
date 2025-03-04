@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../../stores/store";
 import usePlayerControlsStore from "../../../stores/playerControlsStore";
-import PlayerCrosshair from "./PlayerCrosshair";
 import PlayerParticleEffects from "./PlayerParticleEffects";
 import { setVisible } from "../../../util/gameUtil";
 import { COMPONENT_RENDER_ORDER, PLAYER } from "../../../constants/constants";
@@ -17,10 +16,9 @@ const PlayerMech = () => {
     (state) => state.playerViewMode
   );
   const playerMechRef = useRef<any>(null);
-  const secondaryGroupRef = useRef<THREE.Group | null>(null);
 
   // set mech to invisible in cockpit view
-  useEffect(() => {
+  const setPlayerMechVisibility = () => {
     if (playerMechRef.current !== null) {
       if (playerViewMode === PLAYER.view.firstPerson) {
         setVisible(playerMechRef.current, false);
@@ -28,24 +26,9 @@ const PlayerMech = () => {
         setVisible(playerMechRef.current, true);
       }
     }
-  }, [playerMechRef.current, playerViewMode]);
+  };
 
-  //moving camera, ship, altering crosshairs, weapon lights (activates only while flying)
-  useFrame((_, delta) => {
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
-
-    if (!playerMechRef.current) return null;
-
-    if (player.object3d && secondaryGroupRef.current) {
-      // updatePlayerMechAndCamera is called from SpaceFlightPlanetsScene
-      //updatePlayerMechAndCamera(delta, camera);
-
-      // update secondary group (crosshair, weapon light)
-      secondaryGroupRef.current.position.copy(player.object3d.position);
-      secondaryGroupRef.current.rotation.copy(player.object3d.rotation);
-    }
-    // ordering sequence of useFrames updatePlayerMechAndCamera
-  }, COMPONENT_RENDER_ORDER.postPositionsUpdate);
+  useEffect(setPlayerMechVisibility, [playerViewMode]);
 
   return (
     <>
@@ -54,13 +37,11 @@ const PlayerMech = () => {
           if (mechRef) {
             playerMechRef.current = mechRef;
             player.assignObject3dComponentRef(mechRef);
+            setPlayerMechVisibility();
           }
         }}
       />
       <PlayerParticleEffects />
-      <group ref={secondaryGroupRef}>
-        <PlayerCrosshair />
-      </group>
     </>
   );
 };

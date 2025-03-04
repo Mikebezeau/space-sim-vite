@@ -54,14 +54,13 @@ const ActionControlPilot = () => {
 
   return (
     <div
-      className="w-[20vh] h-[20vh] pointer-events-auto -mt-[10vh] -ml-[10vh]"
+      className="pointer-events-auto 
+      opacity-30 hover:opacity-100 
+      w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
+      md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
       onClick={() => actionModeSelect(PLAYER.action.manualControl)}
     >
-      <img
-        src={hudCrosshair1}
-        alt="controls icon"
-        className="w-full h-full pointer-events-none"
-      />
+      <img src={hudCrosshair1} alt="controls icon" className="w-full h-full" />
     </div>
   );
 };

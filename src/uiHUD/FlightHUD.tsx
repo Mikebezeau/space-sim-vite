@@ -66,19 +66,22 @@ const FlightHud = () => {
             useHudTargtingGalaxyMapStore.getState().playerHudCrosshairDiv = ref;
           }
         }}
-        className={`absolute top-1/2 left-1/2`}
+        className="opacity-50 absolute top-1/2 left-1/2"
       >
         {playerActionMode === PLAYER.action.inspect ? (
           <div
-            className={`opacity-50 w-[5vh] h-[5vh] -mt-[2.5vh] -ml-[2.5vh]
-              absolute border-2 border-cyan-200 rounded-full`}
+            className="w-[5vh] h-[5vh] -mt-[2.5vh] -ml-[2.5vh]
+              absolute border-2 border-cyan-200 rounded-full"
           />
         ) : (
           <img
             src={hudCrosshairInner1}
             alt="controls icon"
-            // TODO why width w-[30vh] ?
-            className="w-[30vh] h-[20vh] -mt-[10vh] -ml-[10vh] pointer-events-none"
+            // width needs to be set at 50% larger then normal for some reason
+            className="w-[30vh] h-[15vh] -mt-[7.5vh] -ml-[10vh]"
+
+            //className="w-[30vh] h-[15vh] -mt-[7.5vh] -ml-[10vh]
+            //  md:w-[45vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
           />
         )}
       </div>

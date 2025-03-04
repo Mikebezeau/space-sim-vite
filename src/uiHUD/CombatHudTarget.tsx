@@ -12,7 +12,11 @@ const CombatHudTarget = () => {
   return (
     <>
       {playerActionMode === PLAYER.action.manualControl && (
-        <div className="absolute w-[20vh] h-[20vh] -mt-[10vh] -ml-[10vh] left-1/2 top-1/2">
+        <div
+          className="absolute left-1/2 top-1/2 
+            w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
+            md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
+        >
           <img
             src={hudCrosshairOuter1}
             ref={(targetElement) => {
@@ -23,7 +27,7 @@ const CombatHudTarget = () => {
               }
             }}
             alt="controls icon"
-            className="absolute w-full h-full opacity-50 hover:opacity-100"
+            className="absolute w-full h-full opacity-50"
           />
         </div>
       )}

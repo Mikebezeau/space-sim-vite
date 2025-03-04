@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import usePlayerControlsStore from "../../../stores/playerControlsStore";
-import MonitorImageReadout from "../../uiDisplay/MonitorImageReadout";
+import MonitorImageReadout, {
+  imageSrcArray3,
+} from "../../uiDisplay/MonitorImageReadout";
 import { PLAYER } from "../../../constants/constants";
 
-// TODO plane in file MonitorScreen.tsx and change old MonitorScreen to SidePanelScreen.tsx
 const COMPUTOR_COMMANDS = [
   "VERIFY_POWER_CELLS",
   "ENGAGE_FUSION_CORE",
@@ -194,7 +195,7 @@ const PanelTerminalReadout = () => {
         }}
       >
         <div className="absolute w-[90%] h-[50%] m-[5%]">
-          <MonitorImageReadout />
+          <MonitorImageReadout imageSrcArray={imageSrcArray3} />
         </div>
         <div
           className="absolute top-[60%] bottom-1/2 left-0 w-full h-1/2 p-1 whitespace-pre leading-none overflow-hidden break-words"

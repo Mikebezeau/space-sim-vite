@@ -52,7 +52,7 @@ import solarMap from "/images/sreenWindowImages/solarMap.png";
 // @ts-ignore
 import solarMap2 from "/images/sreenWindowImages/solarMap2.png";
 
-const imageSrcArrayRight = [
+export const imageSrcArray1 = [
   screenMenuSymbols,
   screenMenuTabletCircles,
   screenMenuTactics,
@@ -60,13 +60,29 @@ const imageSrcArrayRight = [
   screenMenuTactics3,
 ];
 
-const MonitorImageReadout = () => {
+export const imageSrcArray2 = [
+  screenMenuOptions,
+  screenViewShips,
+  selectShip,
+  solarMap,
+  solarMap2,
+];
+
+export const imageSrcArray3 = [screenMenuSymbols];
+
+type monitorImageReadoutInt = {
+  imageSrcArray?: string[];
+};
+
+const MonitorImageReadout = (props: monitorImageReadoutInt) => {
+  const { imageSrcArray = imageSrcArray1 } = props;
+
   const screenImageRef = React.useRef<HTMLImageElement | null>(null);
   const timeoutRef = React.useRef<number | null>(null);
 
   const ChangeRandomImage = () => {
     const randomImage =
-      imageSrcArrayRight[Math.floor(Math.random() * imageSrcArrayRight.length)];
+      imageSrcArray[Math.floor(Math.random() * imageSrcArray.length)];
     if (screenImageRef.current !== null)
       screenImageRef.current.src = randomImage;
 

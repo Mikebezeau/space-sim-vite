@@ -6,11 +6,10 @@ const flipRotationQuat = new Quaternion();
 flipRotationQuat.setFromAxisAngle({ x: 0, y: 1, z: 0 }, Math.PI);
 
 // function to flip the rotation of a quaternion
-// TODO this will error if called multiple times in a row and not used in between
-// because the return variable gets reused
+// WARNING the return value is not a new object, it is a reused object
+// copy the result if you need to keep it when calling this function again
 export const flipRotation = (quat: Quaternion) => {
-  // should be using quat.invert()
-  //flip the opposite direction
+  //flip the opposite direction (on y axis)
   dummyQuat.multiplyQuaternions(quat, flipRotationQuat);
   return dummyQuat;
 };
