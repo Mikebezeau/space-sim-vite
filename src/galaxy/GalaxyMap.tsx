@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { extend, useThree, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
-// EffectComposer accumulating artifact texture per time GalaxyMap loaded
+// EffectComposer loading 1 texture per time GalaxyMap loaded
 // TODO investigate why this is happening - move to AppCanvasScene if necessary
 //import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";

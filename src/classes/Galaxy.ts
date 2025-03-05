@@ -8,8 +8,6 @@ interface galaxyInt {
   setBackgroundStarsPosition(playerStarIndex: number): void;
 }
 
-// TODO bringing up galaxy map creates 7 textures - navigating away removes 2 textures
-
 class Galaxy implements galaxyInt {
   rngSeed: string;
   numStars: number;

@@ -1,14 +1,29 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
+import { SimplifyModifier } from "three/addons/modifiers/SimplifyModifier.js";
 // TessellateModifier for adding more vertices to geometry
 import { TessellateModifier } from "three/addons/modifiers/TessellateModifier.js";
 
+// TODO this is playermech
 export const setVisible = (obj, isVisible) => {
   obj.traverse((child) => {
     if (child.isMesh) {
       child.visible = isVisible;
     }
   });
+};
+
+const simplifyModifier = new SimplifyModifier();
+
+export const getSimplifiedGeometry = (
+  geometry: THREE.BufferGeometry,
+  reductionRatio: number = 0.1
+) => {
+  const simplifiedGeometry = simplifyModifier.modify(
+    geometry,
+    Math.floor(geometry.attributes.position.count * reductionRatio)
+  );
+  return simplifiedGeometry;
 };
 
 export const getGeomColorList = (object3d: THREE.Object3D) => {

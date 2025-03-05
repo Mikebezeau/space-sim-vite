@@ -3,8 +3,6 @@ import { BufferGeometry, Mesh, MeshLambertMaterial } from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import Mech from "../classes/mech/Mech";
-
-import { SimplifyModifier } from "three/addons/modifiers/SimplifyModifier.js";
 // @ts-ignore
 import glbGate from "/models/artifact/gate.glb";
 // @ts-ignore
@@ -38,12 +36,6 @@ export const LOAD_MODEL_3D_SRC = {
 interface loaderStoreState {
   //testScreen: { [id: string]: boolean };
   gltfLoader: GLTFLoader;
-  simplifyModifier: SimplifyModifier;
-
-  getSimplifiedGeometry: (
-    geometry: BufferGeometry,
-    reductionRatio?: number
-  ) => BufferGeometry;
 
   updateModel3dObject: (
     object: any,
@@ -66,18 +58,6 @@ interface loaderStoreState {
 
 const useLoaderStore = create<loaderStoreState>()((set, get) => ({
   gltfLoader: new GLTFLoader(),
-  simplifyModifier: new SimplifyModifier(),
-
-  getSimplifiedGeometry: (
-    geometry: BufferGeometry,
-    reductionRatio: number = 0.1
-  ) => {
-    const simplifiedGeometry = get().simplifyModifier.modify(
-      geometry,
-      Math.floor(geometry.attributes.position.count * reductionRatio)
-    );
-    return simplifiedGeometry;
-  },
 
   loadModel3d: (
     addToRef: any,
@@ -133,12 +113,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
 
     model3dMesh.geometry = BufferGeometryUtils.mergeGeometries(geometries);
     model3dMesh.geometry.scale(scale, scale, scale);
-    /*
-    model3dMesh.geometry = get().getSimplifiedGeometry(
-      model3dMesh.geometry,
-      0.1
-    );
-*/
+
     // TODO get marerials from mechBpBuildStore
     model3dMesh.material = new MeshLambertMaterial({ color: "white" });
     // @ts-ignore material is not an array in this case

@@ -8,10 +8,10 @@ import useParticleStore from "../../stores/particleStore";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
-  // TODO move getSimplifiedGeometry to mechGeometryUtil
   getGeomColorList,
   getMergedBufferGeom,
   getMergedBufferGeomColor,
+  getSimplifiedGeometry,
   getTessellatedExplosionMesh,
 } from "../../util/mechGeometryUtil";
 import useLoaderStore from "../../stores/loaderStore";
@@ -60,7 +60,6 @@ interface mechInt {
   fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
 }
 
-// TODO move these reusable objects to a better location? perhaps a util resuse const obj file
 const weaponFireMechParentObj = new THREE.Group();
 const weaponFireWeaponChildObj = new THREE.Group();
 weaponFireMechParentObj.add(weaponFireWeaponChildObj);
@@ -97,7 +96,7 @@ class Mech implements mechInt {
   maxHalfWidth: number;
 
   speed: number;
-  shield: { max: number; damage: number }; // TODO placeholder
+  shield: { max: number; damage: number }; // placeholder
 
   constructor(
     mechDesign: any,
@@ -374,17 +373,16 @@ class Mech implements mechInt {
         this.explosionMesh =
           this.addedModel3dObjects.children.length > 0
             ? // accounting for additional GLB models loaded into addedModel3dObjects
-              // TODO move getSimplifiedGeometry to mechGeometryUtil
               getTessellatedExplosionMesh(
                 expolsionShaderMaterial.clone(),
-                useLoaderStore.getState().getSimplifiedGeometry(this.bufferGeom)
+                getSimplifiedGeometry(this.bufferGeom)
               )
             : // using base explosionMesh from mechBpBuildStore
               // TODO looks like this clone is not working correctly
               //expMesh.clone();
               getTessellatedExplosionMesh(
                 expolsionShaderMaterial.clone(),
-                useLoaderStore.getState().getSimplifiedGeometry(this.bufferGeom)
+                getSimplifiedGeometry(this.bufferGeom)
               );
       } else {
         console.error("Mech.explode(): explosionMesh not set");
@@ -591,7 +589,7 @@ class Mech implements mechInt {
   }
 
   fireWeapon(weapon: MechWeapon, weaponFireEuler: THREE.Euler) {
-    // TODO i dont think servoOffset is needed - weapons are always positioned from 0,0,0
+    // TODO impliment servoOffset weapons
     /*
         weapon.servoOffset = this.mechBP.servoList.find(
           (s) => s.id === weapon.locationServoId

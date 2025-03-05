@@ -46,7 +46,7 @@ class MechBP extends DataMechBP implements MechBPInt {
     return object3d;
   }
 
-  // TODO builbuildObject3dMerged
+  // TODO buildObject3dMerged
   // merge
 
   // find MechServo | MechWeapon, or recursively find MechServoShape of either list by id

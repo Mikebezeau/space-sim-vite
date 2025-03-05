@@ -575,7 +575,6 @@ export const min_molec_weight = (planet) => {
   let guess_2 = guess_1;
   let life = gas_life(guess_1, planet);
   let loops = 0;
-  // TODO: system age!
   if (planet.system.age) target = planet.system.age;
 
   if (life > target) {

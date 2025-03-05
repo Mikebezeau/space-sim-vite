@@ -48,16 +48,19 @@ const PlayerParticleEffects = () => {
       positionRadius = 25;
       positionRadiusMin = 5;
       lifetime = 1;
+      // TODO fix this
+      const playerWarpSpeed = usePlayerControlsStore.getState().playerWarpSpeed;
       playerParticleEffects.addWarpStars(
         particleOriginObj.current.position,
-        particleOriginObj.current.rotation,
+        particleOriginObj.current.rotation
+        /*
         // negative speed to have exhuast move in opposite direction of ship
         speed,
         numParticles,
         size,
         positionRadius,
         positionRadiusMin,
-        lifetime
+        lifetime*/
       );
     }
 

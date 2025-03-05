@@ -172,7 +172,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     },
 
     // playerWarpSpeed used to move player ship towards warp position
-    // TODO use value in warp animation
     playerWarpSpeed: 0,
     updateFrame: {
       // when player is warping towards position within solar system

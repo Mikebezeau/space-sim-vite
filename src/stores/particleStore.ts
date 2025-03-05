@@ -105,7 +105,6 @@ interface particleStoreState {
   };
 }
 
-// TODO move these reusable objects to a bettr location
 const dummyVec3 = new Vector3();
 const dummyObj = new Object3D();
 const dummyChildObj = new Object3D();
