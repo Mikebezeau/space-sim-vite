@@ -128,17 +128,18 @@ const StarInfoCard = () => {
           </p>
         ))}
         {
-          // display 'Set warp target' button if viewing target star
-          viewStarIndex === showInfoTargetStarIndex && (
-            <CyberButton
-              title={"Set warp target"}
-              //tagStyle={{ color: "black" }}
-              onClick={() => {
-                setSelectedWarpStar(viewStarIndex);
-                switchScreen(PLAYER.screen.flight);
-              }}
-            />
-          )
+          // display 'Set warp target' button if viewing target star - but not current player star
+          viewStarIndex === showInfoTargetStarIndex &&
+            viewStarIndex !== useStore.getState().playerCurrentStarIndex && (
+              <CyberButton
+                title={"Set warp target"}
+                //tagStyle={{ color: "black" }}
+                onClick={() => {
+                  setSelectedWarpStar(viewStarIndex);
+                  switchScreen(PLAYER.screen.flight);
+                }}
+              />
+            )
         }
       </div>
     </div>
