@@ -365,12 +365,12 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
     addWarpStars: (
       position,
       direction,
-      speed = -1, // using negative speed here due to the direction of the mech
-      numParticles = 1000, // this will give 1000 * FPS (60) * lifetime (0.2) = 12000 active particles
-      size = 0.01,
-      positionRadius = 1,
-      positionRadiusMin = 0.1,
-      lifetime = 0.2,
+      speed = -3, // using negative speed here due to the direction of the mech
+      numParticles = 200, // this will give 200 * FPS (60) * lifetime (2) = 24000 active particles
+      size = 0.15,
+      positionRadius = 50,
+      positionRadiusMin = 25,
+      lifetime = 2,
       color = get().colors.blue,
       endColor
     ) => {

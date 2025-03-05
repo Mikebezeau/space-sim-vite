@@ -7,6 +7,14 @@ import { flipRotation } from "../util/cameraUtil";
 import { lerp } from "../util/gameUtil";
 import { PLAYER, FPS, SPEED_VALUES } from "../constants/constants";
 
+// reusable objects
+// for ship and camera rotation
+const rotateShipQuat = new Quaternion(),
+  adjustCameraViewQuat = new Quaternion();
+
+const dummyVec3 = new Vector3();
+const dummyObj = new Object3D();
+
 interface playerControlStoreState {
   playerActionMode: number;
   playerControlMode: number;
@@ -41,9 +49,12 @@ interface playerControlStoreState {
     controlModeSelect: (playerControlMode: number) => void;
     viewModeSelect: (playerViewMode: number) => void;
     switchScreen: (playerScreen: number) => void;
+    // TODO move this out of actions
     setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
   };
   playerWarpSpeed: number;
+  playerTotalWarpDistance: number;
+  setPlayerWarpToPositionFromFocusPlanet: () => void;
   updateFrame: {
     updatePlayerWarpFrame: (deltaFPS: number) => void;
     updatePlayerCameraLookAngle: (
@@ -58,13 +69,6 @@ interface playerControlStoreState {
     updatePlayerMechAndCamera: (delta: number, camera: any) => void | null;
   };
 }
-
-// for ship and camera rotation
-const rotateShipQuat = new Quaternion(),
-  adjustCameraViewQuat = new Quaternion();
-
-// for warp to position
-const dummyPlayerObj = new Object3D();
 
 const usePlayerControlsStore = create<playerControlStoreState>()(
   (set, get) => ({
@@ -173,22 +177,42 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
     // playerWarpSpeed used to move player ship towards warp position
     playerWarpSpeed: 0,
+    playerTotalWarpDistance: 0,
+    setPlayerWarpToPositionFromFocusPlanet() {
+      const player = useStore.getState().player;
+      const planets = useStore.getState().planets;
+      const focusPlanetIndex = useHudTargtingStore.getState().focusPlanetIndex;
+      if (focusPlanetIndex !== null && planets[focusPlanetIndex]) {
+        // using dummyVec3 to store target position
+        const targetVec3 = dummyVec3;
+        const targetObj = dummyObj;
+        // get target position in front of planet
+        // start at player location
+        targetObj.position.copy(player.object3d.position);
+        // set targetVec3 at planet world space position
+        planets[focusPlanetIndex].object3d.getWorldPosition(targetVec3);
+        // set angle towards target planet using lookAt
+        targetObj.lookAt(targetVec3);
+        // set targetObj position at distance from planet
+        targetObj.position.copy(targetVec3);
+        targetObj.translateZ(-planets[focusPlanetIndex].radius * 4);
+        // reuse targetVec3 to store target position
+        targetVec3.copy(targetObj.position);
+        // set player warp position
+        usePlayerControlsStore.getState().playerWarpToPosition = targetVec3;
+      }
+    },
     updateFrame: {
       // when player is warping towards position within solar system
       updatePlayerWarpFrame: (deltaFPS) => {
         if (get().playerWarpToPosition !== null) {
-          /*
-          // warp to target immediately TODO add GUI dev setting for this
-          useStore.getState().setPlayerWorldPosition(get().playerWarpToPosition!);
-          get().playerWarpToPosition = null;
-          */
-
-          // get updated playerWarpToPosition
-          // warpToPlanet sets playerWarpToPosition by recalculating target position (relative to player)
-          useStore.getState().testing.warpToPlanet();
+          // set updated playerWarpToPosition
+          // to avoid glitches when travelling to new planet
+          get().setPlayerWarpToPositionFromFocusPlanet();
 
           const player = useStore.getState().player;
           // rotate ship towards warp position
+          const dummyPlayerObj = dummyObj;
           dummyPlayerObj.copy(player.object3d);
           dummyPlayerObj.lookAt(get().playerWarpToPosition!);
           /*
@@ -204,25 +228,25 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           const angleDiff = player.object3d.quaternion.angleTo(
             dummyPlayerObj.quaternion
           );
+          // remaining distance to target position
+          const distanceToTarget = player.object3d.position.distanceTo(
+            get().playerWarpToPosition!
+          );
+          //adjust playerWarpSpeed with acceleration / deceleration
 
-          // TODO adjust playerWarpSpeed with acceleration / deceleration
           // speed slower when angleDiff is larger
           const speedAngleMult = Math.max(Math.pow(1 - angleDiff * 5, 2), 0);
           const speed = 30000 * speedAngleMult * deltaFPS;
           get().playerWarpSpeed = angleDiff < 0.2 ? speed : 0;
-          //if (get().playerWarpSpeed > 0)
-          //  useStore.getState().actions.setSpeed(15000);
-          // max speed is remaining distance to target position
-          const distanceToTarget = player.object3d.position.distanceTo(
-            get().playerWarpToPosition!
-          );
+
+          // if arriving at target position
           if (distanceToTarget < get().playerWarpSpeed) {
             // set player at target position
             player.object3d.position.copy(get().playerWarpToPosition!);
             // cancel warp by setting playerWarpToPosition to null
             get().playerWarpToPosition = null;
           } else {
-            // move player ship toward
+            // move player ship toward target position
             player.object3d.translateZ(get().playerWarpSpeed);
           }
           // playerPositionUpdated: function to update relative world position

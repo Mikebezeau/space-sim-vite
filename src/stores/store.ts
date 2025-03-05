@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import PlayerMech from "../classes/mech/PlayerMech";
 import useGenFboTextureStore from "./genGpuTextureStore";
 import useEnemyStore from "./enemyStore";
@@ -14,7 +13,6 @@ import SolarSystem from "../classes/solarSystem/SolarSystem";
 import Galaxy from "../classes/Galaxy";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
-//import { track } from "../util/track";
 import { PLAYER, PLAYER_START } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/solarSystemConstants";
 // @ts-ignore
@@ -24,7 +22,11 @@ import featheredSpriteSrc from "../sprites/feathered60.png";
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 import useGalaxyMapStore from "./galaxyMapStore";
 
+// reusable objects
+const dummyVec3 = new THREE.Vector3();
+
 const initStarPointsShaderMaterial = () => {
+  // TODO draw circles in shader
   const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new THREE.TextureLoader().load(featheredSpriteSrc);
 
@@ -123,12 +125,6 @@ interface storeState {
     warpToPlanet: () => void;
   };
 }
-
-const loader = new GLTFLoader();
-
-const dummyVec3 = new THREE.Vector3();
-// setting warp targets
-const targetObj = new THREE.Object3D();
 
 const useStore = create<storeState>()((set, get) => ({
   renderCount: {},
@@ -399,29 +395,8 @@ const useStore = create<storeState>()((set, get) => ({
       }
     },
     warpToPlanet() {
+      const player = get().player;
       const focusPlanetIndex = useHudTargtingStore.getState().focusPlanetIndex;
-      if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
-        // using dummyVec3 to store target position
-        const targetVec3 = dummyVec3;
-        // get target position in front of planet
-        // start at player location
-        targetObj.position.copy(get().player.object3d.position);
-        // set targetVec3 at planet world space position
-        get().planets[focusPlanetIndex].object3d.getWorldPosition(targetVec3);
-        // set angle towards target planet using lookAt
-        targetObj.lookAt(targetVec3);
-        // set targetObj position at distance from planet
-        targetObj.position.copy(targetVec3);
-        targetObj.translateZ(-get().planets[focusPlanetIndex].radius * 4);
-        // reuse targetVec3 to store target position
-        targetVec3.copy(targetObj.position);
-        // set player warp position
-        usePlayerControlsStore.getState().playerWarpToPosition = targetVec3;
-      }
-      /*
-      // TODO add warp to positions option to dev GUI
-      let player = get().player;
-      const focusPlanetIndex = get().focusPlanetIndex;
       if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
         const targetPlanet = get().planets[focusPlanetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
@@ -433,7 +408,6 @@ const useStore = create<storeState>()((set, get) => ({
         };
         get().setPlayerWorldPosition(targetWarpPosition);
       }
-      */
     },
   },
 

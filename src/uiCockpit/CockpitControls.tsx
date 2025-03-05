@@ -94,7 +94,9 @@ const ActionCancelPilot = () => {
 };
 
 export const ActionWarpToPlanetPopupHUD = () => {
-  const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
+  const setPlayerWarpToPositionFromFocusPlanet = usePlayerControlsStore(
+    (state) => state.setPlayerWarpToPositionFromFocusPlanet
+  );
 
   const isScanDistanceToPlanet = useHudTargtingStore(
     (state) => state.isScanDistanceToPlanet
@@ -119,7 +121,11 @@ export const ActionWarpToPlanetPopupHUD = () => {
         }
         mainStyle={{ marginBottom: "40px" }}
         index={7}
-        onClick={isScanDistanceToPlanet ? scanPlanet : warpToPlanet}
+        onClick={
+          isScanDistanceToPlanet
+            ? scanPlanet
+            : setPlayerWarpToPositionFromFocusPlanet
+        }
       />
       <div className="arrow">
         <span></span>

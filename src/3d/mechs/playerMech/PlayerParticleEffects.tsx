@@ -6,16 +6,17 @@ import usePlayerControlsStore from "../../../stores/playerControlsStore";
 import useParticleStore from "../../../stores/particleStore";
 import Particles from "../../Particles";
 import { COMPONENT_RENDER_ORDER, FPS } from "../../../constants/constants";
+import { setCustomData } from "r3f-perf";
 
 const PlayerParticleEffects = () => {
-  useStore.getState().updateRenderInfo("PlayerMechEngineParticles");
+  useStore.getState().updateRenderInfo("PlayerParticleEffects");
 
   const player = useStore((state) => state.player);
 
   const playerWarpToPosition = usePlayerControlsStore(
     (state) => state.playerWarpToPosition
   );
-  const particleSystem = useParticleStore(
+  const playerParticleSystem = useParticleStore(
     (state) => state.playerParticleController.particleSystem
   );
   const playerParticleEffects = useParticleStore(
@@ -37,30 +38,17 @@ const PlayerParticleEffects = () => {
 
     particleOriginObj.current.rotation.copy(player.object3d.rotation);
 
+    // player warp particle effect
     if (playerWarpToPosition !== null) {
+      // player particle system follows player mech object position
+      // position (0, 0, 0) is the center of the player mech object
       particleOriginObj.current.position.set(0, 0, 0);
-      particleOriginObj.current.translateZ(100);
-      // set particle effect properties
-      speed = -3;
-      // adjust numParticles based on frame rate
-      numParticles = 10;
-      size = 0.1;
-      positionRadius = 25;
-      positionRadiusMin = 5;
-      lifetime = 1;
-      // TODO fix this
-      const playerWarpSpeed = usePlayerControlsStore.getState().playerWarpSpeed;
+      particleOriginObj.current.translateZ(150);
+      // can improve by incorporating playerWarpSpeed
+      //const playerWarpSpeed = usePlayerControlsStore.getState().playerWarpSpeed;
       playerParticleEffects.addWarpStars(
         particleOriginObj.current.position,
         particleOriginObj.current.rotation
-        /*
-        // negative speed to have exhuast move in opposite direction of ship
-        speed,
-        numParticles,
-        size,
-        positionRadius,
-        positionRadiusMin,
-        lifetime*/
       );
     }
 
@@ -89,7 +77,7 @@ const PlayerParticleEffects = () => {
       lifetime
     );
 
-    particleSystem.position.copy(player.object3d.position);
+    playerParticleSystem.position.copy(player.object3d.position);
   }, COMPONENT_RENDER_ORDER.postPositionsUpdate);
 
   return <Particles isPlayerParticles />;
