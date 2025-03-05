@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Object3D, Quaternion, Vector3 } from "three";
 import useStore from "./store";
-import useHudTargtingGalaxyMapStore from "./hudTargetingGalaxyMapStore";
+import useHudTargtingStore from "./hudTargetingStore";
 import useDevStore from "./devStore";
 import { flipRotation } from "../util/cameraUtil";
 import { lerp } from "../util/gameUtil";
@@ -381,8 +381,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         }
         get().updateFrame.setPlayerFixedCameraPosition(camera);
         get().updateFrame.setPlayerCameraRotation(camera);
-        useHudTargtingGalaxyMapStore.getState().updateTargetHUD(camera);
-        useHudTargtingGalaxyMapStore.getState().updatePlayerHudCrosshairDiv();
+        useHudTargtingStore.getState().updateTargetHUD(camera);
+        useHudTargtingStore.getState().updatePlayerHudCrosshairDiv();
       },
     },
   })

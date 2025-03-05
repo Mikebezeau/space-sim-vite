@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
+import useHudTargtingStore from "../stores/hudTargetingStore";
 import useWindowResize from "../hooks/useWindowResize";
 import FlightHudTarget from "./FlightHudTarget";
 //@ts-ignore
@@ -16,13 +16,11 @@ const FlightHud = () => {
     (state) => state.playerActionMode
   );
 
-  const htmlHudTargets = useHudTargtingGalaxyMapStore(
-    (state) => state.htmlHudTargets
-  );
+  const htmlHudTargets = useHudTargtingStore((state) => state.htmlHudTargets);
 
   // if player is in new solar system, update targets
   useEffect(() => {
-    useHudTargtingGalaxyMapStore.getState().generateTargets();
+    useHudTargtingStore.getState().generateTargets();
   }, [playerCurrentStarIndex]);
 
   const hudLargeOuterCirlcleRef = useRef<HTMLDivElement | null>(null);
@@ -33,11 +31,9 @@ const FlightHud = () => {
         ? window.innerHeight * 0.8
         : window.innerWidth * 0.9;
 
-    useHudTargtingGalaxyMapStore.getState().hudRadiusPx = diameter / 2;
+    useHudTargtingStore.getState().hudRadiusPx = diameter / 2;
     const targetDiameterPx = diameter / 20;
-    useHudTargtingGalaxyMapStore
-      .getState()
-      .setTargetDiameterPx(targetDiameterPx);
+    useHudTargtingStore.getState().setTargetDiameterPx(targetDiameterPx);
 
     if (hudLargeOuterCirlcleRef.current !== null) {
       hudLargeOuterCirlcleRef.current.style.marginTop = `-${diameter / 2}px`;
@@ -64,7 +60,7 @@ const FlightHud = () => {
       <div
         ref={(ref) => {
           if (ref) {
-            useHudTargtingGalaxyMapStore.getState().playerHudCrosshairDiv = ref;
+            useHudTargtingStore.getState().playerHudCrosshairDiv = ref;
           }
         }}
         className="opacity-50 absolute top-1/2 left-1/2"

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import * as THREE from "three";
 import useStore from "./store";
 
-interface hudTargetingGalaxyMapStoreState {
+interface galaxyMapStoreState {
   // note: reminder how to declare type for dictionary object
   //testDictionary: { [id: string]: boolean };
   showInfoHoveredStarIndex: number | null;
@@ -24,59 +24,57 @@ interface hudTargetingGalaxyMapStoreState {
   setSelectedWarpStarDirection: () => void;
 }
 
-const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
-  (set, get) => ({
-    // for galaxy map
-    showInfoHoveredStarIndex: null, // used in galaxy map ui
-    showInfoTargetStarIndex: null,
-    showInfoPlanetIndex: null,
-    selectedWarpStar: null,
-    galaxyMapActions: {
-      setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
-        set(() => ({ showInfoHoveredStarIndex }));
-      },
-      getShowInfoTargetStarIndex: () => get().showInfoTargetStarIndex,
-      setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
-        set(() => ({ showInfoTargetStarIndex }));
-      },
-      // TODO setSelectedPanetIndex not used, plan to use for detailed planet data in Galaxy Map
-      setShowInfoPanetIndex(planetIndex) {
-        set(() => ({ showInfoPlanetIndex: planetIndex }));
-      },
-      setSelectedWarpStar(selectedWarpStar) {
-        set(() => ({ selectedWarpStar }));
-        get().setSelectedWarpStarDirection();
-      },
+const useGalaxyMapStore = create<galaxyMapStoreState>()((set, get) => ({
+  // for galaxy map
+  showInfoHoveredStarIndex: null, // used in galaxy map ui
+  showInfoTargetStarIndex: null,
+  showInfoPlanetIndex: null,
+  selectedWarpStar: null,
+  galaxyMapActions: {
+    setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
+      set(() => ({ showInfoHoveredStarIndex }));
     },
-
-    selectedWarpStarDistance: 0,
-    selectedWarpStarDirection: null,
-    setSelectedWarpStarDirection: () => {
-      if (get().selectedWarpStar !== null) {
-        const warpStarDirection = useStore
-          .getState()
-          .getDistanceCoordToBackgroundStar(get().selectedWarpStar!);
-        // background star scene is rotated 90 degrees, so adjust direction
-        const directionVec3 = new THREE.Vector3(
-          warpStarDirection.x,
-          warpStarDirection.y,
-          warpStarDirection.z
-        );
-        set({
-          selectedWarpStarDistance: directionVec3.length(),
-        });
-        const rotateVec3 = new THREE.Vector3(1, 0, 0);
-        directionVec3.applyAxisAngle(rotateVec3, Math.PI / 2);
-        set({
-          selectedWarpStarDirection: directionVec3.normalize(),
-        });
-      } else {
-        set({
-          selectedWarpStarDirection: null,
-        });
-      }
+    getShowInfoTargetStarIndex: () => get().showInfoTargetStarIndex,
+    setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
+      set(() => ({ showInfoTargetStarIndex }));
     },
-  })
-);
+    // TODO setSelectedPanetIndex not used, plan to use for detailed planet data in Galaxy Map
+    setShowInfoPanetIndex(planetIndex) {
+      set(() => ({ showInfoPlanetIndex: planetIndex }));
+    },
+    setSelectedWarpStar(selectedWarpStar) {
+      set(() => ({ selectedWarpStar }));
+      get().setSelectedWarpStarDirection();
+    },
+  },
 
-export default useHudTargtingGalaxyMapStore;
+  selectedWarpStarDistance: 0,
+  selectedWarpStarDirection: null,
+  setSelectedWarpStarDirection: () => {
+    if (get().selectedWarpStar !== null) {
+      const warpStarDirection = useStore
+        .getState()
+        .getDistanceCoordToBackgroundStar(get().selectedWarpStar!);
+      // background star scene is rotated 90 degrees, so adjust direction
+      const directionVec3 = new THREE.Vector3(
+        warpStarDirection.x,
+        warpStarDirection.y,
+        warpStarDirection.z
+      );
+      set({
+        selectedWarpStarDistance: directionVec3.length(),
+      });
+      const rotateVec3 = new THREE.Vector3(1, 0, 0);
+      directionVec3.applyAxisAngle(rotateVec3, Math.PI / 2);
+      set({
+        selectedWarpStarDirection: directionVec3.normalize(),
+      });
+    } else {
+      set({
+        selectedWarpStarDirection: null,
+      });
+    }
+  },
+}));
+
+export default useGalaxyMapStore;

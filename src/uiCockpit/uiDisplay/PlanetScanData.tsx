@@ -1,12 +1,12 @@
 import React from "react";
 import useStore from "../../stores/store";
-import useHudTargtingGalaxyMapStore from "../../stores/hudTargetingGalaxyMapStore";
+import useHudTargtingStore from "../../stores/hudTargetingStore";
 
 const PlanetScanData = () => {
   useStore.getState().updateRenderInfo("PlanetScanData");
 
   const planets = useStore((state) => state.planets);
-  const focusPlanetIndex = useHudTargtingGalaxyMapStore(
+  const focusPlanetIndex = useHudTargtingStore(
     (state) => state.focusPlanetIndex
   );
   const data =

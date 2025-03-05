@@ -1,7 +1,7 @@
 import React from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
+import useHudTargtingStore from "../stores/hudTargetingStore";
 import CyberButton from "../uiMenuComponents/common/CyberButton";
 //@ts-ignore
 import hudCrosshair1 from "/images/hud/hudCrosshair1.png";
@@ -26,6 +26,7 @@ import stars from "../assets/icons/stars.svg";
 //@ts-ignore
 import camera from "../assets/icons/camera-change.svg";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
+import useGalaxyMapStore from "../stores/galaxyMapStore";
 
 export const ActionShoot = () => {
   // TODO remove code from SpaceFlightControlsTouch to shoot
@@ -95,14 +96,14 @@ const ActionCancelPilot = () => {
 export const ActionWarpToPlanetPopupHUD = () => {
   const warpToPlanet = useStore((state) => state.testing.warpToPlanet);
 
-  const isScanDistanceToPlanet = useHudTargtingGalaxyMapStore(
+  const isScanDistanceToPlanet = useHudTargtingStore(
     (state) => state.isScanDistanceToPlanet
   );
-  const focusPlanetIndex = useHudTargtingGalaxyMapStore(
+  const focusPlanetIndex = useHudTargtingStore(
     (state) => state.focusPlanetIndex
   );
-  const scanPlanet = useHudTargtingGalaxyMapStore((state) => state.scanPlanet);
-  const scanPlanetProgress = useHudTargtingGalaxyMapStore(
+  const scanPlanet = useHudTargtingStore((state) => state.scanPlanet);
+  const scanPlanetProgress = useHudTargtingStore(
     (state) => state.scanPlanetProgress
   );
 
@@ -130,10 +131,8 @@ export const ActionWarpToPlanetPopupHUD = () => {
 };
 
 export const ActionWarpToStarPopupHUD = () => {
-  const selectedWarpStar = useHudTargtingGalaxyMapStore(
-    (state) => state.selectedWarpStar
-  );
-  const isWarpToStarAngleShowButton = useHudTargtingGalaxyMapStore(
+  const selectedWarpStar = useGalaxyMapStore((state) => state.selectedWarpStar);
+  const isWarpToStarAngleShowButton = useHudTargtingStore(
     (state) => state.isWarpToStarAngleShowButton
   );
   const setPlayerCurrentStarIndex = useStore(
@@ -265,9 +264,7 @@ export const CockpitControlMap = () => {
 };
 
 export const CockpitControlWarp = () => {
-  const selectedWarpStar = useHudTargtingGalaxyMapStore(
-    (state) => state.selectedWarpStar
-  );
+  const selectedWarpStar = useGalaxyMapStore((state) => state.selectedWarpStar);
   const setPlayerCurrentStarIndex = useStore(
     (state) => state.actions.setPlayerCurrentStarIndex
   );

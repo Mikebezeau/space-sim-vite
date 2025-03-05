@@ -1,7 +1,7 @@
 import React from "react";
-import useHudTargtingGalaxyMapStore, {
+import useHudTargtingStore, {
   htmlHudTargetType,
-} from "../stores/hudTargetingGalaxyMapStore";
+} from "../stores/hudTargetingStore";
 
 type targetHUDInt = {
   target: htmlHudTargetType;
@@ -10,7 +10,7 @@ type targetHUDInt = {
 const FlightHudTarget = (props: targetHUDInt) => {
   const { target } = props;
 
-  const targetDiameterPx = useHudTargtingGalaxyMapStore(
+  const targetDiameterPx = useHudTargtingStore(
     (state) => state.targetDiameterPx
   );
 

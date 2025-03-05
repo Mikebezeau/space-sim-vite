@@ -2,13 +2,12 @@ import { create } from "zustand";
 import * as THREE from "three";
 import { Vector3 } from "three";
 import useStore from "./store";
-import usePlayerControlsStore from "./playerControlsStore";
-//import useEnemyStore from "./enemyStore";
 import { distance } from "../util/gameUtil";
 import {
   getScreenPosition,
   getScreenPositionFromDirection,
 } from "../util/cameraUtil";
+import useGalaxyMapStore from "./galaxyMapStore";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
@@ -26,35 +25,13 @@ export type htmlHudTargetType = {
 };
 
 interface hudTargetingGalaxyMapStoreState {
-  // declare type for dictionary object
-  //testDictionary: { [id: string]: boolean };
-
-  // Galaxy Map - star system info and warp star selection
-  showInfoHoveredStarIndex: number | null;
-  showInfoTargetStarIndex: number | null;
-  showInfoPlanetIndex: number | null;
-  selectedWarpStar: number | null;
-  // TODO update map to use these actions
-  galaxyMapActions: {
-    setShowInfoHoveredStarIndex: (
-      showInfoHoveredStarIndex: number | null
-    ) => void;
-    getShowInfoTargetStarIndex: () => number | null;
-    setShowInfoTargetStarIndex: (showInfoTargetStarIndex: number) => void;
-    setShowInfoPanetIndex: (planetIndex: number | null) => void;
-    setSelectedWarpStar: (selectedWarpStar: number | null) => void;
-  };
-
   // CSS HUD targets
-  isOffHudCircle: boolean;
+  isMouseOutOfHudCircle: boolean;
   hudRadiusPx: number;
   targetDiameterPx: number;
   setTargetDiameterPx: (targetDiameterPx: number) => void;
   htmlHudTargets: htmlHudTargetType[];
-  selectedWarpStarDistance: number;
   isWarpToStarAngleShowButton: boolean;
-  selectedWarpStarDirection: THREE.Vector3 | null;
-  setSelectedWarpStarDirection: () => void;
   // HTML HUD player direction control target
   playerHudCrosshairDiv: HTMLDivElement | null;
   updatePlayerHudCrosshairDiv: () => void;
@@ -101,31 +78,8 @@ interface hudTargetingGalaxyMapStoreState {
 // reusable objects
 const dummyVec3 = new Vector3();
 
-const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
+const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
   (set, get) => ({
-    // for galaxy map
-    showInfoHoveredStarIndex: null, // used in galaxy map ui
-    showInfoTargetStarIndex: null,
-    showInfoPlanetIndex: null,
-    selectedWarpStar: null,
-    galaxyMapActions: {
-      setShowInfoHoveredStarIndex(showInfoHoveredStarIndex) {
-        set(() => ({ showInfoHoveredStarIndex }));
-      },
-      getShowInfoTargetStarIndex: () => get().showInfoTargetStarIndex,
-      setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
-        set(() => ({ showInfoTargetStarIndex }));
-      },
-      // TODO setSelectedPanetIndex not used, plan to use for detailed planet data in Galaxy Map
-      setShowInfoPanetIndex(planetIndex) {
-        set(() => ({ showInfoPlanetIndex: planetIndex }));
-      },
-      setSelectedWarpStar(selectedWarpStar) {
-        set(() => ({ selectedWarpStar }));
-        get().setSelectedWarpStarDirection();
-      },
-    },
-
     // HUD Targeting CSS HUD
     hudRadiusPx: 0,
     targetDiameterPx: 0,
@@ -133,35 +87,8 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
       set(() => ({ targetDiameterPx }));
     },
     htmlHudTargets: [],
-    selectedWarpStarDistance: 0,
     isWarpToStarAngleShowButton: false,
-    selectedWarpStarDirection: null,
-    setSelectedWarpStarDirection: () => {
-      if (get().selectedWarpStar !== null) {
-        const warpStarDirection = useStore
-          .getState()
-          .getDistanceCoordToBackgroundStar(get().selectedWarpStar!);
-        // background star scene is rotated 90 degrees, so adjust direction
-        const directionVec3 = new THREE.Vector3(
-          warpStarDirection.x,
-          warpStarDirection.y,
-          warpStarDirection.z
-        );
-        set({
-          selectedWarpStarDistance: directionVec3.length(),
-        });
-        const rotateVec3 = new THREE.Vector3(1, 0, 0);
-        directionVec3.applyAxisAngle(rotateVec3, Math.PI / 2);
-        set({
-          selectedWarpStarDirection: directionVec3.normalize(),
-        });
-      } else {
-        set({
-          selectedWarpStarDirection: null,
-        });
-      }
-    },
-    isOffHudCircle: false,
+    isMouseOutOfHudCircle: false,
     playerHudCrosshairDiv: null,
     updatePlayerHudCrosshairDiv: () => {
       const mouseControlNormalVec2 =
@@ -267,18 +194,22 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
             break;
 
           case HTML_HUD_TARGET_TYPE.WARP_TO_STAR:
-            if (get().selectedWarpStarDirection === null) {
+            if (
+              useGalaxyMapStore.getState().selectedWarpStarDirection === null
+            ) {
               // send off screen if no target
               htmlHudTarget.divElement!.style.marginLeft = `${window.innerWidth}px`;
               // exit loop
               return;
             }
             distanceToTarget =
-              (get().selectedWarpStarDistance * 7).toFixed(3) + " Ly";
+              (
+                useGalaxyMapStore.getState().selectedWarpStarDistance * 7
+              ).toFixed(3) + " Ly";
             // get screen position of target
             screenPosition = getScreenPositionFromDirection(
               camera,
-              get().selectedWarpStarDirection!
+              useGalaxyMapStore.getState().selectedWarpStarDirection!
             );
             // show button if angle is less than 0.3 radians
             const isWarpToStarAngleShowButton = screenPosition.angleDiff < 0.3;
@@ -392,4 +323,4 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
   })
 );
 
-export default useHudTargtingGalaxyMapStore;
+export default useHudTargtingStore;

@@ -5,7 +5,7 @@ import PlayerMech from "../classes/mech/PlayerMech";
 import useGenFboTextureStore from "./genGpuTextureStore";
 import useEnemyStore from "./enemyStore";
 import usePlayerControlsStore from "./playerControlsStore";
-import useHudTargtingGalaxyMapStore from "./hudTargetingGalaxyMapStore";
+import useHudTargtingStore from "./hudTargetingStore";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
@@ -22,6 +22,7 @@ import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
+import useGalaxyMapStore from "./galaxyMapStore";
 
 const initStarPointsShaderMaterial = () => {
   const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
@@ -398,8 +399,7 @@ const useStore = create<storeState>()((set, get) => ({
       }
     },
     warpToPlanet() {
-      const focusPlanetIndex =
-        useHudTargtingGalaxyMapStore.getState().focusPlanetIndex;
+      const focusPlanetIndex = useHudTargtingStore.getState().focusPlanetIndex;
       if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
         // using dummyVec3 to store target position
         const targetVec3 = dummyVec3;
@@ -534,11 +534,9 @@ const useStore = create<storeState>()((set, get) => ({
       }
 
       //clear targeting variables
-      useHudTargtingGalaxyMapStore.getState().clearTargets();
+      useHudTargtingStore.getState().clearTargets();
       //clear selected warp star
-      useHudTargtingGalaxyMapStore
-        .getState()
-        .galaxyMapActions.setSelectedWarpStar(null);
+      useGalaxyMapStore.getState().galaxyMapActions.setSelectedWarpStar(null);
 
       // playerCurrentStarIndex set at end, triggers render of solar system related components
       set(() => ({ playerCurrentStarIndex }));
@@ -556,7 +554,7 @@ const useStore = create<storeState>()((set, get) => ({
     updateMouse({ clientX: x, clientY: y }) {
       // save mouse position (-1 to 1) based on location on screen
       // limiting the clientX and clientY to center HUD circle area
-      const hudRadiusPx = useHudTargtingGalaxyMapStore.getState().hudRadiusPx;
+      const hudRadiusPx = useHudTargtingStore.getState().hudRadiusPx;
       // give mouseX and mouseY normal values between to -1 to 1
       let mouseX = Math.min(
         Math.max((x - window.innerWidth / 2) / hudRadiusPx, -1),
@@ -572,9 +570,9 @@ const useStore = create<storeState>()((set, get) => ({
         const angle = Math.atan2(mouseY, mouseX);
         mouseX = Math.cos(angle);
         mouseY = Math.sin(angle);
-        useHudTargtingGalaxyMapStore.getState().isOffHudCircle = true;
+        useHudTargtingStore.getState().isMouseOutOfHudCircle = true;
       } else {
-        useHudTargtingGalaxyMapStore.getState().isOffHudCircle = false;
+        useHudTargtingStore.getState().isMouseOutOfHudCircle = false;
       }
       // update x, y mouseControlNormalVec2 position
       get().mutation.mouseControlNormalVec2.set(mouseX, mouseY);

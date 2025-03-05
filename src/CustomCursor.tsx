@@ -1,6 +1,6 @@
 import React from "react";
 import usePlayerControlsStore from "./stores/playerControlsStore";
-import useHudTargtingGalaxyMapStore from "./stores/hudTargetingGalaxyMapStore";
+import useHudTargtingStore from "./stores/hudTargetingStore";
 import { useMouseMove } from "./hooks/controls/useMouseKBControls";
 import { PLAYER } from "./constants/constants";
 import "./css/customCursor.css";
@@ -13,7 +13,7 @@ const CustomCursor = () => {
       if (customCursorRef.current) {
         if (
           // conditions to hide cursor
-          !useHudTargtingGalaxyMapStore.getState().isOffHudCircle &&
+          !useHudTargtingStore.getState().isMouseOutOfHudCircle &&
           usePlayerControlsStore.getState().playerScreen ===
             PLAYER.screen.flight &&
           usePlayerControlsStore.getState().playerActionMode ===

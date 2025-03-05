@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
-import useHudTargtingGalaxyMapStore from "../../stores/hudTargetingGalaxyMapStore";
+import useHudTargtingStore from "../../stores/hudTargetingStore";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { getCameraAngleDiffToPosition } from "../../util/cameraUtil";
@@ -78,12 +78,13 @@ const HudTargets = () => {
     (state) => state.getPlayerState
   );
 
-  const getTargets = useHudTargtingGalaxyMapStore((state) => state.getTargets);
-  const checkScanDistanceToPlanet = useHudTargtingGalaxyMapStore(
+  const getTargets = useHudTargtingStore((state) => state.getTargets);
+  const checkScanDistanceToPlanet = useHudTargtingStore(
     (state) => state.checkScanDistanceToPlanet
   );
-  const { setFocusPlanetIndex, setFocusTargetIndex } =
-    useHudTargtingGalaxyMapStore((state) => state.actions);
+  const { setFocusPlanetIndex, setFocusTargetIndex } = useHudTargtingStore(
+    (state) => state.actions
+  );
 
   const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
 

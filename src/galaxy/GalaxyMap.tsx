@@ -7,7 +7,7 @@ import { TrackballControls } from "@react-three/drei";
 //import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import useStore from "../stores/store";
-import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
+import useGalaxyMapStore from "../stores/galaxyMapStore";
 import {
   useMouseDown,
   useMouseUp,
@@ -67,7 +67,7 @@ const GalaxyMap = () => {
       getShowInfoTargetStarIndex,
       setShowInfoHoveredStarIndex,
       setShowInfoTargetStarIndex,
-    } = useHudTargtingGalaxyMapStore((state) => state.galaxyMapActions);
+    } = useGalaxyMapStore((state) => state.galaxyMapActions);
 
     const starPointsRef = useRef<THREE.Points | null>(null);
     const mouseMovedStart = useRef(new THREE.Vector2(0, 0));

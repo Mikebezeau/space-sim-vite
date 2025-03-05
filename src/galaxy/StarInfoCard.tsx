@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useState, useRef } from "react";
 import useStore from "../stores/store";
-import useHudTargtingGalaxyMapStore from "../stores/hudTargetingGalaxyMapStore";
+import useGalaxyMapStore from "../stores/galaxyMapStore";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import { typeStarData } from "../solarSystemGen/genStarData";
 import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
@@ -15,13 +15,13 @@ const StarInfoCard = () => {
     (state) => state.actions.switchScreen
   );
 
-  const showInfoHoveredStarIndex = useHudTargtingGalaxyMapStore(
+  const showInfoHoveredStarIndex = useGalaxyMapStore(
     (state) => state.showInfoHoveredStarIndex
   );
-  const showInfoTargetStarIndex = useHudTargtingGalaxyMapStore(
+  const showInfoTargetStarIndex = useGalaxyMapStore(
     (state) => state.showInfoTargetStarIndex
   );
-  const setSelectedWarpStar = useHudTargtingGalaxyMapStore(
+  const setSelectedWarpStar = useGalaxyMapStore(
     (state) => state.galaxyMapActions.setSelectedWarpStar
   );
 
