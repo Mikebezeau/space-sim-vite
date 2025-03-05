@@ -117,13 +117,6 @@ interface storeState {
     mouseScreen: THREE.Vector2;
     //ongoingTouches: any[];
   };
-  testing: {
-    changeLocationSpace: () => void;
-    changeLocationPlanet: () => void;
-    changeLocationCity: () => void;
-    warpToStation: () => void;
-    warpToPlanet: () => void;
-  };
 }
 
 const useStore = create<storeState>()((set, get) => ({
@@ -316,99 +309,6 @@ const useStore = create<storeState>()((set, get) => ({
     shoot: false,
     mouseControlNormalVec2: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
     mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
-  },
-
-  testing: {
-    /*
-      // this can be used to collect a JSON string of the galaxy map data
-      // for use in the galaxy map UI. i.e. where are terrestrial planets located
-      mapGalaxyDataToJSON() {
-        const positions = get().galaxyStarPositionsFloat32;
-        let galaxyMapData = [];
-        for (let i = 0; i < STARS_IN_GALAXY; i++) {
-          const systemSeed = i;
-          const planets = systemInfoGen(systemSeed);//TODO update this
-          let hasTerrestrial = false;
-          planets.forEach((planet) => {
-            if (planet.data.type === "Terrestrial") hasTerrestrial = true;
-            if (hasTerrestrial) {
-              const systemData = {
-                position: [positions[i], positions[i + 1], positions[i + 2]],
-                hasTerran: true,
-                breathable: planet.data.breathable,
-              };
-              galaxyMapData.push(systemData);
-            }
-          });
-        }
-        //console.log(
-        //  galaxyMapData.find((systemData) => systemData.breathable === "YES")
-        //);
-        set(() => ({
-          galaxyMapDataOutput: JSON.stringify(galaxyMapData),
-        }));
-      },
-      */
-    changeLocationSpace() {
-      //set player location
-      get().player.resetSpaceLocation();
-      usePlayerControlsStore
-        .getState()
-        .actions.switchScreen(PLAYER.screen.flight);
-    },
-    changeLocationPlanet() {
-      //set player location
-      get().player.storeSpaceLocation();
-      get().player.object3d.position.set(0, 0, 0);
-      usePlayerControlsStore
-        .getState()
-        .actions.switchScreen(PLAYER.screen.landedPlanet);
-    },
-    changeLocationCity() {
-      if (
-        usePlayerControlsStore.getState().playerScreen ===
-        PLAYER.screen.landedPlanet
-      ) {
-        const planetTerrain = get().planetTerrain.terrain;
-        get().player.object3d.position.setX(
-          planetTerrain.CityPositions[0].position.x
-        );
-        get().player.object3d.position.setY(0);
-        get().player.object3d.position.setZ(
-          get().planetTerrain.CityPositions[0].position.z
-        );
-      }
-    },
-    warpToStation() {
-      if (get().stations.length > 0) {
-        let player = get().player;
-        const targetStation = get().stations[0];
-        player.object3d.position.copy(targetStation.object3d.position);
-        player.object3d.translateZ(-30);
-        player.object3d.lookAt(targetStation.object3d.position);
-        const targetWarpPosition = {
-          x: player.object3d.position.x,
-          y: player.object3d.position.y,
-          z: player.object3d.position.z,
-        };
-        get().setPlayerWorldPosition(targetWarpPosition);
-      }
-    },
-    warpToPlanet() {
-      const player = get().player;
-      const focusPlanetIndex = useHudTargtingStore.getState().focusPlanetIndex;
-      if (focusPlanetIndex !== null && get().planets[focusPlanetIndex]) {
-        const targetPlanet = get().planets[focusPlanetIndex];
-        player.object3d.position.copy(targetPlanet.object3d.position);
-        player.object3d.translateZ(-targetPlanet.radius * 2);
-        const targetWarpPosition = {
-          x: player.object3d.position.x,
-          y: player.object3d.position.y,
-          z: player.object3d.position.z,
-        };
-        get().setPlayerWorldPosition(targetWarpPosition);
-      }
-    },
   },
 
   actions: {

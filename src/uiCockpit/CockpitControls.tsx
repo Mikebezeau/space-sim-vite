@@ -1,5 +1,6 @@
 import React from "react";
 import useStore from "../stores/store";
+import useDevStore from "../stores/devStore";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useHudTargtingStore from "../stores/hudTargetingStore";
 import CyberButton from "../uiMenuComponents/common/CyberButton";
@@ -335,7 +336,7 @@ export const CockpitControlDockStation = () => {
   const switchScreen = usePlayerControlsStore(
     (state) => state.actions.switchScreen
   );
-  const warpToStation = useStore((state) => state.testing.warpToStation);
+  const warpToStation = useDevStore((state) => state.testing.warpToStation);
   const getPlayer = useStore((state) => state.getPlayer);
   const stations = useStore((state) => state.stations);
 

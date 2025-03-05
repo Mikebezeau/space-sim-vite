@@ -26,13 +26,19 @@ class PlayerMech extends Mech implements playerMechInt {
   }
   // save location in space
   storeSpaceLocation() {
+    /*
+    // not used yet - must reference player world / world offset position
     this.locationInfo.saveSpaceObject3d.position.copy(this.object3d.position);
     this.locationInfo.saveSpaceObject3d.rotation.copy(this.object3d.rotation);
+    */
   }
   // go back to location in space
   resetSpaceLocation() {
+    /*
+    // not used yet - must reference player world / world offset position
     this.object3d.position.copy(this.locationInfo.saveSpaceObject3d.position);
     this.object3d.rotation.copy(this.locationInfo.saveSpaceObject3d.rotation);
+    */
   }
   // fire weapon
   // TODO add WEAPON group / fire mode code here
