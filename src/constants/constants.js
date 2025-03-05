@@ -16,6 +16,8 @@ export const STARS_IN_GALAXY = 150000;
 export const GALAXY_SIZE = 40;
 
 export const IS_MOBILE = /Mobi|Android/i.test(navigator.userAgent);
+export const IS_TOUCH_SCREEN =
+  "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
 export const PLAYER_START = {
   system: 27750,

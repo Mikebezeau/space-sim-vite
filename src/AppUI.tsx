@@ -20,7 +20,7 @@ import GalaxyMapMenu from "./uiMenuComponents/GalaxyMapMenu";
 import StationDockMenu from "./uiMenuComponents/StationDockMenu";
 import EquipmentMenu from "./uiMenuComponents/EquipmentMenu";
 import CustomCursor from "./CustomCursor";
-import { IS_MOBILE, PLAYER } from "./constants/constants";
+import { IS_TOUCH_SCREEN, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
 import "./css/glitch.css";
 import "./css/glitchImage.css";
@@ -54,6 +54,7 @@ const AppUI = () => {
       ) : (
         <>
           <LilGui />
+          {!IS_TOUCH_SCREEN && <CustomCursor />}
           <div className="pointer-events-none touch-none">
             {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
             {playerScreen === PLAYER.screen.flight && (
@@ -85,7 +86,7 @@ const AppUI = () => {
             {(playerScreen === PLAYER.screen.flight ||
               playerScreen === PLAYER.screen.landedPlanet) && (
               <>
-                {IS_MOBILE ? (
+                {IS_TOUCH_SCREEN ? (
                   <SpaceFlightControlsTouch />
                 ) : (
                   <SpaceFlightControlsMouseKB />
@@ -95,7 +96,6 @@ const AppUI = () => {
           </div>
         </>
       )}
-      <CustomCursor />
     </>
   );
 };

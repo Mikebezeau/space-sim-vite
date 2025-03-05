@@ -8,7 +8,7 @@ import {
 } from "../hooks/controls/useTouchControls";
 import { ActionShoot } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
-import controls from "../assets/icons/controls.svg";
+//import controls from "../assets/icons/controls.svg";
 import controlStick from "/images/cockpit/controls/controlStick.png";
 import throttleStick from "/images/cockpit/controls/throttleStick.png";
 
@@ -167,7 +167,7 @@ const SpaceFlightControlsTouch = () => {
 
   return (
     <>
-      <div className="absolute w-40 h-40 bottom-5 left-2">
+      <div className="absolute w-[180px] h-[180px] bottom-5 left-2">
         <div
           id="btn-ship-move"
           ref={moveControl}
@@ -179,13 +179,15 @@ const SpaceFlightControlsTouch = () => {
               alt="controls icon"
               className={`${
                 isReverseSideTouchControls && "scale-x-[-1]"
-              } pointer-events-none absolute w-20 left-10 top-8 opacity-75`}
+              } pointer-events-none absolute w-20 left-12 top-10 opacity-75`}
             />
+            {/*
             <img
               src={controls}
               alt="controls icon"
               className="pointer-events-none absolute w-36 h-36 left-2 top-2 opacity-25"
             />
+            */}
           </div>
         </div>
       </div>
@@ -212,7 +214,6 @@ const SpaceFlightControlsTouch = () => {
           </div>
         </div>
       </div>
-      v
     </>
   );
 };
