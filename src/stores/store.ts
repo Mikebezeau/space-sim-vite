@@ -1,31 +1,35 @@
 import { create } from "zustand";
 import * as THREE from "three";
-import PlayerMech from "../classes/mech/PlayerMech";
-import useGenFboTextureStore from "./genGpuTextureStore";
+// stores
 import useEnemyStore from "./enemyStore";
-import usePlayerControlsStore from "./playerControlsStore";
+import useGalaxyMapStore from "./galaxyMapStore";
+import useGenFboTextureStore from "./genGpuTextureStore";
 import useHudTargtingStore from "./hudTargetingStore";
+// shaders
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
-import cityTerrianGen from "../terrainGen/terrainGenHelper";
+// classes
+import cityTerrianGen from "../terrainGen/terrainGenHelper"; // NOTE: old, make class
 import SolarSystem from "../classes/solarSystem/SolarSystem";
 import Galaxy from "../classes/Galaxy";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
-import { PLAYER, PLAYER_START } from "../constants/constants";
+import PlayerMech from "../classes/mech/PlayerMech";
+import SpaceStationMech from "../classes/mech/SpaceStationMech";
+// constants
+import { PLAYER_START } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/solarSystemConstants";
+// images
 // @ts-ignore
 import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
-import SpaceStationMech from "../classes/mech/SpaceStationMech";
-import useGalaxyMapStore from "./galaxyMapStore";
 
 // reusable objects
 const dummyVec3 = new THREE.Vector3();
 
-const initStarPointsShaderMaterial = () => {
+const getInitStarPointsShaderMaterial = () => {
   // TODO draw circles in shader
   const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new THREE.TextureLoader().load(featheredSpriteSrc);
@@ -56,27 +60,9 @@ interface storeState {
 
   galaxy: Galaxy;
 
-  getStarBufferPosition: (starIndex: number) => {
-    x: number;
-    y: number;
-    z: number;
-  };
-  getDistanceCoordToBackgroundStar: (
-    starIndex: number,
-    playerStarIndex?: number
-  ) => {
-    x: number;
-    y: number;
-    z: number;
-  };
-  starPointsShaderMaterial: THREE.ShaderMaterial;
-  // put above in class
-
   // TODO change playerControl to player store - include more player related data
   // updates to Class in state do not trigger rerenders in components
   player: PlayerMech;
-  // therefore do not really need to use getPlayer
-  getPlayer: () => PlayerMech; // TODO don't need getPlayer
   playerPropUpdate: boolean; // used to re-render player prop based menu components
   togglePlayerPropUpdate: () => void;
   // used to shift positions over large distances to a local space
@@ -91,11 +77,12 @@ interface storeState {
   solarSystem: SolarSystem;
   stars: Star[];
   planets: Planet[];
-  // TODO place below in solarsystem class?
+
+  starPointsShaderMaterial: THREE.ShaderMaterial;
   sunShaderMaterial: THREE.ShaderMaterial;
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
-  //--
+
   stations: SpaceStationMech[];
   planetTerrain: any;
 
@@ -185,42 +172,12 @@ const useStore = create<storeState>()((set, get) => ({
 
   sound: false,
 
-  //TODO make Galaxy class and move following to it
-  getStarBufferPosition: (starIndex: number) => {
-    if (get().galaxy.starCoordsBuffer) {
-      return {
-        x: get().galaxy.starCoordsBuffer!.array[starIndex * 3],
-        y: get().galaxy.starCoordsBuffer!.array[starIndex * 3 + 1],
-        z: get().galaxy.starCoordsBuffer!.array[starIndex * 3 + 2],
-      };
-    } else {
-      console.warn("starCoordsBuffer not set");
-      return { x: 0, y: 0, z: 0 };
-    }
-  },
-  getDistanceCoordToBackgroundStar: (
-    starIndex: number,
-    playerStarIndex: number = get().playerCurrentStarIndex!
-  ) => {
-    const playerStarPosition = get().getStarBufferPosition(playerStarIndex);
-    const starPosition = get().getStarBufferPosition(starIndex);
-    return {
-      x: starPosition.x - playerStarPosition.x,
-      y: starPosition.y - playerStarPosition.y,
-      z: starPosition.z - playerStarPosition.z,
-    };
-  },
-  starPointsShaderMaterial: initStarPointsShaderMaterial(),
-  //
-
   // current player solar system location
   // used to trigger re-renders in solar system related components
   // initially set to null until starting solar system is set
   playerCurrentStarIndex: null,
   player: new PlayerMech(),
-  getPlayer: () => get().player, // getting state to avoid rerenders in components when necessary
-  //playerMechBP: initPlayerMechBP(),
-  playerPropUpdate: false, // currently used for speed updates
+  playerPropUpdate: false, // used when player class prop updated, to trigger re-renders in components
   togglePlayerPropUpdate: () => {
     set({
       playerPropUpdate: !get().playerPropUpdate,
@@ -278,6 +235,7 @@ const useStore = create<storeState>()((set, get) => ({
   stars: [], // set in call to setPlayerCurrentStarIndex
   planets: [], // set in call to setPlayerCurrentStarIndex
 
+  starPointsShaderMaterial: getInitStarPointsShaderMaterial(), //loads sprites
   sunShaderMaterial: sunShaderMaterial,
   planetShaderMaterial: planetShaderMaterial,
   clonePlanetShaderMaterial: () => {

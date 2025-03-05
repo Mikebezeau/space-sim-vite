@@ -5,6 +5,19 @@ import galaxyGen from "../galaxy/galaxyGen";
 import { STARS_IN_GALAXY, GALAXY_SIZE } from "../constants/constants";
 
 interface galaxyInt {
+  getStarBufferPosition: (starIndex: number) => {
+    x: number;
+    y: number;
+    z: number;
+  };
+  getDistanceCoordFromStarToStar: (
+    fromStar: number,
+    toStar: number
+  ) => {
+    x: number;
+    y: number;
+    z: number;
+  };
   setBackgroundStarsPosition(playerStarIndex: number): void;
 }
 
@@ -54,9 +67,12 @@ class Galaxy implements galaxyInt {
   }
 
   async initStars() {
-    // note: only run this once
     const componentName = "initStars";
-    useStore.getState().updateRenderInfo(componentName); // timing initStars
+    useStore.getState().updateRenderInfo(componentName);
+    if (useStore.getState().renderCount[componentName] > 1) {
+      console.warn("initStars called more than once");
+    }
+
     galaxyGen(this.numStars, this.galaxySize).then((galaxyData) => {
       // note:memory leaks occur when buffer attributes are replaced, always update them
       this.starCoordsBuffer = galaxyData.starCoordsBuffer;
@@ -66,14 +82,36 @@ class Galaxy implements galaxyInt {
     });
   }
 
+  getStarBufferPosition(starIndex: number) {
+    if (this.starCoordsBuffer) {
+      return {
+        x: this.starCoordsBuffer!.array[starIndex * 3],
+        y: this.starCoordsBuffer!.array[starIndex * 3 + 1],
+        z: this.starCoordsBuffer!.array[starIndex * 3 + 2],
+      };
+    } else {
+      console.warn("starCoordsBuffer not set");
+      return { x: 0, y: 0, z: 0 };
+    }
+  }
+
+  getDistanceCoordFromStarToStar(
+    playerStarIndex: number,
+    targetStarIndex: number
+  ) {
+    const playerStarPosition = this.getStarBufferPosition(playerStarIndex);
+    const targetStarPosition = this.getStarBufferPosition(targetStarIndex);
+    return {
+      x: targetStarPosition.x - playerStarPosition.x,
+      y: targetStarPosition.y - playerStarPosition.y,
+      z: targetStarPosition.z - playerStarPosition.z,
+    };
+  }
+
   // call this function when player moves to new star
   setBackgroundStarsPosition(playerStarIndex: number) {
     // compute positions for background stars based on current player star position
     if (this.starCoordsBuffer === null) return;
-
-    // TODO move getDistanceCoordToBackgroundStar to this class
-    const getDistanceCoordToBackgroundStar =
-      useStore.getState().getDistanceCoordToBackgroundStar;
 
     for (
       let i = 0;
@@ -81,7 +119,10 @@ class Galaxy implements galaxyInt {
       i = i + 1
     ) {
       // get relative distance to star from player star position
-      const { x, y, z } = getDistanceCoordToBackgroundStar(i, playerStarIndex);
+      const { x, y, z } = this.getDistanceCoordFromStarToStar(
+        playerStarIndex,
+        i
+      );
       //const distance = Math.sqrt(x * x + y * y + z * z);
       // to show the nebula sprite particles instead of star for far away stars
       this.starBackgroundDistanceSelectedBuffer.array[i] = 0;

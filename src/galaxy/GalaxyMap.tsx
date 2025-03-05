@@ -29,9 +29,7 @@ const RAYCAST_THRESHOLD = 1;
 const GalaxyMap = () => {
   useStore.getState().updateRenderInfo("GalaxyMap");
 
-  const getStarBufferPosition = useStore(
-    (state) => state.getStarBufferPosition
-  );
+  const galaxy = useStore((state) => state.galaxy);
 
   const { camera, scene } = useThree();
   const controlsRef = useRef<any | null>(null);
@@ -77,23 +75,20 @@ const GalaxyMap = () => {
     const fromDistanceCheckVec3 = useRef(new THREE.Vector3());
     const toDistanceCheckVec3 = useRef(new THREE.Vector3());
 
-    const viewSelectedStar = useCallback(
-      (starPointIndex: number) => {
-        if (galaxyRef.current === null) return;
-        resestControlsCameraPosition(); // reset controls, camera and galaxy positions
-        const centerOnStarPosition = getStarBufferPosition(starPointIndex);
-        if (centerOnStarPosition) {
-          galaxyRef.current.position.set(
-            -centerOnStarPosition.x,
-            -centerOnStarPosition.y,
-            -centerOnStarPosition.z
-          ); // move galaxy relative to selected star position. selected star is shown at pos (0,0,0)
+    const viewSelectedStar = useCallback((starPointIndex: number) => {
+      if (galaxyRef.current === null) return;
+      resestControlsCameraPosition(); // reset controls, camera and galaxy positions
+      const centerOnStarPosition = galaxy.getStarBufferPosition(starPointIndex);
+      if (centerOnStarPosition) {
+        galaxyRef.current.position.set(
+          -centerOnStarPosition.x,
+          -centerOnStarPosition.y,
+          -centerOnStarPosition.z
+        ); // move galaxy relative to selected star position. selected star is shown at pos (0,0,0)
 
-          camera.position.setZ(-(RAYCAST_THRESHOLD + 2)); // move camera closer to star to inspect
-        }
-      },
-      [getStarBufferPosition]
-    );
+        camera.position.setZ(-(RAYCAST_THRESHOLD + 2)); // move camera closer to star to inspect
+      }
+    }, []);
 
     const setStarSelectionBuffer = (starSelectionValue: number) => {
       starSelectedBuffer.array = starSelectedBuffer.array.map(
@@ -103,12 +98,12 @@ const GalaxyMap = () => {
 
     // these stars are within range of player to select
     const setSecondarySelectedStars = useCallback((starPointIndex) => {
-      const centerOnStarPosition = getStarBufferPosition(starPointIndex);
+      const centerOnStarPosition = galaxy.getStarBufferPosition(starPointIndex);
       if (!centerOnStarPosition) return;
       fromDistanceCheckVec3.current.copy(centerOnStarPosition);
 
       starSelectedBuffer.array.forEach((_, index) => {
-        const secondaryStarPosition = getStarBufferPosition(index);
+        const secondaryStarPosition = galaxy.getStarBufferPosition(index);
         if (!secondaryStarPosition) return;
         toDistanceCheckVec3.current.copy(secondaryStarPosition);
         const distance = fromDistanceCheckVec3.current.distanceTo(
@@ -202,14 +197,14 @@ const GalaxyMap = () => {
         starSelectedBuffer.array[centerOnStarIndexRef.current] =
           STAR_DISPLAY_MODE.selected;
         // secondary selected stars in close proximity
-        const centerOnStarPosition = getStarBufferPosition(
+        const centerOnStarPosition = galaxy.getStarBufferPosition(
           centerOnStarIndexRef.current
         );
         // check all stars intersecting with raycaster ray for distance to selected star
         // calculated with starCoordsBuffer for accurate coordinates - raycaster ray not achieving accurate results
         const secondaryStarPosition = new THREE.Vector3();
         intersects.forEach((intersect) => {
-          secondaryStarPosition.copy(getStarBufferPosition(intersect.index));
+          secondaryStarPosition.copy(galaxy.getStarBufferPosition(intersect.index));
           // secondary star selections are stars close to selected star
           if (intersect.index !== centerOnStarIndexRef.current) {
             const distance = centerOnStarPosition.distanceTo(
@@ -267,7 +262,9 @@ const GalaxyMap = () => {
           setShowInfoHoveredStarIndex(hoveredStar.index); // to show star info card in GalaxyMapHud/StarInfoCard
           // offest galaxyRef.current.position since galaxy is moved so that
           // the main central star (current player position) is moved to (0,0,0) for inspection
-          const hoveredStarPosition = getStarBufferPosition(hoveredStar.index);
+          const hoveredStarPosition = galaxy.getStarBufferPosition(
+            hoveredStar.index
+          );
           if (hoveredStarPosition && galaxyRef.current) {
             lineToHoveredStarPointRef.current = [
               hoveredStarPosition.x + galaxyRef.current.position.x,
@@ -305,7 +302,7 @@ const GalaxyMap = () => {
         }
         targetStarIndexRef.current = hoveredStarIndexRef.current;
         // set target star line
-        const targetStarPosition = getStarBufferPosition(
+        const targetStarPosition = galaxy.getStarBufferPosition(
           targetStarIndexRef.current
         );
         // offset by galaxy position (centered on current player star position)

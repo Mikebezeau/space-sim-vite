@@ -115,13 +115,13 @@ const System = ({ showPlayer, mapScale }) => {
 
 function ShipPositions({ mapScale }) {
   useStore.getState().updateRenderInfo("ShipPositions system map");
-  const getPlayer = useStore((state) => state.getPlayer);
+  const player = useStore((state) => state.player);
   const playerRef = useRef(null);
 
   useFrame(() => {
     playerRef.current.position.set(
-      mapScale * getPlayer().object3d.position.x,
-      mapScale * getPlayer().object3d.position.z,
+      mapScale * player.object3d.position.x,
+      mapScale * player.object3d.position.z,
       0
     );
   });

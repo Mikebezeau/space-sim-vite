@@ -332,18 +332,20 @@ export const CockpitControlView = () => {
   );
 };
 
+// NOTE: this is temp for testing
 export const CockpitControlDockStation = () => {
   const switchScreen = usePlayerControlsStore(
     (state) => state.actions.switchScreen
   );
   const warpToStation = useDevStore((state) => state.testing.warpToStation);
-  const getPlayer = useStore((state) => state.getPlayer);
-  const stations = useStore((state) => state.stations);
 
   const isStationCloseEnoughToDock = () => {
     return (
-      getPlayer().object3d.position.distanceTo(stations[0].object3d.position) <
-      50000
+      useStore
+        .getState()
+        .player.object3d.position.distanceTo(
+          useStore.getState().stations[0].object3d.position
+        ) < 50000
     );
   };
 

@@ -23,8 +23,8 @@ const crossMaterial = new THREE.MeshBasicMaterial({
 export default function PlayerWalk() {
   useStore.getState().updateRenderInfo("PlayerWalk");
   const { camera } = useThree();
-  const getPlayer = useStore((state) => state.getPlayer);
-  const playerMechBP = getPlayer().mechBP;
+  const player = useStore((state) => state.player);
+  const playerMechBP = player.mechBP;
   const mutation = useStore((state) => state.mutation);
   //const player = useStore((state) => state.player);
   const { terrain } = useStore((state) => state.planetTerrain);
@@ -39,7 +39,6 @@ export default function PlayerWalk() {
   //testing
   useFrame(() => {
     if (!main.current) return null;
-    const player = getPlayer();
     const { mouseControlNormalVec2 } = mutation;
     //rotate ship based on mouse position
     //new rotation

@@ -51,10 +51,16 @@ const useGalaxyMapStore = create<galaxyMapStoreState>()((set, get) => ({
   selectedWarpStarDistance: 0,
   selectedWarpStarDirection: null,
   setSelectedWarpStarDirection: () => {
-    if (get().selectedWarpStar !== null) {
+    if (
+      useStore.getState().playerCurrentStarIndex !== null &&
+      get().selectedWarpStar !== null
+    ) {
       const warpStarDirection = useStore
         .getState()
-        .getDistanceCoordToBackgroundStar(get().selectedWarpStar!);
+        .galaxy.getDistanceCoordFromStarToStar(
+          useStore.getState().playerCurrentStarIndex!,
+          get().selectedWarpStar!
+        );
       // background star scene is rotated 90 degrees, so adjust direction
       const directionVec3 = new THREE.Vector3(
         warpStarDirection.x,
