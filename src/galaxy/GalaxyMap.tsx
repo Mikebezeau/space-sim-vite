@@ -286,6 +286,7 @@ const GalaxyMap = () => {
       }
     };
 
+    // TODO: on hover highlight star, on click select star
     // change hovered star to  selected star
     // on mobile we set and check for hovered star existance before setSelectedTargetStar
     const setSelectedTargetStar = (

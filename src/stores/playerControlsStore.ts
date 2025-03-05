@@ -233,11 +233,12 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
       // update player camera look angle
       updatePlayerCameraLookAngle: (deltaFPS, angleNorm) => {
-        const mouse = angleNorm || useStore.getState().mutation.mouse;
+        const mouseControlNormalVec2 =
+          angleNorm || useStore.getState().mutation.mouseControlNormalVec2;
         const lerpSpeed = 0.2; // isInitializeNoLerp ? 1 : 0.2; //view lerp speed
 
-        const targetRotationX = -mouse.x;
-        const targetRotationY = mouse.y;
+        const targetRotationX = -mouseControlNormalVec2.x;
+        const targetRotationY = mouseControlNormalVec2.y;
 
         // TODO is * deltaFPS right adjustment?
         get().flightCameraLookRotation.rotateX = lerp(
@@ -255,8 +256,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
       setPlayerShipRotation: (deltaFPS) => {
         const player = useStore.getState().player;
-        const mouse = useStore.getState().mutation.mouse;
-        // rotate player ship based on mouse position / controls
+        const mouseControlNormalVec2 =
+          useStore.getState().mutation.mouseControlNormalVec2;
+        // rotate player ship based on mouseControlNormalVec2 position / controls
         if (get().isPlayerPilotControl()) {
           // MVmod is a modifier for rotation speed based on ship maneuverability
           // TODO add lerp/slerp rotation vector to store for smooth rotation
@@ -265,9 +267,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           const adjustedManuverability = MVmult * deltaFPS;
           rotateShipQuat
             .set(
-              mouse.y * 0.05 * adjustedManuverability,
-              -mouse.x * 0.05 * adjustedManuverability,
-              mouse.x * 0.1 * adjustedManuverability,
+              mouseControlNormalVec2.y * 0.05 * adjustedManuverability,
+              -mouseControlNormalVec2.x * 0.05 * adjustedManuverability,
+              mouseControlNormalVec2.x * 0.1 * adjustedManuverability,
               1
             )
             .normalize();

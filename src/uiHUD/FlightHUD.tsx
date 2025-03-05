@@ -33,7 +33,7 @@ const FlightHud = () => {
         ? window.innerHeight * 0.8
         : window.innerWidth * 0.9;
 
-    useHudTargtingGalaxyMapStore.getState().hudDiameterPx = diameter;
+    useHudTargtingGalaxyMapStore.getState().hudRadiusPx = diameter / 2;
     const targetDiameterPx = diameter / 20;
     useHudTargtingGalaxyMapStore
       .getState()

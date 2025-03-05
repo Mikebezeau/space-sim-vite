@@ -47,7 +47,7 @@ interface hudTargetingGalaxyMapStoreState {
 
   // CSS HUD targets
   isOffHudCircle: boolean;
-  hudDiameterPx: number;
+  hudRadiusPx: number;
   targetDiameterPx: number;
   setTargetDiameterPx: (targetDiameterPx: number) => void;
   htmlHudTargets: htmlHudTargetType[];
@@ -127,7 +127,7 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
     },
 
     // HUD Targeting CSS HUD
-    hudDiameterPx: 0,
+    hudRadiusPx: 0,
     targetDiameterPx: 0,
     setTargetDiameterPx: (targetDiameterPx) => {
       set(() => ({ targetDiameterPx }));
@@ -164,14 +164,15 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
     isOffHudCircle: false,
     playerHudCrosshairDiv: null,
     updatePlayerHudCrosshairDiv: () => {
-      const mouse = useStore.getState().mutation.mouse;
+      const mouseControlNormalVec2 =
+        useStore.getState().mutation.mouseControlNormalVec2;
 
       if (get().playerHudCrosshairDiv !== null) {
         get().playerHudCrosshairDiv!.style.marginLeft = `${
-          mouse.x * get().hudDiameterPx
+          mouseControlNormalVec2.x * get().hudRadiusPx
         }px`;
         get().playerHudCrosshairDiv!.style.marginTop = `${
-          mouse.y * get().hudDiameterPx
+          mouseControlNormalVec2.y * get().hudRadiusPx
         }px`;
       }
     },
@@ -224,13 +225,12 @@ const useHudTargtingGalaxyMapStore = create<hudTargetingGalaxyMapStoreState>()(
       // if x, y is outside HUD circle, adjust x, y to be on egde of HUD circle
       // also always set x, y on edge if angle is greater than 90 degrees
       if (
-        Math.sqrt(pxNorm * pxNorm + pyNorm * pyNorm) >
-          get().hudDiameterPx / 2 ||
+        Math.sqrt(pxNorm * pxNorm + pyNorm * pyNorm) > get().hudRadiusPx ||
         targetBehindCamera
       ) {
         const atan2Angle = Math.atan2(pyNorm, pxNorm);
-        pxNorm = (Math.cos(atan2Angle) * get().hudDiameterPx) / 2;
-        pyNorm = (Math.sin(atan2Angle) * get().hudDiameterPx) / 2;
+        pxNorm = Math.cos(atan2Angle) * get().hudRadiusPx;
+        pyNorm = Math.sin(atan2Angle) * get().hudRadiusPx;
       }
       // set position of target div
       const marginLeft = `${pxNorm - get().targetDiameterPx / 2}px`;

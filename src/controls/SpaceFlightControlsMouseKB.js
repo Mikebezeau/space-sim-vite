@@ -61,8 +61,7 @@ const ControlsMouseKBSpaceFlight = () => {
   useMouseRightClick(handleMouseRightClick);
 
   //mouse middle click
-  //function handleMouseWheelClick() {}
-  useMouseWheelClick(handleMouseRightClick); //handleMouseWheelClick);
+  useMouseWheelClick(handleMouseRightClick);
 
   //SPEED UP
   function handleArrowUp() {

@@ -40,7 +40,7 @@ export default function PlayerWalk() {
   useFrame(() => {
     if (!main.current) return null;
     const player = getPlayer();
-    const { mouse } = mutation;
+    const { mouseControlNormalVec2 } = mutation;
     //rotate ship based on mouse position
     //new rotation
     const MVmod =
@@ -54,8 +54,8 @@ export default function PlayerWalk() {
       playerControlMode === PLAYER.controls.combat ||
       playerControlMode === PLAYER.controls.scan
     ) {
-      mouseX = mouse.x;
-      //mouseY = mouse.y;
+      mouseX = mouseControlNormalVec2.x;
+      //mouseY = mouseControlNormalVec2.y;
     }
 
     endQuat.multiplyQuaternions(player.object3d.quaternion, rotateQuat); //why does removing this line cause fuckup

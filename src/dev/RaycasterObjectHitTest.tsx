@@ -24,7 +24,7 @@ const RaycasterObjectHitTest = () => {
     const width = gl.domElement.clientWidth;
     const height = gl.domElement.clientHeight;
 
-    const mouse = new THREE.Vector2(
+    const mouseVec2 = new THREE.Vector2(
       (clientX / width) * 2 - 1,
       -(clientY / height) * 2 + 1
     );
@@ -35,7 +35,7 @@ const RaycasterObjectHitTest = () => {
     );
     */
     const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera);
+    raycaster.setFromCamera(mouseVec2, camera);
     raycaster.params.Points.threshold = 0.01;
     raycaster.near = 0.1;
     raycaster.far = 10000;
