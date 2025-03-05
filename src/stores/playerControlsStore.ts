@@ -260,8 +260,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           angleNorm || useStore.getState().mutation.mouseControlNormalVec2;
         const lerpSpeed = 0.2; // isInitializeNoLerp ? 1 : 0.2; //view lerp speed
 
-        const targetRotationX = -mouseControlNormalVec2.x;
-        const targetRotationY = mouseControlNormalVec2.y;
+        const targetRotationX = -mouseControlNormalVec2.x / 2; // TODO
+        const targetRotationY = mouseControlNormalVec2.y / 2;
 
         // TODO is * deltaFPS right adjustment?
         get().flightCameraLookRotation.rotateX = lerp(
@@ -284,8 +284,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         // rotate player ship based on mouseControlNormalVec2 position / controls
         if (get().isPlayerPilotControl()) {
           // MVmod is a modifier for rotation speed based on ship maneuverability
-          // TODO add lerp/slerp rotation vector to store for smooth rotation
-          const MVmult = Math.PI / 12;
+          const MVmult = Math.PI / 24;
           //10 / (player.mechBP.MV() < 0.1 ? 0.1 : player.mechBP.MV());
           const adjustedManuverability = MVmult * deltaFPS;
           rotateShipQuat
@@ -368,7 +367,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           Math.PI / 2
         );
         camera.quaternion.multiply(adjustCameraViewQuat).normalize();
-        // TODO testing weapon fire
+
+        // TODO weapon fire testing
+        // set weapon fire aim based on camera rotation
         adjustCameraViewQuat.setFromAxisAngle(
           {
             // the sign for x is reversed for camera adjustment because camera angle is always reversed

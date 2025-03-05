@@ -6,6 +6,7 @@ import {
   ActionModeControlGroup,
   ControlIconsRowBottom,
 } from "./CockpitControls";
+import { lerp } from "../util/gameUtil";
 import { FPS, IS_MOBILE, PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
 
@@ -41,14 +42,9 @@ const Cockpit = () => {
         usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
         PLAYER.action.manualControl;
 
-      // move the cockpit down if isManualControl, back up if not
-      zoomOffsetY.current = isManualControl
-        ? zoomOffsetY.current < 20
-          ? zoomOffsetY.current + 20 / FPS / 0.5
-          : 20
-        : zoomOffsetY.current > 0
-        ? zoomOffsetY.current - 20 / FPS / 0.5
-        : 0;
+      // move the cockpit down out of the way if isManualControl, back up if not
+      const lerpToY = isManualControl ? 20 : 0;
+      zoomOffsetY.current = lerp(zoomOffsetY.current, lerpToY, 0.15);
 
       const translateX = flightCameraLookRotation.rotateX * 60;
       const translateY =
