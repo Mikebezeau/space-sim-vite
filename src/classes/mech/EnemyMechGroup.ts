@@ -33,7 +33,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
   id: string;
   numEnemies: number;
   tacticOrder: number;
-  enemyGroupWorldPosition: THREE.Vector3;
+  enemyGroupLocalZonePosition: THREE.Vector3;
   enemyMechs: EnemyMechBoid[] = [];
   instancedMeshRefs: THREE.InstancedMesh[] = [];
   boidController: BoidController | null;
@@ -43,7 +43,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
     this.numEnemies = numEnemies;
     this.tacticOrder = 0; //0 = follow leader, 1 = attack player
     // enemy group world position
-    this.enemyGroupWorldPosition = new THREE.Vector3();
+    this.enemyGroupLocalZonePosition = new THREE.Vector3();
     // generate enemy mechs objects
     this.genBoidEnemies();
     // set enemy positions

@@ -122,7 +122,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
     white: new Color(0xffffff),
     yellow: new Color(0xffff00),
   },
-  // particle effecs - static positioned at playerLocalOffsetPosition
+  // particle effecs - static positioned at playerLocalZonePosition
   particleController: new ParticleController({
     particleSpriteTex: starSpriteTex,
     particleSpriteTex1: smokeTexture,

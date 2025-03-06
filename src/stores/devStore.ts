@@ -198,7 +198,8 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   summonEnemy() {
     const playerVec3: THREE.Vector3 =
       useStore.getState().player.object3d.position;
-    useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition = playerVec3;
+    useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition =
+      playerVec3;
   },
 
   // NOTE: these are old and not used mostly
@@ -279,7 +280,9 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           y: player.object3d.position.y,
           z: player.object3d.position.z,
         };
-        useStore.getState().setPlayerWorldPosition(targetWarpPosition);
+        useStore
+          .getState()
+          .setPlayerWorldAndLocalZonePosition(targetWarpPosition);
       }
     },
     warpToPlanet() {
@@ -297,7 +300,9 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           y: player.object3d.position.y,
           z: player.object3d.position.z,
         };
-        useStore.getState().setPlayerWorldPosition(targetWarpPosition);
+        useStore
+          .getState()
+          .setPlayerWorldAndLocalZonePosition(targetWarpPosition);
       }
     },
   },

@@ -1,11 +1,9 @@
 import React, { memo, useEffect, useRef } from "react";
-import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
 import useStore from "../../../stores/store";
 import usePlayerControlsStore from "../../../stores/playerControlsStore";
 import PlayerParticleEffects from "./PlayerParticleEffects";
 import { setVisible } from "../../../util/gameUtil";
-import { COMPONENT_RENDER_ORDER, PLAYER } from "../../../constants/constants";
+import { PLAYER } from "../../../constants/constants";
 
 const PlayerMech = () => {
   useStore.getState().updateRenderInfo("PlayerMech");

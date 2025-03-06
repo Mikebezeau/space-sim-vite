@@ -249,7 +249,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
             // move player ship toward target position
             player.object3d.translateZ(get().playerWarpSpeed);
           }
-          // playerPositionUpdated: function to update relative world position
+          // update player local zone position
           useStore.getState().playerPositionUpdated();
         }
       },
@@ -317,7 +317,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           player.speed * deltaFPS * (devPlayerSpeedX1000 ? 1000 : 1);
         // move player ship forward / backward
         player.object3d.translateZ(adjustedSpeed);
-        // playerPositionUpdated: function to update relative world position
+        // update player local zone position
         useStore.getState().playerPositionUpdated();
       },
 

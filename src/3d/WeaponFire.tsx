@@ -17,17 +17,26 @@ const WeaponFire = () => {
 
   const { scene } = useThree();
   const ray = new THREE.Ray();
-  const arrowHelper = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
 
+  // for testing ray position and direction
+  const testArrowHelper = false; // can impliment this in testing GUI
+  const arrowHelper = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
   useEffect(() => {
-    // TODO impliment this properly - only when a battle is starting
+    if (testArrowHelper) scene.add(arrowHelper.current);
+    return () => {
+      scene.remove(arrowHelper.current);
+    };
+  }, [testArrowHelper]);
+
+  /*
+  useEffect(() => {
     useStore
       .getState()
-      .setPlayerWorldPosition(
-        useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition
+      .shiftPlayerLocalZoneToNewPosition(
+        useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
       );
-  }, []); // each time a battle starts update player position
-
+  }, []);
+*/
   const dummyRaycaster = new THREE.Raycaster();
   dummyRaycaster.params.Points.threshold = 0.01;
   dummyRaycaster.near = 0.1;
@@ -35,24 +44,40 @@ const WeaponFire = () => {
   // these object refrences do not change during the battle
   const objectsToTest = [
     //player.object3d,
-    ...enemyGroup.enemyMechs.map(
-      (
-        enemy: Mech // TODO change map to filter - do not check exploding or dead mechs
-      ) => (enemy.useInstancedMesh ? null : enemy.object3d)
+    ...enemyGroup.enemyMechs.map((enemy: Mech) =>
+      enemy.useInstancedMesh ? null : enemy.object3d
     ),
     // instanceed meshes
     ...instancedMeshRefs.map((instancedMesh) => instancedMesh),
   ];
 
-  useEffect(() => {
-    //scene.add(arrowHelper.current);
-    return () => {
-      //  scene.remove(arrowHelper.current);
-    };
-  }, []);
-
   useFrame((_, delta) => {
     const deltaFPS = delta * FPS;
+    // testing on the fly zone check / zone synch
+    if (
+      !useStore
+        .getState()
+        .playerLocalZonePosition.equals(
+          useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
+        )
+    ) {
+      if (
+        useStore
+          .getState()
+          .playerLocalZonePosition.distanceTo(
+            useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
+          ) < 50000
+      ) {
+        console.log("WeaponFire Battle: zone synch");
+        useStore
+          .getState()
+          .shiftPlayerLocalZoneToNewPosition(
+            useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
+          );
+      }
+    }
+
+    // hit test
     useWeaponFireStore.getState().updateWeaponFireUseFrame(deltaFPS);
     const weaponFireList = useWeaponFireStore.getState().weaponFireList;
 
@@ -71,7 +96,7 @@ const WeaponFire = () => {
         )
         .normalize();
 
-      if (i === weaponFireList.length - 1) {
+      if (testArrowHelper && i === weaponFireList.length - 1) {
         arrowHelper.current.position.copy(ray.origin);
         arrowHelper.current.setDirection(ray.direction);
         arrowHelper.current.setLength(weaponFire.weaponFireSpeed / 10);
@@ -84,6 +109,7 @@ const WeaponFire = () => {
       );
 
       if (intersects.length > 0) {
+        // TODO check more then 1 intersect until find a non exploding / dead mech
         const intersectedObject = intersects[0].object;
         if (!intersectedObject) return;
 

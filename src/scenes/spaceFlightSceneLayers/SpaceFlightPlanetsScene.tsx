@@ -19,14 +19,14 @@ const SpaceFlightPlanetsScene = () => {
 
   const { camera } = useThree();
 
-  const playerLocalOffsetPosition = useStore(
-    (state) => state.playerLocalOffsetPosition
+  const playerLocalZonePosition = useStore(
+    (state) => state.playerLocalZonePosition
   );
   const updatePlayerMechAndCamera = usePlayerControlsStore(
     (state) => state.updateFrame.updatePlayerMechAndCamera
   );
   const enemyWorldPosition = useEnemyStore(
-    (state) => state.enemyGroup.enemyGroupWorldPosition
+    (state) => state.enemyGroup.enemyGroupLocalZonePosition
   );
 
   const relativePlayerGroupRef = useRef<Group | null>(null);
@@ -36,22 +36,22 @@ const SpaceFlightPlanetsScene = () => {
 
   useFrame((_, delta) => {
     // must call updatePlayerMechAndCamera before
-    // adjustments with playerLocalOffsetPosition position
+    // adjustments with playerLocalZonePosition position
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     updatePlayerMechAndCamera(delta, camera);
 
     if (relativePlayerGroupRef.current) {
       relativePlayerGroupRef.current.position.set(
-        -playerLocalOffsetPosition.x,
-        -playerLocalOffsetPosition.y,
-        -playerLocalOffsetPosition.z
+        -playerLocalZonePosition.x,
+        -playerLocalZonePosition.y,
+        -playerLocalZonePosition.z
       );
     }
     if (enemyRelativePlayerGroupRef.current) {
       enemyRelativePlayerGroupRef.current.position.set(
-        enemyWorldPosition.x - playerLocalOffsetPosition.x,
-        enemyWorldPosition.y - playerLocalOffsetPosition.y,
-        enemyWorldPosition.z - playerLocalOffsetPosition.z
+        enemyWorldPosition.x - playerLocalZonePosition.x,
+        enemyWorldPosition.y - playerLocalZonePosition.y,
+        enemyWorldPosition.z - playerLocalZonePosition.z
       );
     }
   }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order - positions are updated first

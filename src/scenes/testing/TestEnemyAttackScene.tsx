@@ -32,8 +32,8 @@ const TestEnemyAttackScene = () => {
 
   const controllerOptions = { changeScreenTest: false, resetEnemies: false };
 
-  useStore.getState().playerLocalOffsetPosition.set(0, 0, 0);
-  useEnemyStore.getState().enemyGroup.enemyGroupWorldPosition.set(0, 0, 0);
+  useStore.getState().playerLocalZonePosition.set(0, 0, 0);
+  useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition.set(0, 0, 0);
 
   const { scene } = useThree();
 

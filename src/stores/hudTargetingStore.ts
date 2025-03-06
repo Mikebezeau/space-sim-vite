@@ -1,13 +1,13 @@
 import { create } from "zustand";
-import * as THREE from "three";
 import { Vector3 } from "three";
 import useStore from "./store";
+import useEnemyStore from "./enemyStore";
+import useGalaxyMapStore from "./galaxyMapStore";
 import { distance } from "../util/gameUtil";
 import {
   getScreenPosition,
   getScreenPositionFromDirection,
 } from "../util/cameraUtil";
-import useGalaxyMapStore from "./galaxyMapStore";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
@@ -23,6 +23,9 @@ export type htmlHudTargetType = {
   color: string;
   divElement?: HTMLDivElement;
 };
+
+// reusable objects
+const dummyVec3 = new Vector3();
 
 interface hudTargetingGalaxyMapStoreState {
   // CSS HUD targets
@@ -75,9 +78,6 @@ interface hudTargetingGalaxyMapStoreState {
   };
 }
 
-// reusable objects
-const dummyVec3 = new Vector3();
-
 const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
   (set, get) => ({
     // HUD Targeting CSS HUD
@@ -105,6 +105,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     },
     generateTargets: () => {
       const htmlHudTargets: htmlHudTargetType[] = [];
+      // planets
       if (useStore.getState().planets.length > 0) {
         const targetsPlanets: htmlHudTargetType[] = [];
         useStore.getState().planets.forEach((planet, index) => {
@@ -118,6 +119,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         });
         htmlHudTargets.push(...targetsPlanets);
       }
+      // stations
       if (useStore.getState().stations.length > 0) {
         const targetsStations: htmlHudTargetType[] = [];
         useStore.getState().stations.forEach((station, index) => {
@@ -130,6 +132,15 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         });
         htmlHudTargets.push(...targetsStations);
       }
+      // enemy groups
+      htmlHudTargets.push({
+        objectType: HTML_HUD_TARGET_TYPE.ENEMY,
+        objectIndex: 0,
+        label: "ENEMY",
+        color: "red",
+      });
+
+      // warp to star
       htmlHudTargets.push({
         objectType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
         objectIndex: null,
@@ -174,21 +185,34 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         switch (htmlHudTarget.objectType) {
           case HTML_HUD_TARGET_TYPE.PLANET:
           case HTML_HUD_TARGET_TYPE.STATION:
-            // set dummyVec3 to planet world space position
             const targetArray =
               htmlHudTarget.objectType === HTML_HUD_TARGET_TYPE.PLANET
                 ? useStore.getState().planets
                 : useStore.getState().stations;
             const targetObject3d =
               targetArray[htmlHudTarget.objectIndex!].object3d;
-            // set dummyVec3 to target world position (required due to relative positioning to player)
-            targetObject3d.getWorldPosition(dummyVec3);
-            // get distance to object relative to playerLocalSpacePosition
-            // TODO change to Au distance measurement
+            // get distance to object relative to playerRealWorldPosition
+            // change to Au distance measurement? 1 Au = 150 million Km
             distanceToTarget = distance(
-              useStore.getState().playerLocalSpacePosition,
+              useStore.getState().playerRealWorldPosition,
               targetObject3d.position
             ).toFixed(0);
+            // get screen position of target
+            // set dummyVec3 to target world position (required due to relative positioning to player)
+            targetObject3d.getWorldPosition(dummyVec3);
+            screenPosition = getScreenPosition(camera, dummyVec3);
+            break;
+
+          case HTML_HUD_TARGET_TYPE.ENEMY:
+            // still working on multiple enemy groups
+            distanceToTarget = distance(
+              useStore.getState().playerRealWorldPosition,
+              useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
+            ).toFixed(0);
+            // set dummyVec3 to target world position (required due to relative positioning to player)
+            useEnemyStore
+              .getState()
+              .enemyGroup.enemyMechs[0].object3d.getWorldPosition(dummyVec3);
             // get screen position of target
             screenPosition = getScreenPosition(camera, dummyVec3);
             break;
@@ -264,13 +288,13 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         set({ scanningPlanetId: planetIndex });
         set({ scanPlanetProgress: 0 });
       }
-      const playerLocalSpacePosition =
-        useStore.getState().playerLocalSpacePosition;
+      const playerRealWorldPosition =
+        useStore.getState().playerRealWorldPosition;
       const planet = useStore.getState().planets[planetIndex];
       if (planet) {
         // warp to planet distance is planet.radius * 2
         const isScanDistanceToPlanet =
-          planet.object3d.position.distanceTo(playerLocalSpacePosition) <
+          planet.object3d.position.distanceTo(playerRealWorldPosition) <
           planet.radius * 3;
         if (isScanDistanceToPlanet !== get().isScanDistanceToPlanet) {
           set({ isScanDistanceToPlanet });

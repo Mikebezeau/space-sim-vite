@@ -65,14 +65,18 @@ interface storeState {
   player: PlayerMech;
   playerPropUpdate: boolean; // used to re-render player prop based menu components
   togglePlayerPropUpdate: () => void;
+  //
+  playerRealWorldPosition: THREE.Vector3;
   // used to shift positions over large distances to a local space
-  playerLocalSpacePosition: THREE.Vector3;
   // maximum local distances should be less than 65500 units for float accuracy
-  playerLocalOffsetPosition: THREE.Vector3;
-  setPlayerWorldPosition: (
+  playerLocalZonePosition: THREE.Vector3;
+  setPlayerWorldAndLocalZonePosition: (
     newPosition: THREE.Vector3 | { x: number; y: number; z: number }
   ) => void;
-  playerPositionUpdated: () => { x: number; y: number; z: number };
+  shiftPlayerLocalZoneToNewPosition: (
+    newPosition: THREE.Vector3 | { x: number; y: number; z: number }
+  ) => void;
+  playerPositionUpdated: () => void;
 
   solarSystem: SolarSystem;
   stars: Star[];
@@ -183,51 +187,53 @@ const useStore = create<storeState>()((set, get) => ({
       playerPropUpdate: !get().playerPropUpdate,
     });
   },
-  playerLocalSpacePosition: new THREE.Vector3(),
-  playerLocalOffsetPosition: new THREE.Vector3(),
-  setPlayerWorldPosition: (worldPosition) => {
-    // local space position (always keep within 65000 of (0,0,0))
+  // playerRealWorldPosition currently only used in hudTargetingStore to get distances to targets
+  playerRealWorldPosition: new THREE.Vector3(),
+  playerLocalZonePosition: new THREE.Vector3(),
+  setPlayerWorldAndLocalZonePosition: (newPosition) => {
+    // playerRealWorldPosition
+    // the real world position of the player in the solar system
+    get().playerRealWorldPosition.copy(newPosition);
+    // playerLocalZonePosition
+    // - is location of main particle system
+    // - for placing other objects relative to player object3d
+    // - this reduces length of position floats to avoid innacuracy / jitters
+    get().playerLocalZonePosition.copy(newPosition);
+    // re-center player position in local zone
     get().player.object3d.position.set(0, 0, 0);
-    // player world space offset position for placing other objects relative to player object3d
-    get().playerLocalOffsetPosition.set(
-      worldPosition.x,
-      worldPosition.y,
-      worldPosition.z
-    );
-    get().playerLocalSpacePosition.copy(get().playerLocalOffsetPosition);
   },
+  // shift playerLocalZonePosition to new position
+  // without changing player position
+  // used when a battle starts, local zone is set to enemy group position
+  shiftPlayerLocalZoneToNewPosition: (newPosition) => {
+    const shiftLocalZoneDelta = dummyVec3;
+    shiftLocalZoneDelta.copy(get().playerLocalZonePosition).sub(newPosition);
+    // reset player and local zone positions
+    get().player.object3d.position.add(shiftLocalZoneDelta);
+    get().playerLocalZonePosition.copy(newPosition);
+    // playerRealWorldPosition does not change
+    // but update playerRealWorldPosition to avoid any inconsistency
+    get()
+      .playerRealWorldPosition.copy(get().playerLocalZonePosition)
+      .add(get().player.object3d.position);
+  },
+  // call this whenever the player's position changes
   playerPositionUpdated: () => {
-    // if playerLocalOffsetPosition changes return the difference
-    // if player.object3d.position grows to far from (0,0,0)
+    const updatedPlayerWorldPosition = dummyVec3
+      .copy(get().playerLocalZonePosition)
+      .add(get().player.object3d.position);
+
+    // moving the playerLocalZonePosition when player position
+    // grows to far from the center of the zone
     if (
-      Math.abs(get().player.object3d.position.x) > 25000 ||
-      Math.abs(get().player.object3d.position.y) > 25000 ||
-      Math.abs(get().player.object3d.position.z) > 25000
+      Math.abs(get().player.object3d.position.x) > 50000 ||
+      Math.abs(get().player.object3d.position.y) > 50000 ||
+      Math.abs(get().player.object3d.position.z) > 50000
     ) {
-      dummyVec3.copy(get().player.object3d.position);
-      const offsetPositionDelta = {
-        x: dummyVec3.x,
-        y: dummyVec3.y,
-        z: dummyVec3.z,
-      };
-      // playerLocalOffsetPosition for placing other objects relative to player object3d
-      get().playerLocalOffsetPosition.set(
-        get().playerLocalOffsetPosition.x + get().player.object3d.position.x,
-        get().playerLocalOffsetPosition.y + get().player.object3d.position.y,
-        get().playerLocalOffsetPosition.z + get().player.object3d.position.z
-      );
-      // playerLocalSpacePosition is player position in the local space cube
-      get().playerLocalSpacePosition.copy(get().playerLocalOffsetPosition);
-      get().player.object3d.position.set(0, 0, 0);
-      return offsetPositionDelta;
+      get().setPlayerWorldAndLocalZonePosition(updatedPlayerWorldPosition);
     } else {
-      // update player position in local player space
-      get().playerLocalSpacePosition.set(
-        get().playerLocalOffsetPosition.x + get().player.object3d.position.x,
-        get().playerLocalOffsetPosition.y + get().player.object3d.position.y,
-        get().playerLocalOffsetPosition.z + get().player.object3d.position.z
-      );
-      return { x: 0, y: 0, z: 0 };
+      // update playerRealWorldPosition to reflect player object3d position changes
+      get().playerRealWorldPosition.copy(updatedPlayerWorldPosition);
     }
   },
 
@@ -347,15 +353,16 @@ const useStore = create<storeState>()((set, get) => ({
         );
       }
 
-      // setting new local position for player
-      get().setPlayerWorldPosition(startPosition);
+      // setting new local zone position for player
+      // the player local zone is used to shift positions over large distances to a local space
+      get().setPlayerWorldAndLocalZonePosition(startPosition);
       // set player looking direction
       get().player.object3d.lookAt(startPosCelestialBody.object3d.position);
 
       // setting enemy world position near player world position
       useEnemyStore
         .getState()
-        .enemyGroup.enemyGroupWorldPosition.copy(enemyGroupStartPosition);
+        .enemyGroup.enemyGroupLocalZonePosition.copy(enemyGroupStartPosition);
 
       // set position of space station near a planet
       const station = get().stations[0];

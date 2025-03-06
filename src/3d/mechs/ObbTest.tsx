@@ -14,13 +14,13 @@ const ObbTest = forwardRef(function ObbTest(
 ) {
   // render tracking
   useStore.getState().updateRenderInfo("ObbTest");
-  const playerLocalOffsetPosition = useStore(
-    (state) => state.playerLocalOffsetPosition
+  const playerLocalZonePosition = useStore(
+    (state) => state.playerLocalZonePosition
   );
 
   const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
   const enemyWorldPosition = useEnemyStore(
-    (state) => state.enemyGroup.enemyGroupWorldPosition
+    (state) => state.enemyGroup.enemyGroupLocalZonePosition
   );
   const addExplosion = useParticleStore((state) => state.effects.addExplosion);
   // V to trigger rerender of obb test boxes after mech objects are updated
@@ -107,15 +107,15 @@ const ObbTest = forwardRef(function ObbTest(
           tempEnemyWorldPosition.set(
             enemies[i].object3d.position.x +
               enemyWorldPosition.x -
-              playerLocalOffsetPosition.x,
+              playerLocalZonePosition.x,
 
             enemies[i].object3d.position.y +
               enemyWorldPosition.y -
-              playerLocalOffsetPosition.y,
+              playerLocalZonePosition.y,
 
             enemies[i].object3d.position.z +
               enemyWorldPosition.z -
-              playerLocalOffsetPosition.z
+              playerLocalZonePosition.z
           );
 
           enemies[i].object3d.position;

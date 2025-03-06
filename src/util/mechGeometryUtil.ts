@@ -4,15 +4,6 @@ import { SimplifyModifier } from "three/addons/modifiers/SimplifyModifier.js";
 // TessellateModifier for adding more vertices to geometry
 import { TessellateModifier } from "three/addons/modifiers/TessellateModifier.js";
 
-// TODO this is playermech
-export const setVisible = (obj, isVisible) => {
-  obj.traverse((child) => {
-    if (child.isMesh) {
-      child.visible = isVisible;
-    }
-  });
-};
-
 const simplifyModifier = new SimplifyModifier();
 
 export const getSimplifiedGeometry = (
