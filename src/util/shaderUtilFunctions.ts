@@ -1,5 +1,4 @@
-// TODO move this
-export const wlslTexture = {
+export const shaderUtilFunctions = {
   get3dCoords: `
 
 const float PI = 3.141592653589793;

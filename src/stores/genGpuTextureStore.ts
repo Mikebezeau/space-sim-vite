@@ -5,7 +5,7 @@ import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
 } from "../constants/solarSystemConstants";
-import { wlslTexture } from "./wlslTexture";
+import { shaderUtilFunctions } from "../util/shaderUtilFunctions";
 import cloudsLargeShaderGPU from "../3d/solarSystem/shaders/cloudsLargeShaderGPU";
 import { IS_MOBILE } from "../constants/constants";
 
@@ -28,9 +28,9 @@ uniform int u_isWarp;
 
 ${cloudsLargeShaderGPU.fragHead}
 
-${wlslTexture.get3dCoords}
+${shaderUtilFunctions.get3dCoords}
 
-${wlslTexture.cnoise}
+${shaderUtilFunctions.cnoise}
 
 float fractalNoise(vec3 p, int isDoubleNoise, int isRigid, float frequency, float octaves, float amplitude, float persistence, float lacunarity) {
 
