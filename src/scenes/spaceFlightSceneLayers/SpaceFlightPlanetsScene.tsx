@@ -54,6 +54,7 @@ const SpaceFlightPlanetsScene = () => {
         enemyWorldPosition.z - playerLocalZonePosition.z
       );
     }
+    // updatePlayerMechAndCamera updates the player position
   }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order - positions are updated first
 
   return (
@@ -65,10 +66,14 @@ const SpaceFlightPlanetsScene = () => {
       <Particles />
 
       <group ref={relativePlayerGroupRef}>
-        <pointLight intensity={1} decay={0} />
+        <pointLight // light from star
+          intensity={1}
+          decay={0}
+        />
         <Stations />
         <SolarSystem />
       </group>
+
       <group ref={enemyRelativePlayerGroupRef}>
         <EnemyMechs />
         <ObbTest ref={obbBoxRefs} />
