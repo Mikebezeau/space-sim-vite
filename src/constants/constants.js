@@ -3,7 +3,7 @@ export const FPS = 60;
 export const COMPONENT_RENDER_ORDER = {
   // lowest is first, 0 is default
   // NOTE: if using value above 0, must call render manually within useFrame hook
-  positionsUpdate: -2,
+  positionsUpdate: -1,
 };
 
 export const SCALE = 1;

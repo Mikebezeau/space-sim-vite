@@ -122,8 +122,7 @@ class Galaxy implements galaxyInt {
       );
       //const distance = Math.sqrt(x * x + y * y + z * z);
       // to show the nebula sprite particles instead of star for far away stars
-      this.starBackgroundDistanceSelectedBuffer.array[i] = 0;
-      //distance > 40 ? 1 : 0;// not using this for now - TODO fix up stars shader
+      this.starBackgroundDistanceSelectedBuffer.array[i] = 0; //distance > 40 ? 1 : 0;// not using this for now - TODO fix up stars shader
       this.starBackgroundCoordsBuffer.array[i * 3 + 0] = x;
       this.starBackgroundCoordsBuffer.array[i * 3 + 1] = y;
       this.starBackgroundCoordsBuffer.array[i * 3 + 2] = z;

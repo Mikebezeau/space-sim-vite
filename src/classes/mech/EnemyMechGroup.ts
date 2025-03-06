@@ -122,8 +122,9 @@ class EnemyMechGroup implements enemyMechGroupInt {
     mechBpId: string,
     instancedMesh: THREE.InstancedMesh | null
   ) {
-    if (instancedMesh === null) return; // TODO remove from array - will have to use ids
+    if (instancedMesh === null) return;
     // identify mesh by mechBpId
+    // TODO will need to include enemy group id if multiple enemy groups with same mechBpId
     instancedMesh.userData.mechBpId = mechBpId;
     // remove from array if instancedMesh=>instancedMesh.userData.mechBpId exists
     const existingMesh = this.instancedMeshRefs.find(
@@ -161,7 +162,11 @@ class EnemyMechGroup implements enemyMechGroupInt {
     instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
     instancedMesh.geometry.attributes.isDead.needsUpdate = true;
     // call explode on Mech object
-    this.getInstancedMeshEnemies(mechBpId)[instanceId].explode(scene);
+    const explodeEnemy = this.getInstancedMeshEnemies(mechBpId)[instanceId];
+    if (explodeEnemy.getIsLeader()) {
+      console.log("Enemy leader exploded");
+    }
+    explodeEnemy.explode(scene);
   }
 
   updateLeaderColor(instancedMesh: THREE.InstancedMesh) {
