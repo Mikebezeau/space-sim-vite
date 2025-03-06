@@ -69,7 +69,7 @@ const NewCampaignScene = () => {
       player.object3d.rotateZ((Math.PI * delta) / 100);
       camera.translateZ(-delta * 10);
     }
-  }, COMPONENT_RENDER_ORDER.postPositionsUpdate); // do this camera adjustment before StarsBackgroundScene
+  }, COMPONENT_RENDER_ORDER.positionsUpdate); // do this camera adjustment before StarsBackgroundScene
 
   return (
     <>

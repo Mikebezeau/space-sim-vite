@@ -20,7 +20,6 @@ const StarPoints = forwardRef(function StarPoints(
   const galaxy = useStore((state) => state.galaxy);
   const isGalaxyInit = useStore((state) => state.isGalaxyInit);
 
-  // TODO to be moved into class
   const starPointsShaderMaterial = useStore(
     (state) => state.starPointsShaderMaterial
   );

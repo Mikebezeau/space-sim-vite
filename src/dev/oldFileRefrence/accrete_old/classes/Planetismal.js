@@ -297,7 +297,7 @@ export default class Planetismal {
   }
 
   /**
-   * TODO: The eccentricity is RELATIVE to the planets displacement from the star
+   * The eccentricity is RELATIVE to the planets displacement from the star
    *  ((majorAxis + this.e) - majorAxis + this.e)
    *
    * @param      {StarSystem}        system        The star system containing this planetismal

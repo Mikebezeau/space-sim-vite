@@ -164,7 +164,7 @@ const WeaponFire = () => {
         }
       }
     });
-  }); // TODO should be done before particle rendering
+  });
 
   return null;
 };

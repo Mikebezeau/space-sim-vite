@@ -30,7 +30,7 @@ import featheredSpriteSrc from "../sprites/feathered60.png";
 const dummyVec3 = new THREE.Vector3();
 
 const getInitStarPointsShaderMaterial = () => {
-  // TODO draw circles in shader
+  // TODO draw circles in shader instead of using sprite
   const starSprite = new THREE.TextureLoader().load(starSpriteSrc);
   const nebulaSprite = new THREE.TextureLoader().load(featheredSpriteSrc);
 
@@ -269,8 +269,7 @@ const useStore = create<storeState>()((set, get) => ({
       () => 0.5 + Math.random() * 0.5
     ),
     */
-    // TODO shoot???
-    shoot: false,
+    shoot: false, // used to trigger player weapon fire
     mouseControlNormalVec2: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
     mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
   },

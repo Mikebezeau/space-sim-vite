@@ -128,7 +128,7 @@ const ObbTest = forwardRef(function ObbTest(
       // reset obbNeedsUpdate for next frame
       enemies[i].obbNeedsUpdate = true;
     }
-  }, COMPONENT_RENDER_ORDER.postPositionsUpdate); // useFrame order set to run after object positions update
+  });
 
   return (
     <>

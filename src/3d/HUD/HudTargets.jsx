@@ -7,7 +7,7 @@ import useHudTargtingStore from "../../stores/hudTargetingStore";
 import useEnemyStore from "../../stores/enemyStore";
 import { distance } from "../../util/gameUtil";
 import { getCameraAngleDiffToPosition } from "../../util/cameraUtil";
-import { COMPONENT_RENDER_ORDER, PLAYER } from "../../constants/constants";
+import { PLAYER } from "../../constants/constants";
 
 const worldPosition = new THREE.Vector3();
 const dummyObj = new THREE.Object3D(),
@@ -219,7 +219,7 @@ const HudTargets = () => {
         );
       }
     }
-  }, COMPONENT_RENDER_ORDER.postPositionsUpdate);
+  });
 
   return (
     <>

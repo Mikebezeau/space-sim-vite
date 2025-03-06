@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import useStore from "../stores/store";
-// TODO move galaxyGen function inside Galaxy class
 import galaxyGen from "../galaxy/galaxyGen";
 import { STARS_IN_GALAXY, GALAXY_SIZE } from "../constants/constants";
 
@@ -37,11 +36,7 @@ class Galaxy implements galaxyInt {
   constructor(
     rngSeed: string = "123456",
     numStars: number = STARS_IN_GALAXY,
-    galaxySize: number = GALAXY_SIZE
-    //galaxyScale?: number, onlyCore?: boolean, onlyArms?: boolean
-    // TODO if galaxyScale used, need to adjust
-    // distance dimming in starPointsShader (mvPosition.z * 0.06)
-    // and also distance checking in setBackgroundStarsPosition if implimented
+    galaxySize: number = GALAXY_SIZE // might not be effecting anything
   ) {
     this.rngSeed = rngSeed;
     this.numStars = numStars;
@@ -66,6 +61,8 @@ class Galaxy implements galaxyInt {
     );
   }
 
+  // keeping this as an asynchronous function not called in constructor
+  // called in store.initGameStore()
   async initStars() {
     const componentName = "initStars";
     useStore.getState().updateRenderInfo(componentName);

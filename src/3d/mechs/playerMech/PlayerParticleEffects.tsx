@@ -5,8 +5,7 @@ import useStore from "../../../stores/store";
 import usePlayerControlsStore from "../../../stores/playerControlsStore";
 import useParticleStore from "../../../stores/particleStore";
 import Particles from "../../Particles";
-import { COMPONENT_RENDER_ORDER, FPS } from "../../../constants/constants";
-import { setCustomData } from "r3f-perf";
+import { FPS } from "../../../constants/constants";
 
 const PlayerParticleEffects = () => {
   useStore.getState().updateRenderInfo("PlayerParticleEffects");
@@ -78,7 +77,7 @@ const PlayerParticleEffects = () => {
     );
 
     playerParticleSystem.position.copy(player.object3d.position);
-  }, COMPONENT_RENDER_ORDER.postPositionsUpdate);
+  });
 
   return <Particles isPlayerParticles />;
 };

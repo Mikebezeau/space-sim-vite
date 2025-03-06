@@ -38,7 +38,7 @@ const useGalaxyMapStore = create<galaxyMapStoreState>()((set, get) => ({
     setShowInfoTargetStarIndex(showInfoTargetStarIndex) {
       set(() => ({ showInfoTargetStarIndex }));
     },
-    // TODO setSelectedPanetIndex not used, plan to use for detailed planet data in Galaxy Map
+    // TODO showInfoPlanetIndex not used, plan to use for detailed planet data in Galaxy Map
     setShowInfoPanetIndex(planetIndex) {
       set(() => ({ showInfoPlanetIndex: planetIndex }));
     },

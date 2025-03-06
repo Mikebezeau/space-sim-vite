@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { extend, useThree, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 // EffectComposer loading 1 texture per time GalaxyMap loaded
-// TODO investigate why this is happening - move to AppCanvasScene if necessary
+// move EffectComposerto AppCanvasScene if necessary
 //import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import useStore from "../stores/store";

@@ -156,7 +156,7 @@ export const dayLength = (planet) => {
       ((1.0 - planet.e) / (1.0 + planet.e)) * 24.0 * planet.orbitalPeriod;
     if (planet.e > 0.1) return spin_resonance_period;
   }
-  return planet.orbitalPeriod / 24.0; // added the / 24.0 TODO: why
+  return planet.orbitalPeriod / 24.0; // added the / 24.0
 };
 
 /*--------------------------------------------------------------------------*/
@@ -554,7 +554,7 @@ export const gas_life = (molecular_weight, planet) => {
     Math.exp((3.0 * g * r) / Math.pow(v, 2));
   const years = t / (C.SECONDS_PER_HOUR * 24.0 * C.DAYS_IN_A_YEAR);
 
-  // THE CODE BELOW WAS COMMENTED OUT IN STAR GEN (TODO: investigate)
+  // THE CODE BELOW WAS COMMENTED OUT IN STAR GEN (investigate)
   //	ve = planet.esc_velocity;
   //	k = 2;
   //	t2 = ((k * pow3(v) * r) / pow4(ve)) * exp((3.0 * pow2(ve)) / (2.0 * pow2(v)));

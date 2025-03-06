@@ -29,7 +29,7 @@ export const starTypeGen = (starIndex) => {
 
 const galaxyGen = async (
   starsInGalaxy = 1000,
-  galaxySize = 40, // not effecting anything
+  galaxySize = 40,
   galaxyScale = 10,
   onlyCore = false,
   onlyArms = false
