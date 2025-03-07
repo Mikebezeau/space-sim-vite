@@ -434,14 +434,14 @@ const useStore = create<storeState>()((set, get) => ({
         const x = event.changedTouches[0].clientX - bounds.left;
         const y = event.changedTouches[0].clientY - bounds.top;
         const radius = bounds.width / 2;
-        let setX = Math.min(1, Math.max(-1, (x - radius) / bounds.width));
-        let setY = Math.min(1, Math.max(-1, (y - radius) / bounds.width));
+        let setX = Math.min(1, Math.max(-1, (x - radius) / radius));
+        let setY = Math.min(1, Math.max(-1, (y - radius) / radius));
 
         // adjust x and y to be within circle
-        if (Math.sqrt(setX * setX + setY * setY) > 0.5) {
+        if (Math.sqrt(setX * setX + setY * setY) > 1) {
           const angle = Math.atan2(setY, setX);
-          setX = 0.5 * Math.cos(angle);
-          setY = 0.5 * Math.sin(angle);
+          setX = Math.cos(angle);
+          setY = Math.sin(angle);
         }
         get().mutation.mouseControlNormalVec2.set(setX, setY);
       }
