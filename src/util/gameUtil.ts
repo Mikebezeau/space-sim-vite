@@ -18,24 +18,24 @@ export const getSystemScaleDistanceLabel = (distance: number) => {
   return `${distanceAu.toFixed(5)} Au`;
 };
 
-export const getRandomInt = (max) => {
+export const getRandomInt = (max: number) => {
   return Math.floor(Math.random() * max);
 };
 
-export const getRandomArbitrary = (min, max) => {
+export const getRandomArbitrary = (min: number, max: number) => {
   return Math.random() * (max - min) + min;
 };
 
-export const roundTenth = (num) => {
+export const roundTenth = (num: number) => {
   return Math.round(num * 10) / 10;
 };
 
-export const roundhundredth = (num) => {
+export const roundhundredth = (num: number) => {
   return Math.round(num * 100) / 100;
 };
 
-export const setVisible = (obj, isVisible) => {
-  obj.traverse((child) => {
+export const setVisible = (obj: any, isVisible: boolean) => {
+  obj.traverse((child: any) => {
     if (child.isMesh) {
       child.visible = isVisible;
     }
