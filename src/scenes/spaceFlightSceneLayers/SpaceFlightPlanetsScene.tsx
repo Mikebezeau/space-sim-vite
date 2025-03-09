@@ -5,7 +5,6 @@ import SolarSystem from "../../3d/solarSystem/SolarSystem";
 import Stations from "../../3d/mechs/Stations";
 import PlayerMech from "../../3d/mechs/playerMech/PlayerMech";
 import WeaponFire from "../../3d/WeaponFire";
-import SpaceFlightHud from "../../3d/HUD/SpaceFlightHud";
 import Particles from "../../3d/Particles";
 import useStore from "../../stores/store";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
@@ -62,7 +61,6 @@ const SpaceFlightPlanetsScene = () => {
       <ambientLight intensity={0.2} />
       <PlayerMech />
       <WeaponFire />
-      <SpaceFlightHud />
       <Particles />
 
       <group ref={relativePlayerGroupRef}>

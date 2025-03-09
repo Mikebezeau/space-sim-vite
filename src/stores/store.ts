@@ -371,8 +371,6 @@ const useStore = create<storeState>()((set, get) => ({
         station.object3d.translateX(500);
       }
 
-      //clear targeting variables
-      useHudTargtingStore.getState().clearTargets();
       //clear selected warp star
       useGalaxyMapStore.getState().galaxyMapActions.setSelectedWarpStar(null);
 

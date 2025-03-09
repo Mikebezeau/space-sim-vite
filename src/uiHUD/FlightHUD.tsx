@@ -17,6 +17,8 @@ const FlightHud = () => {
   );
 
   const htmlHudTargets = useHudTargtingStore((state) => state.htmlHudTargets);
+  // update frame function below called within the playerControlsStore updatePlayerMechAndCamera
+  //useHudTargtingStore.getState().updateTargetHUD(camera);
 
   // if player is in new solar system, update targets
   useEffect(() => {
@@ -84,7 +86,7 @@ const FlightHud = () => {
         )}
       </div>
 
-      {htmlHudTargets.map((target) => (
+      {htmlHudTargets.map((target, targetIndex) => (
         <FlightHudTarget
           key={`${target.objectType}-${target.objectIndex}`}
           target={target}
@@ -94,4 +96,4 @@ const FlightHud = () => {
   );
 };
 
-export default FlightHud;
+export default React.memo(FlightHud);

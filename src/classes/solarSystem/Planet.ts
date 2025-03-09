@@ -12,7 +12,12 @@ import {
   PLANET_CLASS_TEXTURE_MAP,
   PLANET_TYPE_TEXTURE_MAP,
 } from "../../constants/solarSystemConstants";
-import { SYSTEM_SCALE, PLANET_SCALE } from "../../constants/constants";
+import {
+  AU,
+  EARTH_RADIUS_KM,
+  SYSTEM_SCALE,
+  PLANET_SCALE,
+} from "../../constants/constants";
 
 interface PlanetInt {
   setNewPlanetData(genPlanetData: typeGenPlanetData): void;
@@ -46,11 +51,10 @@ class Planet extends CelestialBody implements PlanetInt {
     const fixedRangeRandom = rng();
     this.earthRadii = getFromRange(fixedRangeRandom, planetType.size);
     this.earthMasses = getFromRange(fixedRangeRandom, planetType.mass);
-    const earthRadiusKm = 6378; //km
-    this.radius = this.earthRadii * earthRadiusKm * PLANET_SCALE;
+    this.radius = this.earthRadii * EARTH_RADIUS_KM * PLANET_SCALE;
 
     // position in prbit
-    const orbitRadius = distanceFromStar * 147000000 * SYSTEM_SCALE;
+    const orbitRadius = distanceFromStar * AU * SYSTEM_SCALE;
     const angle = Math.random() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
     const y = 0;

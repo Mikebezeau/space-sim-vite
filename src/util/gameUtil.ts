@@ -1,4 +1,5 @@
 import { Spherical, Vector3 } from "three";
+import { AU, SYSTEM_SCALE } from "../constants/constants";
 
 // A helper function to calculate the distance between two points
 // in 3d space without using Vector3 objects
@@ -10,6 +11,11 @@ export const distance = (
   const b = p2.y - p1.y;
   const c = p2.z - p1.z;
   return Math.sqrt(a * a + b * b + c * c);
+};
+
+export const getSystemScaleDistanceLabel = (distance: number) => {
+  const distanceAu = distance / SYSTEM_SCALE / AU;
+  return `${distanceAu.toFixed(5)} Au`;
 };
 
 export const getRandomInt = (max) => {

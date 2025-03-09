@@ -11,6 +11,8 @@ export const SCALE = 1;
 export const SCALE_PLANET_WALK = 1;
 export const SYSTEM_SCALE = 0.1;
 export const PLANET_SCALE = 1;
+export const AU = 149600000;
+export const EARTH_RADIUS_KM = 6378;
 
 export const STARS_IN_GALAXY = 150000;
 export const GALAXY_SIZE = 40;

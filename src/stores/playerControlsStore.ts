@@ -405,6 +405,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         }
         get().updateFrame.setPlayerFixedCameraPosition(camera);
         get().updateFrame.setPlayerCameraRotation(camera);
+        // updates for ui components that are not children of canvas (cannot access useFrame)
         useHudTargtingStore.getState().updateTargetHUD(camera);
         useHudTargtingStore.getState().updatePlayerHudCrosshairDiv();
       },
