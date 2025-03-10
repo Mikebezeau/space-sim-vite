@@ -37,7 +37,7 @@ class MechBP extends DataMechBP implements MechBPInt {
         this.color || "#ffffff",
         editPartId
       );
-      // TODO build weapons located on servo and add to servoGroup
+      // build weapons and add
       // do not scale weapons
       const servoWeapons = this.getServoWeapons();
       // add built weaponsGroup to servoGroup

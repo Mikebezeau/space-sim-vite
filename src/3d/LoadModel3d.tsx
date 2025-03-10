@@ -27,7 +27,7 @@ const LoadModel3d = (props: loadModel3dInt) => {
   useLoaderStore
     .getState()
     .loadModel3d(
-      groupRef,
+      groupRef.current,
       model3dSrc,
       scale,
       position,

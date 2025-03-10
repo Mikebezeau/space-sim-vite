@@ -40,39 +40,39 @@ interface loaderStoreState {
   gltfLoader: GLTFLoader;
 
   updateModel3dObject: (
-    object: any,
-    addToRef: any,
+    loadedObject: any,
+    addToObject3D: any,
     scale: number,
     position: { x: number; y: number; z: number },
     rotation: { x: number; y: number; z: number },
     onLoadUpdateMech: Mech | null
   ) => void;
   loadModel3d: (
-    addToRef: any,
+    addToObject3D: any,
     url: string,
     scale: number,
     position: { x: number; y: number; z: number },
     rotation: { x: number; y: number; z: number },
     onLoadUpdateMech: Mech | null
   ) => void;
-  loadModel: (url: string, callback: (object: any) => void) => void;
+  loadModel: (url: string, callback: (loadedObject: any) => void) => void;
 }
 
 const useLoaderStore = create<loaderStoreState>()((set, get) => ({
   gltfLoader: new GLTFLoader(),
 
   loadModel3d: (
-    addToRef: any,
+    addToObject3D: any,
     url: string,
     scale: number,
     position: { x: number; y: number; z: number },
     rotation: { x: number; y: number; z: number },
     onLoadUpdateMech: Mech | null
   ) => {
-    const model3dLoadCallback = (object: any) => {
+    const model3dLoadCallback = (loadedObject: any) => {
       get().updateModel3dObject(
-        object,
-        addToRef,
+        loadedObject,
+        addToObject3D,
         scale,
         position,
         rotation,
@@ -82,7 +82,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
     get().loadModel(url, model3dLoadCallback);
   },
 
-  loadModel: (url: string, callback: (object: any) => void) => {
+  loadModel: (url: string, callback: (loadedObject: any) => void) => {
     get().gltfLoader.load(
       // resource URL
       url,
@@ -92,17 +92,17 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
   },
 
   updateModel3dObject: (
-    object,
-    addToRef,
+    loadedObject,
+    addToObject3D,
     scale,
     position,
     rotation,
     onLoadUpdateMech
   ) => {
     const geometries: BufferGeometry[] = [];
-    object.scene.traverse(function (o: any) {
+    loadedObject.scene.traverse(function (o: any) {
       if (o.isMesh) {
-        object.scene.traverse(function (o: any) {
+        loadedObject.scene.traverse(function (o: any) {
           if (o.isMesh) {
             geometries.push(o.geometry);
           }
@@ -125,7 +125,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
     if (onLoadUpdateMech !== null) {
       onLoadUpdateMech.addMeshToBuiltObject3d(model3dMesh);
     } else {
-      addToRef.current?.add(model3dMesh);
+      addToObject3D?.add(model3dMesh);
     }
   },
 }));
