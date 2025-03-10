@@ -18,7 +18,9 @@ class EnemyMech extends Mech implements enemyMechInt {
   constructor(enemyMechBPindex: number = 0, isBossMech: boolean = false) {
     super(
       mechDesigns.enemy[enemyMechBPindex],
-      isBossMech ? false : true // testing instanced mesh with small enemies
+      isBossMech ? false : true, // all small enemies are instanced
+      false, // not isPlayer
+      true // isEnemy
     );
     this.isBossMech = isBossMech;
     this.team = 0;

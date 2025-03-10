@@ -3,6 +3,7 @@ import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
 import MechBP from "../mechBP/MechBP";
+import useLoaderStore, { LOAD_MODEL_3D_SRC } from "../../stores/loaderStore";
 import useMechBpBuildStore from "../../stores/mechBpBuildStore";
 import useParticleStore from "../../stores/particleStore";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
@@ -14,7 +15,6 @@ import {
   getSimplifiedGeometry,
   getTessellatedExplosionMesh,
 } from "../../util/mechGeometryUtil";
-import useLoaderStore from "../../stores/loaderStore";
 import { FPS } from "../../constants/constants";
 import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
@@ -70,6 +70,8 @@ const weaponWorldPositionVec = new THREE.Vector3();
 class Mech implements mechInt {
   id: string;
   isPlayer: boolean;
+  isEnemy: boolean;
+  isStation: boolean;
 
   isObject3dBuilt: boolean;
   mechState: number;
@@ -102,6 +104,7 @@ class Mech implements mechInt {
     mechDesign: any,
     useInstancedMesh: boolean = false,
     isPlayer: boolean = false, // just in case we need to know for constructor
+    isEnemy: boolean = false, // testing
     isStation: boolean = false // testing
   ) {
     this.id = uuidv4();
@@ -110,7 +113,7 @@ class Mech implements mechInt {
     this.mechState = MECH_STATE.moving;
     this.timeCounter = 0;
     this.useInstancedMesh = useInstancedMesh;
-    // try to set 'new MechBP' directly error:
+    // try to set 'new MechBP' with class method loadBlueprint error:
     // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
     this._mechBP = loadBlueprint(mechDesign);
     this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed

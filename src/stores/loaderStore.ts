@@ -19,6 +19,8 @@ import glbDockingBay from "/models/ss/ss_dockingBay.glb";
 import glbSolar1 from "/models/ss/ss_solar1.glb";
 // @ts-ignore
 import warShip from "/models/mech/warShip.glb";
+// @ts-ignore
+import smallShip1 from "/models/mech/smallShip1.glb";
 
 export const LOAD_MODEL_3D_SRC = {
   artifact: {
@@ -30,7 +32,7 @@ export const LOAD_MODEL_3D_SRC = {
     brokenDish: glbBrokenDish,
   },
   ss: { coms1: glbComs1, dockingBay: glbDockingBay, solar1: glbSolar1 },
-  mech: { warShip: warShip },
+  mech: { smallShip1: smallShip1, warShip: warShip },
 };
 
 interface loaderStoreState {

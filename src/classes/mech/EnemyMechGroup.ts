@@ -75,9 +75,11 @@ class EnemyMechGroup implements enemyMechGroupInt {
     this.enemyMechs = new Array(this.numEnemies)
       .fill(null)
       // EnemyMechBoid(bpIndex, isBossMech)
-      .map(
-        (_, i) => new EnemyMechBoid(i === 0 ? 0 : 1, i === 0 ? true : false)
-      );
+      .map((_, i) => {
+        const isBossMech = i === 0 ? true : false;
+        const bpIndex = i === 0 ? 0 : 1;
+        return new EnemyMechBoid(bpIndex, isBossMech);
+      });
   }
 
   groupEnemies() {

@@ -29,7 +29,7 @@ class MechBP extends DataMechBP implements MechBPInt {
 
   buildObject3d(
     object3d: Object3D = new Object3D(),
-    editPartId: string | undefined
+    editPartId?: string | undefined
   ) {
     object3d.clear();
     this.servoList.forEach((servo: MechServo) => {
