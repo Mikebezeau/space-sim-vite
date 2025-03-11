@@ -146,11 +146,10 @@ class Mech implements mechInt {
     // temporary placeholders
     this.shield = { max: 50, damage: 0 };
 
-    const totalServoStructure = (this.structureTemp.max =
-      this._mechBP.servoList.reduce(
-        (accumulator, servo) => (accumulator += servo.structure()),
-        0
-      ));
+    const totalServoStructure = this._mechBP.servoList.reduce(
+      (accumulator, servo) => (accumulator += servo.structure()),
+      0
+    );
     this.structureTemp = { max: totalServoStructure, damage: 0 };
   }
 
