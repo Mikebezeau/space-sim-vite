@@ -110,12 +110,12 @@ const WeaponFire = () => {
 
       if (intersects.length > 0) {
         // TODO check more then 1 intersect until find a non exploding / dead mech
-        const intersectedObject = intersects[0].object;
+        let intersectedObject = intersects[0].object;
         if (!intersectedObject) return;
 
-        let object = intersects[0].object;
+        const intersectPoint = intersects[0].point;
 
-        if (object instanceof THREE.InstancedMesh) {
+        if (intersectedObject instanceof THREE.InstancedMesh) {
           const instanceId = intersects[0].instanceId;
           if (typeof instanceId === "undefined") {
             console.warn("instanceId undefined");
@@ -124,19 +124,31 @@ const WeaponFire = () => {
           // expolde mech in enemyGroup corresponding to InstancedMesh object and instanceId
           useEnemyStore
             .getState()
+            .enemyGroup.recieveDamageInstancedEnemy(
+              scene,
+              intersectedObject as THREE.InstancedMesh,
+              instanceId,
+              intersectPoint,
+              weaponFire.damage
+            );
+          /*
             .enemyGroup.explodeInstancedEnemy(
               scene,
-              object as THREE.InstancedMesh,
+              intersectedObject as THREE.InstancedMesh,
               instanceId
             );
+            */
         }
         // end if instanced mesh
         // else, is not instanced mesh
         else {
-          while (!object.userData.mechId && object.parent) {
-            object = object.parent;
+          while (
+            !intersectedObject.userData.mechId &&
+            intersectedObject.parent
+          ) {
+            intersectedObject = intersectedObject.parent;
           }
-          const topParentMechObj = object;
+          const topParentMechObj = intersectedObject;
           const intersectedObjectMechId = topParentMechObj.userData.mechId;
 
           if (!intersectedObjectMechId) {
@@ -160,7 +172,8 @@ const WeaponFire = () => {
             console.log("No mech found, id:", intersectedObjectMechId);
             return;
           }
-          intersectedMech?.explode();
+          weaponFire.hasHit = true;
+          intersectedMech?.recieveDamage(intersectPoint, weaponFire.damage);
         }
       }
     });

@@ -11,6 +11,7 @@ export type weaponFireType = {
   position: { x: number; y: number; z: number };
   velocity: { x: number; y: number; z: number };
   weaponFireSpeed: number;
+  damage: number;
   timeStart: number;
   timeEnd: number;
   hasHit: boolean;
@@ -31,6 +32,7 @@ interface weaponFireStoreState {
     position: { x: number; y: number; z: number };
     velocity: { x: number; y: number; z: number };
     weaponFireSpeed: number;
+    damage: number;
     timeStart: number;
     timeEnd: number;
   }) => void;
@@ -71,15 +73,24 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       position: position,
       velocity,
       weaponFireSpeed,
+      damage: weapon.damage(),
       timeStart: Date.now(),
       timeEnd,
-    }); // TODO direction can be changed to Euler
+    }); // direction can be changed to Euler
   },
 
+  // TODO use the type weaponFireType and add to weaponFireList
   addToWeaponFireList: (args) => {
     //console.log("addToWeaponFireList", get().weaponFireList.length);
-    const { id, position, velocity, weaponFireSpeed, timeStart, timeEnd } =
-      args;
+    const {
+      id,
+      position,
+      velocity,
+      weaponFireSpeed,
+      damage,
+      timeStart,
+      timeEnd,
+    } = args;
     set((state) => ({
       weaponFireList: [
         ...state.weaponFireList,
@@ -88,6 +99,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
           position,
           velocity,
           weaponFireSpeed,
+          damage,
           timeStart,
           timeEnd,
           hasHit: false,
@@ -99,8 +111,8 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
   removeOldWeaponFire: () => {
     set((state) => ({
       weaponFireList: state.weaponFireList.filter(
-        // keeping weaponFire that have not expired
-        (weaponFire) => weaponFire.timeEnd > Date.now()
+        // keeping weaponFire that have not expired or hit
+        (weaponFire) => weaponFire.timeEnd > Date.now() || !weaponFire.hasHit
       ),
     }));
   },

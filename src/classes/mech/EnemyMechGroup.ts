@@ -4,6 +4,7 @@ import useParticleStore from "../../stores/particleStore";
 import EnemyMechBoid from "./EnemyMechBoid";
 import mechDesigns from "../../equipment/data/mechDesigns";
 import BoidController from "../BoidController";
+import { MECH_STATE } from "../../classes/mech/Mech";
 
 export interface enemyMechGroupInt {
   getLeaderId: () => string | null;
@@ -16,11 +17,19 @@ export interface enemyMechGroupInt {
   getInstancedMeshRef: (mechBpId: string) => THREE.InstancedMesh | undefined;
   getInstancedMeshEnemies: (mechBpId: string) => EnemyMechBoid[] | undefined;
 
+  recieveDamageInstancedEnemy: (
+    scene: THREE.Scene,
+    instancedMesh: THREE.InstancedMesh,
+    instanceId: number,
+    intersectPoint: THREE.Vector3,
+    damage: number
+  ) => void;
   explodeInstancedEnemy: (
     scene: THREE.Scene,
     instancedMesh: THREE.InstancedMesh,
     instanceId: number
   ) => void;
+
   updateLeaderColor: (instancedMesh: THREE.InstancedMesh) => void;
   updateInstancedColor: (
     instancedMesh: THREE.InstancedMesh,
@@ -151,6 +160,23 @@ class EnemyMechGroup implements enemyMechGroupInt {
     return this.enemyMechs.filter(
       (enemyMech) => enemyMech._mechBP.id === mechBpId
     );
+  }
+
+  recieveDamageInstancedEnemy(
+    scene: THREE.Scene,
+    instancedMesh: THREE.InstancedMesh,
+    instanceId: number,
+    intersectPoint: THREE.Vector3,
+    damage: number
+  ) {
+    const mechBpId = instancedMesh.userData.mechBpId;
+    const enemyToDamage = this.getInstancedMeshEnemies(mechBpId)[instanceId];
+    enemyToDamage.recieveDamage(intersectPoint, damage, scene);
+    if (enemyToDamage.isMechDead()) {
+      // TODO below code duplicate of explodeInstancedEnemy
+      instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
+      instancedMesh.geometry.attributes.isDead.needsUpdate = true;
+    }
   }
 
   explodeInstancedEnemy(

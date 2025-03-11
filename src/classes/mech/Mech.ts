@@ -51,6 +51,11 @@ interface mechInt {
   setMergedBufferGeomColorsList: (geomColorList: THREE.Color[]) => void;
   setExplosionMeshFromBufferGeom: () => void;
   //
+  recieveDamage: (
+    position: THREE.Vector3,
+    damage: number,
+    scene?: THREE.Scene
+  ) => void;
   explode: (scene?: THREE.Scene) => void;
   updateMechUseFrame: (delta: number, scene?: THREE.Scene) => void;
   updateExplosionUseFrame: (delta: number, scene?: THREE.Scene) => void;
@@ -99,6 +104,8 @@ class Mech implements mechInt {
 
   speed: number;
   shield: { max: number; damage: number }; // placeholder
+  //armorTemp: { max: number; damage: number }; // placeholder
+  structureTemp: { max: number; damage: number }; // placeholder
 
   constructor(
     mechDesign: any,
@@ -118,7 +125,6 @@ class Mech implements mechInt {
     // try to set 'new MechBP' directly error:
     // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
     this._mechBP = loadBlueprint(mechDesign);
-    this.shield = { max: 50, damage: 0 }; // will be placed in mechBP once shields are completed
     this.object3d = new THREE.Object3D(); // set from ref, updating this will update the object on screen for non-instanced mesh
     this.object3d.userData.mechId = this.id; // this gets set again when object3d is replaced for non-instanced mesh
     this.addedModel3dObjects = new THREE.Object3D(); // added meshes
@@ -137,6 +143,15 @@ class Mech implements mechInt {
     this.obbRotationHelper = new THREE.Matrix4();
     this.speed = 0;
     this.setBuildObject3d();
+    // temporary placeholders
+    this.shield = { max: 50, damage: 0 };
+
+    const totalServoStructure = (this.structureTemp.max =
+      this._mechBP.servoList.reduce(
+        (accumulator, servo) => (accumulator += servo.structure()),
+        0
+      ));
+    this.structureTemp = { max: totalServoStructure, damage: 0 };
   }
 
   public get mechBP() {
@@ -146,6 +161,13 @@ class Mech implements mechInt {
   public set mechBP(mechDesign: any) {
     this._mechBP = loadBlueprint(mechDesign); // mech blue print
     this.setBuildObject3d();
+    // temporary placeholder totalServoStructure
+    const totalServoStructure = (this.structureTemp.max =
+      this._mechBP.servoList.reduce(
+        (accumulator, servo) => (accumulator += servo.structure()),
+        0
+      ));
+    this.structureTemp = { max: totalServoStructure, damage: 0 };
   }
 
   setBuildObject3d() {
@@ -399,12 +421,29 @@ class Mech implements mechInt {
     }
   }
 
+  recieveDamage(position: THREE.Vector3, damage: number, scene?: THREE.Scene) {
+    if (this.isMechDead()) {
+      return;
+    }
+    // adding immediate explosion particles
+    useParticleStore.getState().effects.addExplosion(
+      position,
+      damage * 10,
+      damage / 5, // increase size of particles according to damage
+      damage * 10, // increase spread speed according to damage
+      0.75, // lifetime in seconds
+      useParticleStore.getState().colors.white
+    );
+
+    this.structureTemp.damage += damage;
+    if (this.structureTemp.damage > this.structureTemp.max) {
+      this.explode(scene);
+    }
+    console.log(this.structureTemp.damage, this.structureTemp.max);
+  }
+
   explode(scene?: THREE.Scene) {
-    if (
-      this.mechState === MECH_STATE.explode ||
-      this.mechState === MECH_STATE.dead
-    ) {
-      console.warn("Mech.explode(): mech already explode/dead");
+    if (this.isMechDead()) {
       return;
     }
     this.mechState = MECH_STATE.explode;
@@ -441,7 +480,7 @@ class Mech implements mechInt {
       const explosionMesh = useMechBpBuildStore
         .getState()
         .getCreateMechBpBuild(this._mechBP)?.explosionMesh;
-
+      // TODO explosionMesh should already be set - fix above
       if (explosionMesh) this.object3d.add(explosionMesh.clone());
       else {
         console.error("Mech.explode(): explosionMesh not set");
@@ -513,7 +552,10 @@ class Mech implements mechInt {
   }
 
   isMechDead() {
-    return this.mechState === MECH_STATE.dead;
+    return (
+      this.mechState === MECH_STATE.dead ||
+      this.mechState === MECH_STATE.explode
+    );
   }
 
   setMechDead(scene?: THREE.Scene) {
@@ -523,10 +565,8 @@ class Mech implements mechInt {
     // TODO the boidcontroller gets messed up when object is moved far away
     //this.object3d.position.set(this.object3d.position.x + 100000, 0, 0);
 
-    if (
-      this.useInstancedMesh &&
-      scene?.children.find((obj) => obj.id === this.object3d.id)
-    ) {
+    // removing mech explosion object from scene
+    if (scene?.children.find((obj) => obj.id === this.object3d.id)) {
       scene.remove(this.object3d);
     }
     /*
@@ -594,14 +634,6 @@ class Mech implements mechInt {
   }
 
   fireWeapon(weapon: MechWeapon, weaponFireEuler: THREE.Euler) {
-    // TODO impliment servoOffset weapons
-    /*
-        weapon.servoOffset = this.mechBP.servoList.find(
-          (s) => s.id === weapon.locationServoId
-        )?.offset;
-        */
-    //if (weapon.servoOffset) {
-    // TODO find better way to calculate weapon position
     // - use weapon.offset and weaponFireMechParentObj.rotation
     // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
     // it's position is relative to weaponFireMechParentObj
