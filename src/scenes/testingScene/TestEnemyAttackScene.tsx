@@ -7,6 +7,7 @@ import useEnemyStore from "../../stores/enemyStore";
 import useDevStore from "../../stores/devStore";
 import Stations from "../../3d/mechs/Stations";
 import EnemyMechs from "../../3d/mechs/enemyMechs/EnemyMechs";
+import WeaponFire from "../../3d/WeaponFire";
 import Particles from "../../3d/Particles";
 import ObbTest from "../../3d/mechs/ObbTest";
 
@@ -122,6 +123,7 @@ const TestEnemyAttackScene = () => {
       />
       <pointLight intensity={1} decay={0} position={[1000, 1000, -1000]} />
       <ambientLight intensity={0.4} />
+      <WeaponFire />
       <Particles />
       <ObbTest ref={obbBoxRefs} />
       <Stations />

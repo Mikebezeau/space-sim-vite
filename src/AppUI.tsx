@@ -55,7 +55,10 @@ const AppUI = () => {
         <>
           <LilGui />
           {!IS_TOUCH_SCREEN && <CustomCursor />}
-          <div className="pointer-events-none touch-none">
+          <div
+            id="custom-cursor-hide-cursor"
+            className="pointer-events-none touch-none"
+          >
             {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
             {playerScreen === PLAYER.screen.flight && (
               <>

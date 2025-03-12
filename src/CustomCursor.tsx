@@ -4,6 +4,11 @@ import useHudTargtingStore from "./stores/hudTargetingStore";
 import { useMouseMove } from "./hooks/controls/useMouseKBControls";
 import { PLAYER } from "./constants/constants";
 import "./css/customCursor.css";
+/*
+to hide the default cursor while using the custom cursor
+wrap the AppUI component in a div with the following id 
+<div id="custom-cursor-hide-cursor">
+*/
 
 const CustomCursor = () => {
   const customCursorRef = React.useRef<HTMLDivElement | null>(null);
