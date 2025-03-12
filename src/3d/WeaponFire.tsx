@@ -5,7 +5,7 @@ import useStore from "../stores/store";
 import useEnemyStore from "../stores/enemyStore";
 import useWeaponFireStore from "../stores/weaponFireStore";
 import Mech from "../classes/mech/Mech";
-import { FPS } from "../constants/constants";
+import { FPS, COMPONENT_RENDER_ORDER } from "../constants/constants";
 
 // TODO create WeaponFire class
 const WeaponFire = () => {
@@ -177,7 +177,7 @@ const WeaponFire = () => {
         }
       }
     });
-  });
+  }, COMPONENT_RENDER_ORDER.weaponFireUpdate);
 
   return null;
 };
