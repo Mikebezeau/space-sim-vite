@@ -55,7 +55,7 @@ const RaycasterObjectHitTest = () => {
       // instanceed meshes
       ...useEnemyStore
         .getState()
-        .enemyGroup.instancedMeshRefs.map(
+        .enemyGroup.instancedMeshs.map(
           (instancedMesh: THREE.InstancedMesh) => instancedMesh
         ),
     ];

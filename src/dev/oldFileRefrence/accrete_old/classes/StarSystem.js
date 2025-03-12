@@ -15,7 +15,7 @@ export default class StarSystem {
    * Get the age of the system's star, in billions of years
    */
   get age() {
-    // main sequence lifetime, billions of years
+    // main sequence lifeTime, billions of years
     const msl = (10 * this.mass) / this.luminosity;
     return (
       this._age ||

@@ -19,6 +19,7 @@ import { FPS } from "../../constants/constants";
 import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
 import useWeaponFireStore from "../../stores/weaponFireStore";
+import { DESIGN_TYPE } from "../../constants/particleConstants";
 
 //import { setCustomData } from "r3f-perf";
 
@@ -421,17 +422,47 @@ class Mech implements mechInt {
   }
 
   recieveDamage(position: THREE.Vector3, damage: number, scene?: THREE.Scene) {
+    if (this.isPlayer) {
+      console.log("player hit");
+    }
     if (this.isMechDead()) {
       return;
     }
-    // adding immediate explosion particles
+    // weapon fire hit explosion particles
     useParticleStore.getState().effects.addExplosion(
       position,
-      damage * 10,
-      damage / 5, // increase size of particles according to damage
-      damage * 10, // increase spread speed according to damage
-      0.75, // lifetime in seconds
-      useParticleStore.getState().colors.white
+      {
+        numParticles: damage * 10 + 100,
+        size: damage / 10 + 0.1, // increase size of particles according to damage
+        spread: damage * 2 + 40, // increase spread speed according to damage
+        lifeTime: 0.75,
+        color: useParticleStore.getState().colors.yellow,
+        designType: DESIGN_TYPE.circle,
+      } /*
+      damage * 10 + 100, // number of particles
+      damage / 10 + 0.1, // increase size of particles according to damage
+      damage * 2 + 40, // increase spread speed according to damage
+      0.75, // lifeTime in seconds
+      useParticleStore.getState().colors.yellow
+      */
+    );
+    // contrasting weapon fire hit explosion particles
+    useParticleStore.getState().effects.addExplosion(
+      position,
+      {
+        numParticles: damage * 10 + 100,
+        size: damage / 10 + 0.1, // increase size of particles according to damage
+        spread: damage * 2 + 40, // increase spread speed according to damage
+        lifeTime: 0.75,
+        color: useParticleStore.getState().colors.black,
+        designType: DESIGN_TYPE.circle,
+      } /*
+      damage * 10 + 100, // number of particles
+      damage / 10 + 0.1, // increase size of particles according to damage
+      damage * 2 + 40, // increase spread speed according to damage
+      0.75, // lifeTime in seconds
+      useParticleStore.getState().colors.black // contrasting color
+      */
     );
 
     this.structureTemp.damage += damage;
@@ -459,11 +490,19 @@ class Mech implements mechInt {
     // adding immediate explosion particles
     useParticleStore.getState().effects.addExplosion(
       this.object3d.position,
+      {
+        numParticles: 3000,
+        size: this._mechBP.scale / 5, // increase size of particles according to damage
+        spread: this._mechBP.scale * 50, // increase spread speed according to damage
+        lifeTime: 0.5,
+        color: useParticleStore.getState().colors.white,
+      } /*
       3000,
       this._mechBP.scale / 5, // increase size of particles according to scale of mech
       this._mechBP.scale * 50, // increase spread speed according to scale of mech
-      0.5, // lifetime in seconds
+      0.5, // lifeTime in seconds
       useParticleStore.getState().colors.white
+      */
     );
 
     // add explosion mesh to object3d
@@ -517,22 +556,36 @@ class Mech implements mechInt {
     if (numParticles1 > 0) {
       useParticleStore.getState().effects.addExplosion(
         this.object3d.position,
+        {
+          numParticles: numParticles1,
+          size: Math.random() * scale * 0.75,
+          spread: Math.random() * scale * 10 * (1 - explosionTimeNormalized),
+          lifeTime: 1,
+          color: useParticleStore.getState().colors.neonBlue,
+        } /*
         numParticles1,
         Math.random() * scale * 0.75, // increase size of particles according to scale of mech
         Math.random() * scale * 10 * (1 - explosionTimeNormalized), // increase spread speed according to scale of mech
-        1, // lifetime in seconds
+        1, // lifeTime in seconds
         useParticleStore.getState().colors.neonBlue
+        */
       );
-      useParticleStore
-        .getState()
-        .effects.addExplosion(
-          this.object3d.position,
+      useParticleStore.getState().effects.addExplosion(
+        this.object3d.position,
+        {
+          numParticles: numParticles2,
+          size: Math.random() * scale * 0.5,
+          spread: Math.random() * scale * 20 * (1 - explosionTimeNormalized),
+          lifeTime: 1.6,
+          color: useParticleStore.getState().colors.purple,
+        } /*
           numParticles2,
           Math.random() * scale * 0.5,
           Math.random() * scale * 20 * (1 - explosionTimeNormalized),
           1.6,
           useParticleStore.getState().colors.purple
-        );
+          */
+      );
     }
 
     // if explosionTimeNormalized is greater than 1, mech is dead

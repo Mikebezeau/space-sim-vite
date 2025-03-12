@@ -56,18 +56,15 @@ const AppCanvasScene = () => {
             <>
               {playerScreen === PLAYER.screen.newCampaign ? (
                 <NewCampaignScene />
-              ) : null}
-              {playerScreen === PLAYER.screen.flight ? (
+              ) : playerScreen === PLAYER.screen.flight ? (
                 <SpaceFlightScene />
-              ) : null}
-              {playerScreen === PLAYER.screen.landedPlanet ? (
+              ) : playerScreen === PLAYER.screen.landedPlanet ? (
                 <PlanetExploreScene />
-              ) : null}
-              {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMap />}
-              {playerScreen === PLAYER.screen.dockedStation ? (
+              ) : playerScreen === PLAYER.screen.galaxyMap ? (
+                <GalaxyMap />
+              ) : playerScreen === PLAYER.screen.dockedStation ? (
                 <StationDockScene />
-              ) : null}
-              {playerScreen === PLAYER.screen.equipmentBuild ? (
+              ) : playerScreen === PLAYER.screen.equipmentBuild ? (
                 <BuildMechEquipment />
               ) : null}
             </>

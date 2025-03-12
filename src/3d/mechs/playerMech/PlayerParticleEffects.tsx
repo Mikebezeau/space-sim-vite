@@ -29,7 +29,7 @@ const PlayerParticleEffects = () => {
     size: number,
     positionRadius: number,
     positionRadiusMin: number,
-    lifetime: number;
+    lifeTime: number;
 
   //moving camera, ship, altering crosshairs, weapon lights (activates only while flying)
   useFrame((_, delta) => {
@@ -63,7 +63,7 @@ const PlayerParticleEffects = () => {
     size = 0.01;
     positionRadius = 0.6;
     positionRadiusMin = 0.1;
-    lifetime = 0.2 / (1 + Math.abs(speed));
+    lifeTime = 0.2 / (1 + Math.abs(speed));
     playerParticleEffects.addEngineExhaust(
       particleOriginObj.current.position,
       particleOriginObj.current.rotation,
@@ -73,7 +73,7 @@ const PlayerParticleEffects = () => {
       size,
       positionRadius,
       positionRadiusMin,
-      lifetime
+      lifeTime
     );
 
     playerParticleSystem.position.copy(player.object3d.position);

@@ -109,6 +109,8 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
   },
 
   removeOldWeaponFire: () => {
+    // TODO remove particles
+    // will have to store the particle index range in weaponFire
     set((state) => ({
       weaponFireList: state.weaponFireList.filter(
         // keeping weaponFire that have not expired or hit

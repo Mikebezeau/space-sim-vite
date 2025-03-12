@@ -10,11 +10,11 @@ export interface enemyMechGroupInt {
   getLeaderId: () => string | null;
   genBoidEnemies: () => void;
   groupEnemies: () => void;
-  addInstancedMeshRef: (
+  addInstancedMesh: (
     mechBpId: string,
     instancedMesh: THREE.InstancedMesh
   ) => void;
-  getInstancedMeshRef: (mechBpId: string) => THREE.InstancedMesh | undefined;
+  getInstancedMesh: (mechBpId: string) => THREE.InstancedMesh | undefined;
   getInstancedMeshEnemies: (mechBpId: string) => EnemyMechBoid[] | undefined;
 
   recieveDamageInstancedEnemy: (
@@ -44,7 +44,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
   tacticOrder: number;
   enemyGroupLocalZonePosition: THREE.Vector3;
   enemyMechs: EnemyMechBoid[] = [];
-  instancedMeshRefs: THREE.InstancedMesh[] = [];
+  instancedMeshs: THREE.InstancedMesh[] = [];
   boidController: BoidController | null;
 
   constructor(numEnemies: number = 100) {
@@ -129,7 +129,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
     });
   }
 
-  addInstancedMeshRef(
+  addInstancedMesh(
     mechBpId: string,
     instancedMesh: THREE.InstancedMesh | null
   ) {
@@ -138,20 +138,20 @@ class EnemyMechGroup implements enemyMechGroupInt {
     // TODO will need to include enemy group id if multiple enemy groups with same mechBpId
     instancedMesh.userData.mechBpId = mechBpId;
     // remove from array if instancedMesh=>instancedMesh.userData.mechBpId exists
-    const existingMesh = this.instancedMeshRefs.find(
+    const existingMesh = this.instancedMeshs.find(
       (mesh) => mesh.userData.mechBpId === mechBpId
     );
     if (existingMesh) {
-      this.instancedMeshRefs = this.instancedMeshRefs.filter(
+      this.instancedMeshs = this.instancedMeshs.filter(
         (mesh) => mesh.userData.mechBpId !== mechBpId
       );
     }
     // add to array
-    this.instancedMeshRefs.push(instancedMesh);
+    this.instancedMeshs.push(instancedMesh);
   }
 
-  getInstancedMeshRef(mechBpId: string) {
-    return this.instancedMeshRefs.find(
+  getInstancedMesh(mechBpId: string) {
+    return this.instancedMeshs.find(
       (mesh) => mesh.userData.mechBpId === mechBpId
     );
   }
@@ -198,12 +198,12 @@ class EnemyMechGroup implements enemyMechGroupInt {
   }
 
   updateLeaderColor(instancedMesh: THREE.InstancedMesh) {
-    const red = useParticleStore.getState().colors.red;
+    const color = useParticleStore.getState().colors.green;
     const instancedEnemies = this.getInstancedMeshEnemies(
       instancedMesh.userData.mechBpId
     );
     instancedEnemies.forEach((enemy, i) => {
-      if (enemy.getIsLeader()) instancedMesh.setColorAt(i, red);
+      if (enemy.getIsLeader()) instancedMesh.setColorAt(i, color);
     });
   }
 

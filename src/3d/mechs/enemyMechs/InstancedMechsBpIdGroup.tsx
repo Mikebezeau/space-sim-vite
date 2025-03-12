@@ -83,7 +83,7 @@ const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
 
               useEnemyStore
                 .getState()
-                .enemyGroup.addInstancedMeshRef(mechBpId, ref);
+                .enemyGroup.addInstancedMesh(mechBpId, ref);
             }}
             args={[
               // geometry

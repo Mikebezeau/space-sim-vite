@@ -23,6 +23,17 @@ const starSpriteTex = new TextureLoader().load(starSpriteSrc);
 //const featheredSpriteTex= new TextureLoader().load(featheredSpriteSrc);
 const smokeTexture = new TextureLoader().load(smokeTextureSrc);
 
+type addExplosionOptionsType = {
+  numParticles?: number;
+  size?: number;
+  spread?: number;
+  lifeTime?: number;
+  color?: Color;
+  endColor?: Color;
+  designType?: number;
+  spriteType?: number;
+};
+
 interface particleStoreState {
   //starSpriteSrc: Texture;
   //featheredSpriteSrc: Texture;
@@ -47,12 +58,7 @@ interface particleStoreState {
   effects: {
     addExplosion: (
       position: Vector3 | { x: number; y: number; z: number },
-      numParticles?: number,
-      size?: number,
-      spread?: number,
-      lifeTime?: number,
-      color?: Color,
-      endColor?: Color
+      options?: addExplosionOptionsType
     ) => void;
     addBullet: (
       position: Vector3 | { x: number; y: number; z: number },
@@ -138,21 +144,23 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
   positionTemp: new Vector3(),
   vectorTemp: new Vector3(),
   effects: {
-    addExplosion: (
-      position,
-      numParticles = 10,
-      size = 1,
-      spread = 1,
-      lifetime = 1,
-      color = get().colors.red,
-      endColor
-    ) => {
+    addExplosion: (position, options = {}) => {
       if (get().particleController) {
+        const {
+          numParticles = 10,
+          size = 1,
+          spread = 1,
+          lifeTime = 1,
+          color = get().colors.red,
+          endColor,
+          designType, //DESIGN_TYPE.circle,
+          spriteType = SPRITE_TYPE.smoke,
+        } = options;
         for (let i = 0; i < numParticles; i++) {
           getRandomPointWithinSphere(get().vectorTemp, spread);
           get().particleController.spawnParticle({
-            //sprite: DESIGN_TYPE.star,
-            sprite: SPRITE_TYPE.smoke,
+            design: designType,
+            sprite: spriteType,
             position: position,
             velocity: {
               x: get().vectorTemp.x,
@@ -161,7 +169,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             },
             color: color,
             endColor: endColor ? endColor : get().colors.grey,
-            lifetime: lifetime,
+            lifeTime: lifeTime,
             size: 800 * size,
             angle: Math.random() * 20,
           });
@@ -189,7 +197,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             },
             color: get().colors.yellow,
             endColor: get().colors.red,
-            lifetime: 2,
+            lifeTime: 2,
             size: 800 * (i / numParticles),
           });
         }
@@ -216,7 +224,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             },
             color: get().colors.blue,
             endColor: get().colors.grey,
-            lifetime: 2,
+            lifeTime: 2,
             size: 400 * (i / numParticles),
           });
         }
@@ -241,7 +249,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
           angle: 20,
           color: get().colors.grey,
           //endColor: get().colors.red,
-          lifetime: lifeTime,
+          lifeTime: lifeTime,
           size: 400,
         });
 
@@ -260,20 +268,36 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             .add(position);
           get().effects.addExplosion(
             get().vectorTemp,
+            {
+              numParticles: 1,
+              size: 1,
+              spread: 0.5,
+              lifeTime: 0.5,
+              color: get().colors.yellow,
+              endColor: get().colors.red,
+            } /*
             1,
             1,
             0.5,
             0.5,
             get().colors.yellow,
             get().colors.red
+            */
           );
           get().effects.addExplosion(
             get().vectorTemp,
+            {
+              numParticles: 1,
+              size: 2,
+              spread: 1.5,
+              lifeTime: 0.5,
+              color: get().colors.grey,
+            } /*
             1,
             2,
             1.5,
             0.5,
-            get().colors.grey
+            get().colors.grey*/
           );
         };
 
@@ -297,11 +321,11 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
       position,
       direction,
       speed = -1, // using negative speed here due to the direction of the mech
-      numParticles = 1000, // this will give 1000 * FPS (60) * lifetime (0.2) = 12000 active particles
+      numParticles = 1000, // this will give 1000 * FPS (60) * lifeTime (0.2) = 12000 active particles
       size = 0.01,
       positionRadius = 1,
       positionRadiusMin = 0.1,
-      lifetime = 0.2,
+      lifeTime = 0.2,
       color = get().colors.blue,
       endColor
     ) => {
@@ -355,7 +379,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             },
             color: color,
             endColor: endColor ? endColor : color,
-            lifetime: lifetime,
+            lifeTime: lifeTime,
             size: 800 * size,
             //angle: (Math.random() - 0.5) * 20,
           });
@@ -366,11 +390,11 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
       position,
       direction,
       speed = -3, // using negative speed here due to the direction of the mech
-      numParticles = 200, // this will give 200 * FPS (60) * lifetime (2) = 24000 active particles
+      numParticles = 200, // this will give 200 * FPS (60) * lifeTime (2) = 24000 active particles
       size = 0.15,
       positionRadius = 50,
       positionRadiusMin = 25,
-      lifetime = 2,
+      lifeTime = 2,
       color = get().colors.blue,
       endColor
     ) => {
@@ -415,7 +439,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             },
             color: color,
             endColor: endColor ? endColor : color,
-            lifetime: lifetime,
+            lifeTime: lifeTime,
             size: 800 * size,
             //angle: (Math.random() - 0.5) * 20,
           });
@@ -428,7 +452,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
       numParticles = 10,
       size = 0.3,
       spread = 20,
-      lifetime = 0.3,
+      lifeTime = 0.3,
       color = get().colors.white,
       endColor // = get().colors.white
     ) => {
@@ -454,7 +478,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             color: color,
             endColor: endColor ? endColor : get().colors.grey,
             //angle: 20,
-            lifetime: lifetime,
+            lifeTime: lifeTime,
             size: 800 * size,
           });
         }

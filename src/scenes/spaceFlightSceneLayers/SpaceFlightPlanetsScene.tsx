@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Group, Mesh } from "three";
+import { Color, Group, Mesh } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import SolarSystem from "../../3d/solarSystem/SolarSystem";
 import Stations from "../../3d/mechs/Stations";
@@ -58,7 +58,7 @@ const SpaceFlightPlanetsScene = () => {
 
   return (
     <>
-      <ambientLight intensity={0.2} />
+      <ambientLight intensity={0.2} color={new Color("#AAAAFF")} />
       <PlayerMech />
       <WeaponFire />
       <Particles />

@@ -11,8 +11,8 @@ import { FPS } from "../constants/constants";
 const WeaponFire = () => {
   const player = useStore((state) => state.player);
   const enemyGroup = useEnemyStore((state) => state.enemyGroup);
-  const instancedMeshRefs = useEnemyStore(
-    (state) => state.enemyGroup.instancedMeshRefs
+  const instancedMeshs = useEnemyStore(
+    (state) => state.enemyGroup.instancedMeshs
   );
 
   const { scene } = useThree();
@@ -48,7 +48,7 @@ const WeaponFire = () => {
       enemy.useInstancedMesh ? null : enemy.object3d
     ),
     // instanceed meshes
-    ...instancedMeshRefs.map((instancedMesh) => instancedMesh),
+    ...instancedMeshs.map((instancedMesh) => instancedMesh),
   ];
 
   useFrame((_, delta) => {

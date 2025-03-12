@@ -291,7 +291,7 @@ class ParticleController implements ParticleControllerInt {
     acceleration?: THREE.Vector3 | { x: number; y: number; z: number };
     color?: THREE.Color;
     endColor?: THREE.Color;
-    lifetime?: number;
+    lifeTime?: number;
     size?: number;
     sizeRandomness?: number;
     sprite?: number;
@@ -333,7 +333,7 @@ class ParticleController implements ParticleControllerInt {
         ? this.newParticle.endColor.copy(options.endColor)
         : this.newParticle.endColor.copy(this.newParticle.color);
 
-    const lifetime = options.lifetime !== undefined ? options.lifetime : 5;
+    const lifeTime = options.lifeTime !== undefined ? options.lifeTime : 5;
     let aSize = options.size !== undefined ? options.size : 500;
     const sizeRandomness =
       options.sizeRandomness !== undefined ? options.sizeRandomness : 0;
@@ -366,9 +366,9 @@ class ParticleController implements ParticleControllerInt {
 
     angleAttribute.array[i] = options.angle !== undefined ? options.angle : 0;
 
-    //aSize, lifetime and starttime
+    //aSize, lifeTime and starttime
     sizeAttribute.array[i] = aSize + this.random() * sizeRandomness;
-    lifeTimeAttribute.array[i] = lifetime;
+    lifeTimeAttribute.array[i] = lifeTime;
     startTimeAttribute.array[i] = this.time;
     // offset
     if (this.offset === 0) this.offset = this.PARTICLE_CURSOR;
