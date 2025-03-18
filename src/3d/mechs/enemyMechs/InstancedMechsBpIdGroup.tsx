@@ -6,11 +6,11 @@ import useMechBpBuildStore from "../../../stores/mechBpBuildStore";
 import Mech from "../../../classes/mech/Mech";
 import { MECH_STATE } from "../../../classes/mech/Mech";
 
-interface InstancedMechsInt {
+interface instancedMechsInt {
   mechBpId: string;
 }
 // not using the forwarded ref for anything atm
-const InstancedMechsBpIdGroup = (props: InstancedMechsInt) => {
+const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
   const { mechBpId } = props;
 
   // all enemies within this group of the same mechBpId

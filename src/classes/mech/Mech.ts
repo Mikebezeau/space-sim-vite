@@ -21,8 +21,6 @@ import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial"
 import useWeaponFireStore from "../../stores/weaponFireStore";
 import { DESIGN_TYPE } from "../../constants/particleConstants";
 
-//import { setCustomData } from "r3f-perf";
-
 // TODO move MECH_STATE to constants / create an isDead function?
 export const MECH_STATE = {
   idle: 0,
@@ -154,7 +152,7 @@ class Mech implements mechInt {
     this.structureTemp = { max: totalServoStructure, damage: 0 };
   }
 
-  public get mechBP() {
+  public get mechBP(): MechBP {
     return this._mechBP;
   }
 
@@ -469,7 +467,6 @@ class Mech implements mechInt {
     if (this.structureTemp.damage > this.structureTemp.max) {
       this.explode(scene);
     }
-    console.log(this.structureTemp.damage, this.structureTemp.max);
   }
 
   explode(scene?: THREE.Scene) {

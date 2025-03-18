@@ -1,10 +1,12 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../stores/store";
 import useEnemyStore from "../stores/enemyStore";
 import useWeaponFireStore from "../stores/weaponFireStore";
+import { DefenseNodesHelper } from "../scenes/testingScene/TestEnemyAttackScene";
 import Mech from "../classes/mech/Mech";
+import { defenseNodesType } from "../classes/mech/EnemyMechGroup";
 import { FPS, COMPONENT_RENDER_ORDER } from "../constants/constants";
 
 // TODO create WeaponFire class
@@ -15,12 +17,15 @@ const WeaponFire = () => {
     (state) => state.enemyGroup.instancedMeshs
   );
 
+  const defenseNodesRef = useRef<defenseNodesType | null>(null);
+
   const { scene } = useThree();
   const ray = new THREE.Ray();
 
   // for testing ray position and direction
   const testArrowHelper = false; // can impliment this in testing GUI
   const arrowHelper = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
+
   useEffect(() => {
     if (testArrowHelper) scene.add(arrowHelper.current);
     return () => {
@@ -74,6 +79,13 @@ const WeaponFire = () => {
           .shiftPlayerLocalZoneToNewPosition(
             useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
           );
+        console.log("WeaponFire Battle: set emeny group defense positions");
+        useEnemyStore.getState().enemyGroup.setDefenseTargetPositions(
+          useStore.getState().player.object3d.position, // local position
+          1
+        );
+        defenseNodesRef.current =
+          useEnemyStore.getState().enemyGroup.defenseNodes;
       }
     }
 
@@ -179,7 +191,13 @@ const WeaponFire = () => {
     });
   }, COMPONENT_RENDER_ORDER.weaponFireUpdate);
 
-  return null;
+  return (
+    <>
+      {defenseNodesRef.current && (
+        <DefenseNodesHelper defenseNodes={defenseNodesRef.current} />
+      )}
+    </>
+  );
 };
 
 export default WeaponFire;

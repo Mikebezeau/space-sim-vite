@@ -5,6 +5,16 @@ import EnemyMechBoid from "./EnemyMechBoid";
 import mechDesigns from "../../equipment/data/mechDesigns";
 import BoidController from "../BoidController";
 import { MECH_STATE } from "../../classes/mech/Mech";
+import { FPS } from "../../constants/constants";
+
+export type defenseNodesType = {
+  curve: THREE.CatmullRomCurve3;
+  nodes: {
+    point: THREE.Vector3;
+    playerDistanceTo: number;
+    enemyPresenceRating: number;
+  }[];
+};
 
 export interface enemyMechGroupInt {
   getLeaderId: () => string | null;
@@ -35,6 +45,10 @@ export interface enemyMechGroupInt {
     instancedMesh: THREE.InstancedMesh,
     instanceId: number
   ) => void;
+  setDefenseTargetPositions: (
+    incomingPlayerPosition: THREE.Vector3,
+    playerSpeed: number
+  ) => void;
   updateUseFrame: (delta: number, scene: THREE.Scene) => void; // require scene to add remove instanced mech objects
 }
 
@@ -46,6 +60,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
   enemyMechs: EnemyMechBoid[] = [];
   instancedMeshs: THREE.InstancedMesh[] = [];
   boidController: BoidController | null;
+  defenseNodes: defenseNodesType | null = null;
 
   constructor(numEnemies: number = 100) {
     this.id = uuidv4();
@@ -215,6 +230,65 @@ class EnemyMechGroup implements enemyMechGroupInt {
       useParticleStore.getState().colors.black
     );
     instancedMesh.instanceColor!.needsUpdate = true;
+  }
+
+  setDefenseTargetPositions(
+    incomingPlayerPosition: THREE.Vector3, // local player position when entering zone
+    playerSpeed: number
+  ) {
+    const curve = new THREE.CatmullRomCurve3([
+      incomingPlayerPosition,
+      new THREE.Vector3(0, 0, 0),
+    ]);
+    const points = curve.getPoints(20);
+
+    //const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const defenseNodes = {
+      curve,
+      nodes: points.map((point) => {
+        const playerDistanceTo = incomingPlayerPosition.distanceTo(point);
+        return {
+          point,
+          playerDistanceTo,
+          enemyPresenceRating: 0,
+        };
+      }),
+    };
+    this.defenseNodes = defenseNodes;
+
+    // get enemy intercept position along track
+    this.enemyMechs.forEach((enemy, eIndex) => {
+      let interceptIndex = 0;
+      let optimalInterceptDelta = 0;
+      let interceptPoint = new THREE.Vector3();
+      // attackPathRef.current set above
+      this.defenseNodes!.nodes.forEach((pathNode, index) => {
+        // time for this enemy to reach point
+        const enemyArriveDelta =
+          (enemy.maxSpeed * FPS) /
+          enemy.object3d.position.distanceTo(pathNode.point);
+        const playerArriveDelta =
+          (playerSpeed * FPS) / pathNode.playerDistanceTo;
+        if (
+          enemyArriveDelta < playerArriveDelta &&
+          optimalInterceptDelta < enemyArriveDelta
+        ) {
+          interceptIndex = index;
+          optimalInterceptDelta = enemyArriveDelta;
+          interceptPoint.copy(pathNode.point);
+        }
+      });
+      this.defenseNodes!.nodes[interceptIndex].enemyPresenceRating += 1;
+      /*
+        const closestPoint = points.reduce((prev, curr) =>
+          enemy.object3d.position.distanceTo(prev) <
+          enemy.object3d.position.distanceTo(curr)
+            ? prev
+            : curr
+        );
+        */
+      enemy.targetPosition = new THREE.Vector3().copy(interceptPoint); //closestPoint);
+    });
   }
 
   updateUseFrame(delta: number, scene: THREE.Scene) {

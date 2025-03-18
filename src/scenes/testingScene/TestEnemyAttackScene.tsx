@@ -1,22 +1,25 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useStore from "../../stores/store";
+import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useEnemyStore from "../../stores/enemyStore";
 import useDevStore from "../../stores/devStore";
-import Stations from "../../3d/mechs/Stations";
+import PlayerMech from "../../3d/mechs/playerMech/PlayerMech";
 import EnemyMechs from "../../3d/mechs/enemyMechs/EnemyMechs";
+import Stations from "../../3d/mechs/Stations";
 import WeaponFire from "../../3d/WeaponFire";
 import Particles from "../../3d/Particles";
 import ObbTest from "../../3d/mechs/ObbTest";
+import BoidVectorTest from "../../3d/mechs/enemyMechs/BoidVectorTest";
+import { defenseNodesType } from "../../classes/mech/EnemyMechGroup";
+import { COMPONENT_RENDER_ORDER, FPS, PLAYER } from "../../constants/constants";
 
 import { track, geometry2 } from "../../util/track";
-import { setCustomData } from "r3f-perf";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 //import PlayerMech from "../classes/mech/PlayerMech";
-import PlayerMech from "../../3d/mechs/playerMech/PlayerMech";
 
 const TestEnemyAttackScene = () => {
   const player = useStore((state) => state.player);
@@ -30,11 +33,10 @@ const TestEnemyAttackScene = () => {
   const cameraControlsRef = useRef<any>(null);
   // providing ref for forwardRef used in ObbTest component
   const obbBoxRefs = useRef<THREE.Mesh[]>([]);
+  const trackRef = useRef<THREE.Mesh | null>(null);
+  //const attackPathRef = useRef<defenseNodesType | null>(null);
 
   const controllerOptions = { changeScreenTest: false, resetEnemies: false };
-
-  useStore.getState().playerLocalZonePosition.set(0, 0, 0);
-  useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition.set(0, 0, 0);
 
   const { scene } = useThree();
 
@@ -98,7 +100,7 @@ const TestEnemyAttackScene = () => {
 
   const setCameraPosition = () => {
     if (!cameraControlsRef.current) return;
-    camera.position.set(0, 0, -100);
+    camera.position.set(2000, 0, 0);
     cameraControlsRef.current.target.set(0, 0, 0);
   };
 
@@ -112,6 +114,59 @@ const TestEnemyAttackScene = () => {
     }
   }, [stations]);
 
+  useEffect(() => {
+    if (player) {
+      useStore.getState().actions.setShoot(true);
+      useStore
+        .getState()
+        .setPlayerWorldAndLocalZonePosition({ x: 0, y: 0, z: 0 });
+      player.object3d.position.set(0, 0, -1500);
+      // no need to call playerPositionUpdated for position update above
+
+      player.object3d.lookAt(0, 0, 0);
+      usePlayerControlsStore
+        .getState()
+        .actions.viewModeSelect(PLAYER.view.thirdPerson);
+      usePlayerControlsStore.getState().actions.setPlayerSpeedSetting(2); // forward speed 1
+      useStore.getState().player.speed = 1; // player speed must be set for setDefenseTargetPositions
+
+      useEnemyStore
+        .getState()
+        .enemyGroup.setDefenseTargetPositions(
+          useStore.getState().player.object3d.position,
+          useStore.getState().player.speed
+        );
+    }
+  }, [player]);
+  /*
+  useEffect(() => {
+    if (trackRef.current && attackPathRef.current) {
+      const trackGeometry = new THREE.TubeGeometry(
+        attackPathRef.current.curve,
+        32,
+        40,
+        8,
+        false
+      );
+      trackRef.current.geometry = trackGeometry;
+      trackRef.current.position.copy(
+        useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
+      );
+    }
+  }, [trackRef.current, attackPathRef.current]);
+  */
+  useFrame((_, delta) => {
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
+    // moving player mech (not pasing camera prop to updatePlayerMechAndCamera)
+    usePlayerControlsStore
+      .getState()
+      .updateFrame.updatePlayerMechAndCamera(delta);
+    // reset player position
+    if (player.object3d.position.z > 0) {
+      player.object3d.position.set(0, 0, -1500);
+    }
+  }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order - positions are updated first
+
   return (
     <>
       <TrackballControls
@@ -123,19 +178,21 @@ const TestEnemyAttackScene = () => {
       />
       <pointLight intensity={1} decay={0} position={[1000, 1000, -1000]} />
       <ambientLight intensity={0.4} />
-      <WeaponFire />
-      <Particles />
-      <ObbTest ref={obbBoxRefs} />
-      <Stations />
-      <EnemyMechs />
       <PlayerMech />
+      <EnemyMechs />
+      <Stations />
+      <Particles />
+      <WeaponFire />
+      <ObbTest ref={obbBoxRefs} />
+      <BoidVectorTest />
+      {/*useEnemyStore.getState().enemyGroup.defenseNodes !== null && (
+        <DefenseNodesHelper
+          defenseNodes={useEnemyStore.getState().enemyGroup.defenseNodes!}
+        />
+      )*/}
       {/*
-      <mesh geometry={track}>
-        <meshBasicMaterial color="red" />
-      </mesh>
-      {/*
-      <mesh geometry={geometry2}>
-        <meshBasicMaterial color="blue" />
+      <mesh ref={trackRef}>
+        <meshPhongMaterial color="yellow" transparent opacity={0.1} />
       </mesh>
       */}
     </>
@@ -143,3 +200,25 @@ const TestEnemyAttackScene = () => {
 };
 
 export default TestEnemyAttackScene;
+
+interface defenseNodesHelperInt {
+  defenseNodes: defenseNodesType;
+}
+export const DefenseNodesHelper = (props: defenseNodesHelperInt) => {
+  const { defenseNodes } = props;
+  return (
+    <>
+      {defenseNodes.nodes.map((node, index) => (
+        <mesh
+          key={index}
+          position={node.point}
+          geometry={
+            new THREE.SphereGeometry(10 + node.enemyPresenceRating, 32, 32)
+          }
+        >
+          <meshPhongMaterial color="yellow" transparent opacity={0.1} />
+        </mesh>
+      ))}
+    </>
+  );
+};
