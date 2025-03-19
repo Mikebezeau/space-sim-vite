@@ -133,7 +133,6 @@ const WeaponFire = () => {
             console.warn("instanceId undefined");
             return;
           }
-          // expolde mech in enemyGroup corresponding to InstancedMesh object and instanceId
           useEnemyStore
             .getState()
             .enemyGroup.recieveDamageInstancedEnemy(
@@ -143,13 +142,6 @@ const WeaponFire = () => {
               intersectPoint,
               weaponFire.damage
             );
-          /*
-            .enemyGroup.explodeInstancedEnemy(
-              scene,
-              intersectedObject as THREE.InstancedMesh,
-              instanceId
-            );
-            */
         }
         // end if instanced mesh
         // else, is not instanced mesh
@@ -164,7 +156,7 @@ const WeaponFire = () => {
           const intersectedObjectMechId = topParentMechObj.userData.mechId;
 
           if (!intersectedObjectMechId) {
-            console.warn("No mech id found");
+            console.warn("Weaponfire hit test: no mech id found");
             return;
           }
 
@@ -181,7 +173,10 @@ const WeaponFire = () => {
               );
           }
           if (!intersectedMech) {
-            console.log("No mech found, id:", intersectedObjectMechId);
+            console.log(
+              "Weaponfire hit test: no mech found, id:",
+              intersectedObjectMechId
+            );
             return;
           }
           weaponFire.hasHit = true;
@@ -193,9 +188,9 @@ const WeaponFire = () => {
 
   return (
     <>
-      {defenseNodesRef.current && (
+      {/*defenseNodesRef.current && (
         <DefenseNodesHelper defenseNodes={defenseNodesRef.current} />
-      )}
+      )*/}
     </>
   );
 };

@@ -5,7 +5,7 @@ import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
 import NewCampaignScene from "./scenes/NewCampaignScene";
-import SpaceFlightScene from "./scenes/SpaceFlightScene";
+import SpaceFlightParentScene from "./scenes/SpaceFlightParentScene";
 import PlanetExploreScene from "./scenes/PlanetExploreScene";
 import StationDockScene from "./scenes/StationDockScene";
 import BuildMechEquipment from "./3d/buildMech/BuildMechEquipment";
@@ -57,7 +57,7 @@ const AppCanvasScene = () => {
               {playerScreen === PLAYER.screen.newCampaign ? (
                 <NewCampaignScene />
               ) : playerScreen === PLAYER.screen.flight ? (
-                <SpaceFlightScene />
+                <SpaceFlightParentScene />
               ) : playerScreen === PLAYER.screen.landedPlanet ? (
                 <PlanetExploreScene />
               ) : playerScreen === PLAYER.screen.galaxyMap ? (

@@ -123,7 +123,9 @@ class BoidController implements ballContaineroidControllerInt {
         )
       );
       */
-
+      mech1.applyForce(this.alignWithBossMech(mech1));
+      mech1.applyForce(this.centerOnBossMech(mech1, 400));
+      /*
       if (mech1.targetPosition !== null) {
         if (mech1.getIsLeader()) {
           mech1.applyForce(this.seekCurrentTarget(mech1));
@@ -131,7 +133,7 @@ class BoidController implements ballContaineroidControllerInt {
       } else {
         mech1.applyForce(this.alignWithBossMech(mech1));
         mech1.applyForce(this.centerOnBossMech(mech1, 400));
-      }
+      }*/
       mech1.update(delta);
     }
 
@@ -216,7 +218,14 @@ class BoidController implements ballContaineroidControllerInt {
       );
       this.toMeVector.normalize();
       this.toMeVector.divideScalar(dist / separateDistance);
+      // mech1
+      mech1.separateSumVector.add(this.toMeVector);
+      mech1.separateCount++;
+      // mech2
+      mech2.separateSumVector.add(this.toMeVector.negate());
+      mech2.separateCount++;
 
+      /*
       if (mech1.mechBP.scale <= mech2.mechBP.scale) {
         mech1.separateSumVector.add(this.toMeVector);
         mech1.separateCount++;
@@ -226,6 +235,7 @@ class BoidController implements ballContaineroidControllerInt {
         mech2.separateSumVector.add(this.toMeVector.negate());
         mech2.separateCount++;
       }
+      */
     }
   }
 

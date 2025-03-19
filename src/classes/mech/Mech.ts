@@ -668,7 +668,9 @@ class Mech implements mechInt {
       // find weapon with lowest orderNumber that has not been fired if weapon is ready to fire
       if (readyWeapons.length > 0) {
         const weaponToFire = readyWeapons.reduce((prev, curr) =>
-          prev.orderNumber < curr.orderNumber ? prev : curr
+          prev.weaponFireData.orderNumber < curr.weaponFireData.orderNumber
+            ? prev
+            : curr
         );
         this.fireWeapon(weaponToFire, weaponFireEuler);
         weaponToFire.weaponFireData.isReady = false;

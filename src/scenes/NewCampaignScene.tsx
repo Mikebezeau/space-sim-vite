@@ -15,9 +15,7 @@ const NewCampaignScene = () => {
   useStore.getState().updateRenderInfo("NewCampaignScene");
 
   const player = useStore((state) => state.player);
-  const { setPlayerPosition, setPlayerCurrentStarIndex } = useStore(
-    (state) => state.actions
-  );
+  const { setPlayerCurrentStarIndex } = useStore((state) => state.actions);
   const viewModeSelect = usePlayerControlsStore(
     (state) => state.actions.viewModeSelect
   );
@@ -57,13 +55,11 @@ const NewCampaignScene = () => {
       player.object3d.position.y,
       player.object3d.position.z
     );
-  }, [playerMechRef.current, setPlayerPosition]);
+  }, [cameraControlsRef.current, playerMechRef.current]);
 
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     sceneTime.current += delta;
-
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
 
     if (sceneTime.current < 7) {
       player.object3d.rotateZ((Math.PI * delta) / 100);

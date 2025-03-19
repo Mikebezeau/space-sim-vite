@@ -21,17 +21,18 @@ const SpaceFlightPlanetsScene = () => {
   const playerLocalZonePosition = useStore(
     (state) => state.playerLocalZonePosition
   );
-  const updatePlayerMechAndCamera = usePlayerControlsStore(
-    (state) => state.updateFrame.updatePlayerMechAndCamera
-  );
   const enemyWorldPosition = useEnemyStore(
     (state) => state.enemyGroup.enemyGroupLocalZonePosition
   );
 
+  const updatePlayerMechAndCamera = usePlayerControlsStore(
+    (state) => state.updateFrame.updatePlayerMechAndCamera
+  );
+
   const relativePlayerGroupRef = useRef<Group | null>(null);
   const enemyRelativePlayerGroupRef = useRef<Group | null>(null);
-  // providing ref for forwardRef used in ObbTest component
-  const obbBoxRefs = useRef<Mesh[]>([]);
+  // providing ref for forwardRef used in ObbTest component: not needed
+  const obbBoxForwardedRefs = useRef<Mesh[]>([]);
 
   useFrame((_, delta) => {
     // must call updatePlayerMechAndCamera before
@@ -74,7 +75,7 @@ const SpaceFlightPlanetsScene = () => {
 
       <group ref={enemyRelativePlayerGroupRef}>
         <EnemyMechs />
-        <ObbTest ref={obbBoxRefs} />
+        <ObbTest ref={obbBoxForwardedRefs} />
       </group>
     </>
   );

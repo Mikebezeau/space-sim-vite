@@ -17,6 +17,8 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
   adjustedVelocityDeltaFPS: THREE.Vector3;
   lerpVelocity: THREE.Vector3;
   lerpHeading: THREE.Vector3;
+  velocitySamplesSize: number;
+  velocitySamples: { x: number; y: number; z: number }[] = [];
   acceleration: THREE.Vector3;
   maxSpeed: number;
   heading: THREE.Vector3;
@@ -42,6 +44,8 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     this.adjustedVelocityDeltaFPS = new THREE.Vector3();
     this.lerpVelocity = new THREE.Vector3();
     this.lerpHeading = new THREE.Vector3();
+    this.velocitySamplesSize = 40;
+    this.velocitySamples = [];
     this.acceleration = new THREE.Vector3();
     this.maxSpeed = BIOD_PARAMS.maxSpeed;
     this.heading = new THREE.Vector3();
@@ -102,6 +106,33 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
         .copy(this.lerpVelocity)
         .multiplyScalar(deltaFPS);
 
+      // add adjustedVelocityDeltaFPS to velocitySamples
+      this.velocitySamples.push({
+        x: this.adjustedVelocityDeltaFPS.x,
+        y: this.adjustedVelocityDeltaFPS.y,
+        z: this.adjustedVelocityDeltaFPS.z,
+      });
+      if (this.velocitySamples.length > this.velocitySamplesSize) {
+        this.velocitySamples.shift();
+      }
+
+      // TESTING
+      // get average of all velocitySamples
+      let x = 0;
+      let y = 0;
+      let z = 0;
+      this.velocitySamples.forEach((velocity) => {
+        x += velocity.x;
+        y += velocity.y;
+        z += velocity.z;
+      });
+      x /= this.velocitySamples.length;
+      y /= this.velocitySamples.length;
+      z /= this.velocitySamples.length;
+
+      this.adjustedVelocityDeltaFPS.set(x, y, z);
+      // end test
+
       // update position
       this.object3d.position.add(this.adjustedVelocityDeltaFPS);
       // reset acc
@@ -110,10 +141,11 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
       // heading
       // if close to player, turn towards player
       if (
+        false /*
         this.object3d.position.distanceTo(
           useStore.getState().player.object3d.position
-        ) < 500 ||
-        false //true // TODO battle flag
+        ) < 500 &&
+        true // TODO battle flag*/
       ) {
         this.heading.copy(useStore.getState().player.object3d.position);
       } else {
@@ -123,6 +155,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
       }
 
       this.lerpHeading.lerp(this.heading, 0.1);
+
       this.object3d.lookAt(this.lerpHeading);
     }
   }

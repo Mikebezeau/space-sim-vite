@@ -184,12 +184,12 @@ const TestEnemyAttackScene = () => {
       <Particles />
       <WeaponFire />
       <ObbTest ref={obbBoxRefs} />
-      <BoidVectorTest />
-      {/*useEnemyStore.getState().enemyGroup.defenseNodes !== null && (
+      {/*<BoidVectorTest />*/}
+      {useEnemyStore.getState().enemyGroup.defenseNodes !== null && (
         <DefenseNodesHelper
           defenseNodes={useEnemyStore.getState().enemyGroup.defenseNodes!}
         />
-      )*/}
+      )}
       {/*
       <mesh ref={trackRef}>
         <meshPhongMaterial color="yellow" transparent opacity={0.1} />
@@ -216,7 +216,7 @@ export const DefenseNodesHelper = (props: defenseNodesHelperInt) => {
             new THREE.SphereGeometry(10 + node.enemyPresenceRating, 32, 32)
           }
         >
-          <meshPhongMaterial color="yellow" transparent opacity={0.1} />
+          <meshPhongMaterial color="yellow" transparent opacity={0.2} />
         </mesh>
       ))}
     </>

@@ -5,8 +5,8 @@ import ScenePortalLayer from "./spaceFlightSceneLayers/ScenePortalLayer";
 import SpaceFlightPlanetsScene from "./spaceFlightSceneLayers/SpaceFlightPlanetsScene";
 import StarsBackgroundScene from "./spaceFlightSceneLayers/StarsBackgroundScene";
 
-const SpaceFlightScene = () => {
-  const componentName = "SpaceFlightScene";
+const SpaceFlightParentScene = () => {
+  const componentName = "SpaceFlightParentScene";
   useStore.getState().updateRenderInfo(componentName);
   useEffect(() => {
     useStore.getState().updateRenderDoneInfo(componentName);
@@ -16,11 +16,11 @@ const SpaceFlightScene = () => {
     <>
       <ScenePortalLayer children={<StarsBackgroundScene />} />
       <ScenePortalLayer
-        autoClear={false}
+        autoClear={false} // overlaying scene on top of the background scene
         children={<SpaceFlightPlanetsScene />}
       />
     </>
   );
 };
 
-export default SpaceFlightScene;
+export default SpaceFlightParentScene;

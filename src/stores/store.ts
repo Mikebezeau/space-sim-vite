@@ -83,17 +83,16 @@ interface storeState {
   planets: Planet[];
 
   starPointsShaderMaterial: THREE.ShaderMaterial;
-  sunShaderMaterial: THREE.ShaderMaterial;
+  sunShaderMaterial: THREE.ShaderMaterial; // will need clones when multiple suns
   planetShaderMaterial: THREE.ShaderMaterial;
   clonePlanetShaderMaterial: () => THREE.ShaderMaterial;
 
   stations: SpaceStationMech[];
-  planetTerrain: any;
+
+  planetTerrain: any; // old
 
   actions: {
     setSpeed: (speedValue: number) => void;
-    setPlayerPosition: (positionVec3: THREE.Vector3) => void;
-
     getPlayerCurrentStarIndex: () => number;
     setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
 
@@ -105,7 +104,7 @@ interface storeState {
   mutation: {
     shoot: boolean;
     mouseControlNormalVec2: THREE.Vector2;
-    mouseScreen: THREE.Vector2;
+    //mouseScreen: THREE.Vector2;
     //ongoingTouches: any[];
   };
 }
@@ -271,7 +270,7 @@ const useStore = create<storeState>()((set, get) => ({
     */
     shoot: false, // used to trigger player weapon fire
     mouseControlNormalVec2: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
-    mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
+    //mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
   },
 
   actions: {
@@ -279,10 +278,6 @@ const useStore = create<storeState>()((set, get) => ({
     setSpeed(speedValue) {
       get().player.speed = speedValue;
       get().togglePlayerPropUpdate();
-    },
-
-    setPlayerPosition(positionVec3) {
-      get().player.object3d.position.copy(positionVec3);
     },
 
     // intial star position selection in galaxy map
@@ -331,7 +326,7 @@ const useStore = create<storeState>()((set, get) => ({
         // setting enemy world position near player world position
         // set enemy position at player position * x units
         enemyGroupStartPosition.copy(startPosition);
-        enemyGroupStartPosition.add(offsetDirection.multiplyScalar(30));
+        enemyGroupStartPosition.add(offsetDirection.multiplyScalar(500));
         // set station position at player position * x units
         stationStartPosition.copy(startPosition);
         stationStartPosition.add(offsetDirection.multiplyScalar(60));
@@ -413,7 +408,7 @@ const useStore = create<storeState>()((set, get) => ({
       // update x, y mouseControlNormalVec2 position
       get().mutation.mouseControlNormalVec2.set(mouseX, mouseY);
       // save x, y pixel position on screen
-      get().mutation.mouseScreen.set(x, y);
+      //get().mutation.mouseScreen.set(x, y);
     },
 
     // save screen touch position (-0.5 to 0.5) relative to
