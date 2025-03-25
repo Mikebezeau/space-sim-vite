@@ -17,12 +17,32 @@ function App() {
     useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
 
+  useEffect(() => {
+    // Get the documentElement to display the page in fullscreen
+    var elem = document.documentElement;
+
+    // View in fullscreen
+    function openFullscreen() {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      }
+    }
+
+    // Close fullscreen
+    function closeFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }, []);
+
   //useNoContextMenu();
   /*
   useWindowResize(() => {
     // callback function code here
   });
-*/
+  */
+
   return (
     <>
       <AppCanvas />

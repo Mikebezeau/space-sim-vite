@@ -22,13 +22,12 @@ const EnemyMechs = () => {
   const { scene } = useThree();
 
   useFrame((_, delta) => {
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
     enemyGroup.updateUseFrame(delta, scene);
   }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order - positions are updated first
 
   return (
     <>
-      {enemies instanceof Array && enemies.length > 0 && (
+      {enemies.length > 0 && (
         <>
           {enemies.map((enemyMech) =>
             !enemyMech.useInstancedMesh ? (

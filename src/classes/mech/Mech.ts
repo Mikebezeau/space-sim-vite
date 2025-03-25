@@ -8,20 +8,20 @@ import useParticleStore from "../../stores/particleStore";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
-  getGeomColorList,
-  getMergedBufferGeom,
-  getMergedBufferGeomColor,
-  getSimplifiedGeometry,
-  getTessellatedExplosionMesh,
+  getGeomColorList, // list of all colors used by mech design
+  getMergedBufferGeom, // merge all meshes into one buffer geometry
+  getMergedBufferGeomColor, // merge all meshes of given color into one buffer geometry
+  getSimplifiedGeometry, // reduce polygon count of given geometry, used to create the explosion mesh
+  getTessellatedExplosionMesh, // break large geometry into smaller triangles for explosion effect
 } from "../../util/mechGeometryUtil";
-import useLoaderStore from "../../stores/loaderStore";
 import { FPS } from "../../constants/constants";
+// TODO reuse materials from constants
 import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
 import useWeaponFireStore from "../../stores/weaponFireStore";
 import { DESIGN_TYPE } from "../../constants/particleConstants";
 
-// TODO move MECH_STATE to constants / create an isDead function?
+// TODO move MECH_STATE to constants
 export const MECH_STATE = {
   idle: 0,
   moving: 1,
@@ -82,6 +82,7 @@ class Mech implements mechInt {
   timeCounter: number;
   useInstancedMesh: boolean;
   _mechBP: MechBP;
+  sizeMechBP: number;
   // threejs
   object3d: THREE.Object3D;
   addedModel3dObjects: THREE.Object3D;
@@ -124,6 +125,7 @@ class Mech implements mechInt {
     // try to set 'new MechBP' directly error:
     // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
     this._mechBP = loadBlueprint(mechDesign);
+    this.sizeMechBP = this._mechBP.size();
     this.object3d = new THREE.Object3D(); // set from ref, updating this will update the object on screen for non-instanced mesh
     this.object3d.userData.mechId = this.id; // this gets set again when object3d is replaced for non-instanced mesh
     this.addedModel3dObjects = new THREE.Object3D(); // added meshes
@@ -158,6 +160,7 @@ class Mech implements mechInt {
 
   public set mechBP(mechDesign: any) {
     this._mechBP = loadBlueprint(mechDesign); // mech blue print
+    this.sizeMechBP = this._mechBP.size(); // pre-calculate size of mech
     this.setBuildObject3d();
     // temporary placeholder totalServoStructure
     const totalServoStructure = (this.structureTemp.max =
@@ -289,6 +292,16 @@ class Mech implements mechInt {
       this.isObject3dBuilt = true;
       // clone mech build into object
       this.cloneToObject3d();
+
+      // TEST edges - could be used for night vision mode of something - similar to wireframe
+      /*
+      const edges = new THREE.EdgesGeometry(this.bufferGeom);
+      const line = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: 0x6666ff })
+      );
+      this.object3d.add(line);
+      */
     }
   }
 

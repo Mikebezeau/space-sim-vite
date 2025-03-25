@@ -79,11 +79,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
       );
     });
     // set boss enemy to center
-    this.enemyMechs[0].object3d.position.set(
-      Math.random() * 50,
-      Math.random() * 50,
-      Math.random() * 50
-    );
+    this.enemyMechs[0].object3d.position.set(0, 0, 0);
     // group enemies into squads, sets leaders and upgrades leader ships
     this.groupEnemies();
     // set boid controller
@@ -287,14 +283,18 @@ class EnemyMechGroup implements enemyMechGroupInt {
             : curr
         );
         */
-      enemy.targetPosition = new THREE.Vector3().copy(interceptPoint); //closestPoint);
+      enemy.isBoidDefending = true;
+      enemy.targetPosition.copy(interceptPoint); //closestPoint);
     });
   }
 
   updateUseFrame(delta: number, scene: THREE.Scene) {
-    this.boidController?.update(delta);
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
+
+    this.boidController?.updateUseFrame();
 
     this.enemyMechs.forEach((enemy) => {
+      enemy.updateUseFrameBoidForce(delta);
       enemy.updateMechUseFrame(delta, scene);
     });
   }
