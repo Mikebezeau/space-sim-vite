@@ -179,26 +179,31 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
     addBullet: (position, direction) => {
       if (get().particleController) {
         const numParticles = 25;
-        const particleSpeed = WEAPON_FIRE_SPEED.proj;
+        const particleSpeed = WEAPON_FIRE_SPEED.projectile;
         for (let i = 1; i <= numParticles; i++) {
-          get()
-            .vectorTemp.set(0, 0, 1)
-            .applyEuler(direction)
-            .multiplyScalar(
-              particleSpeed * 0.6 + (particleSpeed * 0.4 * i) / numParticles
-            );
+          // particle position
+          get().qTemp.setFromEuler(direction);
+          get().positionTemp.set(0, 0, 1).applyQuaternion(get().qTemp);
+          const offset = -i * 0.05; // world units
+          get().positionTemp.add(get().positionTemp.multiplyScalar(offset));
+          // particle velocity
+          get().vectorTemp.set(0, 0, 1).applyEuler(direction).multiplyScalar(
+            particleSpeed // * 0.6 + (particleSpeed * 0.4 * i) / numParticles
+          );
+          // normalized size (1 to 0)
+          const size = (numParticles - i - 1) / numParticles;
           get().particleController.spawnParticle({
             design: DESIGN_TYPE.circle,
-            position: position,
-            velocity: {
-              x: get().vectorTemp.x,
-              y: get().vectorTemp.y,
-              z: get().vectorTemp.z,
+            position: {
+              x: position.x + get().positionTemp.x,
+              y: position.y + get().positionTemp.y,
+              z: position.z + get().positionTemp.z,
             },
+            velocity: get().vectorTemp,
             color: get().colors.yellow,
             endColor: get().colors.red,
             lifeTime: 2,
-            size: 800 * (i / numParticles),
+            size: 500 * size,
           });
         }
       }
@@ -208,24 +213,30 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         const numParticles = 50;
         const particleSpeed = WEAPON_FIRE_SPEED.beam;
         for (let i = 1; i <= numParticles; i++) {
-          get()
-            .vectorTemp.set(0, 0, 1)
-            .applyEuler(direction)
-            .multiplyScalar(
-              particleSpeed * 0.6 + (particleSpeed * 0.4 * i) / numParticles
-            );
+          // particle position
+          get().qTemp.setFromEuler(direction);
+          get().positionTemp.set(0, 0, 1).applyQuaternion(get().qTemp);
+          const offset = -i * 0.05; // world units
+          get().positionTemp.add(get().positionTemp.multiplyScalar(offset));
+          // particle velocity
+          get().vectorTemp.set(0, 0, 1).applyEuler(direction).multiplyScalar(
+            particleSpeed // * 0.6 + (particleSpeed * 0.4 * i) / numParticles
+          );
+          // normalized size (1 to 0)
+          const size = (numParticles - i - 1) / numParticles;
           get().particleController.spawnParticle({
             design: DESIGN_TYPE.circle,
-            position: position,
-            velocity: {
-              x: get().vectorTemp.x,
-              y: get().vectorTemp.y,
-              z: get().vectorTemp.z,
+            position: {
+              x: position.x + get().positionTemp.x,
+              y: position.y + get().positionTemp.y,
+              z: position.z + get().positionTemp.z,
             },
+            velocity: get().vectorTemp,
+
             color: get().colors.blue,
             endColor: get().colors.grey,
             lifeTime: 2,
-            size: 400 * (i / numParticles),
+            size: 300 * size,
           });
         }
       }

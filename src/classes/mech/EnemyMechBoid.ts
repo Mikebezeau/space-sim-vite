@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import useStore from "../../stores/store";
 import EnemyMech from "./EnemyMech";
+import { flipRotation } from "../../util/cameraUtil";
 import { FPS } from "../../constants/constants";
 import { BIOD_PARAMS } from "../../classes/BoidController";
 import { setCustomData } from "r3f-perf";
@@ -42,6 +43,11 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
   lerpHeading: THREE.Vector3;
   lerpHeadingPlusPosition: THREE.Vector3;
 
+  // to fire at player
+  targetDirectionVec3: THREE.Vector3;
+  forwardVec3: THREE.Vector3;
+  shootPlayerEuler: THREE.Euler;
+
   constructor(enemyMechBPindex: number = 0, isBossMech: boolean = false) {
     super(enemyMechBPindex, isBossMech);
 
@@ -74,6 +80,10 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     this.heading = new THREE.Vector3();
     this.lerpHeading = new THREE.Vector3(); // use to smooth rotation direction TODO adjust by manuever
     this.lerpHeadingPlusPosition = new THREE.Vector3(); // the final direction to lookAt
+    // fire at player
+    this.targetDirectionVec3 = new THREE.Vector3();
+    this.forwardVec3 = new THREE.Vector3();
+    this.shootPlayerEuler = new THREE.Euler();
   }
 
   resetVectors() {
@@ -130,7 +140,34 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
         .copy(this.lerpHeading)
         .add(this.object3d.position);
 
-      // update heading
+      // fire at player if possible
+      if (
+        this.object3d.position.distanceTo(
+          useStore.getState().player.object3d.position
+        ) < 500
+      ) {
+        // Vector3 forward direction of mech
+        this.forwardVec3.set(0, 0, 1).applyQuaternion(this.object3d.quaternion);
+        // Vector3 direction to player
+        this.targetDirectionVec3
+          .subVectors(
+            useStore.getState().player.object3d.position,
+            this.object3d.position
+          )
+          .normalize();
+        // angle difence between forward and target direction
+        const angle = this.forwardVec3.angleTo(this.targetDirectionVec3);
+        // if angle is small enough, fire
+        if (angle < 0.3) {
+          this.object3d.lookAt(useStore.getState().player.object3d.position);
+          this.shootPlayerEuler.copy(this.object3d.rotation);
+          this.updateFireWeaponGroup(null, this.shootPlayerEuler);
+        }
+      }
+
+      // update heading down here so that this.object3d.lookAt can be used in weapon fire routine
+      // TODO try rotateTowards for something
+      // mesh.quaternion.rotateTowards( targetQuaternion, step );
       this.object3d.lookAt(this.lerpHeadingPlusPosition);
     }
   }

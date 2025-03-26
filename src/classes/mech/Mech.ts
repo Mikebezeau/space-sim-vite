@@ -60,7 +60,10 @@ interface mechInt {
   updateExplosionUseFrame: (delta: number, scene?: THREE.Scene) => void;
   isMechDead: () => boolean;
   setMechDead: (scene?: THREE.Scene) => void;
-  updateFireWeaponGroup: (targetQuaternoin?: THREE.Quaternion) => void;
+  updateFireWeaponGroup: (
+    targetQuaternoin?: THREE.Quaternion,
+    enemyWeaponFireEuler?: THREE.Euler
+  ) => void;
   fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
 }
 
@@ -643,22 +646,32 @@ class Mech implements mechInt {
 
   // TODO this function is not complete
   // called every frame
-  updateFireWeaponGroup(targetQuaternoin?: THREE.Quaternion) {
+  updateFireWeaponGroup(
+    targetQuaternoin?: THREE.Quaternion | null,
+    enemyWeaponFireEuler?: THREE.Euler
+  ) {
     if (this.mechBP?.weaponList) {
       // TODO add these to the class instead of const above
       weaponFireMechParentObj.position.copy(this.object3d.position);
       weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
-      // get quaternion
-      weaponFireQuaternoin.copy(weaponFireMechParentObj.quaternion);
-      if (targetQuaternoin)
-        weaponFireQuaternoin.multiply(targetQuaternoin).normalize(); //normalization is important
-      weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
+      // enemy aiming
+      if (enemyWeaponFireEuler) {
+        weaponFireEuler.copy(enemyWeaponFireEuler);
+        // player aiming
+      } else {
+        weaponFireQuaternoin.copy(weaponFireMechParentObj.quaternion);
+        // player aiming
+        if (targetQuaternoin)
+          weaponFireQuaternoin.multiply(targetQuaternoin).normalize(); //normalization is important
 
+        // set weapon fire direction
+        weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
+      }
       // get list of weapons that are ready to fire
       const readyWeapons = this.mechBP.weaponList.filter(
         (weapon: MechWeapon) =>
           weapon.weaponFireData.isReady &&
-          weapon.weaponFireData.chainFireTimeToFire < Date.now()
+          weapon.weaponFireData.chainFireTimeToFire < Date.now() //TODO change to delta time
       );
       // ready all reloaded weapons
       this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
@@ -690,6 +703,7 @@ class Mech implements mechInt {
         weaponToFire.weaponFireData.timeToReload = Date.now() + RoFTime;
         // add delay to all weapons in the group
         this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
+          // TODO change to delta time
           weapon.weaponFireData.chainFireTimeToFire =
             Date.now() + groupNextFireTime;
         });

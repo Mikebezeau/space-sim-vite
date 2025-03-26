@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import useStore from "../stores/store";
 import useDevStore from "../stores/devStore";
 import { MECH_STATE } from "./mech/Mech";
 import { setCustomData } from "r3f-perf";
@@ -125,20 +126,35 @@ class BoidController implements ballContaineroidControllerInt {
       // if mech is wandering and needs a target, set target
       // TODO move to mech boid update
       if (mech1.getIsLeader()) {
-        if (mech1.isNeedsNewTarget && mech1.isBoidWandering) {
-          this.setWanderTarget(mech1, 1000);
-          mech1.isNeedsNewTarget = false;
-        }
-        if (mech1.isBoidWandering) {
+        // seek current target
+        if (mech1.isBoidDefending) {
+          // if player nearby, seek player
+          if (
+            mech1.object3d.position.distanceTo(
+              useStore.getState().player.object3d.position
+            ) < 500
+          ) {
+            // seek player position
+            mech1.applyForce(
+              this.seek(mech1, useStore.getState().player.object3d.position)
+            );
+          } else {
+            // seek target position
+            mech1.applyForce(this.seek(mech1, mech1.targetPosition));
+          }
+        } else if (mech1.isBoidWandering) {
           // if close to target, set new target
           // TODO 100 is a placeholder - use hitboxMaxHalfWidth for calculations - make same as seek
           // create variable for target distance minimum
+          // TODO can put this in boid mech class
           if (mech1.object3d.position.distanceTo(mech1.targetPosition) < 100) {
             mech1.isNeedsNewTarget = true;
           }
-        }
-        // seek current target
-        if (mech1.isBoidWandering || mech1.isBoidDefending) {
+          if (mech1.isNeedsNewTarget) {
+            this.setWanderTarget(mech1, 1000);
+            mech1.isNeedsNewTarget = false;
+          }
+          // seek target wander position
           mech1.applyForce(this.seek(mech1, mech1.targetPosition));
         } else {
           // stay within range of boss mech
@@ -147,7 +163,7 @@ class BoidController implements ballContaineroidControllerInt {
             const distance = mech1.object3d.position.distanceTo(
               this.bossMech.object3d.position
             );
-            // TODO will go further and further away from boss mech
+            // TODO obrbit path goes further and further away from boss mech
             mech1.applyForce(
               this.seekOrbitTarget(
                 mech1,

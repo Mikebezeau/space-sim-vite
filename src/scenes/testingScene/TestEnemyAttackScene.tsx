@@ -185,11 +185,11 @@ const TestEnemyAttackScene = () => {
       <WeaponFire />
       <ObbTest ref={obbBoxRefs} />
       {/*<BoidVectorTest />*/}
-      {useEnemyStore.getState().enemyGroup.defenseNodes !== null && (
+      {/*useEnemyStore.getState().enemyGroup.defenseNodes !== null && (
         <DefenseNodesHelper
           defenseNodes={useEnemyStore.getState().enemyGroup.defenseNodes!}
         />
-      )}
+      )*/}
       {/*
       <mesh ref={trackRef}>
         <meshPhongMaterial color="yellow" transparent opacity={0.1} />

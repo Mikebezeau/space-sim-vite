@@ -57,7 +57,11 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       useParticleStore.getState().effects.addMissile(position, euler);
     }
     if (!weaponFireSpeed) {
-      console.warn("weaponFireSpeed not set");
+      console.warn(
+        "weaponFireSpeed not set",
+        weaponFireSpeed,
+        weapon.weaponType
+      );
       return;
     }
 

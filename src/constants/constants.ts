@@ -51,10 +51,11 @@ export const PLAYER = {
 
 export const SPEED_VALUES = [-50, 0, 1, 5, 10, 15];
 
-export const WEAPON_FIRE_SPEED = {
-  beam: 500,
-  proj: 200,
-  missile: 50,
-  eMelee: 0,
-  melee: 0,
-};
+// TODO use enum for others
+export enum WEAPON_FIRE_SPEED {
+  beam = 500,
+  projectile = 200,
+  missile = 50,
+  eMelee = 0,
+  melee = 0,
+}

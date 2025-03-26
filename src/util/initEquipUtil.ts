@@ -13,7 +13,7 @@ function transferProperties(mergBP: any, parsedBP: any) {
   // transfering select properties from parsedBP to mergBP
   Object.keys(parsedBP).forEach((key) => {
     if (typeof parsedBP[key] !== "object") {
-      // non object props: name and type are strings, all others are numbers
+      // non object props: identify what props are strings, all others are numbers
       /*
       crewLocationServoId: [],
       passengersLocationServoId: [],
