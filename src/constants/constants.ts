@@ -1,3 +1,5 @@
+import { equipData } from "../equipment/data/equipData";
+
 export const FPS = 60;
 
 export const COMPONENT_RENDER_ORDER = {
@@ -52,10 +54,10 @@ export const PLAYER = {
 export const SPEED_VALUES = [-50, 0, 1, 5, 10, 15];
 
 // TODO use enum for others
-export enum WEAPON_FIRE_SPEED {
-  beam = 500,
-  projectile = 200,
-  missile = 50,
-  eMelee = 0,
-  melee = 0,
-}
+export const WEAPON_FIRE_SPEED = {
+  [equipData.weaponType.beam]: 500,
+  [equipData.weaponType.projectile]: 200,
+  [equipData.weaponType.missile]: 50,
+  [equipData.weaponType.eMelee]: 0,
+  [equipData.weaponType.melee]: 0,
+};

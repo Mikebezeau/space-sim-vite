@@ -9,6 +9,7 @@ import {
   applyScaledWeightMult,
   applyScaledCPMult,
 } from "../../../util/mechServoUtil";
+import { WEAPON_FIRE_SPEED } from "../../../constants/constants";
 
 const DEFAULT_DATA = {
   damageRange: 5,
@@ -56,6 +57,8 @@ interface MechWeaponInt {
   burstValue(): number | string;
   weight(): number;
   ammoCP(): number;
+  // game util
+  getSpeed(): number;
 }
 
 class MechWeapon extends MechServo implements MechWeaponInt {
@@ -247,6 +250,10 @@ class MechWeapon extends MechServo implements MechWeaponInt {
   //FOR PROJECTILE WEAPONS ONLY
   ammoCP() {
     return 0;
+  }
+
+  getSpeed() {
+    return WEAPON_FIRE_SPEED[this.weaponType];
   }
 }
 

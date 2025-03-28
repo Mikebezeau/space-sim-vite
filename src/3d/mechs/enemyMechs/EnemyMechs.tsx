@@ -39,7 +39,7 @@ const EnemyMechs = () => {
                     // test: way to add Object3Ds on the fly
                     // isWaitLoadModelsTotal: number of LoadModel3d objects loading below
                     const isWaitLoadModelsTotal = 1;
-                    enemyMech.assignObject3dComponentRef(
+                    enemyMech.assignObject3dComponent(
                       mechRef,
                       isWaitLoadModelsTotal
                     );

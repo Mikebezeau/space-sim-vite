@@ -4,7 +4,7 @@ import {
   Euler,
   Object3D,
   Quaternion,
-  Texture,
+  //Texture,
   TextureLoader,
   Vector3,
 } from "three";
@@ -16,6 +16,7 @@ import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import smokeTextureSrc from "../sprites/particles/pngTrans/smoke_11.png";
 import { getRandomPointWithinSphere } from "../util/gameUtil";
+import { equipData } from "../equipment/data/equipData";
 import { FPS, WEAPON_FIRE_SPEED } from "../constants/constants";
 import { SPRITE_TYPE, DESIGN_TYPE } from "../constants/particleConstants";
 
@@ -33,6 +34,8 @@ type addExplosionOptionsType = {
   designType?: number;
   spriteType?: number;
 };
+
+// NOTE: lieftime is in seconds
 
 interface particleStoreState {
   //starSpriteSrc: Texture;
@@ -55,6 +58,7 @@ interface particleStoreState {
   normTemp: Vector3;
   positionTemp: Vector3;
   vectorTemp: Vector3;
+  removeParticles: (particleIndexRange: number[]) => void;
   effects: {
     addExplosion: (
       position: Vector3 | { x: number; y: number; z: number },
@@ -62,16 +66,19 @@ interface particleStoreState {
     ) => void;
     addBullet: (
       position: Vector3 | { x: number; y: number; z: number },
-      direction: Euler
-    ) => void;
+      direction: Euler,
+      weaponFireLifeTime: number
+    ) => number[]; // returns particleIndexRange
     addLaser: (
       position: Vector3 | { x: number; y: number; z: number },
-      direction: Euler
-    ) => void;
+      direction: Euler,
+      weaponFireLifeTime: number
+    ) => number[]; // returns particleIndexRange
     addMissile: (
       position: Vector3 | { x: number; y: number; z: number },
-      direction: Euler
-    ) => void;
+      direction: Euler,
+      weaponFireLifeTime: number
+    ) => void; // TODO missiles will be handled differently (due to homing function)
   };
   playerEffects: {
     addEngineExhaust: (
@@ -143,6 +150,13 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
   normTemp: new Vector3(),
   positionTemp: new Vector3(),
   vectorTemp: new Vector3(),
+  removeParticles: (particleIndexRange) => {
+    if (get().particleController) {
+      particleIndexRange.forEach((particleIndex) => {
+        get().particleController.removeParticle(particleIndex);
+      });
+    }
+  },
   effects: {
     addExplosion: (position, options = {}) => {
       if (get().particleController) {
@@ -176,23 +190,26 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         }
       }
     },
-    addBullet: (position, direction) => {
+    addBullet: (position, direction, weaponFireLifeTime) => {
+      let particleIndexRange: number[] = [];
       if (get().particleController) {
         const numParticles = 25;
-        const particleSpeed = WEAPON_FIRE_SPEED.projectile;
+        const particleSpeed =
+          WEAPON_FIRE_SPEED[equipData.weaponType.projectile];
         for (let i = 1; i <= numParticles; i++) {
           // particle position
           get().qTemp.setFromEuler(direction);
           get().positionTemp.set(0, 0, 1).applyQuaternion(get().qTemp);
-          const offset = -i * 0.05; // world units
+          const offset = -i * 0.05; // spread out particles
           get().positionTemp.add(get().positionTemp.multiplyScalar(offset));
           // particle velocity
-          get().vectorTemp.set(0, 0, 1).applyEuler(direction).multiplyScalar(
-            particleSpeed // * 0.6 + (particleSpeed * 0.4 * i) / numParticles
-          );
+          get()
+            .vectorTemp.set(0, 0, 1)
+            .applyEuler(direction)
+            .multiplyScalar(particleSpeed);
           // normalized size (1 to 0)
           const size = (numParticles - i - 1) / numParticles;
-          get().particleController.spawnParticle({
+          const particleIndex = get().particleController.spawnParticle({
             design: DESIGN_TYPE.circle,
             position: {
               x: position.x + get().positionTemp.x,
@@ -202,29 +219,34 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             velocity: get().vectorTemp,
             color: get().colors.yellow,
             endColor: get().colors.red,
-            lifeTime: 2,
-            size: 500 * size,
+            lifeTime: weaponFireLifeTime,
+            size: 300 * size,
           });
+          // update particleRange
+          particleIndexRange.push(particleIndex);
         }
       }
+      return particleIndexRange;
     },
-    addLaser: (position, direction) => {
+    addLaser: (position, direction, weaponFireLifeTime) => {
+      let particleIndexRange: number[] = [];
       if (get().particleController) {
         const numParticles = 50;
-        const particleSpeed = WEAPON_FIRE_SPEED.beam;
+        const particleSpeed = WEAPON_FIRE_SPEED[equipData.weaponType.beam];
         for (let i = 1; i <= numParticles; i++) {
           // particle position
           get().qTemp.setFromEuler(direction);
           get().positionTemp.set(0, 0, 1).applyQuaternion(get().qTemp);
-          const offset = -i * 0.05; // world units
+          const offset = -i * 0.05; // spread out particles
           get().positionTemp.add(get().positionTemp.multiplyScalar(offset));
           // particle velocity
-          get().vectorTemp.set(0, 0, 1).applyEuler(direction).multiplyScalar(
-            particleSpeed // * 0.6 + (particleSpeed * 0.4 * i) / numParticles
-          );
+          get()
+            .vectorTemp.set(0, 0, 1)
+            .applyEuler(direction)
+            .multiplyScalar(particleSpeed);
           // normalized size (1 to 0)
           const size = (numParticles - i - 1) / numParticles;
-          get().particleController.spawnParticle({
+          const particleIndex = get().particleController.spawnParticle({
             design: DESIGN_TYPE.circle,
             position: {
               x: position.x + get().positionTemp.x,
@@ -235,16 +257,19 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
 
             color: get().colors.blue,
             endColor: get().colors.grey,
-            lifeTime: 2,
-            size: 300 * size,
+            lifeTime: weaponFireLifeTime,
+            size: 200 * size,
           });
+          // update particleRange
+          particleIndexRange.push(particleIndex);
         }
       }
+      return particleIndexRange;
     },
-    addMissile: (position, direction) => {
+    addMissile: (position, direction, weaponFireLifeTime) => {
       if (get().particleController) {
-        const particleSpeed = WEAPON_FIRE_SPEED.missile;
-        const lifeTime = 5;
+        const particleSpeed = WEAPON_FIRE_SPEED[equipData.weaponType.missile];
+        const lifeTime = weaponFireLifeTime;
         get()
           .vectorTemp.set(0, 0, 1)
           .applyEuler(direction)
@@ -273,9 +298,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
           get()
             .vectorTemp.set(0, 0, 1)
             .applyEuler(direction)
-            .multiplyScalar(
-              WEAPON_FIRE_SPEED.missile * timeInterval * timeInterval
-            )
+            .multiplyScalar(particleSpeed * timeInterval * timeInterval)
             .add(position);
           get().effects.addExplosion(
             get().vectorTemp,

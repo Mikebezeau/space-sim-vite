@@ -86,7 +86,7 @@ const Station = memo((props: StationInt) => {
         ref={(mechRef: Object3D) => {
           if (mechRef === null) return;
           const isWaitLoadModelsTotal = loadModel3dObjects.length; // number of LoadModel3d objects loading
-          station.assignObject3dComponentRef(mechRef, isWaitLoadModelsTotal);
+          station.assignObject3dComponent(mechRef, isWaitLoadModelsTotal);
         }}
       />
       {loadModel3dObjects.map((model3d, index) => (

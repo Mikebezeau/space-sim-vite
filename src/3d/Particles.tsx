@@ -36,9 +36,8 @@ const Particles = (props: ParticlesInt) => {
   useFrame((_, delta) => {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     if (particleController) particleController.update(delta);
-    // ordering sequence of useFrames so that this useFrame runs last
-    // must set other useFrames renderPriority to -2 or lower to ensure this runs last
-    // order set to after position updates
+    // sequence of useFrames ordered so that functions that
+    // determine position of mechs and hit detection are run before this one
   });
 
   return null;

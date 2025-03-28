@@ -1,8 +1,7 @@
 import * as THREE from "three";
 import useStore from "../stores/store";
 import useDevStore from "../stores/devStore";
-import { MECH_STATE } from "./mech/Mech";
-import { setCustomData } from "r3f-perf";
+import Mech from "./mech/Mech";
 import EnemyMechBoid from "./mech/EnemyMechBoid";
 
 export const BIOD_PARAMS = {
@@ -196,11 +195,18 @@ class BoidController implements ballContaineroidControllerInt {
         }
         this.addSeparateVector(mech1, mech2);
       }
-
+      // avoid player mech
+      this.avoid(
+        mech1,
+        useStore.getState().player.object3d.position,
+        mech1.maxHalfWidth * 3 + useStore.getState().player.maxHalfWidth * 3
+      );
       // all flocking forces have been calculated for mech1, apply forces to mech1
       mech1.applyForce(this.normalizeAlignVector(mech1));
       mech1.applyForce(this.normalizeSeparateVector(mech1));
       mech1.applyForce(this.normalizeCohesionVector(mech1));
+      // test avoid player - not working quite right
+      //mech1.applyForce(this.avoidSteerVector);
       // enemyGroup udpates all mechs positions in:
       // EnemyMechs.tsx -> useEffect -> enemyGroup.updateUseFrame
     }
@@ -356,17 +362,30 @@ class BoidController implements ballContaineroidControllerInt {
     return currentMech.cohesionSteerVector;
   }
 
-  avoid(currentMech: EnemyMechBoid, wall = new THREE.Vector3()) {
-    //currentMech.bufferGeom.computeBoundingSphere();
-    //const boundingSphere = currentMech.bufferGeom.boundingSphere;
-    // using hitbox size instead of boundingSphere
-    this.toMeVector.set(0, 0, 0);
-    this.toMeVector.subVectors(currentMech.object3d.position, wall);
+  avoid(
+    currentMech: EnemyMechBoid,
+    avoidPosition = new THREE.Vector3(),
+    avoidDistance = 100
+  ) {
+    this.avoidSteerVector.set(0, 0, 0);
+    this.avoidSteerVector.subVectors(
+      currentMech.object3d.position,
+      avoidPosition
+    );
+    const distance = this.toMeVector.length();
+    if (distance > avoidDistance) {
+      this.avoidSteerVector.normalize();
+      this.avoidSteerVector.multiplyScalar(
+        1 / Math.pow(avoidDistance / distance, 2) // TODO testing this exponemtial function
+      );
 
-    const distance = this.toMeVector.length() - currentMech.maxHalfWidth * 2;
-    this.avoidSteerVector.copy(this.toMeVector);
-    this.avoidSteerVector.normalize();
-    this.avoidSteerVector.multiplyScalar(1 / Math.pow(distance, 2));
+      //const maxSpeed = this.params.maxSpeed;
+      const maxForce = this.params.seek.maxForce;
+      // limit force
+      if (this.avoidSteerVector.length() > maxForce) {
+        this.avoidSteerVector.clampLength(0, maxForce);
+      }
+    }
     return this.avoidSteerVector;
   }
 

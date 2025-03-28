@@ -34,7 +34,7 @@ const PlayerMech = () => {
         ref={(mechRef) => {
           if (mechRef) {
             playerMechRef.current = mechRef;
-            player.assignObject3dComponentRef(mechRef);
+            player.assignObject3dComponent(mechRef);
             setPlayerMechVisibility();
           }
         }}

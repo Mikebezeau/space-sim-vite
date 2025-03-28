@@ -33,7 +33,7 @@ export const MECH_STATE = {
 interface mechInt {
   setBuildObject3d: () => void;
   // assign mech to object3d ref from in scene component
-  assignObject3dComponentRef: (
+  assignObject3dComponent: (
     object3d: THREE.Object3D | null,
     isLoadingModelCount?: number
   ) => void;
@@ -62,7 +62,7 @@ interface mechInt {
   setMechDead: (scene?: THREE.Scene) => void;
   updateFireWeaponGroup: (
     targetQuaternoin?: THREE.Quaternion,
-    enemyWeaponFireEuler?: THREE.Euler
+    enemyWeaponFireTargetVec3?: THREE.Vector3
   ) => void;
   fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
 }
@@ -80,7 +80,6 @@ class Mech implements mechInt {
   isEnemy: boolean;
   isStation: boolean;
 
-  isObject3dBuilt: boolean;
   mechState: number;
   timeCounter: number;
   useInstancedMesh: boolean;
@@ -121,7 +120,6 @@ class Mech implements mechInt {
     this.isPlayer = isPlayer;
     this.isEnemy = isEnemy;
     this.isStation = isStation;
-    this.isObject3dBuilt = false;
     this.mechState = MECH_STATE.moving;
     this.timeCounter = 0;
     this.useInstancedMesh = useInstancedMesh;
@@ -195,7 +193,7 @@ class Mech implements mechInt {
     this.ifBuildCompleteInitializeMech();
   }
 
-  assignObject3dComponentRef(
+  assignObject3dComponent(
     object3dRef: THREE.Object3D | null,
     isLoadingModelCount: number = 0
   ) {
@@ -207,7 +205,7 @@ class Mech implements mechInt {
 
     if (this.useInstancedMesh) {
       console.warn(
-        "assignObject3dComponentRef: cannot assign object3dRef to instanced mesh mech"
+        "assignObject3dComponent: cannot assign object3dRef to instanced mesh mech"
       );
       return;
     }
@@ -291,8 +289,6 @@ class Mech implements mechInt {
       this.object3d.clear(); // just in case, clear children
       // add this.id to object3d userData to assist hit detection functions
       this.object3d.userData.mechId = this.id;
-      // finished setting up object3d
-      this.isObject3dBuilt = true;
       // clone mech build into object
       this.cloneToObject3d();
 
@@ -481,7 +477,7 @@ class Mech implements mechInt {
 
     this.structureTemp.damage += damage;
     if (this.structureTemp.damage > this.structureTemp.max) {
-      this.explode(scene);
+      //this.explode(scene);
     }
   }
 
@@ -540,7 +536,6 @@ class Mech implements mechInt {
   }
 
   updateMechUseFrame(delta: number, scene?: THREE.Scene) {
-    if (!this.isObject3dBuilt) return null;
     this.updateExplosionUseFrame(delta, scene);
   }
 
@@ -648,22 +643,23 @@ class Mech implements mechInt {
   // called every frame
   updateFireWeaponGroup(
     targetQuaternoin?: THREE.Quaternion | null,
-    enemyWeaponFireEuler?: THREE.Euler
+    enemyWeaponFireTargetVec3?: THREE.Vector3
   ) {
     if (this.mechBP?.weaponList) {
       // TODO add these to the class instead of const above
       weaponFireMechParentObj.position.copy(this.object3d.position);
       weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
       // enemy aiming
-      if (enemyWeaponFireEuler) {
-        weaponFireEuler.copy(enemyWeaponFireEuler);
+      if (enemyWeaponFireTargetVec3) {
+        weaponFireMechParentObj.lookAt(enemyWeaponFireTargetVec3);
+        weaponFireEuler.copy(weaponFireMechParentObj.rotation);
         // player aiming
       } else {
         weaponFireQuaternoin.copy(weaponFireMechParentObj.quaternion);
         // player aiming
-        if (targetQuaternoin)
+        if (targetQuaternoin) {
           weaponFireQuaternoin.multiply(targetQuaternoin).normalize(); //normalization is important
-
+        }
         // set weapon fire direction
         weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
       }
@@ -681,7 +677,8 @@ class Mech implements mechInt {
       });
 
       // for each weapon type array
-      const RoF = 4; // rate of fire
+      // testing give enemies a slower rate of fire
+      const RoF = enemyWeaponFireTargetVec3 ? 1 : 5; // rate of fire
       const RoFTime = 1000 / RoF; // 1 second divided by RoF
       // RoFTime divided by num weapons in the group
 
@@ -698,6 +695,8 @@ class Mech implements mechInt {
             ? prev
             : curr
         );
+        // TODO will have to set enemy weapon fire direction here
+        // - account for weapon offset when looking at player
         this.fireWeapon(weaponToFire, weaponFireEuler);
         weaponToFire.weaponFireData.isReady = false;
         weaponToFire.weaponFireData.timeToReload = Date.now() + RoFTime;
@@ -721,7 +720,7 @@ class Mech implements mechInt {
     // fire weapon / add weaponFire to weaponFireList for hit detection
     useWeaponFireStore
       .getState()
-      .addWeaponFire(weapon, weaponWorldPositionVec, weaponFireEuler);
+      .addWeaponFire(this.id, weapon, weaponWorldPositionVec, weaponFireEuler);
 
     // if player show fire effect
     if (this.isPlayer) {

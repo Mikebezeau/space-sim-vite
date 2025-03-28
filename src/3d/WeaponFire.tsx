@@ -5,60 +5,29 @@ import useStore from "../stores/store";
 import useEnemyStore from "../stores/enemyStore";
 import useWeaponFireStore from "../stores/weaponFireStore";
 import { DefenseNodesHelper } from "../scenes/testingScene/TestEnemyAttackScene";
-import Mech from "../classes/mech/Mech";
 import { defenseNodesType } from "../classes/mech/EnemyMechGroup";
-import { FPS, COMPONENT_RENDER_ORDER } from "../constants/constants";
+import { COMPONENT_RENDER_ORDER } from "../constants/constants";
 
 // TODO create WeaponFire class
 const WeaponFire = () => {
-  const player = useStore((state) => state.player);
-  const enemyGroup = useEnemyStore((state) => state.enemyGroup);
-  const instancedMeshs = useEnemyStore(
-    (state) => state.enemyGroup.instancedMeshs
-  );
-
   const defenseNodesRef = useRef<defenseNodesType | null>(null);
 
   const { scene } = useThree();
-  const ray = new THREE.Ray();
 
   // for testing ray position and direction
-  const testArrowHelper = false; // can impliment this in testing GUI
-  const arrowHelper = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
+  const testArrowHelper = true; // can impliment this in testing GUI
+  const arrowHelperRef = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
 
   useEffect(() => {
-    if (testArrowHelper) scene.add(arrowHelper.current);
+    if (testArrowHelper) scene.add(arrowHelperRef.current);
+    else scene.remove(arrowHelperRef.current);
     return () => {
-      scene.remove(arrowHelper.current);
+      scene.remove(arrowHelperRef.current);
     };
   }, [testArrowHelper]);
 
-  /*
   useEffect(() => {
-    useStore
-      .getState()
-      .shiftPlayerLocalZoneToNewPosition(
-        useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
-      );
-  }, []);
-*/
-  const dummyRaycaster = new THREE.Raycaster();
-  dummyRaycaster.params.Points.threshold = 0.01;
-  dummyRaycaster.near = 0.1;
-
-  // these object refrences do not change during the battle
-  const objectsToTest = [
-    //player.object3d,
-    ...enemyGroup.enemyMechs.map((enemy: Mech) =>
-      enemy.useInstancedMesh ? null : enemy.object3d
-    ),
-    // instanceed meshes
-    ...instancedMeshs.map((instancedMesh) => instancedMesh),
-  ];
-
-  useFrame((_, delta) => {
-    const deltaFPS = delta * FPS;
-    // testing on the fly zone check / zone synch
+    // synch player and enemy world zone positions
     if (
       !useStore
         .getState()
@@ -79,111 +48,30 @@ const WeaponFire = () => {
           .shiftPlayerLocalZoneToNewPosition(
             useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
           );
+        // set enemy group defense positions
         console.log("WeaponFire Battle: set emeny group defense positions");
         useEnemyStore.getState().enemyGroup.setDefenseTargetPositions(
           useStore.getState().player.object3d.position, // local position
           1
         );
+        // testing
         defenseNodesRef.current =
           useEnemyStore.getState().enemyGroup.defenseNodes;
       }
     }
+    // set weapon fire hit test targets
+    useWeaponFireStore.getState().setObjectsToTest();
+  }, []);
 
-    // hit test
-    useWeaponFireStore.getState().updateWeaponFireUseFrame(deltaFPS);
-    const weaponFireList = useWeaponFireStore.getState().weaponFireList;
-
-    weaponFireList.forEach((weaponFire, i) => {
-      const timeElapsed = Date.now() - weaponFire.timeStart;
-      ray.origin.set(
-        weaponFire.position.x + (weaponFire.velocity.x * timeElapsed) / 1000, //+ (acceleration * timeElapsed * timeElapsed)
-        weaponFire.position.y + (weaponFire.velocity.y * timeElapsed) / 1000,
-        weaponFire.position.z + (weaponFire.velocity.z * timeElapsed) / 1000
+  useFrame((_, delta) => {
+    useWeaponFireStore
+      .getState()
+      .updateWeaponFireUseFrame(
+        delta,
+        scene,
+        testArrowHelper,
+        arrowHelperRef.current
       );
-      ray.direction
-        .set(
-          weaponFire.velocity.x,
-          weaponFire.velocity.y,
-          weaponFire.velocity.z
-        )
-        .normalize();
-
-      if (testArrowHelper && i === weaponFireList.length - 1) {
-        arrowHelper.current.position.copy(ray.origin);
-        arrowHelper.current.setDirection(ray.direction);
-        arrowHelper.current.setLength(weaponFire.weaponFireSpeed / 10);
-      }
-      dummyRaycaster.far = weaponFire.weaponFireSpeed / 60; // TODO deltaFPS multiplication
-      dummyRaycaster.set(ray.origin, ray.direction);
-      const intersects = dummyRaycaster.intersectObjects(
-        objectsToTest.filter((obj) => obj !== null),
-        true
-      );
-
-      if (intersects.length > 0) {
-        // TODO check more then 1 intersect until find a non exploding / dead mech
-        let intersectedObject = intersects[0].object;
-        if (!intersectedObject) return;
-
-        const intersectPoint = intersects[0].point;
-
-        if (intersectedObject instanceof THREE.InstancedMesh) {
-          const instanceId = intersects[0].instanceId;
-          if (typeof instanceId === "undefined") {
-            console.warn("instanceId undefined");
-            return;
-          }
-          useEnemyStore
-            .getState()
-            .enemyGroup.recieveDamageInstancedEnemy(
-              scene,
-              intersectedObject as THREE.InstancedMesh,
-              instanceId,
-              intersectPoint,
-              weaponFire.damage
-            );
-        }
-        // end if instanced mesh
-        // else, is not instanced mesh
-        else {
-          while (
-            !intersectedObject.userData.mechId &&
-            intersectedObject.parent
-          ) {
-            intersectedObject = intersectedObject.parent;
-          }
-          const topParentMechObj = intersectedObject;
-          const intersectedObjectMechId = topParentMechObj.userData.mechId;
-
-          if (!intersectedObjectMechId) {
-            console.warn("Weaponfire hit test: no mech id found");
-            return;
-          }
-
-          // find mech by the mech.id
-          let intersectedMech: Mech | undefined;
-
-          if (player.id === intersectedObjectMechId) {
-            intersectedMech = useStore.getState().player;
-          } else {
-            intersectedMech = useEnemyStore
-              .getState()
-              .enemyGroup.enemyMechs.find(
-                (enemy) => enemy.id === intersectedObjectMechId
-              );
-          }
-          if (!intersectedMech) {
-            console.log(
-              "Weaponfire hit test: no mech found, id:",
-              intersectedObjectMechId
-            );
-            return;
-          }
-          weaponFire.hasHit = true;
-          intersectedMech?.recieveDamage(intersectPoint, weaponFire.damage);
-        }
-      }
-    });
   }, COMPONENT_RENDER_ORDER.weaponFireUpdate);
 
   return (

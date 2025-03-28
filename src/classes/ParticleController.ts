@@ -19,8 +19,9 @@ const UPDATEABLE_ATTRIBUTES = [
 export interface ParticleControllerInt {
   geometryUpdate(): void;
   random(): void;
-  spawnParticle(options: any): void;
+  spawnParticle(options: any): number; // return particle index number
   update(ttime: number): void;
+  removeParticle(index: number): void;
   dispose(): void;
 }
 
@@ -33,7 +34,9 @@ class ParticleController implements ParticleControllerInt {
   count: number;
   DPR: number;
   particleUpdate: boolean;
+  particlesRemoved: boolean;
   particleNeedClearUpdateRanges: boolean;
+  particleRemoveNeedClearUpdateRanges: boolean;
   onTick: any;
   reverseTime: boolean;
   fadeIn: number;
@@ -63,7 +66,9 @@ class ParticleController implements ParticleControllerInt {
     this.count = 0;
     this.DPR = window.devicePixelRatio;
     this.particleUpdate = false;
+    this.particlesRemoved = false;
     this.particleNeedClearUpdateRanges = false;
+    this.particleRemoveNeedClearUpdateRanges = false;
     this.onTick = options.onTick;
 
     this.reverseTime = options.reverseTime;
@@ -254,6 +259,7 @@ class ParticleController implements ParticleControllerInt {
         attr.clearUpdateRanges();
       });
     }
+    // replicate above for removing particles
   }
 
   //use one of the random numbers
@@ -268,6 +274,29 @@ class ParticleController implements ParticleControllerInt {
     this.material.uniforms.uTime.value = this.time;
     if (this.onTick) this.onTick(this, this.time); // optional callback
     this.geometryUpdate();
+    this.updateRemoveParticles();
+  }
+
+  removeParticle(index: number) {
+    const lifeTimeAttribute = this.geometry.getAttribute("lifeTime");
+    lifeTimeAttribute.array[index] = 0;
+    // @ts-ignore: Property 'addUpdateRange' does not exist on type 'InterleavedBufferAttribute'.ts(2339)
+    lifeTimeAttribute.addUpdateRange(index, 1);
+    lifeTimeAttribute.needsUpdate = true;
+    this.particlesRemoved = true;
+  }
+
+  updateRemoveParticles() {
+    if (this.particlesRemoved) {
+      // one tick to update the particles
+      this.particlesRemoved = false;
+      this.particleRemoveNeedClearUpdateRanges = true;
+    } else if (this.particleRemoveNeedClearUpdateRanges) {
+      // clear the update ranges
+      this.particleRemoveNeedClearUpdateRanges = false;
+      // @ts-ignore
+      this.geometry.getAttribute("lifeTime").clearUpdateRanges();
+    }
   }
 
   dispose() {
@@ -378,6 +407,8 @@ class ParticleController implements ParticleControllerInt {
     //wrap the cursor around
     if (this.PARTICLE_CURSOR >= this.PARTICLE_COUNT) this.PARTICLE_CURSOR = 0;
     this.particleUpdate = true;
+    // return particle index
+    return i;
   }
 }
 

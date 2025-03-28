@@ -46,6 +46,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
   // to fire at player
   targetDirectionVec3: THREE.Vector3;
   forwardVec3: THREE.Vector3;
+  targetObject3d: THREE.Object3D;
   shootPlayerEuler: THREE.Euler;
 
   constructor(enemyMechBPindex: number = 0, isBossMech: boolean = false) {
@@ -83,6 +84,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     // fire at player
     this.targetDirectionVec3 = new THREE.Vector3();
     this.forwardVec3 = new THREE.Vector3();
+    this.targetObject3d = new THREE.Object3D();
     this.shootPlayerEuler = new THREE.Euler();
   }
 
@@ -140,12 +142,19 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
         .copy(this.lerpHeading)
         .add(this.object3d.position);
 
+      // TODO try rotateTowards instead of lerp?
+      // mesh.quaternion.rotateTowards( targetQuaternion, step );
+      this.object3d.lookAt(this.lerpHeadingPlusPosition);
+
+      // TODO make new function for this - in enemyMech class
       // fire at player if possible
-      if (
-        this.object3d.position.distanceTo(
-          useStore.getState().player.object3d.position
-        ) < 500
-      ) {
+      if (this.isMechDead()) {
+        return;
+      }
+      const distanceToPlayer = this.object3d.position.distanceTo(
+        useStore.getState().player.object3d.position
+      );
+      if (distanceToPlayer < 500) {
         // Vector3 forward direction of mech
         this.forwardVec3.set(0, 0, 1).applyQuaternion(this.object3d.quaternion);
         // Vector3 direction to player
@@ -159,16 +168,21 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
         const angle = this.forwardVec3.angleTo(this.targetDirectionVec3);
         // if angle is small enough, fire
         if (angle < 0.3) {
-          this.object3d.lookAt(useStore.getState().player.object3d.position);
-          this.shootPlayerEuler.copy(this.object3d.rotation);
-          this.updateFireWeaponGroup(null, this.shootPlayerEuler);
+          // TODO place in weaponFire function to reduce calcs
+          // predictPlayerPosition
+          this.targetObject3d.position.copy(
+            useStore.getState().player.object3d.position
+          );
+          this.targetObject3d.rotation.copy(
+            useStore.getState().player.object3d.rotation
+          );
+          const timeToHit = ((distanceToPlayer / 500) * 1000) / FPS; //?1000? //TODO using beam speed for test
+          const playerSpeed = useStore.getState().player.speed;
+          this.targetObject3d.translateZ((playerSpeed * FPS) / timeToHit);
+          // TODO check to make sure wont hit friend
+          //this.updateFireWeaponGroup(null, this.targetObject3d.position);
         }
       }
-
-      // update heading down here so that this.object3d.lookAt can be used in weapon fire routine
-      // TODO try rotateTowards for something
-      // mesh.quaternion.rotateTowards( targetQuaternion, step );
-      this.object3d.lookAt(this.lerpHeadingPlusPosition);
     }
   }
 }

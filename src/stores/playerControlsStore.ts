@@ -429,7 +429,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           useHudTargtingStore.getState().updateTargetHUD(camera);
           useHudTargtingStore.getState().updatePlayerHudCrosshairDiv();
         }
-        // weapon fire testing
+        // fire weapon
         get().updateFrame.updateFrameHelpers.weaponFireTestFunction();
       },
     },
