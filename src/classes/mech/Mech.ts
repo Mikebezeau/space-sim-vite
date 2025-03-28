@@ -477,7 +477,7 @@ class Mech implements mechInt {
 
     this.structureTemp.damage += damage;
     if (this.structureTemp.damage > this.structureTemp.max) {
-      //this.explode(scene);
+      this.explode(scene);
     }
   }
 
