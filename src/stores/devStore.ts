@@ -47,7 +47,7 @@ interface devStoreState {
     changeLocationPlanet: () => void;
     changeLocationCity: () => void;
     warpToStation: () => void;
-    warpToPlanet: () => void;
+    warpToPlanet: (planetIndex: number) => void;
   };
 }
 
@@ -286,14 +286,10 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           .setPlayerWorldAndLocalZonePosition(targetWarpPosition);
       }
     },
-    warpToPlanet() {
+    warpToPlanet(planetIndex) {
       const player = useStore.getState().player;
-      const focusPlanetIndex = useHudTargtingStore.getState().focusPlanetIndex;
-      if (
-        focusPlanetIndex !== null &&
-        useStore.getState().planets[focusPlanetIndex]
-      ) {
-        const targetPlanet = useStore.getState().planets[focusPlanetIndex];
+      if (useStore.getState().planets[planetIndex]) {
+        const targetPlanet = useStore.getState().planets[planetIndex];
         player.object3d.position.copy(targetPlanet.object3d.position);
         player.object3d.translateZ(-targetPlanet.radius * 2);
         const targetWarpPosition = {

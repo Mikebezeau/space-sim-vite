@@ -91,7 +91,7 @@ const ControlsMouseKBSpaceFlight = () => {
 
   // example of a custom key binding
   function handleWarpToPlanet() {
-    testing.warpToPlanet();
+    testing.warpToPlanet(0);
   }
   useKBControls("KeyW", handleWarpToPlanet);
 
