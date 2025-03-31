@@ -329,7 +329,7 @@ const useStore = create<storeState>()((set, get) => ({
         enemyGroupStartPosition.add(offsetDirection.multiplyScalar(500));
         // set station position at player position * x units
         stationStartPosition.copy(startPosition);
-        stationStartPosition.add(offsetDirection.multiplyScalar(60));
+        stationStartPosition.add(offsetDirection.multiplyScalar(800));
       } else {
         startPosCelestialBody = get().stars[0];
         startPosition.set(
@@ -345,6 +345,7 @@ const useStore = create<storeState>()((set, get) => ({
             startPosCelestialBody.radius * 5 +
             1000
         );
+        enemyGroupStartPosition.copy(stationStartPosition);
       }
 
       // setting new local zone position for player

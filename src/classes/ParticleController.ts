@@ -270,6 +270,8 @@ class ParticleController implements ParticleControllerInt {
   }
 
   update(delta: number) {
+    delta = Math.min(delta, 0.1); // cap delta to 100ms
+
     this.time += delta;
     this.material.uniforms.uTime.value = this.time;
     if (this.onTick) this.onTick(this, this.time); // optional callback

@@ -23,8 +23,8 @@ export type weaponFireType = {
 const dummyVec3 = new THREE.Vector3();
 // hit detection
 const dummyRaycaster = new THREE.Raycaster();
-dummyRaycaster.params.Points.threshold = 0.01;
-dummyRaycaster.near = 0.1;
+dummyRaycaster.params.Points.threshold = 0.05;
+dummyRaycaster.near = 0;
 const ray = new THREE.Ray();
 
 interface weaponFireStoreState {
@@ -86,7 +86,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
 
     get().weaponFireList.push({
       mechFiredId,
-      position,
+      position: { x: position.x, y: position.y, z: position.z }, // no link to position vec3
       velocity,
       weaponFireSpeed,
       damage: weapon.damage(),
@@ -114,8 +114,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         return true;
       }
     });
-
-    setCustomData(get().weaponFireList.length);
   },
 
   objectsToTest: [],
@@ -144,16 +142,20 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     testArrowHelper,
     arrowHelper
   ) => {
-    const weaponFireList = useWeaponFireStore.getState().weaponFireList;
+    // something happening where if player does not move, shots fired after rotating backwards
+    // do not hit anything - not sure why, arrow helper test shows correct direction
+    let testPlayerShot = true; // for arrow helper test, leave true
 
-    weaponFireList.forEach((weaponFire, i) => {
+    timeDelta = Math.min(timeDelta, 0.1); // cap delta to 100ms
+
+    const weaponFireList = useWeaponFireStore.getState().weaponFireList;
+    weaponFireList.forEach((weaponFire) => {
       const timeElapsed = weaponFire.timeDelta; // seconds
 
-      //if (i === 1) setCustomData(timeElapsed);
       //positionStart + (velocity * vTimeElapsed)
       ray.origin.set(
         weaponFire.position.x + weaponFire.velocity.x * timeElapsed, //+ (acceleration * timeElapsed * timeElapsed)
-        weaponFire.position.y + weaponFire.velocity.y * timeElapsed, // TODO * deltaFPS??
+        weaponFire.position.y + weaponFire.velocity.y * timeElapsed,
         weaponFire.position.z + weaponFire.velocity.z * timeElapsed
       );
       ray.direction
@@ -164,45 +166,55 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         )
         .normalize();
 
-      if (testArrowHelper && i === 1) {
+      if (
+        testArrowHelper &&
+        testPlayerShot &&
+        weaponFire.mechFiredId === useStore.getState().player.id
+      ) {
+        testPlayerShot = false;
         arrowHelper.position.copy(ray.origin);
         arrowHelper.setDirection(ray.direction);
-        arrowHelper.setLength(weaponFire.weaponFireSpeed / 60);
+        arrowHelper.setLength(weaponFire.weaponFireSpeed * timeDelta * 10);
       }
-
-      dummyRaycaster.far = weaponFire.weaponFireSpeed / 60; // TODO test this with arrow?
+      // weaponFireSpeed (in seconds) * timeDelta (fraction of scecond passed this frame)
+      dummyRaycaster.far = weaponFire.weaponFireSpeed * timeDelta * 2; // giving a little extra distance
       dummyRaycaster.set(ray.origin, ray.direction);
       const intersects = dummyRaycaster.intersectObjects(
         get().objectsToTest,
         true // with or without descendants
       );
 
-      if (intersects.length > 0) {
-        // TODO check more then 1 intersect until find a non exploding / dead mech
-        let intersectedObject = intersects[0].object;
+      // check intersects until target hit (not self)
+      let hasHitTargetNotSelf = false; // triggers break out of loop
+      for (let intersect of intersects) {
+        // using for loop to be albe to use 'break' out of loop if target is found and hit
+        let intersectedObject = intersect.object;
         if (!intersectedObject) return;
 
-        const intersectPoint = intersects[0].point;
+        const intersectPoint = intersect.point;
 
         if (intersectedObject instanceof THREE.InstancedMesh) {
-          const instanceId = intersects[0].instanceId;
+          const instanceId = intersect.instanceId;
           if (typeof instanceId === "undefined") {
             console.warn("instanceId undefined");
             return;
           }
-          useEnemyStore
+          hasHitTargetNotSelf = useEnemyStore
             .getState()
             .enemyGroup.recieveDamageInstancedEnemy(
-              scene,
-              intersectedObject as THREE.InstancedMesh,
-              instanceId,
-              intersectPoint,
-              weaponFire.damage
+              scene, // THREE scene to add the explosion mesh effect to (if mech is destroyed)
+              weaponFire.mechFiredId, // the id of mech who fired the weapon
+              intersectedObject as THREE.InstancedMesh, // the instanced mesh object
+              instanceId, // id of single instance in the instanced mesh
+              intersectPoint, // vec3 piont of intersection
+              weaponFire.damage // amount of damage from weapon
             );
         }
         // end if instanced mesh
         // else, is not instanced mesh
         else {
+          // get mech id from object tree (stored at top level) - TODO place id in userData for all parts
+          // could also get servo / part id hit
           while (
             !intersectedObject.userData.mechId &&
             intersectedObject.parent
@@ -213,7 +225,9 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
           const intersectedObjectMechId = topParentMechObj.userData.mechId;
 
           if (!intersectedObjectMechId) {
-            console.warn("Weaponfire hit test: no mech id found");
+            console.warn(
+              "Weaponfire hit test: no mech id found in mech object tree"
+            );
             return;
           }
 
@@ -221,29 +235,39 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
           let intersectedMech: Mech | undefined;
 
           if (useStore.getState().player.id === intersectedObjectMechId) {
-            intersectedMech = useStore.getState().player;
+            // player mech detected
+            if (weaponFire.mechFiredId !== useStore.getState().player.id) {
+              // player is not hitting self
+              intersectedMech = useStore.getState().player;
+            }
           } else {
+            // else is an enemy mech
             intersectedMech = useEnemyStore
               .getState()
               .enemyGroup.enemyMechs.find(
-                (enemy) => enemy.id === intersectedObjectMechId
+                (enemy) =>
+                  // do not let enemy hit self
+                  enemy.id !== weaponFire.mechFiredId &&
+                  enemy.id === intersectedObjectMechId
               );
           }
-          if (!intersectedMech) {
-            console.log(
-              "Weaponfire hit test: no mech found, id:",
-              intersectedObjectMechId
-            );
-            return;
+          // if an intersected mech is found (is not the mech who fired the weapon), apply damage
+          if (intersectedMech) {
+            hasHitTargetNotSelf = true;
+            intersectedMech.recieveDamage(intersectPoint, weaponFire.damage);
           }
-          weaponFire.hasHit = true;
-          intersectedMech?.recieveDamage(intersectPoint, weaponFire.damage);
         }
+        if (hasHitTargetNotSelf) {
+          weaponFire.hasHit = true;
+          // exit loop
+          break;
+        }
+        // else continue to next weaponFire ray intersect test
       }
-      // update delta time
+      // update weaponFire timeDelta
       weaponFire.timeDelta += timeDelta;
     });
-
+    // remove shots that have hit or have expired
     get().removeOldWeaponFire();
   },
 }));

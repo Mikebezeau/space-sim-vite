@@ -67,13 +67,6 @@ interface mechInt {
   fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
 }
 
-const weaponFireMechParentObj = new THREE.Group();
-const weaponFireWeaponChildObj = new THREE.Group();
-weaponFireMechParentObj.add(weaponFireWeaponChildObj);
-const weaponFireQuaternoin = new THREE.Quaternion();
-const weaponFireEuler = new THREE.Euler();
-const weaponWorldPositionVec = new THREE.Vector3();
-
 class Mech implements mechInt {
   id: string;
   isPlayer: boolean;
@@ -105,6 +98,14 @@ class Mech implements mechInt {
   maxHalfWidth: number;
 
   speed: number;
+
+  weaponFireMechParentObj: THREE.Group;
+  weaponFireWeaponChildObj: THREE.Group;
+  weaponFireQuaternoin: THREE.Quaternion;
+  weaponFireEuler: THREE.Euler;
+  weaponWorldPositionVec: THREE.Vector3;
+
+  // temporary
   shield: { max: number; damage: number }; // placeholder
   //armorTemp: { max: number; damage: number }; // placeholder
   structureTemp: { max: number; damage: number }; // placeholder
@@ -144,6 +145,14 @@ class Mech implements mechInt {
     this.obbGeoHelperUpdated = false;
     this.obbRotationHelper = new THREE.Matrix4();
     this.speed = 0;
+
+    this.weaponFireMechParentObj = new THREE.Group();
+    this.weaponFireWeaponChildObj = new THREE.Group();
+    this.weaponFireMechParentObj.add(this.weaponFireWeaponChildObj);
+    this.weaponFireQuaternoin = new THREE.Quaternion();
+    this.weaponFireEuler = new THREE.Euler();
+    this.weaponWorldPositionVec = new THREE.Vector3();
+
     this.setBuildObject3d();
     // temporary placeholders
     this.shield = { max: 50, damage: 0 };
@@ -647,21 +656,21 @@ class Mech implements mechInt {
   ) {
     if (this.mechBP?.weaponList) {
       // TODO add these to the class instead of const above
-      weaponFireMechParentObj.position.copy(this.object3d.position);
-      weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
+      this.weaponFireMechParentObj.position.copy(this.object3d.position);
+      this.weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
       // enemy aiming
       if (enemyWeaponFireTargetVec3) {
-        weaponFireMechParentObj.lookAt(enemyWeaponFireTargetVec3);
-        weaponFireEuler.copy(weaponFireMechParentObj.rotation);
+        this.weaponFireMechParentObj.lookAt(enemyWeaponFireTargetVec3);
+        this.weaponFireEuler.copy(this.weaponFireMechParentObj.rotation);
         // player aiming
       } else {
-        weaponFireQuaternoin.copy(weaponFireMechParentObj.quaternion);
+        this.weaponFireQuaternoin.copy(this.weaponFireMechParentObj.quaternion);
         // player aiming
         if (targetQuaternoin) {
-          weaponFireQuaternoin.multiply(targetQuaternoin).normalize(); //normalization is important
+          this.weaponFireQuaternoin.multiply(targetQuaternoin).normalize(); //normalization is important
         }
         // set weapon fire direction
-        weaponFireEuler.setFromQuaternion(weaponFireQuaternoin);
+        this.weaponFireEuler.setFromQuaternion(this.weaponFireQuaternoin);
       }
       // get list of weapons that are ready to fire
       const readyWeapons = this.mechBP.weaponList.filter(
@@ -697,7 +706,7 @@ class Mech implements mechInt {
         );
         // TODO will have to set enemy weapon fire direction here
         // - account for weapon offset when looking at player
-        this.fireWeapon(weaponToFire, weaponFireEuler);
+        this.fireWeapon(weaponToFire, this.weaponFireEuler);
         weaponToFire.weaponFireData.isReady = false;
         weaponToFire.weaponFireData.timeToReload = Date.now() + RoFTime;
         // add delay to all weapons in the group
@@ -714,19 +723,24 @@ class Mech implements mechInt {
     // - use weapon.offset and weaponFireMechParentObj.rotation
     // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
     // it's position is relative to weaponFireMechParentObj
-    weaponFireWeaponChildObj.position.copy(weapon.offset);
-    weaponFireWeaponChildObj.getWorldPosition(weaponWorldPositionVec);
+    this.weaponFireWeaponChildObj.position.copy(weapon.offset);
+    this.weaponFireWeaponChildObj.getWorldPosition(this.weaponWorldPositionVec);
 
     // fire weapon / add weaponFire to weaponFireList for hit detection
     useWeaponFireStore
       .getState()
-      .addWeaponFire(this.id, weapon, weaponWorldPositionVec, weaponFireEuler);
+      .addWeaponFire(
+        this.id,
+        weapon,
+        this.weaponWorldPositionVec,
+        weaponFireEuler
+      );
 
     // if player show fire effect
     if (this.isPlayer) {
       useParticleStore.getState().playerEffects.addWeaponFireFlash(
         // player effects are centered on player position
-        weaponFireWeaponChildObj.position,
+        this.weaponFireWeaponChildObj.position,
         this.object3d.rotation
       );
     }

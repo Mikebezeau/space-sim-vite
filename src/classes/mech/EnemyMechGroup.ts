@@ -29,11 +29,12 @@ export interface enemyMechGroupInt {
 
   recieveDamageInstancedEnemy: (
     scene: THREE.Scene,
+    mechFiredId: string,
     instancedMesh: THREE.InstancedMesh,
     instanceId: number,
     intersectPoint: THREE.Vector3,
     damage: number
-  ) => void;
+  ) => boolean; // returns false if mech hitting self
   explodeInstancedEnemy: (
     scene: THREE.Scene,
     instancedMesh: THREE.InstancedMesh,
@@ -175,6 +176,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
 
   recieveDamageInstancedEnemy(
     scene: THREE.Scene,
+    mechFiredId: string,
     instancedMesh: THREE.InstancedMesh,
     instanceId: number,
     intersectPoint: THREE.Vector3,
@@ -182,11 +184,16 @@ class EnemyMechGroup implements enemyMechGroupInt {
   ) {
     const mechBpId = instancedMesh.userData.mechBpId;
     const enemyToDamage = this.getInstancedMeshEnemies(mechBpId)[instanceId];
-    enemyToDamage.recieveDamage(intersectPoint, damage, scene);
-    if (enemyToDamage.isMechDead()) {
-      // TODO below code duplicate of explodeInstancedEnemy
-      instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
-      instancedMesh.geometry.attributes.isDead.needsUpdate = true;
+    // return false if hitting self
+    if (enemyToDamage.id === mechFiredId) return false;
+    else {
+      enemyToDamage.recieveDamage(intersectPoint, damage, scene);
+      if (enemyToDamage.isMechDead()) {
+        // TODO below code duplicate of explodeInstancedEnemy
+        instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
+        instancedMesh.geometry.attributes.isDead.needsUpdate = true;
+      }
+      return true;
     }
   }
 

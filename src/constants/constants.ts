@@ -5,8 +5,8 @@ export const FPS = 60;
 export const COMPONENT_RENDER_ORDER = {
   // lowest is first, 0 is default
   // NOTE: if using value above 0, must call render manually within useFrame hook
-  positionsUpdate: -2, // position updates first
-  weaponFireUpdate: -1, // weapon fire hit test second
+  positionsUpdate: -1, // position updates after weapon fire, before everything else
+  weaponFireUpdate: -2, // weapon fire hit test first
 };
 
 export const SCALE = 1;

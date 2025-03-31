@@ -67,6 +67,7 @@ const SpaceFlightControlsTouch = () => {
   const setPlayerSpeedSetting = usePlayerControlsStore(
     (state) => state.actions.setPlayerSpeedSetting
   );
+  // TODO player settings - flip touch control positions
   const isReverseSideTouchControls = usePlayerControlsStore(
     (state) => state.isReverseSideTouchControls
   );
@@ -136,6 +137,8 @@ const SpaceFlightControlsTouch = () => {
   useTouchStartControls("throttle-control", handleTrottleStart);
 
   function handleThrottleMove(event) {
+    // TODO test hopefully this preventDefault stops the control jitters when changing speed
+    event.preventDefault();
     // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events#example
     // if touching move control, then move ship
     if (throttleControl.current) {

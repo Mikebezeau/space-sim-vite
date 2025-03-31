@@ -387,7 +387,7 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
         { r: 255, g: 255, b: 255 }, // Snowy white (highest peaks)
          */
       ],
-      isClouds: true,
+      isClouds: false, //true, // TODO fix clouds
       /*
       cloudsUniforms: {
         u_cloudscale: { value: 1.0 },

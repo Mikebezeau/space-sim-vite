@@ -49,7 +49,7 @@ class CelestialBody implements CelestialBodyInt {
     this.isUseAtmosShader = isUseAtmosShader || true;
     this.uTimeTracker = 1;
     this.cloudShaderUniforms = {
-      u_isClouds: true,
+      u_isClouds: false, //true,
       u_cloudscale: 1.0,
       u_cloudColor: new THREE.Vector3(1.0, 1.0, 1.0),
       u_cloudCover: 0.0,

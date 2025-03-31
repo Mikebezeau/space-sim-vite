@@ -1,7 +1,10 @@
 import { create } from "zustand";
 import { Object3D, Quaternion, Vector3 } from "three";
 import useStore from "./store";
-import useHudTargtingStore from "./hudTargetingStore";
+import useHudTargtingStore, {
+  HTML_HUD_TARGET_TYPE,
+  htmlHudTargetType,
+} from "./hudTargetingStore";
 import useDevStore from "./devStore";
 import { flipRotation } from "../util/cameraUtil";
 import { lerp } from "../util/gameUtil";
@@ -54,7 +57,9 @@ interface playerControlStoreState {
   };
   playerWarpSpeed: number;
   playerTotalWarpDistance: number;
-  setPlayerWarpToPositionFromFocusPlanet: () => void;
+  setPlayerWarpToPositionFromHudTarget: (
+    currentTarget?: htmlHudTargetType
+  ) => void;
   updateFrame: {
     updateFrameHelpers: {
       updatePlayerWarpFrame: (deltaFPS: number) => void;
@@ -110,13 +115,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     setCanvasSceneRendered: (canvasSceneRendered) => {
       if (canvasSceneRendered !== get().canvasSceneRendered) {
         set({ canvasSceneRendered });
-        /*
-        console.log(
-          "renderInfo",
-          useStore.getState().renderCount,
-          useStore.getState().renderData
-        );
-        */
       }
     },
 
@@ -182,24 +180,59 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     // playerWarpSpeed used to move player ship towards warp position
     playerWarpSpeed: 0,
     playerTotalWarpDistance: 0,
-    setPlayerWarpToPositionFromFocusPlanet() {
+    setPlayerWarpToPositionFromHudTarget(
+      currentTarget = useHudTargtingStore.getState().getWarpToHudTarget()
+    ) {
+      if (!currentTarget) {
+        console.warn("No current target to warp to");
+        return;
+      }
       const player = useStore.getState().player;
-      const planets = useStore.getState().planets;
-      const focusPlanetIndex = useHudTargtingStore.getState().focusPlanetIndex;
-      if (focusPlanetIndex !== null && planets[focusPlanetIndex]) {
-        // using dummyVec3 to store target position
-        const targetVec3 = dummyVec3;
-        const targetObj = dummyObj;
-        // get target position in front of planet
-        // start at player location
-        targetObj.position.copy(player.object3d.position);
-        // set targetVec3 at planet world space position
-        planets[focusPlanetIndex].object3d.getWorldPosition(targetVec3);
-        // set angle towards target planet using lookAt
+      // reusable dummy vars
+      const targetObj = dummyObj;
+      targetObj.position.copy(player.object3d.position);
+      const focusTargetIndex = currentTarget.objectIndex;
+      let warpDistanceAwayFromTarget = 0;
+
+      // trigger to set warp target position
+      let targetVec3: Vector3 | null = null;
+
+      // get target position based on current hud target
+      // targeting a planet
+      if (currentTarget?.objectType === HTML_HUD_TARGET_TYPE.PLANET) {
+        if (focusTargetIndex === null) return;
+        const planets = useStore.getState().planets;
+
+        if (planets[focusTargetIndex]) {
+          targetVec3 = dummyVec3;
+          // get target position in front of planet
+          // set targetVec3 at planet world space position
+          planets[focusTargetIndex].object3d.getWorldPosition(targetVec3);
+          // set distance away from planet
+          warpDistanceAwayFromTarget = planets[focusTargetIndex].radius * 4;
+        }
+      }
+      // targeting a station
+      else if (currentTarget?.objectType === HTML_HUD_TARGET_TYPE.STATION) {
+        if (focusTargetIndex === null) return;
+        const stations = useStore.getState().stations;
+
+        if (stations[focusTargetIndex]) {
+          targetVec3 = dummyVec3;
+          // get target position in front of planet
+          // set targetVec3 at planet world space position
+          stations[focusTargetIndex].object3d.getWorldPosition(targetVec3);
+          // set distance away from planet
+          warpDistanceAwayFromTarget = 200;
+        }
+      }
+      if (targetVec3 !== null) {
+        // set angle towards target vec3 using lookAt
         targetObj.lookAt(targetVec3);
         // set targetObj position at distance from planet
         targetObj.position.copy(targetVec3);
-        targetObj.translateZ(-planets[focusPlanetIndex].radius * 4);
+        // back position away from planet center towards player
+        targetObj.translateZ(-warpDistanceAwayFromTarget);
         // reuse targetVec3 to store target position
         targetVec3.copy(targetObj.position);
         // set player warp position
@@ -214,7 +247,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           if (get().playerWarpToPosition !== null) {
             // set updated playerWarpToPosition
             // to avoid glitches when travelling to new planet
-            get().setPlayerWarpToPositionFromFocusPlanet();
+            get().setPlayerWarpToPositionFromHudTarget();
 
             const player = useStore.getState().player;
             // rotate ship towards warp position

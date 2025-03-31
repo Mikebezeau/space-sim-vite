@@ -125,7 +125,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
       this.velocity.clampLength(0, this.maxSpeed);
 
       // using lerp - apply mech engine acceleration / manuever as factor
-      this.lerpVelocity.lerp(this.velocity, 0.1);
+      this.lerpVelocity.lerp(this.velocity, 0.05);
       // adjust for current frame rate
       this.adjustedLerpVelocityDeltaFPS
         .copy(this.lerpVelocity)
@@ -146,7 +146,6 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
       // mesh.quaternion.rotateTowards( targetQuaternion, step );
       this.object3d.lookAt(this.lerpHeadingPlusPosition);
 
-      // TODO make new function for this - in enemyMech class
       // fire at player if possible
       if (this.isMechDead()) {
         return;

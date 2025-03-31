@@ -15,7 +15,7 @@ const WeaponFire = () => {
   const { scene } = useThree();
 
   // for testing ray position and direction
-  const testArrowHelper = true; // can impliment this in testing GUI
+  const testArrowHelper = false; // can impliment this in testing GUI
   const arrowHelperRef = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
 
   useEffect(() => {

@@ -95,22 +95,33 @@ const ActionCancelPilot = () => {
 };
 
 export const ActionWarpToPlanetPopupHUD = () => {
-  const setPlayerWarpToPositionFromFocusPlanet = usePlayerControlsStore(
-    (state) => state.setPlayerWarpToPositionFromFocusPlanet
+  const setPlayerWarpToPositionFromHudTarget = usePlayerControlsStore(
+    (state) => state.setPlayerWarpToPositionFromHudTarget
   );
 
+  const isPossibleWarpToTargetId = useHudTargtingStore(
+    (state) => state.isPossibleWarpToTargetId
+  );
+  const isToCloseDistanceToWarp = useHudTargtingStore(
+    (state) => state.isToCloseDistanceToWarp
+  );
   const isScanDistanceToPlanet = useHudTargtingStore(
     (state) => state.isScanDistanceToPlanet
-  );
-  const focusPlanetIndex = useHudTargtingStore(
-    (state) => state.focusPlanetIndex
   );
   const scanPlanet = useHudTargtingStore((state) => state.scanPlanet);
   const scanPlanetProgress = useHudTargtingStore(
     (state) => state.scanPlanetProgress
   );
+  /*
+  const currentTarget = useHudTargtingStore
+    .getState()
+    .getCurrentHudTarget();
+  if (!currentTarget) return;
 
-  return focusPlanetIndex !== null ? (
+  if (currentTarget?.objectType === HTML_HUD_TARGET_TYPE.PLANET) {}
+  */
+
+  return isPossibleWarpToTargetId !== null && !isToCloseDistanceToWarp ? (
     <div className="w-60 h-16 -ml-32">
       <CyberButton
         title={
@@ -125,7 +136,7 @@ export const ActionWarpToPlanetPopupHUD = () => {
         onClick={
           isScanDistanceToPlanet
             ? scanPlanet
-            : setPlayerWarpToPositionFromFocusPlanet
+            : setPlayerWarpToPositionFromHudTarget
         }
       />
       <div className="arrow">
@@ -139,9 +150,11 @@ export const ActionWarpToPlanetPopupHUD = () => {
 
 export const ActionWarpToStarPopupHUD = () => {
   const selectedWarpStar = useGalaxyMapStore((state) => state.selectedWarpStar);
+  // using state for auto update
   const isWarpToStarAngleShowButton = useHudTargtingStore(
     (state) => state.isWarpToStarAngleShowButton
   );
+  // setPlayerCurrentStarIndex: warp to new star
   const setPlayerCurrentStarIndex = useStore(
     (state) => state.actions.setPlayerCurrentStarIndex
   );
