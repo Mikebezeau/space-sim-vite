@@ -4,10 +4,15 @@ import usePlayerControlsStore from "../stores/playerControlsStore";
 import CockpitPanelsRed from "./panels/CockpitPanelsRed";
 import {
   ActionModeControlGroup,
-  ControlIconsRowBottom,
+  ActionWarpToTargetPopupHUD,
+  ActionWarpToStarPopupHUD,
+  ActionCancelWarpPopupHUD,
+  CockpitControlMode,
+  CockpitControlMap,
+  CockpitControlView,
 } from "./CockpitControls";
 import { lerp } from "../util/gameUtil";
-import { FPS, IS_MOBILE, PLAYER } from "../constants/constants";
+import { PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
 
 const Cockpit = () => {
@@ -82,17 +87,27 @@ const Cockpit = () => {
         <CockpitPanelsRed />
       </div>
       <div className="perspective-400 preserve-3d container-full-screen top-[78vh]">
-        <div className="preserve-3d container-full-screen">
+        {/*playerActionMode === PLAYER.action.inspect && (*/}
+        <div className="absolute face middle-red flex flex-row gap-2 top-[4vh] left-1/2">
+          <div className="absolute top-[0]">
+            <ActionWarpToTargetPopupHUD />
+          </div>
+          <div className="absolute top-[-40px]">
+            <ActionWarpToStarPopupHUD />
+          </div>
+          <div className="absolute top-[0]">
+            <ActionCancelWarpPopupHUD />
+          </div>
           <div
-            className={`face middle absolute ${
-              IS_MOBILE ? "top-[-27vh]" : "top-[-22vh]"
-            }`}
+            className="absolute w-[40vh] ml-[-17.5vh] top-[6vh] flex flex-row gap-2"
+            style={{ transform: "scale(0.7, 0.7)" }}
           >
-            {playerActionMode === PLAYER.action.inspect && (
-              <ControlIconsRowBottom />
-            )}
+            <CockpitControlMode />
+            <CockpitControlMap />
+            <CockpitControlView />
           </div>
         </div>
+        {/* ) */}
       </div>
 
       <ActionModeControlGroup />

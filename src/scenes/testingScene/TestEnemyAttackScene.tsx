@@ -156,7 +156,6 @@ const TestEnemyAttackScene = () => {
   }, [trackRef.current, attackPathRef.current]);
   */
   useFrame((_, delta) => {
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
     // moving player mech (not pasing camera prop to updatePlayerMechAndCamera)
     usePlayerControlsStore
       .getState()

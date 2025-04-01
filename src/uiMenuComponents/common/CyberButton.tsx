@@ -1,19 +1,23 @@
 import React, { useRef } from "react";
 
 interface cyberButtonInt {
+  isSmall?: boolean;
   title: string;
   index?: number;
   mainStyle?: any;
   tagStyle?: any;
+  children?: any;
   onClick: () => void;
 }
 
 const CyberButton = (props: cyberButtonInt) => {
   const {
+    isSmall = false,
     title,
     index = 0,
     mainStyle = null,
     tagStyle = null,
+    children,
     onClick,
   } = props;
 
@@ -29,10 +33,13 @@ const CyberButton = (props: cyberButtonInt) => {
 
   return (
     <div
-      className={`pointer-events-auto cursor-pointer cybr-btn w-full pl-[10%]`}
+      className={`pointer-events-auto cursor-pointer cybr-btn ${
+        isSmall ? "cybr-btn-small-font" : "cybr-btn-medium-font"
+      } w-full pl-[10%]`}
       style={mainStyle}
       onClick={() => glitchBeforeOnClick(onClick)}
     >
+      <div className="absolute w-full h-full">{children}</div>
       {title}
       <span
         ref={glitchRef}

@@ -51,6 +51,7 @@ export const PLAYER = {
   },
 };
 
+export const ZERO_SPEED_SETTING_INDEX = 1;
 export const SPEED_VALUES = [-50, 0, 1, 5, 10, 15];
 
 // TODO use enum for others

@@ -8,7 +8,12 @@ import useHudTargtingStore, {
 import useDevStore from "./devStore";
 import { flipRotation } from "../util/cameraUtil";
 import { lerp } from "../util/gameUtil";
-import { PLAYER, FPS, SPEED_VALUES } from "../constants/constants";
+import {
+  PLAYER,
+  FPS,
+  ZERO_SPEED_SETTING_INDEX,
+  SPEED_VALUES,
+} from "../constants/constants";
 
 // reusable objects
 // for ship and camera rotation
@@ -40,7 +45,10 @@ interface playerControlStoreState {
   canvasSceneRendered: boolean;
   setCanvasSceneRendered: (canvasSceneRendered: boolean) => void;
   // within solar system warp
+  isPlayerWarping: boolean; // trigger to update components
   playerWarpToPosition: Vector3 | null;
+  setPlayerWarpToPosition: (playerWarpToPosition: Vector3) => void;
+  cancelPlayerWarp: () => void;
 
   combatHudTarget: HTMLDivElement | null;
   playerSpeedSetting: number;
@@ -57,9 +65,7 @@ interface playerControlStoreState {
   };
   playerWarpSpeed: number;
   playerTotalWarpDistance: number;
-  setPlayerWarpToPositionFromHudTarget: (
-    currentTarget?: htmlHudTargetType
-  ) => void;
+  setPlayerWarpToHudTarget: (currentTarget?: htmlHudTargetType) => void;
   updateFrame: {
     updateFrameHelpers: {
       updatePlayerWarpFrame: (deltaFPS: number) => void;
@@ -119,7 +125,25 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     },
 
     // within solar system warp
+    isPlayerWarping: false,
     playerWarpToPosition: null,
+    setPlayerWarpToPosition: (playerWarpToPosition) => {
+      // olny update isPlayerWarping if changed - used to trigger component updates
+      if (get().isPlayerWarping !== true) {
+        set(() => ({ isPlayerWarping: true }));
+      }
+      // reduce speed to zero
+      get().actions.setPlayerSpeedSetting(ZERO_SPEED_SETTING_INDEX);
+      // update player warp position
+      set(() => ({
+        playerWarpToPosition: new Vector3().copy(playerWarpToPosition),
+      }));
+    },
+    cancelPlayerWarp: () => {
+      set(() => ({ isPlayerWarping: false }));
+      set(() => ({ playerWarpToPosition: null }));
+      useHudTargtingStore.getState().cancelWarpToStar();
+    },
 
     combatHudTarget: null,
     playerSpeedSetting: 1, // used in throttle control, and updatePlayerMechAndCamera below
@@ -173,14 +197,16 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       },
 
       setPlayerSpeedSetting(playerSpeedSetting) {
-        set(() => ({ playerSpeedSetting }));
+        if (get().playerSpeedSetting !== playerSpeedSetting) {
+          set(() => ({ playerSpeedSetting }));
+        }
       },
     },
 
     // playerWarpSpeed used to move player ship towards warp position
     playerWarpSpeed: 0,
     playerTotalWarpDistance: 0,
-    setPlayerWarpToPositionFromHudTarget(
+    setPlayerWarpToHudTarget(
       currentTarget = useHudTargtingStore.getState().getWarpToHudTarget()
     ) {
       if (!currentTarget) {
@@ -235,8 +261,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         targetObj.translateZ(-warpDistanceAwayFromTarget);
         // reuse targetVec3 to store target position
         targetVec3.copy(targetObj.position);
-        // set player warp position
-        usePlayerControlsStore.getState().playerWarpToPosition = targetVec3;
+        // set player warp position using state for component updates
+        usePlayerControlsStore.getState().setPlayerWarpToPosition(targetVec3);
       }
     },
     updateFrame: {
@@ -247,7 +273,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           if (get().playerWarpToPosition !== null) {
             // set updated playerWarpToPosition
             // to avoid glitches when travelling to new planet
-            get().setPlayerWarpToPositionFromHudTarget();
+            get().setPlayerWarpToHudTarget();
 
             const player = useStore.getState().player;
             // rotate ship towards warp position
@@ -283,7 +309,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
               // set player at target position
               player.object3d.position.copy(get().playerWarpToPosition!);
               // cancel warp by setting playerWarpToPosition to null
-              get().playerWarpToPosition = null;
+              get().cancelPlayerWarp();
             } else {
               // move player ship toward target position
               player.object3d.translateZ(get().playerWarpSpeed);
@@ -432,9 +458,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       },
       // called each frame to update player mech and camera
       updatePlayerMechAndCamera: (delta, camera) => {
-        // TODO cap delta to 100ms here, standard deltaFPS get function
+        delta = Math.min(delta, 0.1); // cap delta to 100ms
         const deltaFPS = delta * FPS;
-        // TODO warping make cool animation
         if (get().playerWarpToPosition !== null) {
           get().updateFrame.updateFrameHelpers.updatePlayerCameraLookAngle(
             deltaFPS,

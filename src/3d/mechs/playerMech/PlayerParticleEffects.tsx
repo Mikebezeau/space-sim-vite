@@ -12,8 +12,8 @@ const PlayerParticleEffects = () => {
 
   const player = useStore((state) => state.player);
 
-  const playerWarpToPosition = usePlayerControlsStore(
-    (state) => state.playerWarpToPosition
+  const isPlayerWarping = usePlayerControlsStore(
+    (state) => state.isPlayerWarping
   );
   const playerParticleSystem = useParticleStore(
     (state) => state.playerParticleController.particleSystem
@@ -38,7 +38,7 @@ const PlayerParticleEffects = () => {
     particleOriginObj.current.rotation.copy(player.object3d.rotation);
 
     // player warp particle effect
-    if (playerWarpToPosition !== null) {
+    if (isPlayerWarping) {
       // player particle system follows player mech object position
       // position (0, 0, 0) is the center of the player mech object
       particleOriginObj.current.position.set(0, 0, 0);

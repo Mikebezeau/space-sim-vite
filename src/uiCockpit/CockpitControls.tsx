@@ -94,61 +94,73 @@ const ActionCancelPilot = () => {
   );
 };
 
-export const ActionWarpToPlanetPopupHUD = () => {
-  const setPlayerWarpToPositionFromHudTarget = usePlayerControlsStore(
-    (state) => state.setPlayerWarpToPositionFromHudTarget
+export const ActionWarpToTargetPopupHUD = () => {
+  const isPlayerWarping = usePlayerControlsStore(
+    (state) => state.isPlayerWarping
   );
 
+  const setPlayerWarpToHudTarget = usePlayerControlsStore(
+    (state) => state.setPlayerWarpToHudTarget
+  );
+  // if isWarpToStarAngleShowButton do not show this button
+  const isWarpToStarAngleShowButton = useHudTargtingStore(
+    (state) => state.isWarpToStarAngleShowButton
+  );
   const isPossibleWarpToTargetId = useHudTargtingStore(
     (state) => state.isPossibleWarpToTargetId
   );
   const isToCloseDistanceToWarp = useHudTargtingStore(
     (state) => state.isToCloseDistanceToWarp
   );
-  const isScanDistanceToPlanet = useHudTargtingStore(
-    (state) => state.isScanDistanceToPlanet
+  const isScanDistanceToHudTarget = useHudTargtingStore(
+    (state) => state.isScanDistanceToHudTarget
   );
-  const scanPlanet = useHudTargtingStore((state) => state.scanPlanet);
-  const scanPlanetProgress = useHudTargtingStore(
-    (state) => state.scanPlanetProgress
+  const scanHudTarget = useHudTargtingStore((state) => state.scanHudTarget);
+  const scanProgressHudTarget = useHudTargtingStore(
+    (state) => state.scanProgressHudTarget
   );
-  /*
-  const currentTarget = useHudTargtingStore
-    .getState()
-    .getCurrentHudTarget();
-  if (!currentTarget) return;
 
-  if (currentTarget?.objectType === HTML_HUD_TARGET_TYPE.PLANET) {}
-  */
+  if (isPlayerWarping) return null;
 
-  return isPossibleWarpToTargetId !== null && !isToCloseDistanceToWarp ? (
-    <div className="w-60 h-16 -ml-32">
+  if (
+    isWarpToStarAngleShowButton ||
+    isPossibleWarpToTargetId === null ||
+    isToCloseDistanceToWarp
+  )
+    return null;
+
+  return (
+    <div className="relative w-[240px] left-[-120px]">
       <CyberButton
+        //isSmall
         title={
-          isScanDistanceToPlanet
-            ? scanPlanetProgress > 0
-              ? scanPlanetProgress * 10 + "%"
+          isScanDistanceToHudTarget
+            ? scanProgressHudTarget > 0
+              ? scanProgressHudTarget * 10 + "%"
               : "Scan Planet"
             : "Engage Warp"
         }
-        mainStyle={{ marginBottom: "40px" }}
+        mainStyle={{}}
         index={7}
         onClick={
-          isScanDistanceToPlanet
-            ? scanPlanet
-            : setPlayerWarpToPositionFromHudTarget
+          isScanDistanceToHudTarget ? scanHudTarget : setPlayerWarpToHudTarget
         }
-      />
-      <div className="arrow">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+      >
+        <div className="animated-arrows animated-arrows-full">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </CyberButton>
     </div>
-  ) : null;
+  );
 };
 
 export const ActionWarpToStarPopupHUD = () => {
+  const isPlayerWarping = usePlayerControlsStore(
+    (state) => state.isPlayerWarping
+  );
+
   const selectedWarpStar = useGalaxyMapStore((state) => state.selectedWarpStar);
   // using state for auto update
   const isWarpToStarAngleShowButton = useHudTargtingStore(
@@ -158,38 +170,65 @@ export const ActionWarpToStarPopupHUD = () => {
   const setPlayerCurrentStarIndex = useStore(
     (state) => state.actions.setPlayerCurrentStarIndex
   );
+
+  if (isPlayerWarping) return null;
   // only show warp to star button if a star is selected and angle is less than 0.3 radians
   if (selectedWarpStar === null || !isWarpToStarAngleShowButton) return null;
 
   return (
-    <>
-      <div
-        className="pointer-events-auto w-40 h-10 -ml-20 cursor-pointer"
+    <div className="relative w-[240px] left-[-120px]">
+      <CyberButton
+        //isSmall
+        title={"Engage System Warp"}
+        mainStyle={{}}
+        index={9}
         onClick={() => {
           setPlayerCurrentStarIndex(selectedWarpStar);
         }}
       >
-        <div className="w-full cybr-btn bg-blue-500" onClick={() => {}}>
-          Engage Hyper Drive
-          <span aria-hidden className="cybr-btn__glitch glitch-once pl-[10%]">
-            Engage Hyper Drive
-          </span>
-          <span aria-hidden className="cybr-btn__tag">
-            X11
-          </span>
+        <div className="animated-arrows animated-arrows-full">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-      </div>
-      <div className="arrow">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      {/*<img
-            src={warp}
-            alt="cancel controls icon"
-            className="w-full h-full pointer-events-none"
-          />*/}
-    </>
+      </CyberButton>
+    </div>
+    /*
+    <img
+      src={warp}
+      alt="cancel controls icon"
+      className="w-full h-full pointer-events-none"
+    />
+    */
+  );
+};
+
+export const ActionCancelWarpPopupHUD = () => {
+  const cancelPlayerWarp = usePlayerControlsStore(
+    (state) => state.cancelPlayerWarp
+  );
+  const isPlayerWarping = usePlayerControlsStore(
+    (state) => state.isPlayerWarping
+  );
+
+  if (!isPlayerWarping) return null;
+
+  return (
+    <div className="relative w-[240px] left-[-120px]">
+      <CyberButton
+        //isSmall
+        title="Cancel Warp"
+        mainStyle={{}}
+        index={15}
+        onClick={cancelPlayerWarp}
+      >
+        <div className="animated-arrows animated-arrows-full">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </CyberButton>
+    </div>
   );
 };
 
@@ -210,12 +249,14 @@ export const ActionModeControlGroup = () => {
           <ActionCancelPilot />
         </div>
       )}
-      <div className="absolute bottom-32 left-1/2">
-        <ActionWarpToPlanetPopupHUD />
+      {/* moved to Cockpit.tsx
+      <div className="absolute mb-[180px] bottom-[-10vw] left-1/2">
+        <ActionWarpToTargetPopupHUD />
       </div>
       <div className="absolute bottom-48 left-1/2">
         <ActionWarpToStarPopupHUD />
       </div>
+      */}
     </>
   );
 };

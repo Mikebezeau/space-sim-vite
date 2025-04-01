@@ -59,13 +59,14 @@ interface hudTargetingGalaxyMapStoreState {
   htmlHudTargets: htmlHudTargetType[];
   focusedHudTargetId: string;
   isWarpToStarAngleShowButton: boolean;
+  cancelWarpToStar: () => void;
   isPossibleWarpToTargetId: string | null;
   isToCloseDistanceToWarp: boolean;
   // TODO replace with scan anything - scanningTargetId - use ID
   scanningPlanetIndex: number | null;
-  isScanDistanceToPlanet: boolean;
-  scanPlanet: () => void;
-  scanPlanetProgress: number;
+  isScanDistanceToHudTarget: boolean;
+  scanHudTarget: () => void;
+  scanProgressHudTarget: number;
 
   // call updateTargetHUD each frame to update target div elements
   updateTargetHUD: (camera: any) => void;
@@ -226,18 +227,18 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         get().scanningPlanetIndex !== planetIndex
       ) {
         set({ scanningPlanetIndex: planetIndex });
-        set({ scanPlanetProgress: 0 });
+        set({ scanProgressHudTarget: 0 });
       }
       const playerRealWorldPosition =
         useStore.getState().playerRealWorldPosition;
       const planet = useStore.getState().planets[planetIndex];
       if (planet) {
         // warp to planet distance is planet.radius * 2
-        const isScanDistanceToPlanet =
+        const isScanDistanceToHudTarget =
           planet.object3d.position.distanceTo(playerRealWorldPosition) <
           planet.radius * 3;
-        if (isScanDistanceToPlanet !== get().isScanDistanceToPlanet) {
-          set({ isScanDistanceToPlanet });
+        if (isScanDistanceToHudTarget !== get().isScanDistanceToHudTarget) {
+          set({ isScanDistanceToHudTarget });
         }
       }
     },
@@ -245,24 +246,27 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     htmlHudTargets: [],
     focusedHudTargetId: "",
     isWarpToStarAngleShowButton: false,
+    cancelWarpToStar: () => {
+      set({ isWarpToStarAngleShowButton: false });
+    },
     isPossibleWarpToTargetId: null,
     isToCloseDistanceToWarp: false,
     scanningPlanetIndex: null,
-    isScanDistanceToPlanet: false,
-    scanPlanet: () => {
-      if (get().scanPlanetProgress < 10) {
+    isScanDistanceToHudTarget: false,
+    scanHudTarget: () => {
+      if (get().scanProgressHudTarget < 10) {
         const incrementScanProgress = () => {
           set((state) => ({
-            scanPlanetProgress: state.scanPlanetProgress + 0.5,
+            scanProgressHudTarget: state.scanProgressHudTarget + 0.5,
           }));
-          if (get().scanPlanetProgress < 10) {
+          if (get().scanProgressHudTarget < 10) {
             setTimeout(incrementScanProgress, 100);
           }
         };
         incrementScanProgress();
       }
     },
-    scanPlanetProgress: 0,
+    scanProgressHudTarget: 0,
 
     // update div elements for HUD targets each frame
     updateTargetHUD: (camera) => {
@@ -393,6 +397,15 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         ) {
           set({
             isPossibleWarpToTargetId: currentFocusedTargetId,
+          });
+        } else if (
+          currentFocusedHudTarget &&
+          currentFocusedHudTarget.objectType ===
+            HTML_HUD_TARGET_TYPE.WARP_TO_STAR
+        ) {
+          // TODO include all together for warp stuff - and single component
+          set({
+            isPossibleWarpToTargetId: null,
           });
         }
         // set focused target id

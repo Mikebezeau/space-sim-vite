@@ -25,6 +25,7 @@ import { PLANET_TYPE } from "../constants/solarSystemConstants";
 import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
+import usePlayerControlsStore from "./playerControlsStore";
 
 // reusable objects
 const dummyVec3 = new THREE.Vector3();
@@ -371,6 +372,7 @@ const useStore = create<storeState>()((set, get) => ({
       useGalaxyMapStore.getState().galaxyMapActions.setSelectedWarpStar(null);
 
       // playerCurrentStarIndex set at end, triggers render of solar system related components
+      usePlayerControlsStore.getState().cancelPlayerWarp();
       set(() => ({ playerCurrentStarIndex }));
     },
 

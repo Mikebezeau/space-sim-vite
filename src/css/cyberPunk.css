@@ -73,8 +73,6 @@
   --text-and-glitch-color: hsl(var(--text-and-glitch-color-hue), 90%, 100%);
   --shadow-secondary: hsl(var(--shadow-secondary-hue), 90%, 100%);
   --color: hsl(0, 0%, 100%);
-  --font-size: 26px;
-  --label-size: 9px;
   --clip: polygon(
     0 0,
     100% 0,
@@ -87,7 +85,7 @@
     0 calc(100% - 15px)
   );
   --border: 2px;
-  --shimmy-distance: 30;
+  --shimmy-distance: 15;
   --clip-one: polygon(
     0 2%,
     100% 2%,
@@ -180,6 +178,16 @@
   /*height: 75px;
   line-height: 75px;
   vertical-align: middle;*/
+}
+
+.cybr-btn.cybr-btn-medium-font {
+  --font-size: 26px;
+  --label-size: 9px;
+}
+
+.cybr-btn.cybr-btn-small-font {
+  --font-size: 13px; /* these do nothing */
+  --label-size: 4px;
 }
 
 .cybr-btn:hover {

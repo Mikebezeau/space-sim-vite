@@ -37,7 +37,6 @@ const SpaceFlightPlanetsScene = () => {
   useFrame((_, delta) => {
     // must call updatePlayerMechAndCamera before
     // adjustments with playerLocalZonePosition position
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
     updatePlayerMechAndCamera(delta, camera);
 
     if (relativePlayerGroupRef.current) {
