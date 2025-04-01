@@ -372,7 +372,7 @@ const useStore = create<storeState>()((set, get) => ({
       useGalaxyMapStore.getState().galaxyMapActions.setSelectedWarpStar(null);
 
       // playerCurrentStarIndex set at end, triggers render of solar system related components
-      usePlayerControlsStore.getState().cancelPlayerWarp();
+      usePlayerControlsStore.getState().cancelPlayerWarp(); // reset player warp states to show correct ui buttons
       set(() => ({ playerCurrentStarIndex }));
     },
 

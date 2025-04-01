@@ -24,7 +24,9 @@ export type htmlHudTargetType = {
   objectType: number;
   objectIndex: number | null;
   label: string;
-  color: string;
+  textColor?: string;
+  color?: string;
+  opacity?: number;
   divElement?: HTMLDivElement;
   viewAngle?: number;
 };
@@ -141,7 +143,9 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         objectType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
         objectIndex: null,
         label: "SYSTEM WARP",
+        textColor: "yellow",
         color: "white",
+        opacity: 1,
       });
       set({ htmlHudTargets });
     },

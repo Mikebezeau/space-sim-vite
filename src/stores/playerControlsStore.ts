@@ -140,6 +140,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       }));
     },
     cancelPlayerWarp: () => {
+      // reset states to show correct buttons
       set(() => ({ isPlayerWarping: false }));
       set(() => ({ playerWarpToPosition: null }));
       useHudTargtingStore.getState().cancelWarpToStar();

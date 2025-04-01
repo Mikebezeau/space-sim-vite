@@ -123,8 +123,7 @@ export const ActionWarpToTargetPopupHUD = () => {
   if (isPlayerWarping) return null;
 
   if (
-    isWarpToStarAngleShowButton ||
-    isPossibleWarpToTargetId === null ||
+    (isPossibleWarpToTargetId === null && !isWarpToStarAngleShowButton) ||
     isToCloseDistanceToWarp
   )
     return null;

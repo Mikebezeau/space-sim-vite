@@ -34,10 +34,17 @@ const FlightHudTarget = (props: targetHUDInt) => {
     >
       <div
         className="flight-hud-target-info-hidden transition-all duration-800 ease-in-out
-        bg-black rounded-md border-2 border-white 
-        absolute w-auto whitespace-nowrap m-2 text-white -top-3 p-1"
+        bg-black rounded-md 
+        absolute w-auto whitespace-nowrap m-2 text-white -top-3 p-1" // border-2 border-white
       >
-        <div className="target-info-label">{target.label}</div>
+        <div
+          className="target-info-label"
+          style={{
+            color: target.textColor,
+          }}
+        >
+          {target.label}
+        </div>
         <div className="target-info-detail">
           INFO{/* updated in updateTargetHUD */}
         </div>
