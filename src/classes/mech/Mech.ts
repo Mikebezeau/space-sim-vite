@@ -65,6 +65,7 @@ interface mechInt {
     enemyWeaponFireTargetVec3?: THREE.Vector3
   ) => void;
   fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
+  dispose: () => void;
 }
 
 class Mech implements mechInt {
@@ -748,6 +749,17 @@ class Mech implements mechInt {
     } else {
       console.warn("servoOffset not found for weapon", weapon);
     }*/
+  }
+
+  dispose() {
+    // dispose of all resources
+    this.object3d.clear();
+    this.builtObject3d.clear();
+    this.addedModel3dObjects.clear();
+    this.bufferGeom?.dispose();
+    this.bufferGeomColorsList.forEach((geom) => geom.dispose());
+    this.explosionMesh?.geometry.dispose();
+    (<THREE.ShaderMaterial>this.explosionMesh?.material)?.dispose();
   }
 }
 

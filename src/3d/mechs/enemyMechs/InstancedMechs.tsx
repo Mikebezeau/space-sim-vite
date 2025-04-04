@@ -1,24 +1,38 @@
-import React, { memo, useRef } from "react";
-import useEnemyStore from "../../../stores/enemyStore";
+import React, { memo, useLayoutEffect, useRef } from "react";
 import InstancedMechsBpIdGroup from "./InstancedMechsBpIdGroup";
+import EnemyMechGroup from "../../../classes/mech/EnemyMechGroup";
 
-const InstancedMechs = () => {
-  const enemies = useEnemyStore((state) => state.enemyGroup.enemyMechs);
+interface InstancedMechsInt {
+  enemyGroup: EnemyMechGroup;
+}
+
+const InstancedMechs = (props: InstancedMechsInt) => {
+  const { enemyGroup } = props;
 
   // using useRef to store unique instancedEnemies mechBP ids in Set
-  const instancedEnemiesBpIdListRef = useRef([
+  const instancedEnemiesBpIdList: (string | null)[] = [
     ...new Set(
-      enemies.map((enemy) => (enemy.useInstancedMesh ? enemy.mechBP.id : null))
+      enemyGroup.enemyMechs.map((enemy) =>
+        enemy.useInstancedMesh ? enemy.mechBP.id : null
+      )
     ),
-  ]);
+  ];
 
   return (
     <>
-      {instancedEnemiesBpIdListRef.current.map((bpId) => {
-        return bpId !== null ? (
-          <InstancedMechsBpIdGroup key={bpId} mechBpId={bpId} />
-        ) : null;
-      })}
+      {instancedEnemiesBpIdList &&
+        instancedEnemiesBpIdList.map((mechBpId) => {
+          return mechBpId !== null ? (
+            <InstancedMechsBpIdGroup
+              key={mechBpId}
+              mechBpId={mechBpId}
+              instancedEnemies={
+                // all instance enemies within this group of the same mechBpId
+                enemyGroup.getInstancedMeshEnemies(mechBpId)
+              }
+            />
+          ) : null;
+        })}
     </>
   );
 };

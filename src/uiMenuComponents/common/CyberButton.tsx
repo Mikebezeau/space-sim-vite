@@ -7,7 +7,7 @@ interface cyberButtonInt {
   mainStyle?: any;
   tagStyle?: any;
   children?: any;
-  onClick: () => void;
+  onClickCallback: () => void;
 }
 
 const CyberButton = (props: cyberButtonInt) => {
@@ -18,7 +18,7 @@ const CyberButton = (props: cyberButtonInt) => {
     mainStyle = null,
     tagStyle = null,
     children,
-    onClick,
+    onClickCallback,
   } = props;
 
   const glitchRef = useRef<HTMLSpanElement | null>(null);
@@ -37,7 +37,11 @@ const CyberButton = (props: cyberButtonInt) => {
         isSmall ? "cybr-btn-small-font" : "cybr-btn-medium-font"
       } w-full pl-[10%]`}
       style={mainStyle}
-      onClick={() => glitchBeforeOnClick(onClick)}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        glitchBeforeOnClick(onClickCallback);
+      }}
     >
       <div className="absolute w-full h-full">{children}</div>
       {title}

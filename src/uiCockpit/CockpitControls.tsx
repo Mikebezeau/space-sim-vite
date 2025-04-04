@@ -106,8 +106,8 @@ export const ActionWarpToTargetPopupHUD = () => {
   const isWarpToStarAngleShowButton = useHudTargtingStore(
     (state) => state.isWarpToStarAngleShowButton
   );
-  const isPossibleWarpToTargetId = useHudTargtingStore(
-    (state) => state.isPossibleWarpToTargetId
+  const isPossibleWarpToTarget = useHudTargtingStore(
+    (state) => state.isPossibleWarpToTarget
   );
   const isToCloseDistanceToWarp = useHudTargtingStore(
     (state) => state.isToCloseDistanceToWarp
@@ -123,7 +123,7 @@ export const ActionWarpToTargetPopupHUD = () => {
   if (isPlayerWarping) return null;
 
   if (
-    (isPossibleWarpToTargetId === null && !isWarpToStarAngleShowButton) ||
+    (!isPossibleWarpToTarget && !isWarpToStarAngleShowButton) ||
     isToCloseDistanceToWarp
   )
     return null;
@@ -141,7 +141,7 @@ export const ActionWarpToTargetPopupHUD = () => {
         }
         mainStyle={{}}
         index={7}
-        onClick={
+        onClickCallback={
           isScanDistanceToHudTarget ? scanHudTarget : setPlayerWarpToHudTarget
         }
       >
@@ -181,7 +181,7 @@ export const ActionWarpToStarPopupHUD = () => {
         title={"Engage System Warp"}
         mainStyle={{}}
         index={9}
-        onClick={() => {
+        onClickCallback={() => {
           setPlayerCurrentStarIndex(selectedWarpStar);
         }}
       >
@@ -219,7 +219,7 @@ export const ActionCancelWarpPopupHUD = () => {
         title="Cancel Warp"
         mainStyle={{}}
         index={15}
-        onClick={cancelPlayerWarp}
+        onClickCallback={cancelPlayerWarp}
       >
         <div className="animated-arrows animated-arrows-full">
           <span></span>

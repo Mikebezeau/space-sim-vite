@@ -26,6 +26,7 @@ import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
 import usePlayerControlsStore from "./playerControlsStore";
+import useWeaponFireStore from "./weaponFireStore";
 
 // reusable objects
 const dummyVec3 = new THREE.Vector3();
@@ -292,6 +293,7 @@ const useStore = create<storeState>()((set, get) => ({
       // generate stars and planets for solar system
       get().solarSystem.systemGen(playerCurrentStarIndex);
       // set stars and planets
+      // setting state to trigger re-renders in solar system related components
       set(() => ({
         stars: get().solarSystem.stars,
       }));
@@ -299,6 +301,11 @@ const useStore = create<storeState>()((set, get) => ({
         planets: get().solarSystem.planets,
       }));
       //console.log(get().stars, get().planets);
+
+      // create enmey group
+      const numEnemies = Math.floor(Math.random() * 50) + 50;
+      useEnemyStore.getState().createEnemyGroup(numEnemies);
+
       // select first star or planet as starting position
       let startPosCelestialBody: Star | Planet | null = null;
 
@@ -373,6 +380,8 @@ const useStore = create<storeState>()((set, get) => ({
 
       // playerCurrentStarIndex set at end, triggers render of solar system related components
       usePlayerControlsStore.getState().cancelPlayerWarp(); // reset player warp states to show correct ui buttons
+
+      console.log("set playerCurrentStarIndex");
       set(() => ({ playerCurrentStarIndex }));
     },
 
@@ -381,8 +390,11 @@ const useStore = create<storeState>()((set, get) => ({
     },
 
     setShoot(value: boolean) {
+      //console.log(useEnemyStore.getState().enemyGroup.instancedMeshs);
       // update shoot value, not using set
       get().mutation.shoot = value;
+      // TODO make this happen in scan mode
+      useHudTargtingStore.getState().setSelectedHudTargetId();
     },
 
     updateMouse({ clientX: x, clientY: y }) {

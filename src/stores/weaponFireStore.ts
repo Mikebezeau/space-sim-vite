@@ -6,7 +6,6 @@ import useParticleStore from "./particleStore";
 import MechWeapon from "../classes/mechBP/weaponBP/MechWeapon";
 import { equipData } from "../equipment/data/equipData";
 import Mech from "../classes/mech/Mech";
-import { setCustomData } from "r3f-perf";
 
 export type weaponFireType = {
   mechFiredId: string;
@@ -37,8 +36,6 @@ interface weaponFireStoreState {
     euler: THREE.Euler
   ) => void;
   removeOldWeaponFire: () => void;
-  objectsToTest: (THREE.Object3D | THREE.InstancedMesh)[];
-  setObjectsToTest: () => void;
   updateWeaponFireUseFrame: (
     timeDelta: number,
     scene: THREE.Scene,
@@ -116,26 +113,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     });
   },
 
-  objectsToTest: [],
-
-  // these object refrences do not change during the battle
-  setObjectsToTest: () => {
-    const player = useStore.getState().player;
-    const enemyGroup = useEnemyStore.getState().enemyGroup;
-    const instancedMeshs = useEnemyStore.getState().enemyGroup.instancedMeshs;
-
-    get().objectsToTest = [
-      //player.object3d,
-      ...enemyGroup.enemyMechs
-        .filter((enemy: Mech) => !enemy.useInstancedMesh)
-        .map((enemy: Mech) => enemy.object3d),
-      // instanceed meshes
-      ...instancedMeshs.map((instancedMesh) => instancedMesh),
-    ];
-
-    console.log("hit test targets:", get().objectsToTest.length);
-  },
-
   updateWeaponFireUseFrame: (
     timeDelta,
     scene,
@@ -179,10 +156,45 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       // weaponFireSpeed (in seconds) * timeDelta (fraction of scecond passed this frame)
       dummyRaycaster.far = weaponFire.weaponFireSpeed * timeDelta * 2; // giving a little extra distance
       dummyRaycaster.set(ray.origin, ray.direction);
-      const intersects = dummyRaycaster.intersectObjects(
-        get().objectsToTest,
-        true // with or without descendants
+
+      let intersects: any[] = [];
+      /*
+      intersects = intersects.concat(
+        dummyRaycaster.intersectObject(
+          useStore.getState().player.object3d,
+          true // with or without descendants
+        )
       );
+      intersects = intersects.concat(
+        dummyRaycaster.intersectObjects(
+          [
+            ...useEnemyStore
+              .getState()
+              .enemyGroup.enemyMechs.filter(
+                (enemy: Mech) => !enemy.useInstancedMesh
+              )
+              .map((enemy: Mech) => enemy.object3d),
+          ],
+          true // with or without descendants
+        )
+      );
+*/
+      intersects = intersects.concat(
+        dummyRaycaster.intersectObjects(
+          useEnemyStore.getState().enemyGroup.instancedMeshs,
+          true // with or without descendants
+        )
+      );
+      /*
+      get().objectsToTest = [
+        //player.object3d,
+        ...enemyGroup.enemyMechs
+          .filter((enemy: Mech) => !enemy.useInstancedMesh)
+          .map((enemy: Mech) => enemy.object3d),
+        // instanceed meshes
+        ...instancedMeshs.map((instancedMesh) => instancedMesh),
+      ];
+      */
 
       // check intersects until target hit (not self)
       let hasHitTargetNotSelf = false; // triggers break out of loop
@@ -252,7 +264,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
               );
           }
           // if an intersected mech is found (is not the mech who fired the weapon), apply damage
-          if (intersectedMech) {
+          if (intersectedMech && !intersectedMech.isMechDead()) {
             hasHitTargetNotSelf = true;
             intersectedMech.recieveDamage(intersectPoint, weaponFire.damage);
           }

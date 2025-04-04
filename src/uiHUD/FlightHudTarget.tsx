@@ -11,9 +11,16 @@ type targetHUDInt = {
 const FlightHudTarget = (props: targetHUDInt) => {
   const { target } = props;
 
+  const selectedHudTargetId = useHudTargtingStore(
+    (state) => state.selectedHudTargetId
+  );
+
   const targetDiameterPx = useHudTargtingStore(
     (state) => state.targetDiameterPx
   );
+
+  const targetIsSelected: boolean =
+    selectedHudTargetId !== null && selectedHudTargetId === target.id;
 
   return (
     <div
@@ -25,10 +32,12 @@ const FlightHudTarget = (props: targetHUDInt) => {
         }
       }}
       className={`opacity-50 absolute top-1/2 left-1/2 
-        border-2 border-green-500 rounded-full`}
+        ${
+          targetIsSelected ? "border-4" : "border-2"
+        } border-white rounded-full`}
       style={{
-        width: `${targetDiameterPx}px`,
-        height: `${targetDiameterPx}px`,
+        width: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
+        height: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
         backgroundColor: target.color,
       }}
     >

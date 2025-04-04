@@ -78,7 +78,7 @@ const MainMenu = () => {
           <CyberButton
             title={"Start"}
             tagStyle={{ color: "black" }}
-            onClick={() => setIsShowMenu(true)}
+            onClickCallback={() => setIsShowMenu(true)}
           />
         </div>
       </TitleScreenContainer>
@@ -106,7 +106,7 @@ const MainMenu = () => {
                     title={menuItem.title}
                     mainStyle={{ marginBottom: "24px" }}
                     index={index}
-                    onClick={menuItem.onClick}
+                    onClickCallback={menuItem.onClick}
                   />
                 ))}
               </div>

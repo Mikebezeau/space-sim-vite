@@ -41,7 +41,8 @@ interface devStoreState {
   boidCohesionMod: number;
   setDevStoreProp: (propName: string, value: number) => void;
   setDevStoreBiodProp: (propName: string, value: number) => void;
-  summonEnemy: () => void;
+  removeEnemies: () => void;
+  spawnEnemies: () => void;
   testing: {
     changeLocationSpace: () => void;
     changeLocationPlanet: () => void;
@@ -195,12 +196,18 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       .getState()
       .enemyGroup.boidController?.updateDevStorePropModifiers();
   },
-  // move enemy to player position
-  summonEnemy() {
-    const playerVec3: THREE.Vector3 =
-      useStore.getState().player.object3d.position;
-    useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition =
-      playerVec3;
+  removeEnemies() {
+    useEnemyStore.getState().enemyGroup.dispose();
+    useHudTargtingStore.getState().generateTargets();
+  },
+  spawnEnemies() {
+    useEnemyStore.getState().createEnemyGroup();
+    useEnemyStore
+      .getState()
+      .enemyGroup.enemyGroupLocalZonePosition.copy(
+        useStore.getState().playerRealWorldPosition
+      );
+    useHudTargtingStore.getState().generateTargets();
   },
 
   // NOTE: these are old and not used mostly

@@ -1,6 +1,6 @@
 import React, { memo, useRef } from "react";
 import { Object3D } from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../../../stores/store";
 import usePlayerControlsStore from "../../../stores/playerControlsStore";
 import useParticleStore from "../../../stores/particleStore";
@@ -22,6 +22,8 @@ const PlayerParticleEffects = () => {
     (state) => state.playerEffects
   );
 
+  const { camera } = useThree();
+
   const particleOriginObj = useRef<Object3D>(new Object3D());
 
   let speed: number,
@@ -42,7 +44,7 @@ const PlayerParticleEffects = () => {
       // player particle system follows player mech object position
       // position (0, 0, 0) is the center of the player mech object
       particleOriginObj.current.position.set(0, 0, 0);
-      particleOriginObj.current.translateZ(150);
+      particleOriginObj.current.translateZ(500);
       // can improve by incorporating playerWarpSpeed
       //const playerWarpSpeed = usePlayerControlsStore.getState().playerWarpSpeed;
       playerParticleEffects.addWarpStars(

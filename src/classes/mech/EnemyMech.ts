@@ -38,7 +38,6 @@ class EnemyMech extends Mech implements enemyMechInt {
   }
 
   explode(scene?: THREE.Scene) {
-    console.log("EnemyMech.explode()");
     super.explode(scene);
   }
 }

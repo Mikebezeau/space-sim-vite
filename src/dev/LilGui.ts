@@ -15,11 +15,12 @@ const LilGui = () => {
     perfRenderCheck: false,
     perfMemoryCheck: false,
     enemyTest: false,
+    removeEnemies: false,
+    spawnEnemies: false,
     viewTitleScreen: false,
     viewStationScreen: false,
     viewEquipmentScreen: false,
     viewEnemyTest: false,
-    summonEnemy: false,
   };
 
   useEffect(() => {
@@ -30,6 +31,14 @@ const LilGui = () => {
     gui.add(controls, "enemyTest").onChange(() => {
       controls.enemyTest = false;
       useDevStore.getState().setTestScreen("enemyTest");
+    });
+    gui.add(controls, "removeEnemies").onChange(() => {
+      controls.removeEnemies = false;
+      useDevStore.getState().removeEnemies();
+    });
+    gui.add(controls, "spawnEnemies").onChange(() => {
+      controls.spawnEnemies = false;
+      useDevStore.getState().spawnEnemies();
     });
 
     const folderPerf = gui.addFolder("Performance");
@@ -113,11 +122,6 @@ const LilGui = () => {
       .onChange((value) => {
         devStoreState.setDevStoreProp("boidCohesionMod", value);
       });
-
-    folderTesting.add(controls, "summonEnemy").onChange(() => {
-      controls.summonEnemy = false;
-      devStoreState.summonEnemy();
-    });
 
     folderTesting
       .add(controls, "viewEnemyTest")

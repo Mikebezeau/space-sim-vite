@@ -10,10 +10,9 @@ import { COMPONENT_RENDER_ORDER } from "../constants/constants";
 
 // TODO create WeaponFire class
 const WeaponFire = () => {
+  const { enemyGroup } = useEnemyStore((state) => state);
   const defenseNodesRef = useRef<defenseNodesType | null>(null);
-
   const { scene } = useThree();
-
   // for testing ray position and direction
   const testArrowHelper = false; // can impliment this in testing GUI
   const arrowHelperRef = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
@@ -26,7 +25,7 @@ const WeaponFire = () => {
     };
   }, [testArrowHelper]);
 
-  useEffect(() => {
+  useFrame((_, delta) => {
     // synch player and enemy world zone positions
     if (
       !useStore
@@ -59,11 +58,6 @@ const WeaponFire = () => {
           useEnemyStore.getState().enemyGroup.defenseNodes;
       }
     }
-    // set weapon fire hit test targets
-    useWeaponFireStore.getState().setObjectsToTest();
-  }, []);
-
-  useFrame((_, delta) => {
     useWeaponFireStore
       .getState()
       .updateWeaponFireUseFrame(

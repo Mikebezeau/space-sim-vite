@@ -1,6 +1,20 @@
 import * as THREE from "three";
 import { GPU_PARTICLE_SHADER } from "../constants/particleConstants";
 
+export type spawnParticleOptionsType = {
+  position?: THREE.Vector3 | { x: number; y: number; z: number };
+  velocity?: THREE.Vector3 | { x: number; y: number; z: number };
+  acceleration?: THREE.Vector3 | { x: number; y: number; z: number };
+  color?: THREE.Color;
+  endColor?: THREE.Color;
+  lifeTime?: number;
+  size?: number;
+  sizeRandomness?: number;
+  sprite?: number;
+  design?: number;
+  angle?: number;
+};
+
 const UPDATEABLE_ATTRIBUTES = [
   "aSprite",
   "aDesign",
@@ -19,7 +33,7 @@ const UPDATEABLE_ATTRIBUTES = [
 export interface ParticleControllerInt {
   geometryUpdate(): void;
   random(): void;
-  spawnParticle(options: any): number; // return particle index number
+  spawnParticle(options: spawnParticleOptionsType): number; // return particle index number
   update(ttime: number): void;
   removeParticle(index: number): void;
   dispose(): void;
@@ -316,19 +330,7 @@ class ParticleController implements ParticleControllerInt {
     This if spawnParticle is called three times in a row before rendering,
     then count will be 3 and the cursor will have moved by three.
   */
-  spawnParticle(options: {
-    position?: THREE.Vector3 | { x: number; y: number; z: number };
-    velocity?: THREE.Vector3 | { x: number; y: number; z: number };
-    acceleration?: THREE.Vector3 | { x: number; y: number; z: number };
-    color?: THREE.Color;
-    endColor?: THREE.Color;
-    lifeTime?: number;
-    size?: number;
-    sizeRandomness?: number;
-    sprite?: number;
-    design?: number;
-    angle?: number;
-  }) {
+  spawnParticle(options: spawnParticleOptionsType) {
     const spriteAttribute = this.geometry.getAttribute("aSprite");
     const designAttribute = this.geometry.getAttribute("aDesign");
     const positionStartAttribute = this.geometry.getAttribute("positionStart");

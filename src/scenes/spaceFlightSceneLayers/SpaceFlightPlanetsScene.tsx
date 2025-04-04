@@ -21,9 +21,8 @@ const SpaceFlightPlanetsScene = () => {
   const playerLocalZonePosition = useStore(
     (state) => state.playerLocalZonePosition
   );
-  const enemyWorldPosition = useEnemyStore(
-    (state) => state.enemyGroup.enemyGroupLocalZonePosition
-  );
+  const enemyGroup = useEnemyStore((state) => state.enemyGroup);
+  const enemyGroupLocalZonePosition = enemyGroup.enemyGroupLocalZonePosition;
 
   const updatePlayerMechAndCamera = usePlayerControlsStore(
     (state) => state.updateFrame.updatePlayerMechAndCamera
@@ -47,10 +46,16 @@ const SpaceFlightPlanetsScene = () => {
       );
     }
     if (enemyRelativePlayerGroupRef.current) {
+      /*
+      // TODO WTH fix this
+      enemyRelativePlayerGroupRef.current.position.copy(
+        enemyGroup.getGroupRealWorldPosition()
+      );
+      */
       enemyRelativePlayerGroupRef.current.position.set(
-        enemyWorldPosition.x - playerLocalZonePosition.x,
-        enemyWorldPosition.y - playerLocalZonePosition.y,
-        enemyWorldPosition.z - playerLocalZonePosition.z
+        enemyGroupLocalZonePosition.x - playerLocalZonePosition.x,
+        enemyGroupLocalZonePosition.y - playerLocalZonePosition.y,
+        enemyGroupLocalZonePosition.z - playerLocalZonePosition.z
       );
     }
     // updatePlayerMechAndCamera updates the player position
@@ -73,7 +78,7 @@ const SpaceFlightPlanetsScene = () => {
       </group>
 
       <group ref={enemyRelativePlayerGroupRef}>
-        <EnemyMechs />
+        <EnemyMechs enemyGroup={enemyGroup} />
         <ObbTest ref={obbBoxForwardedRefs} />
       </group>
     </>

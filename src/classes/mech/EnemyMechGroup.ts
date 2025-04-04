@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
+import useStore from "../../stores/store";
 import useParticleStore from "../../stores/particleStore";
 import EnemyMechBoid from "./EnemyMechBoid";
 import mechDesigns from "../../equipment/data/mechDesigns";
 import BoidController from "../BoidController";
-import { MECH_STATE } from "../../classes/mech/Mech";
 import { FPS } from "../../constants/constants";
 
 export type defenseNodesType = {
@@ -17,6 +17,7 @@ export type defenseNodesType = {
 };
 
 export interface enemyMechGroupInt {
+  getGroupRealWorldPosition: () => THREE.Vector3;
   getLeaderId: () => string | null;
   genBoidEnemies: () => void;
   groupEnemies: () => void;
@@ -24,6 +25,7 @@ export interface enemyMechGroupInt {
     mechBpId: string,
     instancedMesh: THREE.InstancedMesh
   ) => void;
+  removeInstancedMesh: (mechBpId: string) => void;
   getInstancedMesh: (mechBpId: string) => THREE.InstancedMesh | undefined;
   getInstancedMeshEnemies: (mechBpId: string) => EnemyMechBoid[] | undefined;
 
@@ -51,6 +53,7 @@ export interface enemyMechGroupInt {
     playerSpeed: number
   ) => void;
   updateUseFrame: (delta: number, scene: THREE.Scene) => void; // require scene to add remove instanced mech objects
+  dispose: () => void;
 }
 
 class EnemyMechGroup implements enemyMechGroupInt {
@@ -58,6 +61,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
   numEnemies: number;
   tacticOrder: number;
   enemyGroupLocalZonePosition: THREE.Vector3;
+  enemyGroupRealWorldPosition: THREE.Vector3;
   enemyMechs: EnemyMechBoid[] = [];
   instancedMeshs: THREE.InstancedMesh[] = [];
   boidController: BoidController | null;
@@ -69,6 +73,8 @@ class EnemyMechGroup implements enemyMechGroupInt {
     this.tacticOrder = 0; //0 = follow leader, 1 = attack player
     // enemy group world position
     this.enemyGroupLocalZonePosition = new THREE.Vector3();
+    // enemy group world position relative to playerLocalZonePosition
+    this.enemyGroupRealWorldPosition = new THREE.Vector3();
     // generate enemy mechs objects
     this.genBoidEnemies();
     // set enemy positions
@@ -80,13 +86,26 @@ class EnemyMechGroup implements enemyMechGroupInt {
       );
     });
     // set boss enemy to center
-    this.enemyMechs[0].object3d.position.set(0, 0, 0);
+    this.enemyMechs[0]?.object3d.position.set(0, 0, 0);
     // group enemies into squads, sets leaders and upgrades leader ships
     this.groupEnemies();
     // set boid controller
     this.boidController = new BoidController(this.enemyMechs);
   }
+  getGroupRealWorldPosition() {
+    const playerLocalZonePosition = useStore.getState().playerLocalZonePosition;
+    //this.enemyGroupRealWorldPosition
+    //  .copy(this.enemyGroupLocalZonePosition)
+    //  .sub(playerLocalZonePosition);
 
+    this.enemyGroupRealWorldPosition.set(
+      this.enemyGroupLocalZonePosition.x - playerLocalZonePosition.x,
+      this.enemyGroupLocalZonePosition.y - playerLocalZonePosition.y,
+      this.enemyGroupLocalZonePosition.z - playerLocalZonePosition.z
+    );
+
+    return this.enemyGroupLocalZonePosition;
+  }
   getLeaderId() {
     const leaderId = this.enemyMechs.find((mech) => mech.groupLeaderId)?.id;
     return leaderId || null;
@@ -150,16 +169,28 @@ class EnemyMechGroup implements enemyMechGroupInt {
     // TODO will need to include enemy group id if multiple enemy groups with same mechBpId
     instancedMesh.userData.mechBpId = mechBpId;
     // remove from array if instancedMesh=>instancedMesh.userData.mechBpId exists
+    this.removeInstancedMesh(mechBpId);
+    // add to array
+    this.instancedMeshs.push(instancedMesh);
+
+    console.log(
+      "EnemyMechGroup: addInstancedMesh uuid",
+      instancedMesh.uuid,
+      "count",
+      this.instancedMeshs.length
+    );
+  }
+  removeInstancedMesh(mechBpId: string) {
     const existingMesh = this.instancedMeshs.find(
       (mesh) => mesh.userData.mechBpId === mechBpId
     );
     if (existingMesh) {
+      existingMesh.dispose(); // dispose existing mesh if exists to be safe
       this.instancedMeshs = this.instancedMeshs.filter(
         (mesh) => mesh.userData.mechBpId !== mechBpId
       );
+      console.log("instance mesh removed", this.instancedMeshs);
     }
-    // add to array
-    this.instancedMeshs.push(instancedMesh);
   }
 
   getInstancedMesh(mechBpId: string) {
@@ -184,9 +215,10 @@ class EnemyMechGroup implements enemyMechGroupInt {
   ) {
     const mechBpId = instancedMesh.userData.mechBpId;
     const enemyToDamage = this.getInstancedMeshEnemies(mechBpId)[instanceId];
-    // return false if hitting self
-    if (enemyToDamage.id === mechFiredId) return false;
-    else {
+    if (enemyToDamage.isMechDead() || enemyToDamage.id === mechFiredId) {
+      // return false already dead or if hitting self
+      return false;
+    } else {
       enemyToDamage.recieveDamage(intersectPoint, damage, scene);
       if (enemyToDamage.isMechDead()) {
         // TODO below code duplicate of explodeInstancedEnemy
@@ -296,14 +328,33 @@ class EnemyMechGroup implements enemyMechGroupInt {
   }
 
   updateUseFrame(delta: number, scene: THREE.Scene) {
-    delta = Math.min(delta, 0.1); // cap delta to 100ms
+    if (
+      useStore
+        .getState()
+        .playerLocalZonePosition.equals(this.enemyGroupLocalZonePosition)
+    ) {
+      delta = Math.min(delta, 0.1); // cap delta to 100ms
 
-    this.boidController?.updateUseFrame();
+      this.boidController?.updateUseFrame();
 
+      this.enemyMechs.forEach((enemy) => {
+        enemy.updateUseFrameBoidForce(delta);
+        enemy.updateMechUseFrame(delta, scene);
+      });
+    }
+  }
+
+  dispose() {
+    console.log("EnemyMechGroup: dispose");
+    this.boidController = null;
     this.enemyMechs.forEach((enemy) => {
-      enemy.updateUseFrameBoidForce(delta);
-      enemy.updateMechUseFrame(delta, scene);
+      enemy.dispose();
     });
+    this.enemyMechs = [];
+    this.instancedMeshs.forEach((instancedMesh) => {
+      instancedMesh.dispose();
+    });
+    this.instancedMeshs = [];
   }
 }
 

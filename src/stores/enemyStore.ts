@@ -28,12 +28,19 @@ function initSphereCast() {
 interface enemyStoreState {
   sphereCastDirections: THREE.Vector3[];
   enemyGroup: EnemyMechGroup;
+  createEnemyGroup: (numEnemies?: number) => void;
 }
 
 const useEnemyStore = create<enemyStoreState>()((set, get) => ({
   // TODO: sphereCastDirections can be used by boids to avoid obstacles
   sphereCastDirections: initSphereCast(),
-  enemyGroup: new EnemyMechGroup(NUM_ENEMIES),
+  // create placeholder enemy group
+  enemyGroup: new EnemyMechGroup(0),
+  createEnemyGroup: (numEnemies = NUM_ENEMIES) => {
+    console.log("createEnemyGroup");
+    get().enemyGroup.dispose();
+    set(() => ({ enemyGroup: new EnemyMechGroup(numEnemies) }));
+  },
 }));
 
 export default useEnemyStore;

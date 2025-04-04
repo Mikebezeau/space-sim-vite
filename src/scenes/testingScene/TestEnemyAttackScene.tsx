@@ -23,6 +23,7 @@ import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 const TestEnemyAttackScene = () => {
   const player = useStore((state) => state.player);
+  const enemyGroup = useEnemyStore((state) => state.enemyGroup);
   const stations = useStore((state) => state.stations);
 
   const { camera, gl } = useThree();
@@ -178,7 +179,7 @@ const TestEnemyAttackScene = () => {
       <pointLight intensity={1} decay={0} position={[1000, 1000, -1000]} />
       <ambientLight intensity={0.4} />
       <PlayerMech />
-      <EnemyMechs />
+      <EnemyMechs enemyGroup={enemyGroup} />
       <Stations />
       <Particles />
       <WeaponFire />

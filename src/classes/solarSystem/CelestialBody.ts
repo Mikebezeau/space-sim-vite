@@ -160,9 +160,9 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   disposeTextures() {
+    console.log("dispose planet textures");
     // dispose of crater textures in material uniforms (these aren't reused)
     if (this.material.uniforms.u_texture?.value?.dispose) {
-      console.log(this.material.uniforms.u_texture.value);
       this.material.uniforms.u_texture.value.dispose();
     }
     if (this.material.uniforms.u_craterTexture?.value?.dispose) {
@@ -171,8 +171,6 @@ class CelestialBody implements CelestialBodyInt {
     if (this.material.uniforms.u_craterTBumpMap?.value?.dispose) {
       this.material.uniforms.u_craterTBumpMap.value.dispose();
     }
-
-    console.log(this.material.uniforms.u_texture.value);
   }
 
   // call at end of gameplay

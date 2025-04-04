@@ -318,53 +318,99 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
             get().setPlayerWarpToHudTarget();
             // set player warp speed
             const warpEngineMaxSpeed = 140000; // effects max speed
-            const warpEngineAcceleration = 5000000;
+            const warpEngineAcceleration = 0.05;
 
-            const distance = get().playerMaxWarpDistance!;
+            if (get().playerWarpSpeed === null) {
+              get().playerWarpSpeed = 1;
+            }
+            //
             const player = useStore.getState().player;
-            const currentDistance = player.object3d.position.distanceTo(
+            const distanceToTarget = player.object3d.position.distanceTo(
               get().playerWarpToPosition!
             );
-            // Halfway point for symmetrical acceleration and deceleration
-            const halfDistance = distance / 2;
 
-            let speed: number = 0;
+            if (get().playerWarpDistanceToDecelerate === null) {
+              let speed = warpEngineMaxSpeed;
+              let distance = 0;
+              const decelerationMultiplier = 1 - warpEngineAcceleration;
 
-            if (currentDistance < halfDistance) {
-              // Accelerating phase
-              speed = Math.min(
-                warpEngineMaxSpeed,
-                1 + warpEngineAcceleration * (currentDistance / halfDistance)
-              );
-            } else {
-              // Decelerating phase
-              const remaining = distance - currentDistance;
-              speed = Math.min(
-                warpEngineMaxSpeed,
-                1 + warpEngineAcceleration * (remaining / halfDistance)
+              while (speed > 1) {
+                distance += speed;
+                speed *= decelerationMultiplier;
+              }
+              const middleWarpDistance = get().playerMaxWarpDistance! / 2;
+              const distanceToDecelerate =
+                middleWarpDistance < distance ? middleWarpDistance : distance;
+
+              get().playerWarpDistanceToDecelerate = distanceToDecelerate;
+              console.log(
+                get().playerWarpDistanceToDecelerate,
+                "...",
+                distanceToDecelerate,
+                "...",
+                middleWarpDistance
               );
             }
 
-            setCustomData(speed);
             // rotate ship towards warp position
             const dummyPlayerObj = dummyObj;
             dummyPlayerObj.copy(player.object3d);
             dummyPlayerObj.lookAt(get().playerWarpToPosition!);
-
+            /*
+          // optional - ignore z rotation (ship roll)
+          dummyPlayerObj.rotation.set(
+            dummyPlayerObj.rotation.x,
+            dummyPlayerObj.rotation.y,
+            player.object3d.rotation.z
+          );
+          */
             player.object3d.quaternion.slerp(dummyPlayerObj.quaternion, 0.2);
             // if ship pointing towards target position, warp to position
             const angleDiff = player.object3d.quaternion.angleTo(
               dummyPlayerObj.quaternion
             );
 
+            //adjust playerWarpSpeed with acceleration / deceleration
+
+            // set to either accelerate or decelerate
+            let playerWarpSpeedMult = 1 + warpEngineAcceleration;
+            if (distanceToTarget < get().playerWarpDistanceToDecelerate!) {
+              // decelerate
+              if (test1 === 0) {
+                console.log(
+                  "decelerate",
+                  distanceToTarget,
+                  "...",
+                  get().playerWarpDistanceToDecelerate
+                );
+                test1++;
+              }
+              playerWarpSpeedMult = 1 - warpEngineAcceleration;
+            }
+
+            // speed slower when angleDiff is larger
+            //const speedAngleMult = Math.max(Math.pow(1 - angleDiff * 5, 2), 0);
+            let speed = get().playerWarpSpeed! * playerWarpSpeedMult;
+            if (speed >= warpEngineMaxSpeed) {
+              speed = warpEngineMaxSpeed;
+            }
+            // * speedAngleMult;
+
+            speed = Math.max(speed, 100);
+            //if (angleDiff > 0.01) {
+            //  speed = 1;
+            //}
             speed = angleDiff < 0.2 ? speed : 0;
 
-            // V will need to not update player speed in main loop
+            setCustomData(playerWarpSpeedMult);
+
+            get().playerWarpSpeed = speed;
+
+            // V will need to not update player speed in setSpeed
             //useStore.getState().actions.setSpeed(speed);
 
             // if arriving at target position
-            if (currentDistance < speed! * 2) {
-              // *2 to reduce glitches
+            if (distanceToTarget < get().playerWarpSpeed!) {
               // set player at target position
               player.object3d.position.copy(get().playerWarpToPosition!);
               //
@@ -373,10 +419,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
               get().cancelPlayerWarp();
             } else {
               // move player ship toward target position
-              player.object3d.translateZ(speed! * deltaFPS);
+              player.object3d.translateZ(get().playerWarpSpeed! * deltaFPS);
             }
-            // set player speed to warp speed for particle effect
-            get().playerWarpSpeed = speed;
             // update player local zone position
             useStore.getState().playerPositionUpdated();
           }

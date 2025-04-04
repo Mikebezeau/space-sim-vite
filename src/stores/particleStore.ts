@@ -19,12 +19,17 @@ import { getRandomPointWithinSphere } from "../util/gameUtil";
 import { equipData } from "../equipment/data/equipData";
 import { FPS, WEAPON_FIRE_SPEED } from "../constants/constants";
 import { SPRITE_TYPE, DESIGN_TYPE } from "../constants/particleConstants";
+import usePlayerControlsStore from "./playerControlsStore";
+
+import { setCustomData } from "r3f-perf";
 
 const starSpriteTex = new TextureLoader().load(starSpriteSrc);
 //const featheredSpriteTex= new TextureLoader().load(featheredSpriteSrc);
 const smokeTexture = new TextureLoader().load(smokeTextureSrc);
 
-type addExplosionOptionsType = {
+// NOTE: lieftime is in seconds
+
+export type addExplosionOptionsType = {
   numParticles?: number;
   size?: number;
   spread?: number;
@@ -35,8 +40,19 @@ type addExplosionOptionsType = {
   spriteType?: number;
 };
 
-// NOTE: lieftime is in seconds
+export type addWarpOptionsType = {
+  speed?: number; // using negative speed here due to the direction of the mech
+  spread?: number; // spread of particles
+  numParticles?: number; // this will give 200 * FPS (60) * lifeTime (2) = 24000 active particles
+  size?: number;
+  positionRadius?: number;
+  positionRadiusMin?: number;
+  lifeTime?: number;
+  color?: Color;
+  endColor?: Color;
+};
 
+// NOTE: lieftime is in seconds
 interface particleStoreState {
   //starSpriteSrc: Texture;
   //featheredSpriteSrc: Texture;
@@ -96,14 +112,7 @@ interface particleStoreState {
     addWarpStars: (
       position: Vector3 | { x: number; y: number; z: number },
       direction: Euler,
-      speed?: number,
-      numParticles?: number,
-      size?: number,
-      positionRadius?: number,
-      positionRadiusMin?: number,
-      lifeTime?: number,
-      color?: Color,
-      endColor?: Color
+      options?: addWarpOptionsType
     ) => void;
     addWeaponFireFlash: (
       position: Vector3,
@@ -158,7 +167,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
     }
   },
   effects: {
-    addExplosion: (position, options = {}) => {
+    addExplosion: (position, options: addExplosionOptionsType = {}) => {
       if (get().particleController) {
         const {
           numParticles = 10,
@@ -420,21 +429,33 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         }
       }
     },
-    addWarpStars: (
-      position,
-      direction,
-      speed = -3, // using negative speed here due to the direction of the mech
-      numParticles = 200, // this will give 200 * FPS (60) * lifeTime (2) = 24000 active particles
-      size = 0.15,
-      positionRadius = 50,
-      positionRadiusMin = 25,
-      lifeTime = 2,
-      color = get().colors.blue,
-      endColor
-    ) => {
+    addWarpStars: (position, direction, options: addWarpOptionsType = {}) => {
       if (get().playerParticleController) {
+        // options with additional calculations applied
+        let {
+          numParticles = Math.random() * 1000 + 2000,
+          positionRadius = 40,
+          positionRadiusMin = 30,
+        } = options;
+        const {
+          speed = -(Math.random() * 10 + 15),
+          spread = 1,
+          size = 250,
+          lifeTime = 0.5,
+          color = get().colors.black,
+          endColor = get().colors.purple,
+        } = options;
         // particleSpeed calculted at speed / second (speed * FPS = speed per second)
         const speedPerSecond = speed * FPS; // Math.min(Math.random() * (speed * FPS), 0);
+        // make particles closer to the player with playerWarpSpeed
+        const playerWarpSpeed =
+          usePlayerControlsStore.getState().playerWarpSpeed;
+        //setCustomData(playerWarpSpeed);
+        numParticles = numParticles * (playerWarpSpeed! / 200000);
+
+        //positionRadius = positionRadius + positionRadius * playerWarpSpeed; // to get a smaller radius
+        //positionRadiusMin = positionRadiusMin + positionRadiusMin * playerWarpSpeed; // to get a smaller radius
+
         for (let i = 0; i < numParticles; i++) {
           // creating random point within a sphere
           const randAngle = Math.random() * Math.PI * 2;
@@ -472,9 +493,15 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
               z: get().vectorTemp.z, // + (Math.random() - 0.5) * 5 * spread,
             },
             color: color,
-            endColor: endColor ? endColor : color,
+            endColor:
+              i < 100
+                ? get().colors.white
+                : i < 200
+                ? get().colors.blue
+                : endColor, //endColor ? endColor : color,
             lifeTime: lifeTime,
-            size: 800 * size,
+            size: size,
+            sizeRandomness: 1000,
             //angle: (Math.random() - 0.5) * 20,
           });
         }

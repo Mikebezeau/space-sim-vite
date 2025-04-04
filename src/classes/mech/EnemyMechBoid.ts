@@ -1,10 +1,8 @@
 import * as THREE from "three";
 import useStore from "../../stores/store";
 import EnemyMech from "./EnemyMech";
-import { flipRotation } from "../../util/cameraUtil";
 import { FPS } from "../../constants/constants";
 import { BIOD_PARAMS } from "../../classes/BoidController";
-import { setCustomData } from "r3f-perf";
 
 export interface enemyMechBoidInt {
   resetVectors: () => void;

@@ -3,20 +3,19 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../../../stores/enemyStore";
 import useMechBpBuildStore from "../../../stores/mechBpBuildStore";
-import Mech from "../../../classes/mech/Mech";
+import weaponFireStore from "../../../stores/weaponFireStore";
+import EnemyMech from "../../../classes/mech/EnemyMech";
 import { MECH_STATE } from "../../../classes/mech/Mech";
 
 interface instancedMechsInt {
+  instancedEnemies: EnemyMech[];
   mechBpId: string;
 }
 // not using the forwarded ref for anything atm
 const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
-  const { mechBpId } = props;
+  const { instancedEnemies, mechBpId } = props;
 
-  // all enemies within this group of the same mechBpId
-  const instancedEnemies = useEnemyStore
-    .getState()
-    .enemyGroup.getInstancedMeshEnemies(mechBpId);
+  console.log("*** InstancedMechsBpIdGroup", mechBpId);
 
   const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
 
@@ -41,12 +40,23 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
     );
     instancedMeshRef.current.geometry.attributes.aColor.needsUpdate = true;
     */
-  }, [instancedMeshRef]);
+  }, [instancedEnemies, instancedMeshRef, mechBpId]);
+
+  useEffect(() => {
+    return () => {
+      console.log("InstancedMechsBpIdGroup cleanup");
+      // remove instancedMesh from scene
+      useEnemyStore.getState().enemyGroup.removeInstancedMesh(mechBpId);
+      // remove instancedMesh from memory
+      //instancedMeshRef.current?.geometry.dispose();??
+      //instancedMeshRef.current?.material.dispose();
+    };
+  }, []);
 
   useFrame(() => {
     if (instancedMeshRef.current === null) return;
 
-    instancedEnemies.forEach((enemy: Mech, i: number) => {
+    instancedEnemies.forEach((enemy: EnemyMech, i: number) => {
       if (enemy.mechState === MECH_STATE.dead) return;
       enemy.object3d.updateMatrix();
       instancedMeshRef.current!.setMatrixAt(i, enemy.object3d.matrix);
@@ -66,6 +76,10 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
             frustumCulled={false}
             ref={(ref) => {
               if (!ref) return;
+              console.log(
+                "InstancedMechsBpIdGroup set instancedMeshRef",
+                ref.uuid
+              );
               instancedMeshRef.current = ref;
 
               ref.geometry.setAttribute(
@@ -91,7 +105,7 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
                 .getState()
                 .getCreateMechBpBuild(instancedEnemies[0]._mechBP)!
                 .bufferGeometry, //.scale(5, 5, 5),
-              // material - not passing material here for now
+              // material - not passing material here, using onBeforeCompile below
               undefined,
               // count
               instancedEnemies.length,

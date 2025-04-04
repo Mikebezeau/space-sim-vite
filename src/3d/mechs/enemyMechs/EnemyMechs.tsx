@@ -2,21 +2,26 @@ import React, { memo, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../../../stores/store";
-import useEnemyStore from "../../../stores/enemyStore";
+//import useEnemyStore from "../../../stores/enemyStore";
 import InstancedMechs from "./InstancedMechs";
-
+import EnemyMechGroup from "../../../classes/mech/EnemyMechGroup";
 import { LOAD_MODEL_3D_SRC } from "../../../stores/loaderStore";
 import LoadModel3d from "../../LoadModel3d";
 import { COMPONENT_RENDER_ORDER } from "../../../constants/constants";
 
-const EnemyMechs = () => {
+interface EnemyMechsInt {
+  enemyGroup: EnemyMechGroup;
+}
+
+const EnemyMechs = (props: EnemyMechsInt) => {
+  const { enemyGroup } = props;
+
   const componentName = "EnemyMechs";
   useStore.getState().updateRenderInfo(componentName);
   useEffect(() => {
     useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
 
-  const enemyGroup = useEnemyStore((state) => state.enemyGroup);
   const enemies = enemyGroup.enemyMechs;
 
   const { scene } = useThree();
@@ -54,7 +59,7 @@ const EnemyMechs = () => {
               </React.Fragment>
             ) : null
           )}
-          <InstancedMechs />
+          <InstancedMechs enemyGroup={enemyGroup} />
         </>
       )}
     </>

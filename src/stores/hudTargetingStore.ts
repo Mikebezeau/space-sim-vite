@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Object3D, Vector3 } from "three";
+import { Vector3 } from "three";
 import useStore from "./store";
 import useEnemyStore from "./enemyStore";
 import useGalaxyMapStore from "./galaxyMapStore";
@@ -48,7 +48,7 @@ interface hudTargetingGalaxyMapStoreState {
   getHudTargetById: (id: string) => htmlHudTargetType | undefined;
   getWarpToHudTarget: () => htmlHudTargetType | undefined;
   getCurrentHudTarget: () => htmlHudTargetType | undefined;
-  getHudTargetEntity: (
+  getHudTargetWorldPosition: (
     targetId: string
   ) => CelestialBody | SpaceStationMech | EnemyMechGroup | undefined;
   getTargetPosition: (
@@ -59,10 +59,12 @@ interface hudTargetingGalaxyMapStoreState {
   // TODO scan anything, not just planets
   checkScanDistanceToPlanet: (planetIndex: number) => void;
   htmlHudTargets: htmlHudTargetType[];
+  selectedHudTargetId: string | null;
+  setSelectedHudTargetId: (selectedHudTargetId?: string) => void;
   focusedHudTargetId: string;
   isWarpToStarAngleShowButton: boolean;
   cancelWarpToStar: () => void;
-  isPossibleWarpToTargetId: string | null;
+  isPossibleWarpToTarget: boolean;
   isToCloseDistanceToWarp: boolean;
   // TODO replace with scan anything - scanningTargetId - use ID
   scanningPlanetIndex: number | null;
@@ -129,13 +131,15 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         htmlHudTargets.push(...targetsStations);
       }
       // enemy groups
-      htmlHudTargets.push({
-        id: `${HTML_HUD_TARGET_TYPE.ENEMY}`, //-${index}`,
-        objectType: HTML_HUD_TARGET_TYPE.ENEMY,
-        objectIndex: 0,
-        label: "ENEMY",
-        color: "red",
-      });
+      if (useEnemyStore.getState().enemyGroup.enemyMechs.length > 0) {
+        htmlHudTargets.push({
+          id: `${HTML_HUD_TARGET_TYPE.ENEMY}`, //-${index}`,
+          objectType: HTML_HUD_TARGET_TYPE.ENEMY,
+          objectIndex: 0,
+          label: "ENEMY",
+          color: "red",
+        });
+      }
 
       // warp to star
       htmlHudTargets.push({
@@ -153,8 +157,9 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       return get().htmlHudTargets.find((target) => target.id === id);
     },
     getWarpToHudTarget: () => {
+      if (get().selectedHudTargetId === null) return undefined;
       return get().htmlHudTargets.find(
-        (target) => target.id === get().isPossibleWarpToTargetId
+        (target) => target.id === get().selectedHudTargetId
       );
     },
     getCurrentHudTarget: () => {
@@ -162,13 +167,14 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         (target) => target.id === get().focusedHudTargetId
       );
     },
-    getHudTargetEntity: (targetId: string) => {
+    getHudTargetWorldPosition: (targetId: string) => {
       const hudTarget = get().getHudTargetById(targetId);
       if (hudTarget) {
       }
       return undefined;
     },
     getTargetPosition: (xn: number, yn: number, angleDiff: number) => {
+      // to place target within HUD circle
       let pxNorm = (xn * window.innerWidth) / 2;
       let pyNorm = (yn * window.innerHeight) / 2;
 
@@ -195,7 +201,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       return { marginLeftPx, marginTopPx };
     },
     checkWarpDistanceToTarget: (targetId: string) => {
-      const targetEntity = get().getHudTargetEntity(targetId);
+      const targetEntity = get().getHudTargetWorldPosition(targetId);
       if (!targetEntity) {
         console.warn("checkWarpDistanceToTarget: Target entity not found");
         return;
@@ -207,20 +213,22 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       let minDistanceToWarp = 100;
       let isToCloseDistanceToWarp = false;
       if (targetEntity instanceof CelestialBody) {
-        isToCloseDistanceToWarp =
-          targetEntity.object3d.position.distanceTo(playerRealWorldPosition) <
-          targetEntity.radius * 3;
+        distanceToWarp = targetEntity.object3d.position.distanceTo(
+          playerRealWorldPosition
+        );
+        minDistanceToWarp = targetEntity.radius * 4;
       } else if (targetEntity instanceof SpaceStationMech) {
-        isToCloseDistanceToWarp =
-          targetEntity.object3d.position.distanceTo(playerRealWorldPosition) <
-          targetEntity.maxHalfWidth * 3;
+        distanceToWarp = targetEntity.object3d.position.distanceTo(
+          playerRealWorldPosition
+        );
+        minDistanceToWarp = targetEntity.maxHalfWidth * 3;
       } else if (targetEntity instanceof EnemyMechGroup) {
-        isToCloseDistanceToWarp =
-          targetEntity.enemyGroupLocalZonePosition.distanceTo(
-            playerRealWorldPosition
-          ) < 1000;
-      } // TODO set proper distance to enemies
-
+        distanceToWarp = targetEntity.enemyGroupLocalZonePosition.distanceTo(
+          playerRealWorldPosition
+        );
+        minDistanceToWarp = 500;
+      }
+      isToCloseDistanceToWarp = distanceToWarp > minDistanceToWarp;
       if (isToCloseDistanceToWarp !== get().isToCloseDistanceToWarp) {
         set({ isToCloseDistanceToWarp });
       }
@@ -248,12 +256,59 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     },
 
     htmlHudTargets: [],
+    selectedHudTargetId: null,
+    setSelectedHudTargetId(
+      selectedHudTargetId: string = get().focusedHudTargetId
+    ) {
+      // only update if selected target has changed
+      if (get().selectedHudTargetId === selectedHudTargetId) {
+        return;
+      }
+      const selectedTarget = get().getHudTargetById(selectedHudTargetId);
+      // if can warp to selected target, set isPossibleWarpToTarget to true
+      if (selectedTarget) {
+        if (
+          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.PLANET ||
+          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.STATION ||
+          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.ENEMY
+        ) {
+          set({
+            isPossibleWarpToTarget: true,
+          });
+        } else if (
+          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR
+        ) {
+          // TODO include all together for warp stuff - and single component
+          set({
+            isPossibleWarpToTarget: false,
+          });
+        }
+        if (selectedTarget.divElement) {
+          // apply z-index to make appear on top
+          selectedTarget.divElement.style.zIndex = "1000";
+          // add flight-hud-target-selected class to div element
+          const targetInfoDiv = selectedTarget.divElement
+            .children[0] as HTMLElement;
+          targetInfoDiv.classList.add("flight-hud-target-selected");
+        }
+
+        const currentSelectedTarget = get().getHudTargetById(
+          get().selectedHudTargetId!
+        );
+        if (currentSelectedTarget && currentSelectedTarget.divElement) {
+          currentSelectedTarget.divElement.classList.remove(
+            "flight-hud-target-selected"
+          );
+        }
+        set({ selectedHudTargetId });
+      }
+    },
     focusedHudTargetId: "",
     isWarpToStarAngleShowButton: false,
     cancelWarpToStar: () => {
       set({ isWarpToStarAngleShowButton: false });
     },
-    isPossibleWarpToTargetId: null,
+    isPossibleWarpToTarget: false,
     isToCloseDistanceToWarp: false,
     scanningPlanetIndex: null,
     isScanDistanceToHudTarget: false,
@@ -305,6 +360,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             break;
 
           case HTML_HUD_TARGET_TYPE.ENEMY:
+            if (useEnemyStore.getState().enemyGroup.enemyMechs.length === 0)
+              break;
             // still working on multiple enemy groups
             systemScaledDistance = distance(
               useStore.getState().playerRealWorldPosition,
@@ -388,30 +445,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       const currentFocusedTargetId =
         get().htmlHudTargets[get().htmlHudTargets.length - 1].id;
 
-      // only update if focused target has changed
       if (get().focusedHudTargetId !== currentFocusedTargetId) {
-        // if can warp to focused target, set isPossibleWarpToTargetId to target id
-        const currentFocusedHudTarget = get().getHudTargetById(
-          currentFocusedTargetId
-        );
-        if (
-          currentFocusedHudTarget &&
-          (currentFocusedHudTarget.objectType === HTML_HUD_TARGET_TYPE.PLANET ||
-            currentFocusedHudTarget.objectType === HTML_HUD_TARGET_TYPE.STATION)
-        ) {
-          set({
-            isPossibleWarpToTargetId: currentFocusedTargetId,
-          });
-        } else if (
-          currentFocusedHudTarget &&
-          currentFocusedHudTarget.objectType ===
-            HTML_HUD_TARGET_TYPE.WARP_TO_STAR
-        ) {
-          // TODO include all together for warp stuff - and single component
-          set({
-            isPossibleWarpToTargetId: null,
-          });
-        }
         // set focused target id
         set({
           focusedHudTargetId: currentFocusedTargetId,
@@ -424,7 +458,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             // add flight-hud-target-info-hidden class to all but last target
             const targetInfoDiv = htmlHudTarget.divElement
               .children[0] as HTMLElement;
-            if (index === get().htmlHudTargets.length - 1) {
+            if (get().focusedHudTargetId === htmlHudTarget.id) {
               targetInfoDiv.classList.remove("flight-hud-target-info-hidden");
             } else {
               targetInfoDiv.classList.add("flight-hud-target-info-hidden");
