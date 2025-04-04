@@ -6,7 +6,6 @@ import usePlayerControlsStore from "../stores/playerControlsStore";
 import { typeStarData } from "../solarSystemGen/genStarData";
 import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
-//TSX
 import CyberButton from "../uiMenuComponents/common/CyberButton";
 //import CyberMenuBorder from "../uiMenuComponents/common/CyberMenuBorder";
 
@@ -134,7 +133,7 @@ const StarInfoCard = () => {
               <CyberButton
                 title={"Set warp target"}
                 //tagStyle={{ color: "black" }}
-                onClick={() => {
+                onClickCallback={() => {
                   setSelectedWarpStar(viewStarIndex);
                   switchScreen(PLAYER.screen.flight);
                 }}

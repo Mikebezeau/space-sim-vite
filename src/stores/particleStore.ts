@@ -433,7 +433,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
       if (get().playerParticleController) {
         // options with additional calculations applied
         let {
-          numParticles = Math.random() * 1000 + 2000,
+          numParticles = Math.random() * 1000 + 1000,
           positionRadius = 40,
           positionRadiusMin = 30,
         } = options;
@@ -446,7 +446,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
           endColor = get().colors.purple,
         } = options;
         // particleSpeed calculted at speed / second (speed * FPS = speed per second)
-        const speedPerSecond = speed * FPS; // Math.min(Math.random() * (speed * FPS), 0);
+        const speedPerSecond = speed * FPS;
         // make particles closer to the player with playerWarpSpeed
         const playerWarpSpeed =
           usePlayerControlsStore.getState().playerWarpSpeed;
@@ -495,9 +495,9 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             color: color,
             endColor:
               i < 100
-                ? get().colors.white
+                ? get().colors.grey
                 : i < 200
-                ? get().colors.blue
+                ? get().colors.yellow
                 : endColor, //endColor ? endColor : color,
             lifeTime: lifeTime,
             size: size,

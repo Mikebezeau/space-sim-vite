@@ -13,7 +13,7 @@ const GalaxyMapMenu = () => {
         <CyberButton
           title={"Exit"}
           mainClassName="w-40 ml-4"
-          onClick={() => {
+          onClickCallback={() => {
             switchScreen(PLAYER.screen.flight);
           }}
         />
