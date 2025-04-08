@@ -1,6 +1,7 @@
 import React from "react";
 import useHudTargtingStore, {
   htmlHudTargetType,
+  HTML_HUD_TARGET_TYPE,
 } from "../stores/hudTargetingStore";
 import "../css/FlightHudTarget.css";
 
@@ -22,7 +23,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
   const targetIsSelected: boolean =
     selectedHudTargetId !== null && selectedHudTargetId === target.id;
 
-  const combatTarget: boolean = true; // true false
+  const combatTarget: boolean = false; // true false
   // triangles or circle
   const targetSize: number = combatTarget
     ? 24
@@ -53,7 +54,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
           className={`flight-hud-target-info flight-hud-target-info-hidden 
           absolute w-auto m-2 -top-3 px-4
           transition-all duration-800 ease-in-out
-          rounded-md bg-black whitespace-nowrap text-white"
+          rounded-md bg-black whitespace-nowrap text-white
           ${combatTarget && "hidden"}`} // border-2 border-white
         >
           <div
@@ -64,11 +65,13 @@ const FlightHudTarget = (props: targetHUDInt) => {
           >
             {target.label}
           </div>
-          <div className="target-info-detail">
+          <div className="target-info-detail text-white">
             INFO{/* updated in updateTargetHUD */}
           </div>
         </div>
-        {combatTarget ? (
+        {combatTarget ||
+        target.objectType === HTML_HUD_TARGET_TYPE.ENEMY ||
+        target.objectType === HTML_HUD_TARGET_TYPE.STATION ? (
           [
             [0, -combatTargetTriangleSpacingSize / 4, "180deg"],
             [

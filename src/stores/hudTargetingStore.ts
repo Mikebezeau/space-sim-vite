@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Vector3 } from "three";
 import useStore from "./store";
+import usePlayerControlStore from "./playerControlsStore";
 import useEnemyStore from "./enemyStore";
 import useGalaxyMapStore from "./galaxyMapStore";
 import { getSystemScaleDistanceLabel } from "../util/gameUtil";
@@ -11,6 +12,7 @@ import {
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 import CelestialBody from "../classes/solarSystem/CelestialBody";
+import { PLAYER } from "../constants/constants";
 import { setCustomData } from "r3f-perf";
 
 export const HTML_HUD_TARGET_TYPE = {
@@ -252,6 +254,13 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     setSelectedHudTargetId(
       selectedHudTargetId: string = get().focusedHudTargetId
     ) {
+      // update if not in inspect mode
+      if (
+        usePlayerControlStore.getState().playerActionMode ===
+        PLAYER.action.inspect
+      ) {
+        return;
+      }
       // only update if selected target has changed
       if (get().selectedHudTargetId === selectedHudTargetId) {
         return;
@@ -274,23 +283,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
           set({
             isPossibleWarpToTarget: false,
           });
-        }
-        if (selectedTarget.divElement) {
-          // apply z-index to make appear on top
-          selectedTarget.divElement.style.zIndex = "1000";
-          // add flight-hud-target-selected class to div element
-          const targetInfoDiv = selectedTarget.divElement
-            .children[0] as HTMLElement;
-          targetInfoDiv.classList.add("flight-hud-target-selected");
-        }
-
-        const currentSelectedTarget = get().getHudTargetById(
-          get().selectedHudTargetId!
-        );
-        if (currentSelectedTarget && currentSelectedTarget.divElement) {
-          currentSelectedTarget.divElement.classList.remove(
-            "flight-hud-target-selected"
-          );
         }
         set({ selectedHudTargetId });
       }
@@ -411,7 +403,13 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // update focused hud target z-index and CSS class
       const currentFocusedTargetId =
         get().htmlHudTargets[get().htmlHudTargets.length - 1].id;
-      if (get().focusedHudTargetId !== currentFocusedTargetId) {
+      if (
+        // update if not in inspect mode
+        usePlayerControlStore.getState().playerActionMode !==
+          PLAYER.action.inspect &&
+        // update if focused target has changed
+        get().focusedHudTargetId !== currentFocusedTargetId
+      ) {
         // set focused target id
         set({
           focusedHudTargetId: currentFocusedTargetId,
@@ -420,7 +418,10 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         get().htmlHudTargets.forEach((htmlHudTarget, index) => {
           if (htmlHudTarget.divElement) {
             // apply z-index to div elements
-            htmlHudTarget.divElement.style.zIndex = index.toString();
+            htmlHudTarget.divElement.style.zIndex =
+              htmlHudTarget.id === get().selectedHudTargetId
+                ? "1000"
+                : index.toString();
             // add flight-hud-target-info-hidden class to all but last (or focused) target
             const targetInfoDiv = htmlHudTarget.divElement.children[0]
               .children[0] as HTMLElement;
