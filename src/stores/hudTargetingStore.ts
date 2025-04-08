@@ -389,7 +389,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         htmlHudTarget.divElement.style.marginLeft = `${marginLeftPx}px`;
         htmlHudTarget.divElement.style.marginTop = `${marginTopPx}px`;
         // casting as HTMLElement
-        const targetChildInfoDiv = htmlHudTarget.divElement
+        const targetChildInfoDiv = htmlHudTarget.divElement.children[0]
           .children[0] as HTMLElement;
         // target text positioning
         targetChildInfoDiv.style.right = marginLeftPx <= 0 ? "100%" : "auto";
@@ -421,8 +421,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
           if (htmlHudTarget.divElement) {
             // apply z-index to div elements
             htmlHudTarget.divElement.style.zIndex = index.toString();
-            // add flight-hud-target-info-hidden class to all but last target
-            const targetInfoDiv = htmlHudTarget.divElement
+            // add flight-hud-target-info-hidden class to all but last (or focused) target
+            const targetInfoDiv = htmlHudTarget.divElement.children[0]
               .children[0] as HTMLElement;
             if (get().focusedHudTargetId === htmlHudTarget.id) {
               targetInfoDiv.classList.remove("flight-hud-target-info-hidden");

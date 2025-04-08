@@ -22,6 +22,15 @@ const FlightHudTarget = (props: targetHUDInt) => {
   const targetIsSelected: boolean =
     selectedHudTargetId !== null && selectedHudTargetId === target.id;
 
+  const combatTarget: boolean = true; // true false
+  // triangles or circle
+  const targetSize: number = combatTarget
+    ? 24
+    : targetDiameterPx * (targetIsSelected ? 1.2 : 1);
+  // spacing out triangles
+  const combatTargetTriangleSpacingSize: number =
+    targetSize * (targetIsSelected ? 2 : 1);
+
   return (
     <div
       ref={(targetDivElement) => {
@@ -34,35 +43,88 @@ const FlightHudTarget = (props: targetHUDInt) => {
       className="opacity-50 absolute top-1/2 left-1/2"
     >
       <div
-        className="flight-hud-target-info-hidden transition-all duration-800 ease-in-out
-        bg-black rounded-md 
-        absolute w-auto whitespace-nowrap m-2 text-white -top-3 px-4" // border-2 border-white
+        className="absolute"
+        style={{
+          top: `${targetSize / 2}px`,
+          left: `${targetSize / 2}px`,
+        }}
       >
         <div
-          className="target-info-label"
-          style={{
-            color: target.textColor,
-          }}
+          className={`flight-hud-target-info flight-hud-target-info-hidden 
+          absolute w-auto m-2 -top-3 px-4
+          transition-all duration-800 ease-in-out
+          rounded-md bg-black whitespace-nowrap text-white"
+          ${combatTarget && "hidden"}`} // border-2 border-white
         >
-          {target.label}
+          <div
+            className="target-info-label"
+            style={{
+              color: target.textColor,
+            }}
+          >
+            {target.label}
+          </div>
+          <div className="target-info-detail">
+            INFO{/* updated in updateTargetHUD */}
+          </div>
         </div>
-        <div className="target-info-detail">
-          INFO{/* updated in updateTargetHUD */}
-        </div>
+        {combatTarget ? (
+          [
+            [0, -combatTargetTriangleSpacingSize / 4, "180deg"],
+            [
+              -combatTargetTriangleSpacingSize / 4,
+              combatTargetTriangleSpacingSize / 4,
+              "45deg",
+            ],
+            [
+              combatTargetTriangleSpacingSize / 4,
+              combatTargetTriangleSpacingSize / 4,
+              "-45deg",
+            ],
+          ].map((point, index) => (
+            <div
+              className="absolute"
+              key={index}
+              style={{
+                top: `${-targetSize / 4}px`,
+                left: `${-targetSize / 4}px`,
+              }}
+            >
+              <svg
+                height="12"
+                width="12"
+                className="absolute transition-all duration-800 ease-in-out"
+                style={{
+                  left: `${point[0]}px`,
+                  top: `${point[1]}px`,
+                  rotate: targetIsSelected ? `${point[2]}` : "0deg",
+                }}
+              >
+                <polygon
+                  points="6, 0 0, 12 12, 12"
+                  style={{
+                    fill: "red",
+                    stroke: targetIsSelected ? "purple" : "none",
+                    strokeWidth: "2",
+                  }}
+                />
+              </svg>
+            </div>
+          ))
+        ) : (
+          <div
+            className={`absolute border-white rounded-full
+            ${targetIsSelected ? "border-4" : "border-2"}`}
+            style={{
+              top: `${-(targetSize / 2 + (targetIsSelected ? 2 : 0))}px`,
+              left: `${-(targetSize / 2 + (targetIsSelected ? 2 : 0))}px`,
+              width: `${targetSize}px`,
+              height: `${targetSize}px`,
+              backgroundColor: target.color,
+            }}
+          />
+        )}
       </div>
-      <div
-        className={`absolute 
-        ${
-          targetIsSelected ? "border-4" : "border-2"
-        } border-white rounded-full`}
-        style={{
-          top: `${(-targetDiameterPx * (targetIsSelected ? 1.2 : 1)) / 2}px`,
-          left: `${(-targetDiameterPx * (targetIsSelected ? 1.2 : 1)) / 2}px`,
-          width: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
-          height: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
-          backgroundColor: target.color,
-        }}
-      />
     </div>
   );
 };

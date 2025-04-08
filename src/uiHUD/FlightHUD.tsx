@@ -73,24 +73,16 @@ const FlightHud = () => {
               absolute border-2 border-cyan-200 rounded-full"
           />
         ) : (
-          <div
-            style={{
-              backgroundSize: "100% 100%",
-              backgroundImage: `url(${hudCrosshairInner1})`,
-            }}
-            // width needs to be set at 50% larger then normal for some reason
-            className="bg-contain
-              w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh]
-              md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
+          <img
+            src={hudCrosshairInner1}
+            // width has to be 50% larger then hudCrosshair1 for some reason (transformZ?), but margins are normal
+            className="w-[30vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
+            md:w-[45vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
           />
         )}
       </div>
-
-      {htmlHudTargets.map((target, targetIndex) => (
-        <FlightHudTarget
-          key={`${target.objectType}-${target.objectIndex}`}
-          target={target}
-        />
+      {htmlHudTargets.map((target) => (
+        <FlightHudTarget key={target.id} target={target} />
       ))}
     </>
   );
