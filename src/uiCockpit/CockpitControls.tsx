@@ -94,6 +94,36 @@ const ActionCancelPilot = () => {
   );
 };
 
+interface cyberPopupButtonInt {
+  isShow: boolean;
+  title: string;
+  onClickCallback: () => void;
+  index: number;
+}
+
+const CyberPopupButton = (props: cyberPopupButtonInt) => {
+  const { isShow, title, onClickCallback, index } = props;
+
+  if (!isShow) return null;
+
+  return (
+    <div className="relative w-[240px] left-[-120px]">
+      <div className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4">
+        <span />
+        <span />
+        <span />
+      </div>
+      <CyberButton
+        //isSmall
+        title={title}
+        mainStyle={{}}
+        index={index}
+        onClickCallback={onClickCallback}
+      ></CyberButton>
+    </div>
+  );
+};
+
 export const ActionWarpToTargetPopupHUD = () => {
   const isPlayerWarping = usePlayerControlsStore(
     (state) => state.isPlayerWarping
@@ -122,12 +152,25 @@ export const ActionWarpToTargetPopupHUD = () => {
 
   if (isPlayerWarping) return null;
 
-  if (
-    (!isPossibleWarpToTarget && !isWarpToStarAngleShowButton) ||
-    isToCloseDistanceToWarp
-  )
-    return null;
-
+  return (
+    <>
+      <CyberPopupButton
+        title={"Engage Warp"}
+        isShow={isPossibleWarpToTarget && !isToCloseDistanceToWarp}
+        onClickCallback={setPlayerWarpToHudTarget}
+        index={7}
+      />
+      <CyberPopupButton
+        title={
+          scanProgressHudTarget > 0 ? scanProgressHudTarget * 10 + "%" : "Scan"
+        }
+        isShow={isScanDistanceToHudTarget}
+        onClickCallback={scanHudTarget}
+        index={9}
+      />
+    </>
+  );
+  /*
   return (
     <div className="relative w-[240px] left-[-120px]">
       <CyberButton
@@ -152,7 +195,7 @@ export const ActionWarpToTargetPopupHUD = () => {
         </div>
       </CyberButton>
     </div>
-  );
+  );*/
 };
 
 export const ActionWarpToStarPopupHUD = () => {
@@ -192,13 +235,6 @@ export const ActionWarpToStarPopupHUD = () => {
         </div>
       </CyberButton>
     </div>
-    /*
-    <img
-      src={warp}
-      alt="cancel controls icon"
-      className="w-full h-full pointer-events-none"
-    />
-    */
   );
 };
 
@@ -238,24 +274,27 @@ export const ActionModeControlGroup = () => {
 
   return (
     <>
-      {!IS_MOBILE && playerActionMode === PLAYER.action.inspect && (
-        <div className="absolute top-1/2 left-1/2">
-          <ActionControlPilot />
-        </div>
+      {!IS_MOBILE &&
+        (playerActionMode === PLAYER.action.inspect ? (
+          <div className="absolute top-1/2 left-1/2">
+            <ActionControlPilot />
+          </div>
+        ) : (
+          <div className="absolute bottom-8 right-8">
+            <ActionCancelPilot />
+          </div>
+        ))}
+      {IS_MOBILE && (
+        // buttons for non-mobile moved to Cockpit.tsx
+        <>
+          <div className="absolute mb-[180px] bottom-[-10vw] left-1/2">
+            <ActionWarpToTargetPopupHUD />
+          </div>
+          <div className="absolute bottom-48 left-1/2">
+            <ActionWarpToStarPopupHUD />
+          </div>
+        </>
       )}
-      {!IS_MOBILE && playerActionMode !== PLAYER.action.inspect && (
-        <div className="absolute bottom-8 right-8">
-          <ActionCancelPilot />
-        </div>
-      )}
-      {/* moved to Cockpit.tsx
-      <div className="absolute mb-[180px] bottom-[-10vw] left-1/2">
-        <ActionWarpToTargetPopupHUD />
-      </div>
-      <div className="absolute bottom-48 left-1/2">
-        <ActionWarpToStarPopupHUD />
-      </div>
-      */}
     </>
   );
 };

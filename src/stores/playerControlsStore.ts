@@ -225,65 +225,17 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         console.warn("No current target to warp to");
         return;
       }
-      const focusTargetIndex = currentTarget.objectIndex;
-      let warpDistanceAwayFromTarget = 0;
-
-      // trigger to set warp target position
-      let targetVec3: Vector3 | null = null;
+      const targetEntity = currentTarget.entity;
+      if (!targetEntity) {
+        return null;
+      }
 
       //get position of target object
-      // get target position based on current hud target
-      // targeting a planet
-      if (currentTarget?.objectType === HTML_HUD_TARGET_TYPE.PLANET) {
-        if (focusTargetIndex === null) return;
-        const planets = useStore.getState().planets;
+      const targetVec3 = targetEntity.getRealWorldPosition();
+      // set distance away from planet
+      const warpDistanceAwayFromTarget =
+        targetEntity.getWarpToDistanceAway() || 0;
 
-        if (planets[focusTargetIndex]) {
-          targetVec3 = dummyVec3;
-          // get target position in front of planet
-          // set targetVec3 at planet world space position
-          planets[focusTargetIndex].object3d.getWorldPosition(targetVec3);
-          // set distance away from planet
-          warpDistanceAwayFromTarget = planets[focusTargetIndex].radius * 4;
-        }
-      }
-      // targeting a station
-      else if (currentTarget?.objectType === HTML_HUD_TARGET_TYPE.STATION) {
-        if (focusTargetIndex === null) return;
-        const stations = useStore.getState().stations;
-
-        if (stations[focusTargetIndex]) {
-          targetVec3 = dummyVec3;
-          // get target position in front of planet
-          // set targetVec3 at planet world space position
-          stations[focusTargetIndex].object3d.getWorldPosition(targetVec3);
-          // set distance away from planet
-          warpDistanceAwayFromTarget =
-            stations[focusTargetIndex].maxHalfWidth * 8;
-        }
-      }
-      // targeting an enemy group
-      else if (currentTarget?.objectType === HTML_HUD_TARGET_TYPE.ENEMY) {
-        if (focusTargetIndex === null) return;
-        const enemyGroup = useEnemyStore.getState().enemyGroup;
-
-        if (enemyGroup) {
-          // enemy group world position is relative to playerLocalZonePosition
-          targetVec3 = dummyVec3;
-          //targetVec3 = enemyGroup.getGroupRealWorldPosition();
-          const playerLocalZonePosition =
-            useStore.getState().playerLocalZonePosition;
-          targetVec3.set(
-            enemyGroup.enemyGroupLocalZonePosition.x -
-              playerLocalZonePosition.x,
-            enemyGroup.enemyGroupLocalZonePosition.y -
-              playerLocalZonePosition.y,
-            enemyGroup.enemyGroupLocalZonePosition.z - playerLocalZonePosition.z
-          );
-          // set distance away from enemy
-          warpDistanceAwayFromTarget = 500;
-        }
-      }
       if (targetVec3 !== null) {
         // reusable dummy vars
         const warpToTargetObj = dummyObj;
@@ -292,11 +244,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         );
         // set angle towards target vec3 using lookAt
         warpToTargetObj.lookAt(targetVec3);
-        // get distance to target
-        if (get().playerMaxWarpDistance === null)
-          get().playerMaxWarpDistance =
-            warpToTargetObj.position.distanceTo(targetVec3) -
-            warpDistanceAwayFromTarget;
+
         // set warpToTargetObj position at minimum distance from target
         warpToTargetObj.position.copy(targetVec3);
         // back position away from target center towards player
@@ -305,6 +253,12 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         usePlayerControlsStore
           .getState()
           .setPlayerWarpToPosition(warpToTargetObj.position);
+        // get total warp distance to target on first call of functon
+        if (get().playerMaxWarpDistance === null) {
+          get().playerMaxWarpDistance = useStore
+            .getState()
+            .player.object3d.position.distanceTo(warpToTargetObj.position);
+        }
       }
     },
     updateFrame: {

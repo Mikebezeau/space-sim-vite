@@ -64,13 +64,13 @@
     url("../assets/fonts/Mesopitav.ttf") format("truetype");
   font-style: normal;
 }
-
+/*
 @font-face {
   font-family: "MIASMA";
   src: local("MIASMA"), url("../assets/fonts/MIASMA.ttf") format("truetype");
   font-style: normal;
 }
-
+*/
 @font-face {
   font-family: "Linebeam";
   src: local("Linebeam"), url("../assets/fonts/Linebeam.ttf") format("truetype");

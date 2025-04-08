@@ -67,6 +67,7 @@ const HudTargets = () => {
   const { camera } = useThree();
 
   // V playerCurrentStarIndex to trigger re-render when player changes star
+  // eslint-disable-next-line
   const playerCurrentStarIndex = useStore(
     (state) => state.playerCurrentStarIndex
   );
@@ -79,8 +80,8 @@ const HudTargets = () => {
   );
 
   const getTargets = useHudTargtingStore((state) => state.getTargets);
-  const checkScanDistanceToPlanet = useHudTargtingStore(
-    (state) => state.checkScanDistanceToPlanet
+  const checkScanDistanceToTarget = useHudTargtingStore(
+    (state) => state.checkScanDistanceToTarget
   );
   const { setFocusPlanetIndex, setFocusTargetIndex } = useHudTargtingStore(
     (state) => state.actions
@@ -129,7 +130,7 @@ const HudTargets = () => {
             tempFocusPlanetIndex === i || focusPlanetIndex === i;
           placeTarget(dummyObj, camera, mesh, highlight, -1, i, 1);
           if (highlight) {
-            checkScanDistanceToPlanet(i);
+            checkScanDistanceToTarget(i);
           }
         }
       });

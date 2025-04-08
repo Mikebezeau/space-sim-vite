@@ -28,8 +28,8 @@ const SpaceFlightPlanetsScene = () => {
     (state) => state.updateFrame.updatePlayerMechAndCamera
   );
 
-  const relativePlayerGroupRef = useRef<Group | null>(null);
-  const enemyRelativePlayerGroupRef = useRef<Group | null>(null);
+  const relativePlayerLocalZoneGroupRef = useRef<Group | null>(null);
+  const enemyRelativePlayerZoneGroupRef = useRef<Group | null>(null);
   // providing ref for forwardRef used in ObbTest component: not needed
   const obbBoxForwardedRefs = useRef<Mesh[]>([]);
 
@@ -38,24 +38,14 @@ const SpaceFlightPlanetsScene = () => {
     // adjustments with playerLocalZonePosition position
     updatePlayerMechAndCamera(delta, camera);
 
-    if (relativePlayerGroupRef.current) {
-      relativePlayerGroupRef.current.position.set(
-        -playerLocalZonePosition.x,
-        -playerLocalZonePosition.y,
-        -playerLocalZonePosition.z
-      );
+    if (relativePlayerLocalZoneGroupRef.current) {
+      relativePlayerLocalZoneGroupRef.current.position
+        .copy(playerLocalZonePosition)
+        .multiplyScalar(-1);
     }
-    if (enemyRelativePlayerGroupRef.current) {
-      /*
-      // TODO WTH fix this
-      enemyRelativePlayerGroupRef.current.position.copy(
-        enemyGroup.getGroupRealWorldPosition()
-      );
-      */
-      enemyRelativePlayerGroupRef.current.position.set(
-        enemyGroupLocalZonePosition.x - playerLocalZonePosition.x,
-        enemyGroupLocalZonePosition.y - playerLocalZonePosition.y,
-        enemyGroupLocalZonePosition.z - playerLocalZonePosition.z
+    if (enemyRelativePlayerZoneGroupRef.current) {
+      enemyRelativePlayerZoneGroupRef.current.position.copy(
+        enemyGroup.getRealWorldPosition()
       );
     }
     // updatePlayerMechAndCamera updates the player position
@@ -68,7 +58,7 @@ const SpaceFlightPlanetsScene = () => {
       <WeaponFire />
       <Particles />
 
-      <group ref={relativePlayerGroupRef}>
+      <group ref={relativePlayerLocalZoneGroupRef}>
         <pointLight // light from star
           intensity={1}
           decay={0}
@@ -77,7 +67,7 @@ const SpaceFlightPlanetsScene = () => {
         <SolarSystem />
       </group>
 
-      <group ref={enemyRelativePlayerGroupRef}>
+      <group ref={enemyRelativePlayerZoneGroupRef}>
         <EnemyMechs enemyGroup={enemyGroup} />
         <ObbTest ref={obbBoxForwardedRefs} />
       </group>

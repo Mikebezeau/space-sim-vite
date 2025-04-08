@@ -31,20 +31,12 @@ const FlightHudTarget = (props: targetHUDInt) => {
           target.divElement = targetDivElement;
         }
       }}
-      className={`opacity-50 absolute top-1/2 left-1/2 
-        ${
-          targetIsSelected ? "border-4" : "border-2"
-        } border-white rounded-full`}
-      style={{
-        width: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
-        height: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
-        backgroundColor: target.color,
-      }}
+      className="opacity-50 absolute top-1/2 left-1/2"
     >
       <div
         className="flight-hud-target-info-hidden transition-all duration-800 ease-in-out
         bg-black rounded-md 
-        absolute w-auto whitespace-nowrap m-2 text-white -top-3 p-1" // border-2 border-white
+        absolute w-auto whitespace-nowrap m-2 text-white -top-3 px-4" // border-2 border-white
       >
         <div
           className="target-info-label"
@@ -58,6 +50,19 @@ const FlightHudTarget = (props: targetHUDInt) => {
           INFO{/* updated in updateTargetHUD */}
         </div>
       </div>
+      <div
+        className={`absolute 
+        ${
+          targetIsSelected ? "border-4" : "border-2"
+        } border-white rounded-full`}
+        style={{
+          top: `${(-targetDiameterPx * (targetIsSelected ? 1.2 : 1)) / 2}px`,
+          left: `${(-targetDiameterPx * (targetIsSelected ? 1.2 : 1)) / 2}px`,
+          width: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
+          height: `${targetDiameterPx * (targetIsSelected ? 1.2 : 1)}px`,
+          backgroundColor: target.color,
+        }}
+      />
     </div>
   );
 };

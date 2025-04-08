@@ -135,7 +135,7 @@ const PanelMiddleRed = () => {
     "Linebeam", //neato
     //"Lunar-Escape",//arcaic scifi
     "Mesopitav", //
-    "MIASMA", //
+    //"MIASMA", //
     "Minisystem", //
     //"OXYGENE1",// find sysmbols
     "quadaptor", // fun scifi

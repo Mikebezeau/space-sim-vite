@@ -17,7 +17,10 @@ export type defenseNodesType = {
 };
 
 export interface enemyMechGroupInt {
-  getGroupRealWorldPosition: () => THREE.Vector3;
+  getRealWorldPosition: () => THREE.Vector3;
+  getRealWorldDistanceTo(fromPosition: THREE.Vector3): void;
+  getWarpToDistanceAway(): number;
+  getMinDistanceAllowWarp(): number;
   getLeaderId: () => string | null;
   genBoidEnemies: () => void;
   groupEnemies: () => void;
@@ -92,20 +95,28 @@ class EnemyMechGroup implements enemyMechGroupInt {
     // set boid controller
     this.boidController = new BoidController(this.enemyMechs);
   }
-  getGroupRealWorldPosition() {
+
+  getRealWorldPosition() {
     const playerLocalZonePosition = useStore.getState().playerLocalZonePosition;
-    //this.enemyGroupRealWorldPosition
-    //  .copy(this.enemyGroupLocalZonePosition)
-    //  .sub(playerLocalZonePosition);
-
-    this.enemyGroupRealWorldPosition.set(
-      this.enemyGroupLocalZonePosition.x - playerLocalZonePosition.x,
-      this.enemyGroupLocalZonePosition.y - playerLocalZonePosition.y,
-      this.enemyGroupLocalZonePosition.z - playerLocalZonePosition.z
+    this.enemyGroupRealWorldPosition.subVectors(
+      this.enemyGroupLocalZonePosition,
+      playerLocalZonePosition
     );
-
-    return this.enemyGroupLocalZonePosition;
+    return this.enemyGroupRealWorldPosition;
   }
+
+  getRealWorldDistanceTo(fromPosition: THREE.Vector3) {
+    return this.getRealWorldPosition().distanceTo(fromPosition);
+  }
+
+  getWarpToDistanceAway() {
+    return 500;
+  }
+
+  getMinDistanceAllowWarp() {
+    return 1500;
+  }
+
   getLeaderId() {
     const leaderId = this.enemyMechs.find((mech) => mech.groupLeaderId)?.id;
     return leaderId || null;

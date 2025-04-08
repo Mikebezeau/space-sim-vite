@@ -3,7 +3,7 @@ import { Vector3 } from "three";
 import useStore from "./store";
 import useEnemyStore from "./enemyStore";
 import useGalaxyMapStore from "./galaxyMapStore";
-import { distance, getSystemScaleDistanceLabel } from "../util/gameUtil";
+import { getSystemScaleDistanceLabel } from "../util/gameUtil";
 import {
   getScreenPosition,
   getScreenPositionFromDirection,
@@ -11,6 +11,7 @@ import {
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 import CelestialBody from "../classes/solarSystem/CelestialBody";
+import { setCustomData } from "r3f-perf";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
@@ -29,6 +30,7 @@ export type htmlHudTargetType = {
   opacity?: number;
   divElement?: HTMLDivElement;
   viewAngle?: number;
+  entity?: SpaceStationMech | EnemyMechGroup | CelestialBody;
 };
 
 // reusable objects
@@ -48,16 +50,13 @@ interface hudTargetingGalaxyMapStoreState {
   getHudTargetById: (id: string) => htmlHudTargetType | undefined;
   getWarpToHudTarget: () => htmlHudTargetType | undefined;
   getCurrentHudTarget: () => htmlHudTargetType | undefined;
-  getHudTargetWorldPosition: (
-    targetId: string
-  ) => CelestialBody | SpaceStationMech | EnemyMechGroup | undefined;
   getTargetPosition: (
     xn: number,
     yn: number,
     angleDiff: number
   ) => { marginLeftPx: number; marginTopPx: number };
-  // TODO scan anything, not just planets
-  checkScanDistanceToPlanet: (planetIndex: number) => void;
+  checkCanWarpToTarget: (targetId: string) => void;
+  checkCanScanTarget: (targetId: string) => void;
   htmlHudTargets: htmlHudTargetType[];
   selectedHudTargetId: string | null;
   setSelectedHudTargetId: (selectedHudTargetId?: string) => void;
@@ -67,7 +66,7 @@ interface hudTargetingGalaxyMapStoreState {
   isPossibleWarpToTarget: boolean;
   isToCloseDistanceToWarp: boolean;
   // TODO replace with scan anything - scanningTargetId - use ID
-  scanningPlanetIndex: number | null;
+  scanningTargetId: string | null;
   isScanDistanceToHudTarget: boolean;
   scanHudTarget: () => void;
   scanProgressHudTarget: number;
@@ -112,6 +111,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             objectIndex: index,
             label: planet.rngSeed,
             color: planet.textureMapOptions.baseColor || "",
+            entity: planet,
           });
         });
         htmlHudTargets.push(...targetsPlanets);
@@ -126,6 +126,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             objectIndex: index,
             label: station.name,
             color: "gray",
+            entity: station,
           });
         });
         htmlHudTargets.push(...targetsStations);
@@ -138,6 +139,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
           objectIndex: 0,
           label: "ENEMY",
           color: "red",
+          entity: useEnemyStore.getState().enemyGroup,
         });
       }
 
@@ -167,12 +169,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         (target) => target.id === get().focusedHudTargetId
       );
     },
-    getHudTargetWorldPosition: (targetId: string) => {
-      const hudTarget = get().getHudTargetById(targetId);
-      if (hudTarget) {
-      }
-      return undefined;
-    },
     getTargetPosition: (xn: number, yn: number, angleDiff: number) => {
       // to place target within HUD circle
       let pxNorm = (xn * window.innerWidth) / 2;
@@ -200,58 +196,54 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       const marginTopPx = pyNorm - get().targetDiameterPx / 2;
       return { marginLeftPx, marginTopPx };
     },
-    checkWarpDistanceToTarget: (targetId: string) => {
-      const targetEntity = get().getHudTargetWorldPosition(targetId);
+    checkCanWarpToTarget: (targetId: string) => {
+      let isToCloseDistanceToWarp = false;
+      const target = get().getHudTargetById(targetId);
+      const targetEntity = target?.entity;
       if (!targetEntity) {
-        console.warn("checkWarpDistanceToTarget: Target entity not found");
         return;
       }
-
-      const playerRealWorldPosition =
-        useStore.getState().playerRealWorldPosition;
-      let distanceToWarp = 0;
-      let minDistanceToWarp = 100;
-      let isToCloseDistanceToWarp = false;
-      if (targetEntity instanceof CelestialBody) {
-        distanceToWarp = targetEntity.object3d.position.distanceTo(
-          playerRealWorldPosition
-        );
-        minDistanceToWarp = targetEntity.radius * 4;
-      } else if (targetEntity instanceof SpaceStationMech) {
-        distanceToWarp = targetEntity.object3d.position.distanceTo(
-          playerRealWorldPosition
-        );
-        minDistanceToWarp = targetEntity.maxHalfWidth * 3;
-      } else if (targetEntity instanceof EnemyMechGroup) {
-        distanceToWarp = targetEntity.enemyGroupLocalZonePosition.distanceTo(
-          playerRealWorldPosition
-        );
-        minDistanceToWarp = 500;
+      const playerPosition = useStore.getState().player.object3d.position;
+      const distanceToWarpTarget =
+        targetEntity.getRealWorldDistanceTo(playerPosition);
+      const distanceAllowWarp = targetEntity.getMinDistanceAllowWarp();
+      isToCloseDistanceToWarp = distanceToWarpTarget < distanceAllowWarp;
+      setCustomData(distanceToWarpTarget);
+      // only allow warp if target near middle of hud circle
+      if (target.viewAngle && target.viewAngle > 0.3) {
+        isToCloseDistanceToWarp = true;
       }
-      isToCloseDistanceToWarp = distanceToWarp > minDistanceToWarp;
+
       if (isToCloseDistanceToWarp !== get().isToCloseDistanceToWarp) {
         set({ isToCloseDistanceToWarp });
       }
     },
-    checkScanDistanceToPlanet: (planetIndex) => {
-      if (
-        get().scanningPlanetIndex &&
-        get().scanningPlanetIndex !== planetIndex
-      ) {
-        set({ scanningPlanetIndex: planetIndex });
+
+    checkCanScanTarget: (targetId: string) => {
+      let isScanDistanceToHudTarget = false;
+      const target = get().getHudTargetById(targetId);
+      const targetEntity = target?.entity;
+      if (!targetEntity) {
+        // warp to star target - not scannable
+        return;
+      }
+      if (get().scanningTargetId && get().scanningTargetId !== targetId) {
+        set({ scanningTargetId: targetId });
         set({ scanProgressHudTarget: 0 });
       }
-      const playerRealWorldPosition =
-        useStore.getState().playerRealWorldPosition;
-      const planet = useStore.getState().planets[planetIndex];
-      if (planet) {
-        // warp to planet distance is planet.radius * 2
-        const isScanDistanceToHudTarget =
-          planet.object3d.position.distanceTo(playerRealWorldPosition) <
-          planet.radius * 3;
-        if (isScanDistanceToHudTarget !== get().isScanDistanceToHudTarget) {
-          set({ isScanDistanceToHudTarget });
-        }
+
+      const playerPosition = useStore.getState().player.object3d.position;
+      const distanceToWarp =
+        targetEntity.getRealWorldDistanceTo(playerPosition);
+      const minDistanceToWarp = targetEntity.getMinDistanceAllowWarp();
+      isScanDistanceToHudTarget = distanceToWarp < minDistanceToWarp;
+      // only allow warp if target near middle of hud circle
+      if (target.viewAngle && target.viewAngle > 0.3) {
+        isScanDistanceToHudTarget = false;
+      }
+
+      if (isScanDistanceToHudTarget !== get().isScanDistanceToHudTarget) {
+        set({ isScanDistanceToHudTarget });
       }
     },
 
@@ -310,7 +302,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     },
     isPossibleWarpToTarget: false,
     isToCloseDistanceToWarp: false,
-    scanningPlanetIndex: null,
+    scanningTargetId: null,
     isScanDistanceToHudTarget: false,
     scanHudTarget: () => {
       if (get().scanProgressHudTarget < 10) {
@@ -331,58 +323,33 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     updateTargetHUD: (camera) => {
       get().htmlHudTargets.forEach((htmlHudTarget) => {
         if (!htmlHudTarget.divElement) return;
-        let systemScaledDistance = 0;
         let distanceToTargetLabel = "";
         let screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
 
         switch (htmlHudTarget.objectType) {
           case HTML_HUD_TARGET_TYPE.PLANET:
           case HTML_HUD_TARGET_TYPE.STATION:
-            const targetArray =
-              htmlHudTarget.objectType === HTML_HUD_TARGET_TYPE.PLANET
-                ? useStore.getState().planets
-                : useStore.getState().stations;
-            const targetObject3d =
-              targetArray[htmlHudTarget.objectIndex!].object3d;
-            // get distance to object relative to playerRealWorldPosition
-            // change to Au distance measurement? 1 Au = 150 million Km
-            systemScaledDistance = distance(
-              useStore.getState().playerRealWorldPosition,
-              targetObject3d.position
-            );
-
-            distanceToTargetLabel =
-              getSystemScaleDistanceLabel(systemScaledDistance);
-            // get screen position of target
-            // set dummyVec3 to target world position (required due to relative positioning to player)
-            targetObject3d.getWorldPosition(dummyVec3);
-            screenPosition = getScreenPosition(camera, dummyVec3);
-            break;
-
           case HTML_HUD_TARGET_TYPE.ENEMY:
-            if (useEnemyStore.getState().enemyGroup.enemyMechs.length === 0)
-              break;
-            // still working on multiple enemy groups
-            systemScaledDistance = distance(
-              useStore.getState().playerRealWorldPosition,
-              useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
-            );
-
-            distanceToTargetLabel =
-              getSystemScaleDistanceLabel(systemScaledDistance);
-            // set dummyVec3 to target world position (required due to relative positioning to player)
-            useEnemyStore
-              .getState()
-              .enemyGroup.enemyMechs[0].object3d.getWorldPosition(dummyVec3);
-            // get screen position of target
-            screenPosition = getScreenPosition(camera, dummyVec3);
+            const targetEntity = htmlHudTarget.entity;
+            if (targetEntity) {
+              // distance label in Au measurement
+              distanceToTargetLabel = getSystemScaleDistanceLabel(
+                targetEntity.getRealWorldDistanceTo(
+                  useStore.getState().playerRealWorldPosition
+                )
+              );
+              // get screen position of target world position (required due to relative positioning to player)
+              screenPosition = getScreenPosition(
+                camera,
+                targetEntity.getRealWorldPosition()
+              );
+            }
             break;
 
           case HTML_HUD_TARGET_TYPE.WARP_TO_STAR:
             if (
               useGalaxyMapStore.getState().selectedWarpStarDirection === null
             ) {
-              //screenPosition.angleDiff = 10; // for sorting
               htmlHudTarget.viewAngle = 10; // for sorting
               // send off screen if no target
               htmlHudTarget.divElement.style.marginLeft = `5000px`;
@@ -390,9 +357,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
               return;
             }
             distanceToTargetLabel =
-              (
-                useGalaxyMapStore.getState().selectedWarpStarDistance * 7
-              ).toFixed(3) + " Ly";
+              (useGalaxyMapStore.getState().selectedWarpStarDistance * 7) // TODO standardize this number in galaxy creation - eyeballing average distance between stars to set multiplier
+                .toFixed(3) + " Ly";
             // get screen position of target
             screenPosition = getScreenPositionFromDirection(
               camera,
@@ -431,7 +397,10 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         targetChildInfoDiv.style.textAlign =
           marginLeftPx <= 0 ? "right" : "left";
         // display the distance to target
-        targetChildInfoDiv.children[1].textContent = distanceToTargetLabel;
+        //targetChildInfoDiv.children[1].textContent = distanceToTargetLabel;
+        targetChildInfoDiv.getElementsByClassName(
+          "target-info-detail"
+        )[0].textContent = distanceToTargetLabel;
       });
       // sort targets by viewAngle, smallest is last
       // this will make the target closest to the center of the screen on top
@@ -439,18 +408,15 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       get().htmlHudTargets.sort((a, b) =>
         a.viewAngle! < b.viewAngle! ? 1 : -1
       );
-
-      // TODO build error: ../assets/fonts/MIASMA.ttf didn't resolve at build time
-
+      // update focused hud target z-index and CSS class
       const currentFocusedTargetId =
         get().htmlHudTargets[get().htmlHudTargets.length - 1].id;
-
       if (get().focusedHudTargetId !== currentFocusedTargetId) {
         // set focused target id
         set({
           focusedHudTargetId: currentFocusedTargetId,
         });
-
+        // z-index and CSS class
         get().htmlHudTargets.forEach((htmlHudTarget, index) => {
           if (htmlHudTarget.divElement) {
             // apply z-index to div elements
@@ -465,6 +431,11 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             }
           }
         });
+      }
+      // update warp scan possibility
+      if (get().selectedHudTargetId !== null) {
+        get().checkCanWarpToTarget(get().selectedHudTargetId!);
+        get().checkCanScanTarget(get().selectedHudTargetId!);
       }
     },
   })

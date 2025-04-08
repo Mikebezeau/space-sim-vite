@@ -16,6 +16,12 @@ import {
 
 interface CelestialBodyInt {
   initObject3d(object3d: THREE.Object3D): void;
+  // warping
+  getRealWorldPosition(setPosition: THREE.Vector3): void;
+  getRealWorldDistanceTo(fromPosition: THREE.Vector3): void;
+  getWarpToDistanceAway(): number;
+  getMinDistanceAllowWarp(): number;
+  //
   setShaderColors(): void;
   genTexture(): void;
   disposeTextures(): void;
@@ -27,6 +33,7 @@ interface CelestialBodyInt {
 }
 
 class CelestialBody implements CelestialBodyInt {
+  realWorldPosition: THREE.Vector3;
   isUseAtmosShader: boolean;
   isActive: boolean;
   rngSeed: string;
@@ -46,6 +53,7 @@ class CelestialBody implements CelestialBodyInt {
 
   constructor(isUseAtmosShader?: boolean) {
     this.id = uuidv4();
+    this.realWorldPosition = new THREE.Vector3();
     this.isUseAtmosShader = isUseAtmosShader || true;
     this.uTimeTracker = 1;
     this.cloudShaderUniforms = {
@@ -95,6 +103,23 @@ class CelestialBody implements CelestialBodyInt {
       this.object3d.position.copy(keepPosition);
       this.object3d.rotation.copy(keepRotation);
     }
+  }
+
+  getRealWorldPosition() {
+    this.object3d.getWorldPosition(this.realWorldPosition);
+    return this.realWorldPosition;
+  }
+
+  getRealWorldDistanceTo(fromPosition: THREE.Vector3) {
+    return this.getRealWorldPosition().distanceTo(fromPosition);
+  }
+
+  getWarpToDistanceAway() {
+    return this.radius * 4;
+  }
+
+  getMinDistanceAllowWarp() {
+    return this.radius * 5;
   }
 
   setShaderColors() {

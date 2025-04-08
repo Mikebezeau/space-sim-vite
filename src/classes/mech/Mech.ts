@@ -449,41 +449,23 @@ class Mech implements mechInt {
       return;
     }
     // weapon fire hit explosion particles
-    useParticleStore.getState().effects.addExplosion(
-      position,
-      {
-        numParticles: damage * 10 + 100,
-        size: damage / 10 + 0.1, // increase size of particles according to damage
-        spread: damage * 2 + 40, // increase spread speed according to damage
-        lifeTime: 0.75,
-        color: useParticleStore.getState().colors.yellow,
-        designType: DESIGN_TYPE.circle,
-      } /*
-      damage * 10 + 100, // number of particles
-      damage / 10 + 0.1, // increase size of particles according to damage
-      damage * 2 + 40, // increase spread speed according to damage
-      0.75, // lifeTime in seconds
-      useParticleStore.getState().colors.yellow
-      */
-    );
+    useParticleStore.getState().effects.addExplosion(position, {
+      numParticles: damage * 10 + 100,
+      size: damage / 10 + 0.1, // increase size of particles according to damage
+      spread: damage * 2 + 40, // increase spread speed according to damage
+      lifeTime: 0.75,
+      color: useParticleStore.getState().colors.yellow,
+      designType: DESIGN_TYPE.circle,
+    });
     // contrasting weapon fire hit explosion particles
-    useParticleStore.getState().effects.addExplosion(
-      position,
-      {
-        numParticles: damage * 10 + 100,
-        size: damage / 10 + 0.1, // increase size of particles according to damage
-        spread: damage * 2 + 40, // increase spread speed according to damage
-        lifeTime: 0.75,
-        color: useParticleStore.getState().colors.black,
-        designType: DESIGN_TYPE.circle,
-      } /*
-      damage * 10 + 100, // number of particles
-      damage / 10 + 0.1, // increase size of particles according to damage
-      damage * 2 + 40, // increase spread speed according to damage
-      0.75, // lifeTime in seconds
-      useParticleStore.getState().colors.black // contrasting color
-      */
-    );
+    useParticleStore.getState().effects.addExplosion(position, {
+      numParticles: damage * 10 + 100,
+      size: damage / 10 + 0.1, // increase size of particles according to damage
+      spread: damage * 2 + 40, // increase spread speed according to damage
+      lifeTime: 0.75,
+      color: useParticleStore.getState().colors.black,
+      designType: DESIGN_TYPE.circle,
+    });
 
     this.structureTemp.damage += damage;
     if (this.structureTemp.damage > this.structureTemp.max) {
