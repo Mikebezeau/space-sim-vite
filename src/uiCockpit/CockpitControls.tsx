@@ -108,7 +108,9 @@ const CyberPopupButton = (props: cyberPopupButtonInt) => {
 
   return (
     <div className="relative w-[240px] left-[-120px]">
-      <div className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4">
+      <div // values below are mixed up from rotations for arrow animation direction
+        className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
+      >
         <span />
         <span />
         <span />
@@ -170,32 +172,6 @@ export const ActionWarpToTargetPopupHUD = () => {
       />
     </>
   );
-  /*
-  return (
-    <div className="relative w-[240px] left-[-120px]">
-      <CyberButton
-        //isSmall
-        title={
-          isScanDistanceToHudTarget
-            ? scanProgressHudTarget > 0
-              ? scanProgressHudTarget * 10 + "%"
-              : "Scan Planet"
-            : "Engage Warp"
-        }
-        mainStyle={{}}
-        index={7}
-        onClickCallback={
-          isScanDistanceToHudTarget ? scanHudTarget : setPlayerWarpToHudTarget
-        }
-      >
-        <div className="animated-arrows animated-arrows-full">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </CyberButton>
-    </div>
-  );*/
 };
 
 export const ActionWarpToStarPopupHUD = () => {
@@ -219,6 +195,13 @@ export const ActionWarpToStarPopupHUD = () => {
 
   return (
     <div className="relative w-[240px] left-[-120px]">
+      <div // values below are mixed up from rotations for arrow animation direction
+        className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
+      >
+        <span />
+        <span />
+        <span />
+      </div>
       <CyberButton
         //isSmall
         title={"Engage System Warp"}
@@ -227,13 +210,7 @@ export const ActionWarpToStarPopupHUD = () => {
         onClickCallback={() => {
           setPlayerCurrentStarIndex(selectedWarpStar);
         }}
-      >
-        <div className="animated-arrows animated-arrows-full">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </CyberButton>
+      ></CyberButton>
     </div>
   );
 };
@@ -250,24 +227,28 @@ export const ActionCancelWarpPopupHUD = () => {
 
   return (
     <div className="relative w-[240px] left-[-120px]">
+      <div // values below are mixed up from rotations for arrow animation direction
+        className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
+      >
+        <span />
+        <span />
+        <span />
+      </div>
       <CyberButton
         //isSmall
         title="Cancel Warp"
         mainStyle={{}}
         index={15}
         onClickCallback={cancelPlayerWarp}
-      >
-        <div className="animated-arrows animated-arrows-full">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </CyberButton>
+      ></CyberButton>
     </div>
   );
 };
 
 export const ActionModeControlGroup = () => {
+  const playerViewMode = usePlayerControlsStore(
+    (state) => state.playerViewMode
+  );
   const playerActionMode = usePlayerControlsStore(
     (state) => state.playerActionMode
   );
@@ -284,8 +265,8 @@ export const ActionModeControlGroup = () => {
             <ActionCancelPilot />
           </div>
         ))}
-      {IS_MOBILE && (
-        // buttons for non-mobile moved to Cockpit.tsx
+      {playerViewMode === PLAYER.view.thirdPerson && (
+        // buttons for cockpit view moved to Cockpit.tsx
         <>
           <div className="absolute mb-[180px] bottom-[-10vw] left-1/2">
             <ActionWarpToTargetPopupHUD />
