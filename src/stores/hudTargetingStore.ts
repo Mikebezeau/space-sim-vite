@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Vector3 } from "three";
 import useStore from "./store";
-import usePlayerControlStore from "./playerControlsStore";
+import usePlayerControlsStore from "./playerControlsStore";
 import useEnemyStore from "./enemyStore";
 import useGalaxyMapStore from "./galaxyMapStore";
 import { getSystemScaleDistanceLabel } from "../util/gameUtil";
@@ -12,7 +12,7 @@ import {
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 import CelestialBody from "../classes/solarSystem/CelestialBody";
-import { PLAYER } from "../constants/constants";
+import { IS_MOBILE, PLAYER } from "../constants/constants";
 import { setCustomData } from "r3f-perf";
 
 export const HTML_HUD_TARGET_TYPE = {
@@ -27,6 +27,7 @@ export type htmlHudTargetType = {
   objectType: number;
   objectIndex: number | null;
   label: string;
+  scanProgressNorm: number;
   textColor?: string;
   color?: string;
   opacity?: number;
@@ -50,28 +51,27 @@ interface hudTargetingGalaxyMapStoreState {
   // HTML HUD Targets
   generateTargets: () => void;
   getHudTargetById: (id: string) => htmlHudTargetType | undefined;
-  getWarpToHudTarget: () => htmlHudTargetType | undefined;
-  getCurrentHudTarget: () => htmlHudTargetType | undefined;
+  //getWarpToHudTarget: () => htmlHudTargetType | undefined;
+  getFocusedHudTarget: () => htmlHudTargetType | undefined;
+  getSelectedHudTarget: () => htmlHudTargetType | undefined;
   getTargetPosition: (
     xn: number,
     yn: number,
     angleDiff: number
   ) => { marginLeftPx: number; marginTopPx: number };
-  checkCanWarpToTarget: (targetId: string) => void;
-  checkCanScanTarget: (targetId: string) => void;
   htmlHudTargets: htmlHudTargetType[];
   selectedHudTargetId: string | null;
-  setSelectedHudTargetId: (selectedHudTargetId?: string) => void;
-  focusedHudTargetId: string;
-  isWarpToStarAngleShowButton: boolean;
-  cancelWarpToStar: () => void;
-  isPossibleWarpToTarget: boolean;
-  isToCloseDistanceToWarp: boolean;
-  // TODO replace with scan anything - scanningTargetId - use ID
+  setSelectedHudTargetId: (selectedHudTargetId?: string | null) => void;
+  focusedHudTargetId: string | null;
+  setFocusedHudTargetId: (focusedHudTargetId: string | null) => void;
   scanningTargetId: string | null;
-  isScanDistanceToHudTarget: boolean;
-  scanHudTarget: () => void;
-  scanProgressHudTarget: number;
+  scanProgressNormHudTarget: number; // used to trigger updates in ui with current value
+  scanTargetTimeoutId: number | null;
+  isShowWarpButton: boolean;
+  isShowScanButton: boolean;
+  doScanHudTarget: () => void;
+  checkCanWarpToTarget: () => void;
+  checkCanScanTarget: () => void;
 
   // call updateTargetHUD each frame to update target div elements
   updateTargetHUD: (camera: any) => void;
@@ -114,6 +114,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             label: planet.rngSeed,
             color: planet.textureMapOptions.baseColor || "",
             entity: planet,
+            scanProgressNorm: 0,
           });
         });
         htmlHudTargets.push(...targetsPlanets);
@@ -129,6 +130,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             label: station.name,
             color: "gray",
             entity: station,
+            scanProgressNorm: 0,
           });
         });
         htmlHudTargets.push(...targetsStations);
@@ -142,6 +144,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
           label: "ENEMY",
           color: "red",
           entity: useEnemyStore.getState().enemyGroup,
+          scanProgressNorm: 0,
         });
       }
 
@@ -152,23 +155,31 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         objectIndex: null,
         label: "SYSTEM WARP",
         textColor: "yellow",
-        color: "white",
+        color: "white", // TODO get star color
         opacity: 1,
+        scanProgressNorm: 0,
       });
       set({ htmlHudTargets });
     },
     getHudTargetById: (id: string) => {
       return get().htmlHudTargets.find((target) => target.id === id);
     },
+    /*
     getWarpToHudTarget: () => {
       if (get().selectedHudTargetId === null) return undefined;
       return get().htmlHudTargets.find(
         (target) => target.id === get().selectedHudTargetId
       );
     },
-    getCurrentHudTarget: () => {
+    */
+    getFocusedHudTarget: () => {
       return get().htmlHudTargets.find(
         (target) => target.id === get().focusedHudTargetId
+      );
+    },
+    getSelectedHudTarget: () => {
+      return get().htmlHudTargets.find(
+        (target) => target.id === get().selectedHudTargetId
       );
     },
     getTargetPosition: (xn: number, yn: number, angleDiff: number) => {
@@ -194,122 +205,145 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         pyNorm = Math.sin(atan2Angle) * get().hudRadiusPx;
       }
       // set position of target div
-      const marginLeftPx = pxNorm - get().targetDiameterPx / 2;
-      const marginTopPx = pyNorm - get().targetDiameterPx / 2;
+      const marginLeftPx = pxNorm;
+      const marginTopPx = pyNorm;
       return { marginLeftPx, marginTopPx };
     },
-    checkCanWarpToTarget: (targetId: string) => {
-      let isToCloseDistanceToWarp = false;
-      const target = get().getHudTargetById(targetId);
-      const targetEntity = target?.entity;
-      if (!targetEntity) {
-        return;
-      }
-      const playerPosition = useStore.getState().player.object3d.position;
-      const distanceToWarpTarget =
-        targetEntity.getRealWorldDistanceTo(playerPosition);
-      const distanceAllowWarp = targetEntity.getMinDistanceAllowWarp();
-      isToCloseDistanceToWarp = distanceToWarpTarget < distanceAllowWarp;
-      setCustomData(distanceToWarpTarget);
-      // only allow warp if target near middle of hud circle
-      if (target.viewAngle && target.viewAngle > 0.3) {
-        isToCloseDistanceToWarp = true;
-      }
-
-      if (isToCloseDistanceToWarp !== get().isToCloseDistanceToWarp) {
-        set({ isToCloseDistanceToWarp });
-      }
-    },
-
-    checkCanScanTarget: (targetId: string) => {
-      let isScanDistanceToHudTarget = false;
-      const target = get().getHudTargetById(targetId);
-      const targetEntity = target?.entity;
-      if (!targetEntity) {
-        // warp to star target - not scannable
-        return;
-      }
-      if (get().scanningTargetId && get().scanningTargetId !== targetId) {
-        set({ scanningTargetId: targetId });
-        set({ scanProgressHudTarget: 0 });
-      }
-
-      const playerPosition = useStore.getState().player.object3d.position;
-      const distanceToWarp =
-        targetEntity.getRealWorldDistanceTo(playerPosition);
-      const minDistanceToWarp = targetEntity.getMinDistanceAllowWarp();
-      isScanDistanceToHudTarget = distanceToWarp < minDistanceToWarp;
-      // only allow warp if target near middle of hud circle
-      if (target.viewAngle && target.viewAngle > 0.3) {
-        isScanDistanceToHudTarget = false;
-      }
-
-      if (isScanDistanceToHudTarget !== get().isScanDistanceToHudTarget) {
-        set({ isScanDistanceToHudTarget });
-      }
-    },
-
     htmlHudTargets: [],
     selectedHudTargetId: null,
     setSelectedHudTargetId(
-      selectedHudTargetId: string = get().focusedHudTargetId
+      selectedHudTargetId: string | null = get().focusedHudTargetId || null
     ) {
-      // update if not in inspect mode
+      // update selected target if in manual pilot control mode OR if is mobile
       if (
-        usePlayerControlStore.getState().playerActionMode ===
-        PLAYER.action.inspect
+        (IS_MOBILE ||
+          usePlayerControlsStore.getState().playerActionMode ===
+            PLAYER.action.manualControl) &&
+        // update if selected target has changed
+        get().selectedHudTargetId !== selectedHudTargetId
       ) {
-        return;
-      }
-      // only update if selected target has changed
-      if (get().selectedHudTargetId === selectedHudTargetId) {
-        return;
-      }
-      const selectedTarget = get().getHudTargetById(selectedHudTargetId);
-      // if can warp to selected target, set isPossibleWarpToTarget to true
-      if (selectedTarget) {
-        if (
-          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.PLANET ||
-          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.STATION ||
-          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.ENEMY
-        ) {
-          set({
-            isPossibleWarpToTarget: true,
-          });
-        } else if (
-          selectedTarget.objectType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR
-        ) {
-          // TODO include all together for warp stuff - and single component
-          set({
-            isPossibleWarpToTarget: false,
-          });
-        }
         set({ selectedHudTargetId });
       }
     },
-    focusedHudTargetId: "",
-    isWarpToStarAngleShowButton: false,
-    cancelWarpToStar: () => {
-      set({ isWarpToStarAngleShowButton: false });
+    focusedHudTargetId: null,
+    setFocusedHudTargetId(focusedHudTargetId: string | null) {
+      if (
+        // update if focused target has changed
+        get().focusedHudTargetId !== focusedHudTargetId
+      ) {
+        set({ focusedHudTargetId });
+      }
     },
-    isPossibleWarpToTarget: false,
-    isToCloseDistanceToWarp: false,
     scanningTargetId: null,
-    isScanDistanceToHudTarget: false,
-    scanHudTarget: () => {
-      if (get().scanProgressHudTarget < 10) {
+    scanProgressNormHudTarget: 0, // used to trigger updates in ui with current value
+    scanTargetTimeoutId: null,
+    isShowScanButton: false,
+    isShowWarpButton: false,
+
+    doScanHudTarget: () => {
+      // get current target
+      const selectedTarget = get().getSelectedHudTarget();
+      if (
+        selectedTarget &&
+        get().isShowScanButton &&
+        get().scanTargetTimeoutId === null &&
+        selectedTarget.scanProgressNorm < 1
+      ) {
+        console.log("doScanHudTarget");
         const incrementScanProgress = () => {
-          set((state) => ({
-            scanProgressHudTarget: state.scanProgressHudTarget + 0.5,
-          }));
-          if (get().scanProgressHudTarget < 10) {
-            setTimeout(incrementScanProgress, 100);
+          // only increment scan progress if target is still in range / angle
+          if (get().isShowScanButton) {
+            if (selectedTarget.scanProgressNorm < 1) {
+              selectedTarget.scanProgressNorm += 0.1;
+              get().scanTargetTimeoutId = setTimeout(
+                incrementScanProgress,
+                200
+              );
+            } else {
+              selectedTarget.scanProgressNorm = 1;
+              get().scanTargetTimeoutId = null;
+            }
+            // update scan progress norm for UI
+            set({ scanProgressNormHudTarget: selectedTarget.scanProgressNorm });
           }
         };
         incrementScanProgress();
       }
     },
-    scanProgressHudTarget: 0,
+
+    checkCanWarpToTarget: () => {
+      let isShowWarpButton = true;
+      const selectedTarget = get().getSelectedHudTarget();
+      // check if close enough to objects to warp to, used when inside the solar system
+      const targetEntity = selectedTarget?.entity;
+      if (targetEntity) {
+        const playerPosition = useStore.getState().player.object3d.position;
+        const distanceToWarpTarget =
+          targetEntity.getRealWorldDistanceTo(playerPosition);
+        const distanceAllowWarp = targetEntity.getMinDistanceAllowWarp();
+        isShowWarpButton = distanceToWarpTarget > distanceAllowWarp;
+      }
+
+      if (selectedTarget) {
+        // only allow warp if target near middle of hud circle
+        // if in inspect mode do not hide warp button
+        if (
+          usePlayerControlsStore.getState().playerActionMode !==
+            PLAYER.action.inspect &&
+          selectedTarget.viewAngle &&
+          selectedTarget.viewAngle > 0.3
+        ) {
+          isShowWarpButton = false;
+        }
+      }
+      if (isShowWarpButton !== get().isShowWarpButton) {
+        set({ isShowWarpButton });
+      }
+    },
+
+    checkCanScanTarget: () => {
+      let isShowScanButton = false;
+      const selectedTarget = get().getSelectedHudTarget();
+      const targetEntity = selectedTarget?.entity;
+      if (!targetEntity) {
+        // nothing to scan - only star warp target is not scannable ATM
+        // - change button to "calculating course"?)
+        return;
+      }
+      const playerPosition = useStore.getState().player.object3d.position;
+      const distanceFromTarget =
+        targetEntity.getRealWorldDistanceTo(playerPosition);
+      const minDistanceToWarp = targetEntity.getMinDistanceAllowWarp();
+      // using getMinDistanceAllowWarp to check if close enough to scan
+      isShowScanButton = distanceFromTarget < minDistanceToWarp;
+      // only allow scan if target near middle of hud circle
+      // do not hide button in player is in inspect mode looking around
+      if (
+        usePlayerControlsStore.getState().playerActionMode !==
+          PLAYER.action.inspect &&
+        selectedTarget.viewAngle &&
+        selectedTarget.viewAngle > 0.3
+      ) {
+        isShowScanButton = false;
+      }
+      // if
+      if (isShowScanButton !== get().isShowScanButton) {
+        set({ isShowScanButton });
+        if (isShowScanButton) {
+          if (get().scanningTargetId !== selectedTarget.id) {
+            set({ scanningTargetId: selectedTarget.id });
+            // scanProgressNormHudTarget is updated in doScanHudTarget()
+            // clear previous scan timeout
+            if (get().scanTargetTimeoutId !== null) {
+              clearTimeout(get().scanTargetTimeoutId!);
+              get().scanTargetTimeoutId = null;
+            }
+          }
+        }
+      }
+      // start scanning target if not already scanning
+      get().doScanHudTarget();
+    },
 
     // update div elements for HUD targets each frame
     updateTargetHUD: (camera) => {
@@ -325,10 +359,10 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             const targetEntity = htmlHudTarget.entity;
             if (targetEntity) {
               // distance label in Au measurement
+              const playerPosition =
+                useStore.getState().player.object3d.position;
               distanceToTargetLabel = getSystemScaleDistanceLabel(
-                targetEntity.getRealWorldDistanceTo(
-                  useStore.getState().playerRealWorldPosition
-                )
+                targetEntity.getRealWorldDistanceTo(playerPosition)
               );
               // get screen position of target world position (required due to relative positioning to player)
               screenPosition = getScreenPosition(
@@ -339,9 +373,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             break;
 
           case HTML_HUD_TARGET_TYPE.WARP_TO_STAR:
-            if (
-              useGalaxyMapStore.getState().selectedWarpStarDirection === null
-            ) {
+            if (useGalaxyMapStore.getState().selectedWarpStar === null) {
               htmlHudTarget.viewAngle = 10; // for sorting
               // send off screen if no target
               htmlHudTarget.divElement.style.marginLeft = `5000px`;
@@ -356,12 +388,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
               camera,
               useGalaxyMapStore.getState().selectedWarpStarDirection!
             );
-            // show button if angle is less than 0.3 radians
-            const isWarpToStarAngleShowButton = screenPosition.angleDiff < 0.3;
-            if (
-              isWarpToStarAngleShowButton !== get().isWarpToStarAngleShowButton
-            )
-              set({ isWarpToStarAngleShowButton });
             break;
 
           default:
@@ -381,8 +407,10 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         htmlHudTarget.divElement.style.marginLeft = `${marginLeftPx}px`;
         htmlHudTarget.divElement.style.marginTop = `${marginTopPx}px`;
         // casting as HTMLElement
-        const targetChildInfoDiv = htmlHudTarget.divElement.children[0]
-          .children[0] as HTMLElement;
+        const targetChildInfoDiv =
+          htmlHudTarget.divElement.getElementsByClassName(
+            "flight-hud-target-info"
+          )[0] as HTMLElement;
         // target text positioning
         targetChildInfoDiv.style.right = marginLeftPx <= 0 ? "100%" : "auto";
         targetChildInfoDiv.style.left = marginLeftPx > 0 ? "100%" : "auto";
@@ -401,43 +429,39 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         a.viewAngle! < b.viewAngle! ? 1 : -1
       );
       // update focused hud target z-index and CSS class
-      const currentFocusedTargetId =
+      const newFocusedTargetId =
         get().htmlHudTargets[get().htmlHudTargets.length - 1].id;
       if (
-        // update if not in inspect mode
-        usePlayerControlStore.getState().playerActionMode !==
-          PLAYER.action.inspect &&
-        // update if focused target has changed
-        get().focusedHudTargetId !== currentFocusedTargetId
+        // update focused target if in manual pilot control mode OR if is mobile
+        IS_MOBILE ||
+        usePlayerControlsStore.getState().playerActionMode ===
+          PLAYER.action.manualControl
       ) {
-        // set focused target id
-        set({
-          focusedHudTargetId: currentFocusedTargetId,
-        });
-        // z-index and CSS class
-        get().htmlHudTargets.forEach((htmlHudTarget, index) => {
-          if (htmlHudTarget.divElement) {
-            // apply z-index to div elements
-            htmlHudTarget.divElement.style.zIndex =
-              htmlHudTarget.id === get().selectedHudTargetId
-                ? "1000"
-                : index.toString();
-            // add flight-hud-target-info-hidden class to all but last (or focused) target
-            const targetInfoDiv = htmlHudTarget.divElement.children[0]
-              .children[0] as HTMLElement;
-            if (get().focusedHudTargetId === htmlHudTarget.id) {
-              targetInfoDiv.classList.remove("flight-hud-target-info-hidden");
-            } else {
-              targetInfoDiv.classList.add("flight-hud-target-info-hidden");
+        if (
+          // update if focused target has changed
+          get().focusedHudTargetId !== newFocusedTargetId
+        ) {
+          // set focused target id
+          get().setFocusedHudTargetId(newFocusedTargetId);
+          // z-index and CSS class
+          get().htmlHudTargets.forEach((htmlHudTarget, index) => {
+            if (htmlHudTarget.divElement) {
+              // apply z-index to div elements
+              htmlHudTarget.divElement.style.zIndex =
+                htmlHudTarget.id === get().selectedHudTargetId
+                  ? "1000"
+                  : index.toString();
             }
-          }
-        });
+          });
+        }
+      } else {
+        // else player not in manual control mode
+        // reset focused target id to selected target id
+        get().setFocusedHudTargetId(get().selectedHudTargetId);
       }
       // update warp scan possibility
-      if (get().selectedHudTargetId !== null) {
-        get().checkCanWarpToTarget(get().selectedHudTargetId!);
-        get().checkCanScanTarget(get().selectedHudTargetId!);
-      }
+      get().checkCanWarpToTarget();
+      get().checkCanScanTarget();
     },
   })
 );

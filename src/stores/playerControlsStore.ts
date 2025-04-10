@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Object3D, Quaternion, Vector3 } from "three";
 import useStore from "./store";
-import useEnemyStore from "./enemyStore";
+import useGalaxyMapStore from "./galaxyMapStore";
 import useHudTargtingStore, {
   HTML_HUD_TARGET_TYPE,
   htmlHudTargetType,
@@ -153,7 +153,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       set(() => ({ playerWarpToPosition: null }));
       set(() => ({ playerMaxWarpDistance: null }));
       set(() => ({ playerWarpDistanceToDecelerate: null }));
-      useHudTargtingStore.getState().cancelWarpToStar();
     },
 
     combatHudTarget: null,
@@ -219,22 +218,30 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerWarpDistanceToDecelerate: null,
     playerMaxWarpDistance: null,
     setPlayerWarpToHudTarget(
-      currentTarget = useHudTargtingStore.getState().getWarpToHudTarget()
+      currentTarget = useHudTargtingStore.getState().getSelectedHudTarget()
     ) {
       if (!currentTarget) {
         console.warn("No current target to warp to");
         return;
       }
-      const targetEntity = currentTarget.entity;
-      if (!targetEntity) {
+      if (currentTarget.objectType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR) {
+        const selectedWarpStar = useGalaxyMapStore.getState().selectedWarpStar;
+        if (selectedWarpStar !== null) {
+          useStore
+            .getState()
+            .actions.setPlayerCurrentStarIndex(selectedWarpStar);
+        }
+      }
+
+      if (!currentTarget.entity) {
         return null;
       }
 
       //get position of target object
-      const targetVec3 = targetEntity.getRealWorldPosition();
+      const targetVec3 = currentTarget.entity.getRealWorldPosition();
       // set distance away from planet
       const warpDistanceAwayFromTarget =
-        targetEntity.getWarpToDistanceAway() || 0;
+        currentTarget.entity.getWarpToDistanceAway() || 0;
 
       if (targetVec3 !== null) {
         // reusable dummy vars

@@ -7,7 +7,7 @@ interface cyberButtonInt {
   mainStyle?: any;
   tagStyle?: any;
   children?: any;
-  onClickCallback: () => void;
+  onClickCallback: (() => void) | null;
 }
 
 const CyberButton = (props: cyberButtonInt) => {
@@ -40,10 +40,11 @@ const CyberButton = (props: cyberButtonInt) => {
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        glitchBeforeOnClick(onClickCallback);
+        if (onClickCallback !== null) {
+          glitchBeforeOnClick(onClickCallback);
+        }
       }}
     >
-      <div className="absolute w-full h-full">{children}</div>
       {title}
       <span
         ref={glitchRef}
@@ -55,6 +56,7 @@ const CyberButton = (props: cyberButtonInt) => {
       <span aria-hidden className={`cybr-btn__tag`} style={tagStyle}>
         X{index + 12}
       </span>
+      {children}
     </div>
   );
 };

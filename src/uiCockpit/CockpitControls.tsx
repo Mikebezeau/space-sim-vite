@@ -95,33 +95,50 @@ const ActionCancelPilot = () => {
 };
 
 interface cyberPopupButtonInt {
-  isShow: boolean;
   title: string;
-  onClickCallback: () => void;
+  onClickCallback: (() => void) | null;
+  isShowProgressNorm?: number;
+  isShowArrows?: boolean;
   index: number;
 }
 
-const CyberPopupButton = (props: cyberPopupButtonInt) => {
-  const { isShow, title, onClickCallback, index } = props;
-
-  if (!isShow) return null;
+export const CyberButtonProgressAnimArrows = (props: cyberPopupButtonInt) => {
+  const {
+    title,
+    onClickCallback,
+    isShowProgressNorm = 0,
+    isShowArrows = true,
+    index,
+  } = props;
 
   return (
     <div className="relative w-[240px] left-[-120px]">
-      <div // values below are mixed up from rotations for arrow animation direction
-        className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
-      >
-        <span />
-        <span />
-        <span />
-      </div>
+      {isShowArrows && (
+        <div // values below are mixed up from rotations for arrow animation direction
+          className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
+        >
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
       <CyberButton
         //isSmall
         title={title}
-        mainStyle={{}}
+        mainStyle={{ color: "#11AA33" }}
         index={index}
         onClickCallback={onClickCallback}
-      ></CyberButton>
+      >
+        {isShowProgressNorm > 0 && (
+          <div
+            className="absolute top-0 left-0 bottom-0 bg-blue-500 opacity-50"
+            style={{
+              width: `${isShowProgressNorm * 100}%`,
+              transition: "width 0.5s ease-in-out",
+            }}
+          />
+        )}
+      </CyberButton>
     </div>
   );
 };
@@ -130,119 +147,52 @@ export const ActionWarpToTargetPopupHUD = () => {
   const isPlayerWarping = usePlayerControlsStore(
     (state) => state.isPlayerWarping
   );
-
-  const setPlayerWarpToHudTarget = usePlayerControlsStore(
-    (state) => state.setPlayerWarpToHudTarget
+  const isShowWarpButton = useHudTargtingStore(
+    (state) => state.isShowWarpButton
   );
-  // if isWarpToStarAngleShowButton do not show this button
-  const isWarpToStarAngleShowButton = useHudTargtingStore(
-    (state) => state.isWarpToStarAngleShowButton
+  const isShowScanButton = useHudTargtingStore(
+    (state) => state.isShowScanButton
   );
-  const isPossibleWarpToTarget = useHudTargtingStore(
-    (state) => state.isPossibleWarpToTarget
-  );
-  const isToCloseDistanceToWarp = useHudTargtingStore(
-    (state) => state.isToCloseDistanceToWarp
-  );
-  const isScanDistanceToHudTarget = useHudTargtingStore(
-    (state) => state.isScanDistanceToHudTarget
-  );
-  const scanHudTarget = useHudTargtingStore((state) => state.scanHudTarget);
-  const scanProgressHudTarget = useHudTargtingStore(
-    (state) => state.scanProgressHudTarget
+  const scanProgressNormHudTarget = useHudTargtingStore(
+    (state) => state.scanProgressNormHudTarget
   );
 
-  if (isPlayerWarping) return null;
-
-  return (
-    <>
-      <CyberPopupButton
-        title={"Engage Warp"}
-        isShow={isPossibleWarpToTarget && !isToCloseDistanceToWarp}
-        onClickCallback={setPlayerWarpToHudTarget}
+  if (isPlayerWarping)
+    return (
+      <CyberButtonProgressAnimArrows
+        title={"Cancel Warp"}
+        onClickCallback={usePlayerControlsStore.getState().cancelPlayerWarp}
         index={7}
       />
-      <CyberPopupButton
-        title={
-          scanProgressHudTarget > 0 ? scanProgressHudTarget * 10 + "%" : "Scan"
+    );
+
+  if (isShowWarpButton)
+    return (
+      <CyberButtonProgressAnimArrows
+        title={"Engage Warp"}
+        onClickCallback={
+          usePlayerControlsStore.getState().setPlayerWarpToHudTarget
         }
-        isShow={isScanDistanceToHudTarget}
-        onClickCallback={scanHudTarget}
-        index={9}
+        index={7}
       />
-    </>
-  );
-};
+    );
 
-export const ActionWarpToStarPopupHUD = () => {
-  const isPlayerWarping = usePlayerControlsStore(
-    (state) => state.isPlayerWarping
-  );
-
-  const selectedWarpStar = useGalaxyMapStore((state) => state.selectedWarpStar);
-  // using state for auto update
-  const isWarpToStarAngleShowButton = useHudTargtingStore(
-    (state) => state.isWarpToStarAngleShowButton
-  );
-  // setPlayerCurrentStarIndex: warp to new star
-  const setPlayerCurrentStarIndex = useStore(
-    (state) => state.actions.setPlayerCurrentStarIndex
-  );
-
-  if (isPlayerWarping) return null;
-  // only show warp to star button if a star is selected and angle is less than 0.3 radians
-  if (selectedWarpStar === null || !isWarpToStarAngleShowButton) return null;
-
-  return (
-    <div className="relative w-[240px] left-[-120px]">
-      <div // values below are mixed up from rotations for arrow animation direction
-        className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
-      >
-        <span />
-        <span />
-        <span />
-      </div>
-      <CyberButton
-        //isSmall
-        title={"Engage System Warp"}
-        mainStyle={{}}
-        index={9}
-        onClickCallback={() => {
-          setPlayerCurrentStarIndex(selectedWarpStar);
-        }}
-      ></CyberButton>
-    </div>
-  );
-};
-
-export const ActionCancelWarpPopupHUD = () => {
-  const cancelPlayerWarp = usePlayerControlsStore(
-    (state) => state.cancelPlayerWarp
-  );
-  const isPlayerWarping = usePlayerControlsStore(
-    (state) => state.isPlayerWarping
-  );
-
-  if (!isPlayerWarping) return null;
-
-  return (
-    <div className="relative w-[240px] left-[-120px]">
-      <div // values below are mixed up from rotations for arrow animation direction
-        className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
-      >
-        <span />
-        <span />
-        <span />
-      </div>
-      <CyberButton
-        //isSmall
-        title="Cancel Warp"
-        mainStyle={{}}
-        index={15}
-        onClickCallback={cancelPlayerWarp}
-      ></CyberButton>
-    </div>
-  );
+  if (isShowScanButton) {
+    // change title to Connecting for friendly space station
+    const title = scanProgressNormHudTarget < 1 ? "Scanning" : "Display Data";
+    return (
+      <>
+        <CyberButtonProgressAnimArrows
+          title={title}
+          isShowArrows={scanProgressNormHudTarget >= 1}
+          isShowProgressNorm={scanProgressNormHudTarget}
+          onClickCallback={scanProgressNormHudTarget >= 1 ? null : null}
+          index={9}
+        />
+        {scanProgressNormHudTarget >= 1 && <div>DATA DATA DATA DATA DATA</div>}
+      </>
+    );
+  }
 };
 
 export const ActionModeControlGroup = () => {
@@ -265,17 +215,15 @@ export const ActionModeControlGroup = () => {
             <ActionCancelPilot />
           </div>
         ))}
-      {playerViewMode === PLAYER.view.thirdPerson && (
-        // buttons for cockpit view moved to Cockpit.tsx
-        <>
-          <div className="absolute mb-[180px] bottom-[-10vw] left-1/2">
-            <ActionWarpToTargetPopupHUD />
-          </div>
-          <div className="absolute bottom-48 left-1/2">
-            <ActionWarpToStarPopupHUD />
-          </div>
-        </>
-      )}
+      {playerViewMode === PLAYER.view.thirdPerson &&
+        playerActionMode === PLAYER.action.inspect && (
+          // buttons for cockpit view moved to Cockpit.tsx
+          <>
+            <div className="absolute mb-[30vh] bottom-0 left-1/2">
+              <ActionWarpToTargetPopupHUD />
+            </div>
+          </>
+        )}
     </>
   );
 };

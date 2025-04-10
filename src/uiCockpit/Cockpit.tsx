@@ -5,8 +5,6 @@ import CockpitPanelsRed from "./panels/CockpitPanelsRed";
 import {
   ActionModeControlGroup,
   ActionWarpToTargetPopupHUD,
-  ActionWarpToStarPopupHUD,
-  ActionCancelWarpPopupHUD,
   CockpitControlMode,
   CockpitControlMap,
   CockpitControlView,
@@ -91,12 +89,6 @@ const Cockpit = () => {
         <div className="absolute face middle-red flex flex-row gap-2 top-[4vh] left-1/2">
           <div className="absolute top-[0]">
             <ActionWarpToTargetPopupHUD />
-          </div>
-          <div className="absolute top-[-40px]">
-            <ActionWarpToStarPopupHUD />
-          </div>
-          <div className="absolute top-[0]">
-            <ActionCancelWarpPopupHUD />
           </div>
           <div
             className="absolute w-[40vh] ml-[-17.5vh] top-[6vh] flex flex-row gap-2"
