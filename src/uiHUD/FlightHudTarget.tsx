@@ -31,8 +31,8 @@ const FlightHudTarget = (props: targetHUDInt) => {
     focusedHudTargetId !== null && focusedHudTargetId === target.id;
 
   const combatTarget: boolean =
-    target.objectType === HTML_HUD_TARGET_TYPE.ENEMY ||
-    target.objectType === HTML_HUD_TARGET_TYPE.STATION; // true false
+    target.targetType === HTML_HUD_TARGET_TYPE.ENEMY ||
+    target.targetType === HTML_HUD_TARGET_TYPE.STATION; // true false
   // triangles or circle
   const targetSize: number = combatTarget
     ? // combat targets

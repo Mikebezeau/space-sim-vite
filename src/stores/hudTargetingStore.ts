@@ -24,15 +24,14 @@ export const HTML_HUD_TARGET_TYPE = {
 
 export type htmlHudTargetType = {
   id: string;
-  objectType: number;
-  objectIndex: number | null;
+  targetType: number;
+  viewAngle: number;
   label: string;
   scanProgressNorm: number;
   textColor?: string;
   color?: string;
   opacity?: number;
   divElement?: HTMLDivElement;
-  viewAngle?: number;
   entity?: SpaceStationMech | EnemyMechGroup | CelestialBody;
 };
 
@@ -109,8 +108,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
           if (!planet.isActive) return;
           targetsPlanets.push({
             id: `${HTML_HUD_TARGET_TYPE.PLANET}-${index}`,
-            objectType: HTML_HUD_TARGET_TYPE.PLANET,
-            objectIndex: index,
+            targetType: HTML_HUD_TARGET_TYPE.PLANET,
+            viewAngle: 0,
             label: planet.rngSeed,
             color: planet.textureMapOptions.baseColor || "",
             entity: planet,
@@ -125,8 +124,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         useStore.getState().stations.forEach((station, index) => {
           targetsStations.push({
             id: `${HTML_HUD_TARGET_TYPE.STATION}-${index}`,
-            objectType: HTML_HUD_TARGET_TYPE.STATION,
-            objectIndex: index,
+            targetType: HTML_HUD_TARGET_TYPE.STATION,
+            viewAngle: 0,
             label: station.name,
             color: "gray",
             entity: station,
@@ -139,8 +138,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       if (useEnemyStore.getState().enemyGroup.enemyMechs.length > 0) {
         htmlHudTargets.push({
           id: `${HTML_HUD_TARGET_TYPE.ENEMY}`, //-${index}`,
-          objectType: HTML_HUD_TARGET_TYPE.ENEMY,
-          objectIndex: 0,
+          targetType: HTML_HUD_TARGET_TYPE.ENEMY,
+          viewAngle: 0,
           label: "ENEMY",
           color: "red",
           entity: useEnemyStore.getState().enemyGroup,
@@ -151,8 +150,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // warp to star
       htmlHudTargets.push({
         id: `${HTML_HUD_TARGET_TYPE.WARP_TO_STAR}`,
-        objectType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
-        objectIndex: null,
+        targetType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
+        viewAngle: 0,
         label: "SYSTEM WARP",
         textColor: "yellow",
         color: "white", // TODO get star color
@@ -164,14 +163,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     getHudTargetById: (id: string) => {
       return get().htmlHudTargets.find((target) => target.id === id);
     },
-    /*
-    getWarpToHudTarget: () => {
-      if (get().selectedHudTargetId === null) return undefined;
-      return get().htmlHudTargets.find(
-        (target) => target.id === get().selectedHudTargetId
-      );
-    },
-    */
     getFocusedHudTarget: () => {
       return get().htmlHudTargets.find(
         (target) => target.id === get().focusedHudTargetId
@@ -249,7 +240,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         get().scanTargetTimeoutId === null &&
         selectedTarget.scanProgressNorm < 1
       ) {
-        console.log("doScanHudTarget");
         const incrementScanProgress = () => {
           // only increment scan progress if target is still in range / angle
           if (get().isShowScanButton) {
@@ -290,7 +280,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         if (
           usePlayerControlsStore.getState().playerActionMode !==
             PLAYER.action.inspect &&
-          selectedTarget.viewAngle &&
           selectedTarget.viewAngle > 0.3
         ) {
           isShowWarpButton = false;
@@ -321,7 +310,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       if (
         usePlayerControlsStore.getState().playerActionMode !==
           PLAYER.action.inspect &&
-        selectedTarget.viewAngle &&
         selectedTarget.viewAngle > 0.3
       ) {
         isShowScanButton = false;
@@ -352,7 +340,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         let distanceToTargetLabel = "";
         let screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
 
-        switch (htmlHudTarget.objectType) {
+        switch (htmlHudTarget.targetType) {
           case HTML_HUD_TARGET_TYPE.PLANET:
           case HTML_HUD_TARGET_TYPE.STATION:
           case HTML_HUD_TARGET_TYPE.ENEMY:
@@ -391,7 +379,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             break;
 
           default:
-            console.error("Unknown htmlHudTarget.objectType");
+            console.error("Unknown htmlHudTarget.targetType");
             break;
         }
 
@@ -425,9 +413,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // sort targets by viewAngle, smallest is last
       // this will make the target closest to the center of the screen on top
       // using the index in array to set z-index
-      get().htmlHudTargets.sort((a, b) =>
-        a.viewAngle! < b.viewAngle! ? 1 : -1
-      );
+      get().htmlHudTargets.sort((a, b) => (a.viewAngle < b.viewAngle ? 1 : -1));
       // update focused hud target z-index and CSS class
       const newFocusedTargetId =
         get().htmlHudTargets[get().htmlHudTargets.length - 1].id;

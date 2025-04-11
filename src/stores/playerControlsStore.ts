@@ -224,7 +224,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         console.warn("No current target to warp to");
         return;
       }
-      if (currentTarget.objectType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR) {
+      if (currentTarget.targetType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR) {
         const selectedWarpStar = useGalaxyMapStore.getState().selectedWarpStar;
         if (selectedWarpStar !== null) {
           useStore
