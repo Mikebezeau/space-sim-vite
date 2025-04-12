@@ -55,17 +55,20 @@ const FlightHudTarget = (props: targetHUDInt) => {
           target.divElement = targetDivElement;
         }
       }}
-      className="opacity-50 absolute top-1/2 left-1/2"
+      className="absolute top-1/2 left-1/2"
+      style={{
+        opacity: target.opacity ? target.opacity : targetIsFocused ? 0.9 : 0.5,
+      }}
     >
       <div
-        className={`${
-          target.id !== focusedHudTargetId && "flight-hud-target-info-hidden"
-        } 
-          flight-hud-target-info
+        // updated in hudTargtingStore
+        //   -> updateTargetHU -> getElementsByClassName("flight-hud-target-info")
+        className={`${!targetIsFocused && "flight-hud-target-info-hidden"} 
+          flight-hud-target-info 
           absolute w-auto m-2 -top-3 px-4
           transition-all duration-800 ease-in-out
           rounded-md bg-black whitespace-nowrap text-white
-          ${combatMode && "hidden"}`} // border-2 border-white
+          ${combatMode && "hidden"}`}
       >
         <div
           className="target-info-label"
@@ -76,7 +79,8 @@ const FlightHudTarget = (props: targetHUDInt) => {
           {target.label}
         </div>
         <div className="target-info-detail text-white">
-          INFO{/* updated in updateTargetHUD */}
+          INFO
+          {/* updated in hudTargtingStore -> updateTargetHU -> getElementsByClassName("target-info-detail") */}
         </div>
       </div>
       {combatTarget ? (

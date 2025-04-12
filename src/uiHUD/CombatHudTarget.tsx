@@ -22,13 +22,6 @@ const CombatHudTarget = () => {
               backgroundSize: "100% 100%",
               backgroundImage: `url(${hudCrosshairOuter1})`,
             }}
-            ref={(targetElement) => {
-              if (targetElement) {
-                // assign element to target
-                usePlayerControlsStore.getState().combatHudTarget =
-                  targetElement;
-              }
-            }}
             className="absolute w-full h-full opacity-50"
           />
         </div>

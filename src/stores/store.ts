@@ -390,11 +390,8 @@ const useStore = create<storeState>()((set, get) => ({
     },
 
     setShoot(value: boolean) {
-      //console.log(useEnemyStore.getState().enemyGroup.instancedMeshs);
-      // update shoot value, not using set
+      // update shoot value
       get().mutation.shoot = value;
-      // TODO make this happen in scan mode
-      useHudTargtingStore.getState().setSelectedHudTargetId();
     },
 
     updateMouse({ clientX: x, clientY: y }) {

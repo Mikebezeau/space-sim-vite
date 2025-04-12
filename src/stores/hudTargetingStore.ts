@@ -13,7 +13,6 @@ import SpaceStationMech from "../classes/mech/SpaceStationMech";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 import CelestialBody from "../classes/solarSystem/CelestialBody";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
@@ -203,7 +202,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     htmlHudTargets: [],
     selectedHudTargetId: null,
     setSelectedHudTargetId(
-      selectedHudTargetId: string | null = get().focusedHudTargetId || null
+      selectedHudTargetId: string | null = get().focusedHudTargetId
     ) {
       // update selected target if in manual pilot control mode OR if is mobile
       if (
@@ -214,6 +213,11 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         get().selectedHudTargetId !== selectedHudTargetId
       ) {
         set({ selectedHudTargetId });
+        // update scanning normalized value
+        set({
+          scanProgressNormHudTarget:
+            get().getSelectedHudTarget()?.scanProgressNorm || 0,
+        });
       }
     },
     focusedHudTargetId: null,
@@ -320,7 +324,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         if (isShowScanButton) {
           if (get().scanningTargetId !== selectedTarget.id) {
             set({ scanningTargetId: selectedTarget.id });
-            // scanProgressNormHudTarget is updated in doScanHudTarget()
             // clear previous scan timeout
             if (get().scanTargetTimeoutId !== null) {
               clearTimeout(get().scanTargetTimeoutId!);
@@ -395,18 +398,16 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         htmlHudTarget.divElement.style.marginLeft = `${marginLeftPx}px`;
         htmlHudTarget.divElement.style.marginTop = `${marginTopPx}px`;
         // casting as HTMLElement
-        const targetChildInfoDiv =
-          htmlHudTarget.divElement.getElementsByClassName(
-            "flight-hud-target-info"
-          )[0] as HTMLElement;
+        const targetInfoDiv = htmlHudTarget.divElement.getElementsByClassName(
+          "flight-hud-target-info"
+        )[0] as HTMLElement;
         // target text positioning
-        targetChildInfoDiv.style.right = marginLeftPx <= 0 ? "100%" : "auto";
-        targetChildInfoDiv.style.left = marginLeftPx > 0 ? "100%" : "auto";
-        targetChildInfoDiv.style.textAlign =
-          marginLeftPx <= 0 ? "right" : "left";
+        targetInfoDiv.style.right = marginLeftPx <= 0 ? "100%" : "auto";
+        targetInfoDiv.style.left = marginLeftPx > 0 ? "100%" : "auto";
+        targetInfoDiv.style.textAlign = marginLeftPx <= 0 ? "right" : "left";
         // display the distance to target
-        //targetChildInfoDiv.children[1].textContent = distanceToTargetLabel;
-        targetChildInfoDiv.getElementsByClassName(
+        //targetInfoDiv.children[1].textContent = distanceToTargetLabel;
+        targetInfoDiv.getElementsByClassName(
           "target-info-detail"
         )[0].textContent = distanceToTargetLabel;
       });

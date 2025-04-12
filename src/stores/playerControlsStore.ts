@@ -15,19 +15,11 @@ import {
   ZERO_SPEED_SETTING_INDEX,
   SPEED_VALUES,
 } from "../constants/constants";
-import { setCustomData } from "r3f-perf";
-
-let test1 = 0,
-  test2 = 0,
-  test3 = 0;
 
 // reusable objects
-// for ship and camera rotation
 const rotateShipQuat = new Quaternion(),
-  adjustCameraViewQuat = new Quaternion();
-
-const dummyVec3 = new Vector3();
-const dummyObj = new Object3D();
+  adjustCameraViewQuat = new Quaternion(),
+  dummyObj = new Object3D();
 
 interface playerControlStoreState {
   playerActionMode: number;
@@ -39,6 +31,11 @@ interface playerControlStoreState {
     playerControlMode: number;
     playerViewMode: number;
     playerScreen: number;
+  };
+  playerControlActions: {
+    leftClick: () => void;
+    rightClick: () => void;
+    middleClick: () => void;
   };
 
   flightCameraLookRotation: {
@@ -53,10 +50,9 @@ interface playerControlStoreState {
   // within solar system warp
   isPlayerWarping: boolean; // trigger to update components
   playerWarpToPosition: Vector3 | null;
-  setPlayerWarpToPosition: (playerWarpToPosition: Vector3) => void;
+  beginPlayerWarpToHudTargetPosition: (playerWarpToPosition: Vector3) => void;
   cancelPlayerWarp: () => void;
 
-  combatHudTarget: HTMLDivElement | null;
   playerSpeedSetting: number;
   getPlayerSpeedSetting: () => number;
   isPlayerPilotControl: () => boolean;
@@ -68,6 +64,7 @@ interface playerControlStoreState {
     switchScreen: (playerScreen: number) => void;
     // TODO move this out of actions
     setPlayerSpeedSetting: (playerSpeedSetting: number) => void;
+    selectedTargetActionButtonCallback: (() => void) | null;
   };
   playerWarpSpeed: number | null;
   playerWarpDistanceToDecelerate: number | null; // used to set speed of ship when warping
@@ -112,6 +109,33 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       };
     },
 
+    playerControlActions: {
+      leftClick: () => {
+        // can call any test function here to trigger on left click
+
+        const selectedHudTargetId =
+          useHudTargtingStore.getState().selectedHudTargetId;
+        const focusedHudTargetId =
+          useHudTargtingStore.getState().focusedHudTargetId;
+
+        if (selectedHudTargetId !== focusedHudTargetId) {
+          // trigger select target action
+          useHudTargtingStore.getState().setSelectedHudTargetId();
+        } else if (
+          usePlayerControlsStore.getState().actions
+            .selectedTargetActionButtonCallback !== null
+        ) {
+          {
+            // trigger action button
+            usePlayerControlsStore.getState().actions
+              .selectedTargetActionButtonCallback!();
+          }
+        }
+      },
+      rightClick: () => {},
+      middleClick: () => {},
+    },
+
     flightCameraLookRotation: {
       rotateX: 0,
       rotateY: 0,
@@ -134,7 +158,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     // within solar system warp
     isPlayerWarping: false,
     playerWarpToPosition: null,
-    setPlayerWarpToPosition: (playerWarpToPosition) => {
+    beginPlayerWarpToHudTargetPosition: (playerWarpToPosition) => {
       // olny update isPlayerWarping if changed - used to trigger component updates
       if (get().isPlayerWarping !== true) {
         set(() => ({ isPlayerWarping: true }));
@@ -155,7 +179,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       set(() => ({ playerWarpDistanceToDecelerate: null }));
     },
 
-    combatHudTarget: null,
     playerSpeedSetting: 1, // used in throttle control, and updatePlayerMechAndCamera below
     getPlayerSpeedSetting: () => get().playerSpeedSetting,
     isPlayerPilotControl: () => {
@@ -211,6 +234,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           set(() => ({ playerSpeedSetting }));
         }
       },
+
+      selectedTargetActionButtonCallback: null,
     },
 
     // playerWarpSpeed used to move player ship towards warp position
@@ -259,7 +284,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         // set player warp position using state for component updates
         usePlayerControlsStore
           .getState()
-          .setPlayerWarpToPosition(warpToTargetObj.position);
+          .beginPlayerWarpToHudTargetPosition(warpToTargetObj.position);
         // get total warp distance to target on first call of functon
         if (get().playerMaxWarpDistance === null) {
           get().playerMaxWarpDistance = useStore
@@ -306,7 +331,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
               );
             }
 
-            setCustomData(speed);
             // rotate ship towards warp position
             const dummyPlayerObj = dummyObj;
             dummyPlayerObj.copy(player.object3d);
@@ -328,8 +352,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
               // *2 to reduce glitches
               // set player at target position
               player.object3d.position.copy(get().playerWarpToPosition!);
-              //
-              test1 = test2 = test3 = 0;
               // cancel warp by settings to null
               get().cancelPlayerWarp();
             } else {

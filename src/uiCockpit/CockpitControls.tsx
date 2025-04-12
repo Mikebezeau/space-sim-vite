@@ -2,7 +2,9 @@ import React from "react";
 import useStore from "../stores/store";
 import useDevStore from "../stores/devStore";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import useHudTargtingStore from "../stores/hudTargetingStore";
+import useHudTargtingStore, {
+  HTML_HUD_TARGET_TYPE,
+} from "../stores/hudTargetingStore";
 import CyberButton from "../uiMenuComponents/common/CyberButton";
 //@ts-ignore
 import hudCrosshair1 from "/images/hud/hudCrosshair1.png";
@@ -143,7 +145,10 @@ export const CyberButtonProgressAnimArrows = (props: cyberPopupButtonInt) => {
   );
 };
 
-export const ActionWarpToTargetPopupHUD = () => {
+export const SelectedTargetActionButton = () => {
+  const selectedHudTargetId = useHudTargtingStore(
+    (state) => state.selectedHudTargetId
+  );
   const isPlayerWarping = usePlayerControlsStore(
     (state) => state.isPlayerWarping
   );
@@ -157,42 +162,67 @@ export const ActionWarpToTargetPopupHUD = () => {
     (state) => state.scanProgressNormHudTarget
   );
 
-  if (isPlayerWarping)
-    return (
-      <CyberButtonProgressAnimArrows
-        title={"Cancel Warp"}
-        onClickCallback={usePlayerControlsStore.getState().cancelPlayerWarp}
-        index={7}
-      />
-    );
+  // cleanup function to reset the selected target action button callback
+  React.useEffect(() => {
+    return () => {
+      // reset scan progress when target changes
+      usePlayerControlsStore.getState().actions.selectedTargetActionButtonCallback =
+        null;
+    };
+  }, []);
 
-  if (isShowWarpButton)
-    return (
-      <CyberButtonProgressAnimArrows
-        title={"Engage Warp"}
-        onClickCallback={
-          usePlayerControlsStore.getState().setPlayerWarpToHudTarget
-        }
-        index={7}
-      />
-    );
+  let title: string = "",
+    isShowArrows: boolean = false,
+    onClickCallback: (() => void) | null = null,
+    index: number = 0;
 
-  if (isShowScanButton) {
-    // change title to Connecting for friendly space station
-    const title = scanProgressNormHudTarget < 1 ? "Scanning" : "Display Data";
-    return (
-      <>
-        <CyberButtonProgressAnimArrows
-          title={title}
-          isShowArrows={scanProgressNormHudTarget >= 1}
-          isShowProgressNorm={scanProgressNormHudTarget}
-          onClickCallback={scanProgressNormHudTarget >= 1 ? null : null}
-          index={9}
-        />
-        {scanProgressNormHudTarget >= 1 && <div>DATA DATA DATA DATA DATA</div>}
-      </>
-    );
+  if (isPlayerWarping) {
+    title = "Cancel Warp";
+    isShowArrows = true;
+    onClickCallback = usePlayerControlsStore.getState().cancelPlayerWarp;
+    index = 7;
+  } else if (isShowWarpButton) {
+    title = "Engage Warp";
+    isShowArrows = true;
+    onClickCallback =
+      usePlayerControlsStore.getState().setPlayerWarpToHudTarget;
+    index = 9;
+  } else if (isShowScanButton) {
+    title = scanProgressNormHudTarget < 1 ? "Scanning" : "Display Data";
+    isShowArrows = scanProgressNormHudTarget === 1;
+    onClickCallback = null;
+    index = 11;
   }
+
+  const isEnemytarget =
+    useHudTargtingStore.getState().getSelectedHudTarget()?.targetType ===
+      HTML_HUD_TARGET_TYPE.ENEMY || false;
+
+  if (isEnemytarget) {
+    // for use in mouse controls - clicking appropriate button triggers callback
+    usePlayerControlsStore.getState().actions.selectedTargetActionButtonCallback =
+      () => {}; //TODO combat mode action
+  } else {
+    usePlayerControlsStore.getState().actions.selectedTargetActionButtonCallback =
+      onClickCallback;
+  }
+
+  if (selectedHudTargetId === null) {
+    return null;
+  }
+
+  return (
+    <>
+      <CyberButtonProgressAnimArrows
+        title={title}
+        isShowArrows={isShowArrows}
+        isShowProgressNorm={scanProgressNormHudTarget}
+        onClickCallback={onClickCallback}
+        index={index}
+      />
+      {/*scanProgressNormHudTarget >= 1 && <div>DATA DATA DATA DATA DATA</div>*/}
+    </>
+  );
 };
 
 export const ActionModeControlGroup = () => {
@@ -220,7 +250,7 @@ export const ActionModeControlGroup = () => {
           // buttons for cockpit view moved to Cockpit.tsx
           <>
             <div className="absolute mb-[30vh] bottom-0 left-1/2">
-              <ActionWarpToTargetPopupHUD />
+              <SelectedTargetActionButton />
             </div>
           </>
         )}
