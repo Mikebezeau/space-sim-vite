@@ -196,6 +196,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
       (mesh) => mesh.userData.mechBpId === mechBpId
     );
     if (existingMesh) {
+      delete existingMesh.geometry.attributes.isDead;
       existingMesh.dispose(); // dispose existing mesh if exists to be safe
       this.instancedMeshs = this.instancedMeshs.filter(
         (mesh) => mesh.userData.mechBpId !== mechBpId

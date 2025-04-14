@@ -6,10 +6,10 @@ export function useTouchStartControls(elementID, callback) {
     const isSupported = element && element.addEventListener;
     if (!isSupported) return;
 
-    element.addEventListener("touchstart", callback, { passive: true });
+    element.addEventListener("touchstart", callback);
 
     return () => {
-      element.removeEventListener("touchstart", callback, { passive: true });
+      element.removeEventListener("touchstart", callback);
     };
   }, []);
 }
@@ -20,10 +20,10 @@ export function useTouchMoveControls(elementID, callback) {
     const isSupported = element && element.addEventListener;
     if (!isSupported) return;
 
-    element.addEventListener("touchmove", callback, { passive: true });
+    element.addEventListener("touchmove", callback);
 
     return () => {
-      element.removeEventListener("touchmove", callback, { passive: true });
+      element.removeEventListener("touchmove", callback);
     };
   }, [callback, elementID]);
 }
@@ -34,10 +34,10 @@ export function useTouchEndControls(elementID, callback) {
     const isSupported = element && element.addEventListener;
     if (!isSupported) return;
 
-    element.addEventListener("touchend", callback, { passive: true });
+    element.addEventListener("touchend", callback);
 
     return () => {
-      element.removeEventListener("touchend", callback, { passive: true });
+      element.removeEventListener("touchend", callback);
     };
   }, [callback, elementID]);
 }

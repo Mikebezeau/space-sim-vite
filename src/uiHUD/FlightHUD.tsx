@@ -65,7 +65,7 @@ const FlightHud = () => {
             useHudTargtingStore.getState().playerHudCrosshairDiv = ref;
           }
         }}
-        className="opacity-50 absolute top-1/2 left-1/2"
+        className="opacity-50 absolute w-0 h-0 top-1/2 left-1/2 border-2 border-white"
       >
         {playerActionMode === PLAYER.action.inspect ? (
           <div
@@ -73,11 +73,13 @@ const FlightHud = () => {
               absolute border-2 border-cyan-200 rounded-full"
           />
         ) : (
-          <img
-            src={hudCrosshairInner1}
-            // width has to be 50% larger then hudCrosshair1 for some reason (transformZ?), but margins are normal
-            className="w-[30vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
-            md:w-[45vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
+          <div
+            className="w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
+            md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
+            style={{
+              backgroundSize: "100% 100%",
+              backgroundImage: `url(${hudCrosshairInner1})`,
+            }}
           />
         )}
       </div>

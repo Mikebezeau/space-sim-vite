@@ -101,7 +101,10 @@ interface storeState {
     toggleSound: (sound?: boolean) => void;
     setShoot: (value: boolean) => void;
     updateMouse: (event: MouseEvent) => void;
-    updateTouchMobileMoveShip: (event: TouchEvent) => void;
+    updateTouchMobileMoveShip: (
+      event: TouchEvent,
+      changedTouch?: { clientX: number; clientY: number }
+    ) => void;
   };
   mutation: {
     shoot: boolean;
@@ -425,7 +428,10 @@ const useStore = create<storeState>()((set, get) => ({
 
     // save screen touch position (-0.5 to 0.5) relative to
     // triggering event.target (mobile movement control circle)
-    updateTouchMobileMoveShip(event: TouchEvent) {
+    updateTouchMobileMoveShip(
+      event: TouchEvent,
+      changedTouch?: { clientX: number; clientY: number }
+    ) {
       if (event.target) {
         /*
         // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events#example
@@ -434,10 +440,11 @@ const useStore = create<storeState>()((set, get) => ({
           get().ongoingTouches.push(copyTouch(touches[i]));
         }
         */
+        const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
         // @ts-ignore
         var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
-        const x = event.changedTouches[0].clientX - bounds.left;
-        const y = event.changedTouches[0].clientY - bounds.top;
+        const x = touch.clientX - bounds.left;
+        const y = touch.clientY - bounds.top;
         const radius = bounds.width / 2;
         let setX = Math.min(1, Math.max(-1, (x - radius) / radius));
         let setY = Math.min(1, Math.max(-1, (y - radius) / radius));

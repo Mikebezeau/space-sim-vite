@@ -12,7 +12,7 @@ import {
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 import CelestialBody from "../classes/solarSystem/CelestialBody";
-import { IS_MOBILE, PLAYER } from "../constants/constants";
+import { IS_TOUCH_SCREEN, PLAYER } from "../constants/constants";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
@@ -204,9 +204,9 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     setSelectedHudTargetId(
       selectedHudTargetId: string | null = get().focusedHudTargetId
     ) {
-      // update selected target if in manual pilot control mode OR if is mobile
+      // update selected target if in manual pilot control mode OR if is touch controls
       if (
-        (IS_MOBILE ||
+        (IS_TOUCH_SCREEN ||
           usePlayerControlsStore.getState().playerActionMode ===
             PLAYER.action.manualControl) &&
         // update if selected target has changed
@@ -412,15 +412,16 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         )[0].textContent = distanceToTargetLabel;
       });
       // sort targets by viewAngle, smallest is last
-      // this will make the target closest to the center of the screen on top
       // using the index in array to set z-index
+      // this will make the target closest to the center of the screen on top
       get().htmlHudTargets.sort((a, b) => (a.viewAngle < b.viewAngle ? 1 : -1));
       // update focused hud target z-index and CSS class
+      // focused target is the one closest to the center of the screen
       const newFocusedTargetId =
         get().htmlHudTargets[get().htmlHudTargets.length - 1].id;
       if (
-        // update focused target if in manual pilot control mode OR if is mobile
-        IS_MOBILE ||
+        // update focused target if in manual pilot control mode OR if is touch controls
+        IS_TOUCH_SCREEN ||
         usePlayerControlsStore.getState().playerActionMode ===
           PLAYER.action.manualControl
       ) {
@@ -436,8 +437,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
               // apply z-index to div elements
               htmlHudTarget.divElement.style.zIndex =
                 htmlHudTarget.id === get().selectedHudTargetId
-                  ? "1000"
-                  : index.toString();
+                  ? "1000" // selected target is always on top
+                  : index.toString(); // closest to center of screen is on top
             }
           });
         }
@@ -446,7 +447,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         // reset focused target id to selected target id
         get().setFocusedHudTargetId(get().selectedHudTargetId);
       }
-      // update warp scan possibility
+      // update warp / scan possibility
       get().checkCanWarpToTarget();
       get().checkCanScanTarget();
     },

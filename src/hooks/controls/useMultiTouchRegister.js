@@ -1,0 +1,104 @@
+import { useEffect } from "react";
+
+const ongoingTouches = [];
+
+const ongoingTouchIndexById = (idToFind) => {
+  for (let i = 0; i < ongoingTouches.length; i++) {
+    const id = ongoingTouches[i].identifier;
+
+    if (id === idToFind) {
+      return i;
+    }
+  }
+  return -1; // not found
+};
+
+const copyidentifier = ({ identifier }) => {
+  return identifier;
+};
+
+const handleStart = (evt, callback) => {
+  //evt.preventDefault();
+  const touches = evt.changedTouches;
+
+  for (let i = 0; i < touches.length; i++) {
+    if (ongoingTouchIndexById(touches[i].identifier) === -1) {
+      // add touch if not in list
+      ongoingTouches.push({ identifier: copyidentifier(touches[i]), callback });
+    }
+  }
+};
+
+const handleMove = (evt) => {
+  //evt.preventDefault();
+  const touches = evt.changedTouches;
+
+  for (let i = 0; i < touches.length; i++) {
+    const index = ongoingTouchIndexById(touches[i].identifier);
+
+    if (index >= 0) {
+      ongoingTouches[index].callback(evt, touches[i]);
+
+      const callback = ongoingTouches[index].callback;
+      ongoingTouches.splice(index, 1, {
+        identifier: copyidentifier(touches[i]),
+        callback,
+      }); // swap in the new touch record
+    }
+  }
+};
+
+const handleEnd = (evt) => {
+  //evt.preventDefault();
+  const touches = evt.changedTouches;
+
+  for (let i = 0; i < touches.length; i++) {
+    let index = ongoingTouchIndexById(touches[i].identifier);
+    if (index >= 0) {
+      ongoingTouches.splice(index, 1); // remove it; we're done
+    }
+  }
+};
+
+function handleCancel(evt) {
+  //evt.preventDefault();
+  const touches = evt.changedTouches;
+
+  for (let i = 0; i < touches.length; i++) {
+    let index = ongoingTouchIndexById(touches[i].identifier);
+    ongoingTouches.splice(index, 1); // remove it; we're done
+  }
+}
+
+export const useMultiTouchMoveRegister = (
+  elementID,
+  {
+    //touchStartCallback = () => {},
+    //touchEndCallback = () => {},
+    touchMoveCallback = () => {},
+  }
+) => {
+  useEffect(() => {
+    const element = document.getElementById(elementID);
+    const isSupported = element && element.addEventListener;
+    if (!isSupported) return;
+
+    element.addEventListener("touchstart", (evt) => {
+      handleStart(evt, touchMoveCallback);
+    });
+    element.addEventListener("touchend", handleEnd);
+    element.addEventListener("touchcancel", handleCancel);
+    element.addEventListener("touchmove", handleMove);
+
+    return () => {
+      element.removeEventListener("touchstart", (evt) => {
+        handleStart(evt, touchMoveCallback);
+      });
+      element.removeEventListener("touchend", handleEnd);
+      element.removeEventListener("touchcancel", handleCancel);
+      element.removeEventListener("touchmove", handleMove);
+      // remove all ongoing touches
+      ongoingTouches.length = 0; // clear the array
+    };
+  }, []);
+};

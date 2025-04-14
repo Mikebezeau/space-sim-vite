@@ -318,6 +318,19 @@ class ParticleController implements ParticleControllerInt {
   dispose() {
     this.material.dispose();
     this.sprite.dispose();
+
+    delete this.geometry.attributes.aSprite;
+    delete this.geometry.attributes.aDesign;
+    delete this.geometry.attributes.position;
+    delete this.geometry.attributes.positionStart;
+    delete this.geometry.attributes.velocity;
+    delete this.geometry.attributes.acceleration;
+    delete this.geometry.attributes.color;
+    delete this.geometry.attributes.endColor;
+    delete this.geometry.attributes.aAngle;
+    delete this.geometry.attributes.startTime;
+    delete this.geometry.attributes.aSize;
+    delete this.geometry.attributes.lifeTime;
     this.geometry.dispose();
   }
 
