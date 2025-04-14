@@ -62,7 +62,10 @@ const ActionControlPilot = () => {
       opacity-30 hover:opacity-100 
       w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
       md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
-      onClick={() => actionModeSelect(PLAYER.action.manualControl)}
+      onClick={(evt) => {
+        evt.preventDefault();
+        actionModeSelect(PLAYER.action.manualControl);
+      }}
     >
       <div
         style={{
@@ -216,7 +219,7 @@ export const SelectedTargetActionButton = () => {
       <CyberButtonProgressAnimArrows
         title={title}
         isShowArrows={isShowArrows}
-        isShowProgressNorm={scanProgressNormHudTarget}
+        isShowProgressNorm={isShowScanButton ? scanProgressNormHudTarget : 0}
         onClickCallback={onClickCallback}
         index={index}
       />

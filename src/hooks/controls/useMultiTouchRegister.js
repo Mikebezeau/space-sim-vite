@@ -18,14 +18,17 @@ const copyidentifier = ({ identifier }) => {
   return identifier;
 };
 
-const handleStart = (evt, callback) => {
+const handleStart = (evt, eventCallbacks) => {
   //evt.preventDefault();
   const touches = evt.changedTouches;
 
   for (let i = 0; i < touches.length; i++) {
     if (ongoingTouchIndexById(touches[i].identifier) === -1) {
       // add touch if not in list
-      ongoingTouches.push({ identifier: copyidentifier(touches[i]), callback });
+      ongoingTouches.push({
+        identifier: copyidentifier(touches[i]),
+        eventCallbacks,
+      });
     }
   }
 };
@@ -38,13 +41,13 @@ const handleMove = (evt) => {
     const index = ongoingTouchIndexById(touches[i].identifier);
 
     if (index >= 0) {
-      setCustomData(index + 0.1);
-      ongoingTouches[index].callback(evt, touches[i]);
+      console.log(ongoingTouches[index].eventCallbacks.handleMove);
+      ongoingTouches[index].eventCallbacks.handleMove(evt, touches[i]);
 
-      const callback = ongoingTouches[index].callback;
+      const eventCallbacks = ongoingTouches[index].eventCallbacks;
       ongoingTouches.splice(index, 1, {
         identifier: copyidentifier(touches[i]),
-        callback,
+        eventCallbacks,
       }); // swap in the new touch record
     }
   }
@@ -73,21 +76,13 @@ function handleCancel(evt) {
   }
 }
 
-export const useMultiTouchMoveRegister = (
-  elementID,
-  {
-    //touchStartCallback = () => {},
-    //touchEndCallback = () => {},
-    touchMoveCallback = () => {},
-  }
-) => {
+export const useMultiTouchEventRegister = (elementID, eventCallbacks = {}) => {
   useEffect(() => {
     const element = document.getElementById(elementID);
     const isSupported = element && element.addEventListener;
     if (!isSupported) return;
-
     element.addEventListener("touchstart", (evt) => {
-      handleStart(evt, touchMoveCallback);
+      handleStart(evt, eventCallbacks);
     });
     element.addEventListener("touchend", handleEnd);
     element.addEventListener("touchcancel", handleCancel);
@@ -95,7 +90,7 @@ export const useMultiTouchMoveRegister = (
 
     return () => {
       element.removeEventListener("touchstart", (evt) => {
-        handleStart(evt, touchMoveCallback);
+        handleStart(evt, eventCallbacks);
       });
       element.removeEventListener("touchend", handleEnd);
       element.removeEventListener("touchcancel", handleCancel);

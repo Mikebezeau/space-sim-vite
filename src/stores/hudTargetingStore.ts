@@ -280,12 +280,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
 
       if (selectedTarget) {
         // only allow warp if target near middle of hud circle
-        // if in inspect mode do not hide warp button
-        if (
-          usePlayerControlsStore.getState().playerActionMode !==
-            PLAYER.action.inspect &&
-          selectedTarget.viewAngle > 0.3
-        ) {
+        if (selectedTarget.viewAngle > 0.26) {
           isShowWarpButton = false;
         }
       }
@@ -310,12 +305,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // using getMinDistanceAllowWarp to check if close enough to scan
       isShowScanButton = distanceFromTarget < minDistanceToWarp;
       // only allow scan if target near middle of hud circle
-      // do not hide button in player is in inspect mode looking around
-      if (
-        usePlayerControlsStore.getState().playerActionMode !==
-          PLAYER.action.inspect &&
-        selectedTarget.viewAngle > 0.3
-      ) {
+      if (selectedTarget.viewAngle > 0.26) {
         isShowScanButton = false;
       }
       // if

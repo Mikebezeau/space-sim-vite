@@ -11,25 +11,21 @@ const CombatHudTarget = () => {
 
   return (
     <>
-      {
-        // TODO mobile inner crosshair getting thinner when
-        // moved to right side!!!!!!
-        playerActionMode === PLAYER.action.manualControl && (
-          <div
-            className="absolute left-1/2 top-1/2 
+      {playerActionMode === PLAYER.action.manualControl && (
+        <div
+          className="absolute left-1/2 top-1/2 
             w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
             md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
-          >
-            <div
-              style={{
-                backgroundSize: "100% 100%",
-                backgroundImage: `url(${hudCrosshairOuter1})`,
-              }}
-              className="absolute w-full h-full opacity-50"
-            />
-          </div>
-        )
-      }
+        >
+          <div
+            style={{
+              backgroundSize: "100% 100%",
+              backgroundImage: `url(${hudCrosshairOuter1})`,
+            }}
+            className="absolute w-full h-full opacity-50"
+          />
+        </div>
+      )}
     </>
   );
 };

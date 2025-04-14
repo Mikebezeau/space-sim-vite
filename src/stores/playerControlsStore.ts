@@ -14,6 +14,7 @@ import {
   FPS,
   ZERO_SPEED_SETTING_INDEX,
   SPEED_VALUES,
+  IS_TOUCH_SCREEN,
 } from "../constants/constants";
 
 // reusable objects
@@ -125,15 +126,26 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           usePlayerControlsStore.getState().actions
             .selectedTargetActionButtonCallback !== null
         ) {
-          {
-            // trigger action button
+          // trigger action button if player manual control mode
+          // or if using touch controls
+          if (
+            get().playerActionMode === PLAYER.action.manualControl ||
+            IS_TOUCH_SCREEN
+          ) {
             usePlayerControlsStore.getState().actions
               .selectedTargetActionButtonCallback!();
           }
         }
       },
       rightClick: () => {},
-      middleClick: () => {},
+      middleClick: () => {
+        // enter / exit manual control mode
+        if (get().playerActionMode === PLAYER.action.inspect) {
+          get().actions.actionModeSelect(PLAYER.action.manualControl);
+        } else {
+          get().actions.actionModeSelect(PLAYER.action.inspect);
+        }
+      },
     },
 
     flightCameraLookRotation: {

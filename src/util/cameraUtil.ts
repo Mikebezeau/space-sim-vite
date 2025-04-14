@@ -1,4 +1,5 @@
 import { Quaternion, Vector3 } from "three";
+import useStore from "../stores/store";
 
 // avoiding creating new objects in loop
 const dummyQuat = new Quaternion();
@@ -26,8 +27,15 @@ export const getCameraAngleDiffToPosition = (
   // 0 means camera pointing directly at position
   // Math.PI mean camera is pointing 180 degrees away from position
   //note: A camera looks down its local, negative z-axis
+  /*
   camera.getWorldDirection(cameraForwardVector);
   objectDirectionVector.subVectors(lookAtPosition, camera.position).normalize();
+  const angleDiff = cameraForwardVector.angleTo(objectDirectionVector);
+  */
+  // test using player position and direction instead of camera
+  useStore.getState().player.object3d.getWorldDirection(cameraForwardVector);
+  const playerPosition = useStore.getState().player.object3d.position;
+  objectDirectionVector.subVectors(lookAtPosition, playerPosition).normalize();
   const angleDiff = cameraForwardVector.angleTo(objectDirectionVector);
   return angleDiff;
 };
@@ -49,8 +57,13 @@ export const getScreenPositionFromDirection = (
   direction: Vector3
 ) => {
   // simple angle difference between camera and direction
+  /*
   camera.getWorldDirection(cameraForwardVector);
   const angleDiff = cameraForwardVector.angleTo(direction);
+  */
+  // using player ship orientation to get the angle difference
+  useStore.getState().player.object3d.getWorldDirection(objectDirectionVector);
+  const angleDiff = objectDirectionVector.angleTo(direction);
   // center position on camera, add direction to get relative position
   dummyVec3.copy(camera.position);
   dummyVec3.add(direction);

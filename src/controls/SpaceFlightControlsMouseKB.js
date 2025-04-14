@@ -58,15 +58,26 @@ const ControlsMouseKBSpaceFlight = () => {
   });
 
   useMouseUp((e) => {
+    // left click
     if (e.button === 0) {
-      // left click
       // turn off shooting
       actions.setShoot(false);
       // trigger main action button
       usePlayerControlsStore.getState().playerControlActions.leftClick();
     }
+    // middle click
+    if (e.button === 1) {
+      // middle click
+      usePlayerControlsStore.getState().playerControlActions.middleClick();
+    }
+    // right click
+    if (e.button === 2) {
+      // right click
+      usePlayerControlsStore.getState().playerControlActions.rightClick();
+    }
   });
 
+  /*
   //mouse right click
   function handleMouseRightClick(event) {
     if (import.meta.env.PROD) event.preventDefault();
@@ -76,6 +87,7 @@ const ControlsMouseKBSpaceFlight = () => {
 
   //mouse middle click
   useMouseWheelClick(handleMouseRightClick);
+*/
 
   //SPEED UP
   function handleArrowUp() {

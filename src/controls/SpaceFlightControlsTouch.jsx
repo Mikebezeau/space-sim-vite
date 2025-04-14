@@ -3,10 +3,10 @@ import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import {
   useTouchStartControls,
-  useTouchMoveControls,
+  //useTouchMoveControls,
   useTouchEndControls,
 } from "../hooks/controls/useTouchControls";
-import { useMultiTouchMoveRegister } from "../hooks/controls/useMultiTouchRegister";
+import { useMultiTouchEventRegister } from "../hooks/controls/useMultiTouchRegister";
 import { ActionShoot } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 //import controls from "../assets/icons/controls.svg";
@@ -116,8 +116,8 @@ const SpaceFlightControlsTouch = () => {
     }
   };
 
-  useMultiTouchMoveRegister("root", {
-    touchMoveCallback: handlePlayerLook,
+  useMultiTouchEventRegister("root", {
+    touchMove: handlePlayerLook,
   });
 
   //SHOOT
@@ -167,8 +167,8 @@ const SpaceFlightControlsTouch = () => {
       }
     }
   }
-  useMultiTouchMoveRegister("btn-ship-move", {
-    touchMoveCallback: handleMoveShip,
+  useMultiTouchEventRegister("btn-ship-move", {
+    handleMove: handleMoveShip,
   });
   //useTouchMoveControls("btn-ship-move", handleMoveShip);
 
@@ -194,7 +194,7 @@ const SpaceFlightControlsTouch = () => {
   }
   useTouchStartControls("throttle-control", handleTrottleStart);
 
-  function handleThrottleMove(event, changedTouch) {
+  function handleMoveThrottle(event, changedTouch) {
     if (throttleControl.current) {
       const rect = throttleControl.current.getBoundingClientRect();
       const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
@@ -210,9 +210,9 @@ const SpaceFlightControlsTouch = () => {
       }
     }
   }
-  //useTouchMoveControls("throttle-control", handleThrottleMove);
-  useMultiTouchMoveRegister("throttle-control", {
-    touchMoveCallback: handleThrottleMove,
+  //useTouchMoveControls("throttle-control", handleMoveThrottle);
+  useMultiTouchEventRegister("throttle-control", {
+    handleMove: handleMoveThrottle,
   });
 
   //END MOVE SHIP and END THROTTLE (to recenter control)
