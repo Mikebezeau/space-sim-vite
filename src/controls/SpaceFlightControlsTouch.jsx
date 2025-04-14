@@ -195,8 +195,6 @@ const SpaceFlightControlsTouch = () => {
   useTouchStartControls("throttle-control", handleTrottleStart);
 
   function handleThrottleMove(event, changedTouch) {
-    // TODO https://developer.mozilla.org/en-US/docs/Web/API/Touch_events#example
-    // if touching move control, then move ship
     if (throttleControl.current) {
       const rect = throttleControl.current.getBoundingClientRect();
       const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
@@ -212,7 +210,10 @@ const SpaceFlightControlsTouch = () => {
       }
     }
   }
-  useTouchMoveControls("throttle-control", handleThrottleMove);
+  //useTouchMoveControls("throttle-control", handleThrottleMove);
+  useMultiTouchMoveRegister("throttle-control", {
+    touchMoveCallback: handleThrottleMove,
+  });
 
   //END MOVE SHIP and END THROTTLE (to recenter control)
   function handleMoveShipEnd() {

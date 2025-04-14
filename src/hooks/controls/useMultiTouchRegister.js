@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { setCustomData } from "r3f-perf";
 
 const ongoingTouches = [];
 
@@ -30,13 +31,14 @@ const handleStart = (evt, callback) => {
 };
 
 const handleMove = (evt) => {
-  //evt.preventDefault();
+  evt.preventDefault();
   const touches = evt.changedTouches;
 
   for (let i = 0; i < touches.length; i++) {
     const index = ongoingTouchIndexById(touches[i].identifier);
 
     if (index >= 0) {
+      setCustomData(index + 0.1);
       ongoingTouches[index].callback(evt, touches[i]);
 
       const callback = ongoingTouches[index].callback;
@@ -51,6 +53,7 @@ const handleMove = (evt) => {
 const handleEnd = (evt) => {
   //evt.preventDefault();
   const touches = evt.changedTouches;
+  setCustomData(touches.length + 2.1);
 
   for (let i = 0; i < touches.length; i++) {
     let index = ongoingTouchIndexById(touches[i].identifier);
