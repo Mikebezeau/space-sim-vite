@@ -1,12 +1,7 @@
 import { useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import {
-  useTouchStartControls,
-  //useTouchMoveControls,
-  useTouchEndControls,
-} from "../hooks/controls/useTouchControls";
-import { useMultiTouchEventRegister } from "../hooks/controls/useMultiTouchRegister";
+import useTouchController from "../hooks/controls/useTouchController";
 import { ActionShoot } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 //import controls from "../assets/icons/controls.svg";
@@ -53,42 +48,28 @@ const ThrottleControlsDisplay = () => {
 };
 
 const SpaceFlightControlsTouch = () => {
-  const actions = useStore((state) => state.actions);
-
-  const getPlayerState = usePlayerControlsStore(
-    (state) => state.getPlayerState
-  );
-  const playerControlMode = usePlayerControlsStore(
-    (state) => state.playerControlMode
-  );
-
-  const actionModeSelect = usePlayerControlsStore(
-    (state) => state.actions.actionModeSelect
-  );
-  const setPlayerSpeedSetting = usePlayerControlsStore(
-    (state) => state.actions.setPlayerSpeedSetting
-  );
   // TODO player settings - flip touch control positions
-  const isReverseSideTouchControls = usePlayerControlsStore(
+  const isReverseSideTouchControls = false;
+  /*usePlayerControlsStore(
     (state) => state.isReverseSideTouchControls
-  );
+  );*/
 
   // for check if touching move control to prevent screen from moving when
   // touching throttle control and vice versa
   const moveControl = useRef(null); // for detecting if touch is on the move control
   const throttleControl = useRef(null); // for detecting if touch is on the throttle control
-  const isTouchingMoveControl = useRef(false);
+
+  let numControlTouches = 0; // for checking if there is a current touch
 
   const recenterMouseCoords = () => {
-    const x = window.innerWidth / 2;
-    const y = window.innerHeight / 2;
-    actions.updateMouse({ clientX: x, clientY: y });
+    useStore.getState().actions.updateMouse({
+      clientX: window.innerWidth / 2,
+      clientY: window.innerHeight / 2,
+    });
   };
 
-  const setThrottleSpeedSetting = (event, changedTouch) => {
+  const setThrottleSpeedSetting = (event, touch) => {
     var bounds = event.target.getBoundingClientRect(); // bounds of the throttle control touch area
-    const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
-
     const y = touch.clientY - bounds.top;
     const invertedY = bounds.height - y; // invert y to start from bottom
     const numSpeedSettings = SPEED_VALUES.length;
@@ -97,135 +78,114 @@ const SpaceFlightControlsTouch = () => {
     );
     newSpeedSetting = Math.min(numSpeedSettings - 1, newSpeedSetting);
     newSpeedSetting = Math.max(0, newSpeedSetting);
-    setPlayerSpeedSetting(newSpeedSetting);
+    usePlayerControlsStore
+      .getState()
+      .actions.setPlayerSpeedSetting(newSpeedSetting);
   };
 
   //LOOKING AROUND
-  /*
-  useTouchMoveControls("root", (event) => {
-    if (getPlayerState().playerActionMode === PLAYER.action.inspect) {
-      actions.updateMouse(event.changedTouches[0]);
-    }
-  });
-  */
-
-  const handlePlayerLook = (event, changedTouch) => {
-    const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
-    if (getPlayerState().playerActionMode === PLAYER.action.inspect) {
-      actions.updateMouse(touch);
-    }
-  };
-
-  useMultiTouchEventRegister("root", {
-    touchMove: handlePlayerLook,
-  });
-
-  //SHOOT
-  useTouchStartControls("btn-shoot", () => {
-    if (
-      // if in combat mode
-      usePlayerControlsStore.getState().playerControlMode ===
-      PLAYER.controls.combat
-    ) {
-      // if in combat mode begin shooting
-      actions.setShoot(true);
-    }
-  });
-  useTouchEndControls("btn-shoot", () => {
-    actions.setShoot(false);
-    if (
-      // if not in combat mode
-      usePlayerControlsStore.getState().playerControlMode !==
-      PLAYER.controls.combat
-    ) {
-      // trigger main action button
-      usePlayerControlsStore.getState().playerControlActions.leftClick();
-    }
-  });
-
-  //MOVE SHIP
-  function handleMoveShipStart(event) {
-    isTouchingMoveControl.current = true;
-    actionModeSelect(PLAYER.action.manualControl);
-    actions.updateTouchMobileMoveShip(event);
-  }
-  useTouchStartControls("btn-ship-move", handleMoveShipStart);
-
-  function handleMoveShip(event, changedTouch) {
-    // if touching move control, then move ship
-    if (moveControl.current) {
-      const rect = moveControl.current.getBoundingClientRect();
-      const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
-      if (
-        // giving extra room for movement touch control
-        touch.clientX >= rect.left - 40 &&
-        touch.clientX <= rect.right + 40 &&
-        touch.clientY >= rect.top - 40 &&
-        touch.clientY <= rect.bottom + 40
-      ) {
-        actions.updateTouchMobileMoveShip(event);
+  useTouchController("root", {
+    touchMove: (event, touch) => {
+      if (numControlTouches === 0) {
+        useStore.getState().actions.updateMouse(touch);
       }
-    }
-  }
-  useMultiTouchEventRegister("btn-ship-move", {
-    handleMove: handleMoveShip,
+    },
   });
-  //useTouchMoveControls("btn-ship-move", handleMoveShip);
 
-  //THROTTLE
-  function handleTrottleStart(event) {
-    if (throttleControl.current) {
-      const rect = throttleControl.current.getBoundingClientRect();
+  //ACTION BUTTON
+  useTouchController("btn-action", {
+    touchStart: () => {
+      numControlTouches++;
       if (
-        event.changedTouches[0].clientX >= rect.left &&
-        event.changedTouches[0].clientX <= rect.right &&
-        event.changedTouches[0].clientY >= rect.top &&
-        event.changedTouches[0].clientY <= rect.bottom
+        // if in combat mode
+        usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.combat
       ) {
-        const playerActionMode = getPlayerState().playerActionMode;
-        // this stops sceen from moving when touching throttle control
-        if (playerActionMode !== PLAYER.action.manualControl) {
-          actionModeSelect(PLAYER.action.manualControl);
-          recenterMouseCoords();
+        // if in combat mode begin shooting
+        useStore.getState().actions.setShoot(true);
+      }
+    },
+    touchEnd: () => {
+      numControlTouches--;
+      // turn off shooting
+      useStore.getState().actions.setShoot(false);
+      if (
+        // if not in combat mode
+        usePlayerControlsStore.getState().playerControlMode !==
+        PLAYER.controls.combat
+      ) {
+        // trigger main action
+        usePlayerControlsStore.getState().playerControlActions.leftClick();
+      }
+    },
+  });
+
+  // MOVEMENT CONTROLS
+  useTouchController("btn-ship-move", {
+    touchStart: (event, touch) => {
+      numControlTouches++;
+      usePlayerControlsStore
+        .getState()
+        .actions.actionModeSelect(PLAYER.action.manualControl);
+      useStore.getState().actions.updateTouchMobileMoveShip(event, touch);
+    },
+    touchMove: (event, touch) => {
+      // if touching move control, then move ship
+      if (moveControl.current) {
+        const rect = moveControl.current.getBoundingClientRect();
+        if (
+          // giving extra room for movement touch control
+          touch.clientX >= rect.left - 40 &&
+          touch.clientX <= rect.right + 40 &&
+          touch.clientY >= rect.top - 40 &&
+          touch.clientY <= rect.bottom + 40
+        ) {
+          useStore.getState().actions.updateTouchMobileMoveShip(event, touch);
         }
-        setThrottleSpeedSetting(event);
       }
-    }
-  }
-  useTouchStartControls("throttle-control", handleTrottleStart);
-
-  function handleMoveThrottle(event, changedTouch) {
-    if (throttleControl.current) {
-      const rect = throttleControl.current.getBoundingClientRect();
-      const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
-
-      if (
-        touch.clientX >= rect.left &&
-        touch.clientX <= rect.right &&
-        touch.clientY >= rect.top &&
-        touch.clientY <= rect.bottom
-      ) {
-        actionModeSelect(PLAYER.action.manualControl);
-        setThrottleSpeedSetting(event, touch);
-      }
-    }
-  }
-  //useTouchMoveControls("throttle-control", handleMoveThrottle);
-  useMultiTouchEventRegister("throttle-control", {
-    handleMove: handleMoveThrottle,
+    },
+    touchEnd: () => {
+      numControlTouches--;
+      usePlayerControlsStore
+        .getState()
+        .actions.actionModeSelect(PLAYER.action.inspect);
+      recenterMouseCoords();
+    },
   });
 
-  //END MOVE SHIP and END THROTTLE (to recenter control)
-  function handleMoveShipEnd() {
-    actionModeSelect(PLAYER.action.inspect);
-    recenterMouseCoords();
-  }
-  useTouchEndControls("btn-ship-move", () => {
-    isTouchingMoveControl.current = false;
-    handleMoveShipEnd();
-  });
-  useTouchEndControls("throttle-control", () => {
-    if (isTouchingMoveControl.current === false) handleMoveShipEnd();
+  // THROTTLE CONTROLS
+  useTouchController("throttle-control", {
+    touchStart: (event, touch) => {
+      numControlTouches++;
+      if (throttleControl.current) {
+        const rect = throttleControl.current.getBoundingClientRect();
+        if (
+          touch.clientX >= rect.left &&
+          touch.clientX <= rect.right &&
+          touch.clientY >= rect.top &&
+          touch.clientY <= rect.bottom
+        ) {
+          setThrottleSpeedSetting(event, touch);
+        }
+      }
+    },
+    touchMove: (event, touch) => {
+      if (throttleControl.current) {
+        const rect = throttleControl.current.getBoundingClientRect();
+        // giving extra room for movement touch control
+        if (
+          touch.clientX >= rect.left &&
+          touch.clientX <= rect.right &&
+          touch.clientY >= rect.top &&
+          touch.clientY <= rect.bottom
+        ) {
+          setThrottleSpeedSetting(event, touch);
+        }
+      }
+    },
+    touchEnd: () => {
+      numControlTouches--;
+    },
   });
 
   return (
@@ -256,11 +216,11 @@ const SpaceFlightControlsTouch = () => {
       </div>
       <div className="absolute w-[200px] h-[100px] bottom-5 right-28 flex justify-end">
         <div
-          id="btn-shoot"
+          id="btn-action"
           className="pointer-events-auto ml-1 w-24 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
         >
           <div className="relative scale-x-[-1] right-2 top-2">
-            {playerControlMode === PLAYER.controls.combat && <ActionShoot />}
+            <ActionShoot />
           </div>
         </div>
       </div>

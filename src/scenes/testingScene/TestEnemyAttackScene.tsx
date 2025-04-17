@@ -9,7 +9,7 @@ import useDevStore from "../../stores/devStore";
 import PlayerMech from "../../3d/mechs/playerMech/PlayerMech";
 import EnemyMechs from "../../3d/mechs/enemyMechs/EnemyMechs";
 import Stations from "../../3d/mechs/Stations";
-import WeaponFire from "../../3d/WeaponFire";
+import WeaponFire from "../../3d/weaponFire/WeaponFire";
 import Particles from "../../3d/Particles";
 import ObbTest from "../../3d/mechs/ObbTest";
 import BoidVectorTest from "../../3d/mechs/enemyMechs/BoidVectorTest";

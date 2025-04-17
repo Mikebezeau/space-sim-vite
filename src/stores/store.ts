@@ -103,7 +103,7 @@ interface storeState {
     updateMouse: (event: MouseEvent) => void;
     updateTouchMobileMoveShip: (
       event: TouchEvent,
-      changedTouch?: { clientX: number; clientY: number }
+      touch: { clientX: number; clientY: number }
     ) => void;
   };
   mutation: {
@@ -318,8 +318,12 @@ const useStore = create<storeState>()((set, get) => ({
         ) || get().planets[0];
 
       const startPosition = new THREE.Vector3();
-      const enemyGroupStartPosition = new THREE.Vector3();
-      const stationStartPosition = new THREE.Vector3();
+      const enemyGroupStartPosition = new THREE.Vector3()
+        .random()
+        .multiplyScalar(50);
+      const stationStartPosition = new THREE.Vector3()
+        .random()
+        .multiplyScalar(50);
 
       if (startPosCelestialBody !== null) {
         // position of planet to start at
@@ -336,10 +340,10 @@ const useStore = create<storeState>()((set, get) => ({
         startPosition.sub(offsetDistance);
         // setting enemy world position near player world position
         // set enemy position at player position * x units
-        enemyGroupStartPosition.copy(startPosition);
+        enemyGroupStartPosition.add(startPosition);
         enemyGroupStartPosition.add(offsetDirection.multiplyScalar(500));
         // set station position at player position * x units
-        stationStartPosition.copy(startPosition);
+        stationStartPosition.add(startPosition);
         stationStartPosition.add(offsetDirection.multiplyScalar(800));
       } else {
         startPosCelestialBody = get().stars[0];
@@ -430,17 +434,9 @@ const useStore = create<storeState>()((set, get) => ({
     // triggering event.target (mobile movement control circle)
     updateTouchMobileMoveShip(
       event: TouchEvent,
-      changedTouch?: { clientX: number; clientY: number }
+      touch: { clientX: number; clientY: number }
     ) {
       if (event.target) {
-        /*
-        // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events#example
-        const touches = event.changedTouches;
-        for (let i = 0; i < touches.length; i++) {
-          get().ongoingTouches.push(copyTouch(touches[i]));
-        }
-        */
-        const touch = changedTouch || event.changedTouches[0]; // use changedTouch if available
         // @ts-ignore
         var bounds = event.target.getBoundingClientRect(); // bounds of the ship control circle touch area
         const x = touch.clientX - bounds.left;

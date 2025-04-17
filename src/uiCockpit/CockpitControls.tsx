@@ -32,21 +32,23 @@ import { IS_MOBILE, PLAYER } from "../constants/constants";
 import useGalaxyMapStore from "../stores/galaxyMapStore";
 
 export const ActionShoot = () => {
-  // TODO remove code from SpaceFlightControlsTouch to shoot
-  const actionModeSelect = usePlayerControlsStore(
-    (state) => state.actions.actionModeSelect
+  const playerControlMode = usePlayerControlsStore(
+    (state) => state.playerControlMode
   );
-
   return (
-    <div className="icon-button-cyber w-[10vh] h-[10vh]">
-      <span className="icon-button-cyber-content">
-        <img
-          src={crosshair}
-          alt="shoot icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
-      </span>
-    </div>
+    <>
+      {playerControlMode === PLAYER.controls.combat && (
+        <div className="icon-button-cyber w-[10vh] h-[10vh]">
+          <span className="icon-button-cyber-content">
+            <img
+              src={crosshair}
+              alt="shoot icon"
+              className="w-[10vh] h-[10vh] pointer-events-none"
+            />
+          </span>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -119,9 +121,11 @@ export const CyberButtonProgressAnimArrows = (props: cyberPopupButtonInt) => {
   return (
     <div className="relative w-[240px] left-[-120px]">
       {isShowArrows && (
-        <div // values below are mixed up from rotations for arrow animation direction
-          className="animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
+        <div // values below are rotated by arrow css animation direction
+          className="border-l-2 border-b-2 border-cyan-500
+          animated-arrows absolute top-[-120px] left-[105px] w-[30px] h-[240px] bg-black -top-4"
         >
+          <div className="absolute top-0 left-0 right-0 bottom-0 opacity-20 bg-cyan-200" />
           <span />
           <span />
           <span />

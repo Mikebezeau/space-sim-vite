@@ -49,7 +49,17 @@ const PlayerParticleEffects = () => {
       //const playerWarpSpeed = usePlayerControlsStore.getState().playerWarpSpeed;
       playerParticleEffects.addWarpStars(
         particleOriginObj.current.position,
-        particleOriginObj.current.rotation
+        particleOriginObj.current.rotation,
+        {
+          endColor: useParticleStore.getState().colors.purple,
+        }
+      );
+      playerParticleEffects.addWarpStars(
+        particleOriginObj.current.position,
+        particleOriginObj.current.rotation,
+        {
+          endColor: useParticleStore.getState().colors.white,
+        }
       );
     }
 

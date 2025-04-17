@@ -48,6 +48,19 @@ export function useMouseWheelClick(callback) {
   }, [callback]);
 }
 
+export function useMouseWheelRoll(callback) {
+  useEffect(() => {
+    const handleMouseWheelRoll = (e) => {
+      callback(e);
+    };
+    document.addEventListener("wheel", handleMouseWheelRoll);
+
+    return () => {
+      document.removeEventListener("wheel", handleMouseWheelRoll);
+    };
+  }, [callback]);
+}
+
 export function useMouseDown(callback) {
   useEffect(() => {
     document.addEventListener("mousedown", callback);

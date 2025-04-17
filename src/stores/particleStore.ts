@@ -272,6 +272,8 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
           // update particleRange
           particleIndexRange.push(particleIndex);
         }
+      } else {
+        console.error("Particle controller not initialized");
       }
       return particleIndexRange;
     },
@@ -356,6 +358,8 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         setTimeout(() => {
           clearInterval(addTrailIntervalID);
         }, lifeTime * 1000 - 100);
+      } else {
+        console.error("Particle controller not initialized");
       }
     },
   },
@@ -427,21 +431,23 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             //angle: (Math.random() - 0.5) * 20,
           });
         }
+      } else {
+        console.error("Player particle controller not initialized");
       }
     },
     addWarpStars: (position, direction, options: addWarpOptionsType = {}) => {
       if (get().playerParticleController) {
         // options with additional calculations applied
         let {
-          numParticles = Math.random() * 1000 + 1000,
-          positionRadius = 40,
+          numParticles = Math.random() * 500 + 300,
+          positionRadius = 80,
           positionRadiusMin = 30,
         } = options;
         const {
           speed = -(Math.random() * 10 + 15),
           spread = 1,
-          size = 250,
-          lifeTime = 0.5,
+          size = 450,
+          lifeTime = 1,
           color = get().colors.black,
           endColor = get().colors.purple,
         } = options;
@@ -505,6 +511,8 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             //angle: (Math.random() - 0.5) * 20,
           });
         }
+      } else {
+        console.error("Player particle controller not initialized");
       }
     },
     addWeaponFireFlash: (
@@ -543,6 +551,8 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             size: 800 * size,
           });
         }
+      } else {
+        console.error("Player particle controller not initialized");
       }
     },
   },

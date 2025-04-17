@@ -1,16 +1,16 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import useStore from "../stores/store";
-import useEnemyStore from "../stores/enemyStore";
-import useWeaponFireStore from "../stores/weaponFireStore";
-import { DefenseNodesHelper } from "../scenes/testingScene/TestEnemyAttackScene";
-import { defenseNodesType } from "../classes/mech/EnemyMechGroup";
-import { COMPONENT_RENDER_ORDER } from "../constants/constants";
+import useStore from "../../stores/store";
+import useEnemyStore from "../../stores/enemyStore";
+import useWeaponFireStore from "../../stores/weaponFireStore";
+import { MissileInstancedMesh } from "./MissileInstancedMesh ";
+import { DefenseNodesHelper } from "../../scenes/testingScene/TestEnemyAttackScene";
+import { defenseNodesType } from "../../classes/mech/EnemyMechGroup";
+import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
 
 // TODO create WeaponFire class
 const WeaponFire = () => {
-  const { enemyGroup } = useEnemyStore((state) => state);
   const defenseNodesRef = useRef<defenseNodesType | null>(null);
   const { scene } = useThree();
   // for testing ray position and direction
@@ -73,6 +73,7 @@ const WeaponFire = () => {
       {/*defenseNodesRef.current && (
         <DefenseNodesHelper defenseNodes={defenseNodesRef.current} />
       )*/}
+      <MissileInstancedMesh />
     </>
   );
 };

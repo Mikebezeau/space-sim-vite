@@ -1,6 +1,6 @@
 import useStore from "../stores/store";
 import PlayerWalk from "../3d/planetExplore/PlayerWalk";
-import WeaponFire from "../3d/WeaponFire";
+import WeaponFire from "../3d/weaponFire/WeaponFire";
 import TestTerrain from "../terrainGen/TestTerrain";
 
 import { SCALE_PLANET_WALK } from "../constants/constants";

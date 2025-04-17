@@ -6,6 +6,7 @@ import useParticleStore from "./particleStore";
 import MechWeapon from "../classes/mechBP/weaponBP/MechWeapon";
 import { equipData } from "../equipment/data/equipData";
 import Mech from "../classes/mech/Mech";
+import MissileController, { Missile } from "../classes/missileController";
 
 export type weaponFireType = {
   mechFiredId: string;
@@ -42,6 +43,10 @@ interface weaponFireStoreState {
     testArrowHelper: boolean,
     arrowHelper: THREE.ArrowHelper
   ) => void;
+  // missiles
+  missileController: MissileController;
+  missiles: Missile[];
+  updateMissiles: (delta: number) => void;
 }
 
 const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
@@ -281,6 +286,14 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     });
     // remove shots that have hit or have expired
     get().removeOldWeaponFire();
+  },
+
+  missileController: new MissileController(2000),
+  missiles: [],
+  updateMissiles: (delta: number) => {
+    if (delta > 0.1) delta = 0.1;
+    get().missileController.updateAllMissiles(delta);
+    set({ missiles: get().missileController.getMissiles() });
   },
 }));
 

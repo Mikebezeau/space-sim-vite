@@ -13,10 +13,7 @@ import {
   useMouseUp,
   useMouseMove,
 } from "../hooks/controls/useMouseKBControls";
-import {
-  useTouchStartControls,
-  useTouchEndControls,
-} from "../hooks/controls/useTouchControls";
+import useTouchController from "../hooks/controls/useTouchController";
 import { STAR_DISPLAY_MODE } from "./galaxyConstants";
 import { IS_MOBILE } from "../constants/constants";
 import StarPoints from "./StarPoints";
@@ -343,11 +340,21 @@ const GalaxyMap = () => {
       mouseButtonDown.current = true;
       mouseMovedStart.current.set(e.clientX, e.clientY);
     };
-    useTouchStartControls("root", (e) => {
-      handleMouseDown(e.changedTouches[0]);
-    });
-    useMouseDown(handleMouseDown);
 
+    useMouseDown(handleMouseDown);
+    useMouseMove((e) => {
+      if (isMouseOverStarInfoCard(e)) {
+        if (targetStarIndexRef.current !== null) {
+          // if a star has been selected, clear the hovered star index and show the selected star data
+          setShowInfoHoveredStarIndex(null);
+          // also clear the line to hovered star
+          lineToHoveredStarPointRef.current = null;
+        }
+        return;
+      }
+      mouseMovedEnd.current.set(e.clientX, e.clientY);
+      setHoveredSelectedStar(e);
+    });
     useMouseUp((e) => {
       // only activate on right/left click
       if (e.button !== 0 && e.button !== 2) return;
@@ -366,31 +373,21 @@ const GalaxyMap = () => {
       }
     });
 
-    useTouchEndControls("root", (e) => {
-      mouseButtonDown.current = false;
-      mouseMovedEnd.current.set(
-        e.changedTouches[0].clientX,
-        e.changedTouches[0].clientY
-      );
-      if (mouseMovedStart.current.distanceTo(mouseMovedEnd.current) > 10)
-        return;
-      // must set hovered star before setting selected star
-      setHoveredSelectedStar(e.changedTouches[0]);
-      setSelectedTargetStar(e.changedTouches[0]);
-    });
-
-    useMouseMove((e) => {
-      if (isMouseOverStarInfoCard(e)) {
-        if (targetStarIndexRef.current !== null) {
-          // if a star has been selected, clear the hovered star index and show the selected star data
-          setShowInfoHoveredStarIndex(null);
-          // also clear the line to hovered star
-          lineToHoveredStarPointRef.current = null;
+    useTouchController("root", {
+      touchStart: (evt: TouchEvent, touch: Touch) => {
+        handleMouseDown(touch);
+      },
+      touchEnd: (evt: TouchEvent, touch: Touch) => {
+        mouseButtonDown.current = false;
+        mouseMovedEnd.current.set(touch.clientX, touch.clientY);
+        if (mouseMovedStart.current.distanceTo(mouseMovedEnd.current) > 10) {
+          // not triggering selection of star if moving finger to rotate view
+          return;
         }
-        return;
-      }
-      mouseMovedEnd.current.set(e.clientX, e.clientY);
-      setHoveredSelectedStar(e);
+        // must set hovered star before setting selected star
+        setHoveredSelectedStar(touch);
+        setSelectedTargetStar(touch);
+      },
     });
 
     return <StarPoints ref={starPointsRef} />;

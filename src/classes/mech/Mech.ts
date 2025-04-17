@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import MechBP from "../mechBP/MechBP";
 import useMechBpBuildStore from "../../stores/mechBpBuildStore";
 import useParticleStore from "../../stores/particleStore";
+import useWeaponFireStore from "../../stores/weaponFireStore";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
@@ -18,8 +19,8 @@ import { FPS } from "../../constants/constants";
 // TODO reuse materials from constants
 import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
-import useWeaponFireStore from "../../stores/weaponFireStore";
 import { DESIGN_TYPE } from "../../constants/particleConstants";
+import useEnemyStore from "../../stores/enemyStore";
 
 // TODO move MECH_STATE to constants
 export const MECH_STATE = {
@@ -104,7 +105,7 @@ class Mech implements mechInt {
   weaponFireWeaponChildObj: THREE.Group;
   weaponFireQuaternoin: THREE.Quaternion;
   weaponFireEuler: THREE.Euler;
-  weaponWorldPositionVec: THREE.Vector3;
+  weaponFireHelperVec3: THREE.Vector3;
 
   // temporary
   shield: { max: number; damage: number }; // placeholder
@@ -152,7 +153,7 @@ class Mech implements mechInt {
     this.weaponFireMechParentObj.add(this.weaponFireWeaponChildObj);
     this.weaponFireQuaternoin = new THREE.Quaternion();
     this.weaponFireEuler = new THREE.Euler();
-    this.weaponWorldPositionVec = new THREE.Vector3();
+    this.weaponFireHelperVec3 = new THREE.Vector3();
 
     this.setBuildObject3d();
     // temporary placeholders
@@ -450,8 +451,8 @@ class Mech implements mechInt {
     }
     // weapon fire hit explosion particles
     useParticleStore.getState().effects.addExplosion(position, {
-      numParticles: damage * 10 + 100,
-      size: damage / 10 + 0.1, // increase size of particles according to damage
+      numParticles: damage * 25,
+      size: damage / 20 + 0.1, // increase size of particles according to damage
       spread: damage * 2 + 40, // increase spread speed according to damage
       lifeTime: 0.75,
       color: useParticleStore.getState().colors.yellow,
@@ -459,11 +460,11 @@ class Mech implements mechInt {
     });
     // contrasting weapon fire hit explosion particles
     useParticleStore.getState().effects.addExplosion(position, {
-      numParticles: damage * 10 + 100,
-      size: damage / 10 + 0.1, // increase size of particles according to damage
-      spread: damage * 2 + 40, // increase spread speed according to damage
-      lifeTime: 0.75,
-      color: useParticleStore.getState().colors.black,
+      numParticles: damage * 10,
+      size: damage / 20 + 0.1, // increase size of particles according to damage
+      spread: damage * 2 + 200, // increase spread speed according to damage
+      lifeTime: 1.5,
+      color: useParticleStore.getState().colors.white,
       designType: DESIGN_TYPE.circle,
     });
 
@@ -637,6 +638,10 @@ class Mech implements mechInt {
     targetQuaternoin?: THREE.Quaternion | null,
     enemyWeaponFireTargetVec3?: THREE.Vector3
   ) {
+    if (this.isPlayer) {
+      this.fireMissile();
+    }
+
     if (this.mechBP?.weaponList) {
       // TODO add these to the class instead of const above
       this.weaponFireMechParentObj.position.copy(this.object3d.position);
@@ -702,12 +707,54 @@ class Mech implements mechInt {
     }
   }
 
+  fireMissile() {
+    function addVectors(
+      vec1: THREE.Vector3,
+      vec2: THREE.Vector3
+    ): { x: number; y: number; z: number } {
+      const result = new THREE.Vector3().addVectors(vec1, vec2);
+      return { x: result.x, y: result.y, z: result.z };
+    }
+
+    // get target position and velocity
+    const getTargetPosition = () =>
+      addVectors(
+        useEnemyStore.getState().enemyGroup.getRealWorldPosition(),
+        useEnemyStore.getState().enemyGroup.enemyMechs[0].object3d.position
+      );
+
+    const getTargetVelocity = () =>
+      useEnemyStore.getState().enemyGroup.enemyMechs[0]
+        .adjustedLerpVelocityDeltaFPS;
+
+    useWeaponFireStore.getState().missileController.launchMissileFromPool(
+      this.object3d.position, // Start position of the missile
+      // Start rotation of the missile
+      this.weaponFireHelperVec3
+        .set(0, 0, 1)
+        .applyQuaternion(this.object3d.quaternion),
+      getTargetPosition, // Function to get the target position
+      getTargetVelocity, // Function to get the target velocity
+      100, // Max speed
+      Math.PI / 12, // Max turn angle
+      500, // Acceleration
+      15, // Lifespan in seconds
+      1, // Miss radius
+      (position) => {
+        console.log("Missile exploded at:", position);
+      }, // Callback for explosion
+      false, // Not a cluster missile
+      0, // Cluster count
+      0 // Spread angle
+    );
+  }
+
   fireWeapon(weapon: MechWeapon, weaponFireEuler: THREE.Euler) {
     // - use weapon.offset and weaponFireMechParentObj.rotation
     // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
     // it's position is relative to weaponFireMechParentObj
     this.weaponFireWeaponChildObj.position.copy(weapon.offset);
-    this.weaponFireWeaponChildObj.getWorldPosition(this.weaponWorldPositionVec);
+    this.weaponFireWeaponChildObj.getWorldPosition(this.weaponFireHelperVec3);
 
     // fire weapon / add weaponFire to weaponFireList for hit detection
     useWeaponFireStore
@@ -715,7 +762,7 @@ class Mech implements mechInt {
       .addWeaponFire(
         this.id,
         weapon,
-        this.weaponWorldPositionVec,
+        this.weaponFireHelperVec3,
         weaponFireEuler
       );
 

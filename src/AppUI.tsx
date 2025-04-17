@@ -27,14 +27,12 @@ import "./css/glitchImage.css";
 import "./css/arrowsAnimate.css";
 
 const AppUI = () => {
+  console.log("AppUI");
   useStore.getState().updateRenderInfo("AppUI");
   //if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {}
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
   const playerViewMode = usePlayerControlsStore(
     (state) => state.playerViewMode
-  );
-  const playerActionMode = usePlayerControlsStore(
-    (state) => state.playerActionMode
   );
 
   const getIsTestScreen = useDevStore((state) => state.getIsTestScreen);
@@ -72,12 +70,13 @@ const AppUI = () => {
                     <ActionModeControlGroup />
                   </>
                 )}
-                {(playerViewMode === PLAYER.view.thirdPerson ||
-                  playerActionMode === PLAYER.action.manualControl) && (
-                  <div className="absolute top-20 left-10">
-                    <SpeedReadout />
-                  </div>
-                )}
+                {
+                  /*playerViewMode === PLAYER.view.thirdPerson*/ true && (
+                    <div className="absolute top-20 left-10">
+                      <SpeedReadout />
+                    </div>
+                  )
+                }
                 <CombatHudTarget />
                 <div className="absolute top-72 right-11">
                   <ShieldsReadout />

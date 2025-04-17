@@ -6,8 +6,9 @@ import {
   useMouseMove,
   useMouseDown,
   useMouseUp,
-  useMouseRightClick,
-  useMouseWheelClick,
+  useMouseWheelRoll,
+  //useMouseRightClick,
+  //useMouseWheelClick,
 } from "../hooks/controls/useMouseKBControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 
@@ -23,10 +24,10 @@ const ControlsMouseKBSpaceFlight = () => {
 
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
-  );
+  ); /*
   const actionModeSelect = usePlayerControlsStore(
     (state) => state.actions.actionModeSelect
-  );
+  );*/
   const getPlayerSpeedSetting = usePlayerControlsStore(
     (state) => state.getPlayerSpeedSetting
   );
@@ -77,18 +78,6 @@ const ControlsMouseKBSpaceFlight = () => {
     }
   });
 
-  /*
-  //mouse right click
-  function handleMouseRightClick(event) {
-    if (import.meta.env.PROD) event.preventDefault();
-    actionModeSelect(PLAYER.action.inspect);
-  }
-  useMouseRightClick(handleMouseRightClick);
-
-  //mouse middle click
-  useMouseWheelClick(handleMouseRightClick);
-*/
-
   //SPEED UP
   function handleArrowUp() {
     if (
@@ -101,6 +90,26 @@ const ControlsMouseKBSpaceFlight = () => {
     }
   }
   useKBControls("ArrowUp", handleArrowUp);
+
+  const handleMouseWheelRoll = (e) => {
+    if (
+      playerControlMode === PLAYER.controls.combat ||
+      playerControlMode === PLAYER.controls.scan
+    ) {
+      if (e.deltaY < 0) {
+        // scroll up
+        if (getPlayerSpeedSetting() < SPEED_VALUES.length - 1) {
+          setPlayerSpeedSetting(getPlayerSpeedSetting() + 1);
+        }
+      } else {
+        // scroll down
+        if (getPlayerSpeedSetting() > 0) {
+          setPlayerSpeedSetting(getPlayerSpeedSetting() - 1);
+        }
+      }
+    }
+  };
+  useMouseWheelRoll(handleMouseWheelRoll);
 
   //SPEED DOWN
   function handleArrowDown() {

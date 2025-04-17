@@ -7,6 +7,7 @@ import useHudTargtingStore, {
   htmlHudTargetType,
 } from "./hudTargetingStore";
 import useDevStore from "./devStore";
+import TouchController from "../hooks/controls/TouchController";
 import { flipRotation } from "../util/cameraUtil";
 import { lerp } from "../util/gameUtil";
 import {
@@ -23,6 +24,7 @@ const rotateShipQuat = new Quaternion(),
   dummyObj = new Object3D();
 
 interface playerControlStoreState {
+  touchController: TouchController;
   playerActionMode: number;
   playerControlMode: number;
   playerViewMode: number;
@@ -92,6 +94,8 @@ interface playerControlStoreState {
 
 const usePlayerControlsStore = create<playerControlStoreState>()(
   (set, get) => ({
+    touchController: new TouchController(),
+
     playerActionMode: PLAYER.action.inspect,
     playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
