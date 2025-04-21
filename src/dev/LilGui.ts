@@ -15,6 +15,7 @@ const LilGui = () => {
     perfRenderCheck: false,
     perfMemoryCheck: false,
     enemyTest: false,
+    planetTest: false,
     removeEnemies: false,
     spawnEnemies: false,
     viewTitleScreen: false,
@@ -31,6 +32,10 @@ const LilGui = () => {
     gui.add(controls, "enemyTest").onChange(() => {
       controls.enemyTest = false;
       useDevStore.getState().setTestScreen("enemyTest");
+    });
+    gui.add(controls, "planetTest").onChange(() => {
+      controls.planetTest = false;
+      useDevStore.getState().setTestScreen("planetTest");
     });
     gui.add(controls, "removeEnemies").onChange(() => {
       controls.removeEnemies = false;

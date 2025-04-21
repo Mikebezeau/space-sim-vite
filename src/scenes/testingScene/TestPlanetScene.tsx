@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Vector3 } from "three";
+import * as THREE from "three";
 import { useThree } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
 import useStore from "../../stores/store";
@@ -19,6 +19,8 @@ import {
 const TestPlanetScene = () => {
   useStore.getState().updateRenderInfo("TestPlanetScene");
 
+  let uiCurrentShaderLayer = 0;
+
   const getTestPlanet = useDevStore((state) => state.getTestPlanet);
   const genTestPlanet = useDevStore((state) => state.genTestPlanet);
   const setPlanetType = useDevStore((state) => state.setPlanetType);
@@ -28,6 +30,7 @@ const TestPlanetScene = () => {
   const folderLayer1ref = useRef<any>(null);
   const folderLayer2ref = useRef<any>(null);
   const cameraControlsRef = useRef<any>(null);
+
   const testPlanetRef = useRef<StarClass | PlanetClass | null>(null);
 
   const planetTypeSelectOptions = [
@@ -64,7 +67,7 @@ const TestPlanetScene = () => {
   const effectUniformControllerOptions: any = {
     u_isClouds: true,
     u_cloudscale: 1.0,
-    u_cloudColor: new Vector3(1.0, 1.0, 1.0),
+    u_cloudColor: new THREE.Vector3(1.0, 1.0, 1.0),
     u_cloudCover: 0.0,
     u_cloudAlpha: 20.0,
     u_rotateX: 0.0,
@@ -138,139 +141,140 @@ const TestPlanetScene = () => {
     }
   };
 
+  const setCameraPosition = () => {
+    if (!cameraControlsRef.current || testPlanetRef.current === null) return;
+    cameraControlsRef.current.reset();
+    cameraControlsRef.current.target.set(0, 0, 400);
+    //const distance = r / Math.sin(THREE.MathUtils.degToRad(fov / 2))
+    //camera.position.set(0, 0, -distance);
+    camera.position.set(0, 0, -testPlanetRef.current.radius * 3 + 400);
+    console.log("setCameraPosition", camera.position.z);
+    console.log("getTestPlanet z", getTestPlanet()?.object3d.position.z);
+  };
+
   useEffect(() => {
+    //if (!guiRef.current) {
+    guiRef.current = new GUI();
+
+    guiRef.current
+      .add(
+        effectControllerPlanetTypeOptions,
+        "planetType",
+        planetTypeSelectOptions
+      )
+      .name("Planet Type")
+      .onChange((value) => {
+        const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
+          (planetTypeData) => planetTypeData.class === value
+        );
+        if (planetTypeData) {
+          setPlanetType(planetTypeData);
+          testPlanetRef.current = getTestPlanet();
+          setGuiData();
+          setCameraPosition();
+        }
+      });
+
+    folderLayer1ref.current = guiRef.current.addFolder("Layer 1");
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "scale", 1.0, 15.0, 1.0)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "octaves", 5.0, 25.0, 1.0)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "amplitude", 0.1, 5.0, 0.1)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "persistence", 0.1, 2.0, 0.1)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "lacunarity", 0.1, 4.0, 0.1)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "isDoubleNoise")
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "stretchX", 1.0, 5.0, 1.0)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "stretchY", 1.0, 5.0, 1.0)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "isWarp")
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "isRigid")
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .addColor(effectControllerOptions, "baseColor")
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .addColor(effectControllerOptions, "secondColor")
+      .onChange(valuesChanger);
+
+    const folderLayer2 = guiRef.current.addFolder("Layer 2");
+    folderLayer2.open(false); // close
+
+    guiRef.current
+      .add(effectControllerOptions, "isClouds")
+      .onChange(valuesChanger);
+
+    guiRef.current
+      .add(effectUniformControllerOptions, "u_isClouds")
+      .onChange((value: boolean) => {
+        valuesUniformChanger({ name: "u_isClouds", value });
+      });
+
+    guiRef.current
+      .add(effectUniformControllerOptions, "u_cloudscale", 0.1, 5.0, 0.1)
+      .onChange((value: number) => {
+        valuesUniformChanger({ name: "u_cloudscale", value });
+      });
+
+    guiRef.current
+      .add(effectUniformControllerOptions, "u_cloudCover", 0.0, 1.0, 0.1)
+      .onChange((value: number) => {
+        valuesUniformChanger({ name: "u_cloudCover", value });
+      });
+
+    guiRef.current
+      .add(effectUniformControllerOptions, "u_cloudAlpha", 0.0, 100.0, 10.0)
+      .onChange((value: number) => {
+        valuesUniformChanger({ name: "u_cloudAlpha", value });
+      });
+
+    guiRef.current
+      .add(effectUniformControllerOptions, "u_rotateX", 0.1, 3.4, 0.1)
+      .onChange((value: number) => {
+        valuesUniformChanger({ name: "u_rotateX", value });
+      });
+    //}
+
     if (!getTestPlanet() && gl) {
       genTestPlanet(gl);
       testPlanetRef.current = getTestPlanet();
-      setGuiData();
     }
-  }, []);
+    setGuiData();
+    setCameraPosition();
 
-  useEffect(() => {
-    if (!guiRef.current) {
-      guiRef.current = new GUI();
-
-      guiRef.current
-        .add(
-          effectControllerPlanetTypeOptions,
-          "planetType",
-          planetTypeSelectOptions
-        )
-        .name("Planet Type")
-        .onChange((value) => {
-          const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
-            (planetTypeData) => planetTypeData.class === value
-          );
-          if (planetTypeData) {
-            setPlanetType(planetTypeData);
-            testPlanetRef.current = getTestPlanet();
-            setGuiData();
-            setCameraPosition();
-          }
-        });
-
-      folderLayer1ref.current = guiRef.current.addFolder("Layer 1");
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "scale", 1.0, 15.0, 1.0)
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "octaves", 5.0, 25.0, 1.0)
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "amplitude", 0.1, 5.0, 0.1)
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "persistence", 0.1, 2.0, 0.1)
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "lacunarity", 0.1, 4.0, 0.1)
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "isDoubleNoise")
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "stretchX", 1.0, 5.0, 1.0)
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "stretchY", 1.0, 5.0, 1.0)
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "isWarp")
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .add(effectControllerOptions, "isRigid")
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .addColor(effectControllerOptions, "baseColor")
-        .onChange(valuesChanger);
-
-      folderLayer1ref.current
-        .addColor(effectControllerOptions, "secondColor")
-        .onChange(valuesChanger);
-
-      const folderLayer2 = guiRef.current.addFolder("Layer 2");
-      folderLayer2.open(false); // close
-
-      guiRef.current
-        .add(effectControllerOptions, "isClouds")
-        .onChange(valuesChanger);
-
-      guiRef.current
-        .add(effectUniformControllerOptions, "u_isClouds")
-        .onChange((value: boolean) => {
-          valuesUniformChanger({ name: "u_isClouds", value });
-        });
-
-      guiRef.current
-        .add(effectUniformControllerOptions, "u_cloudscale", 0.1, 5.0, 0.1)
-        .onChange((value: number) => {
-          valuesUniformChanger({ name: "u_cloudscale", value });
-        });
-
-      guiRef.current
-        .add(effectUniformControllerOptions, "u_cloudCover", 0.0, 1.0, 0.1)
-        .onChange((value: number) => {
-          valuesUniformChanger({ name: "u_cloudCover", value });
-        });
-
-      guiRef.current
-        .add(effectUniformControllerOptions, "u_cloudAlpha", 0.0, 100.0, 10.0)
-        .onChange((value: number) => {
-          valuesUniformChanger({ name: "u_cloudAlpha", value });
-        });
-
-      guiRef.current
-        .add(effectUniformControllerOptions, "u_rotateX", 0.1, 3.4, 0.1)
-        .onChange((value: number) => {
-          valuesUniformChanger({ name: "u_rotateX", value });
-        });
-    }
     return () => {
       if (guiRef.current) {
         guiRef.current.destroy();
       }
     };
-  }, []);
-
-  const setCameraPosition = () => {
-    if (!cameraControlsRef.current || testPlanetRef.current === null) return;
-    camera.position.set(0, 0, -testPlanetRef.current.radius * 3);
-    cameraControlsRef.current.target.set(0, 0, 0);
-  };
-
-  useEffect(() => {
-    setCameraPosition();
   }, []);
 
   return (

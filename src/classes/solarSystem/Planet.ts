@@ -20,7 +20,7 @@ import {
 } from "../../constants/constants";
 
 interface PlanetInt {
-  setNewPlanetData(genPlanetData: typeGenPlanetData): void;
+  setNewBodyData(genPlanetData: typeGenPlanetData): void;
   setTextureOptions(): void;
 }
 
@@ -34,10 +34,10 @@ class Planet extends CelestialBody implements PlanetInt {
     this.material = useStore.getState().clonePlanetShaderMaterial();
     this.object3d = new Object3D();
 
-    this.setNewPlanetData(genPlanetData);
+    this.setNewBodyData(genPlanetData);
   }
 
-  setNewPlanetData(genPlanetData: typeGenPlanetData) {
+  setNewBodyData(genPlanetData: typeGenPlanetData) {
     this.isActive = true;
     let { rngSeed, planetType, distanceFromStar, temperature } = genPlanetData;
     this.rngSeed = rngSeed;

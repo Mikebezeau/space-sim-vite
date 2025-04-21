@@ -61,14 +61,14 @@ class SolarSystem implements SolarSystemInt {
 
     // reusing existing Star and Planet objects
     if (this.stars[0]) {
-      this.stars[0].setNewStarData(starData);
+      this.stars[0].setNewBodyData(starData);
     } else {
       this.stars = [new Star(starData)];
     }
 
     planetsData.forEach((planetData, index) => {
       if (this.planets[index]) {
-        this.planets[index].setNewPlanetData(planetData);
+        this.planets[index].setNewBodyData(planetData);
       } else {
         this.planets.push(new Planet(planetData));
       }

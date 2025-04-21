@@ -27,7 +27,6 @@ import "./css/glitchImage.css";
 import "./css/arrowsAnimate.css";
 
 const AppUI = () => {
-  console.log("AppUI");
   useStore.getState().updateRenderInfo("AppUI");
   //if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {}
   const playerScreen = usePlayerControlsStore((state) => state.playerScreen);
@@ -51,6 +50,10 @@ const AppUI = () => {
           <GalaxyMapMenu />
         </div>
       ) : testScreen.enemyTest ? (
+        <>Enemy Test</>
+      ) : testScreen.planetTest ? (
+        <>Planet Test</>
+      ) : isTestScreen.current ? (
         <></>
       ) : (
         <>

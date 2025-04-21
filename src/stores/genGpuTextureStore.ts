@@ -305,7 +305,7 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
 
     //TODO incorporate clouds
 
-    shaderVariable.material.uniforms["u_isCloudsAnimated"] = { value: 1 };
+    shaderVariable.material.uniforms["u_isCloudsAnimated"] = { value: 0 };
     shaderVariable.material.uniforms["u_time"] = {
       value: 1.0,
     };
@@ -461,6 +461,7 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
         get().shaderDataVariable.material,
         renderTargetGPU
       );
+      console.log("generateTextureGPU gpuCompute", textureMapOptions);
     } else {
       console.error(
         "generateTextureGPU: gpuCompute is null must call initComputeRenderer first"

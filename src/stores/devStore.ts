@@ -17,6 +17,7 @@ import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 
 import { typePlanetData } from "../solarSystemGen/genPlanetData";
+import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
 
 interface devStoreState {
   logRenderCheck: () => void;
@@ -79,7 +80,8 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   },
   //
   //testScreen: { planetTest: false, enemyTest: true, changeScreenTest: false },
-  testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
+  testScreen: { planetTest: true, enemyTest: false, changeScreenTest: false },
+  //testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
   setTestScreen: (screen?) => {
     // set all to false
     const testScreen = get().testScreen;
@@ -116,7 +118,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     );
     if (planetTypeData) {
       const isUseAtmosShader = false;
-      /*
+
       const testPlanet = new Planet(
         {
           rngSeed: "666-0",
@@ -126,8 +128,8 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           temperature: { min: 0, max: 0, average: 0 },
         },
         isUseAtmosShader
-      );*/
-
+      );
+      /*
       const testPlanet = new Star(
         {
           age: "1.45e+9",
@@ -145,13 +147,28 @@ const useDevStore = create<devStoreState>()((set, get) => ({
         },
         isUseAtmosShader
       );
-
+*/
+      // set non zero position to recieve sun light from (0,0,0) position of sun
+      testPlanet.object3d.position.set(0, 0, 400);
       set(() => ({
         testPlanet,
       }));
     }
   },
   setPlanetType: (planetTypeData) => {
+    if (get().testPlanet !== null && get().testPlanet instanceof Planet) {
+      const genPlanetData: typeGenPlanetData = {
+        rngSeed: "666",
+        planetType: planetTypeData,
+        subClasses: [],
+        distanceFromStar: 1000,
+        temperature: { min: 30, max: 30, average: 30 },
+      };
+      get().testPlanet!.setNewBodyData(genPlanetData);
+      // set non zero position to recieve sun light from (0,0,0) position of sun
+      get().testPlanet!.object3d.position.set(0, 0, 400);
+    }
+    /*
     get().testPlanet?.disposeResources();
 
     set(() => ({
@@ -171,6 +188,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     set(() => ({
       testPlanet,
     }));
+    */
   },
 
   // general dev settings

@@ -6,7 +6,7 @@ import { typeObitalZonesData } from "../../solarSystemGen/genObitalZonesData";
 import { PLANET_SCALE } from "../../constants/constants";
 
 interface StarInt {
-  setNewStarData(starData: any): void;
+  setNewBodyData(starData: any): void;
 }
 
 class Star extends CelestialBody implements StarInt {
@@ -20,10 +20,10 @@ class Star extends CelestialBody implements StarInt {
     this.material = useStore.getState().sunShaderMaterial;
     this.object3d = new THREE.Object3D();
 
-    this.setNewStarData(starData);
+    this.setNewBodyData(starData);
   }
 
-  setNewStarData(starData: any) {
+  setNewBodyData(starData: any) {
     this.starIndex = starData.starIndex;
     this.isActive = true;
     this.rngSeed = starData.starIndex.toFixed(0);
