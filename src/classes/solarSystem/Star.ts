@@ -31,7 +31,7 @@ class Star extends CelestialBody implements StarInt {
     this.orbitalZonesData = starData.orbitalZonesData;
     this.radius = starData.size * 696340 * PLANET_SCALE; //km
 
-    this.textureMapOptions = {
+    this.textureMapLayerOptions[0] = {
       scale: 3,
       octaves: 7,
       amplitude: 0.4,

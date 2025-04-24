@@ -46,7 +46,7 @@ class CelestialBody implements CelestialBodyInt {
   earthRadii: number;
   earthMasses: number;
 
-  textureMapOptions: typeTextureMapOptions;
+  textureMapLayerOptions: typeTextureMapOptions[];
   cloudShaderUniforms: typeCloudShaderUniforms;
   renderTargetGPU: any;
   uTimeTracker: number;
@@ -56,6 +56,7 @@ class CelestialBody implements CelestialBodyInt {
     this.realWorldPosition = new THREE.Vector3();
     this.isUseAtmosShader = isUseAtmosShader || true;
     this.uTimeTracker = 1;
+    this.textureMapLayerOptions = [];
     this.cloudShaderUniforms = {
       u_isClouds: false, //true,
       u_cloudscale: 1.0,
@@ -124,23 +125,23 @@ class CelestialBody implements CelestialBodyInt {
 
   setShaderColors() {
     let colors: any[] = [];
-    if (this.textureMapOptions.colors) {
-      colors = this.textureMapOptions.colors;
+    if (this.textureMapLayerOptions[0].colors) {
+      colors = this.textureMapLayerOptions[0].colors;
     } else {
       //const isSun = false;
       colors = [
-        parseHexColor(this.textureMapOptions.baseColor || "#AAAAAA"),
-        parseHexColor(this.textureMapOptions.secondColor || "#FFFFFF"),
+        parseHexColor(this.textureMapLayerOptions[0].baseColor || "#AAAAAA"),
+        parseHexColor(this.textureMapLayerOptions[0].secondColor || "#FFFFFF"),
       ];
       /*generateSortedRandomColors(
         isSun,
-        this.textureMapOptions.baseColor || "#102A44"
+        this.textureMapLayerOptions[0].baseColor || "#102A44"
       );*/
     }
     const shaderColors = colors.map(
       (color) => new THREE.Vector3(color.r / 255, color.g / 255, color.b / 255)
     );
-    this.textureMapOptions.shaderColors = shaderColors;
+    this.textureMapLayerOptions[0].shaderColors = shaderColors;
   }
 
   genTexture() {
@@ -150,7 +151,7 @@ class CelestialBody implements CelestialBodyInt {
       .getState()
       .generateTextureGPU(
         this.renderTargetGPU,
-        this.textureMapOptions,
+        this.textureMapLayerOptions[0],
         this.cloudShaderUniforms
       );
 
@@ -163,15 +164,15 @@ class CelestialBody implements CelestialBodyInt {
     }
     /*
     // craters
-    if (this.textureMapOptions.craterIntensity) {
+    if (this.textureMapLayerOptions[0].craterIntensity) {
       const { craterTextureCanvas, craterBumpMapCanvas } = genCraterTexture(
         WIDTH,
         HEIGHT,
         [
-          parseHexColor(this.textureMapOptions.baseColor || "#0000FF"),
-          parseHexColor(this.textureMapOptions.secondColor || "#FF0000"),
+          parseHexColor(this.textureMapLayerOptions[0].baseColor || "#0000FF"),
+          parseHexColor(this.textureMapLayerOptions[0].secondColor || "#FF0000"),
         ],
-        this.textureMapOptions.craterIntensity || 1,
+        this.textureMapLayerOptions[0].craterIntensity || 1,
         this.earthRadii
       ) || { craterTextureCanvas: null, craterBumpMapCanvas: null };
       if (craterTextureCanvas) {
@@ -229,9 +230,9 @@ class CelestialBody implements CelestialBodyInt {
 
   // for testing texture generating shader uniform settings
   updateTextureOptions(options: typeTextureMapOptions) {
-    this.textureMapOptions = {
-      ...this.textureMapOptions,
-      ...options, //options override this.textureMapOptions
+    this.textureMapLayerOptions[0] = {
+      ...this.textureMapLayerOptions[0],
+      ...options, //options override this.textureMapLayerOptions[0]
     };
     this.setShaderColors();
     this.genTexture();

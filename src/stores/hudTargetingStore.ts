@@ -110,7 +110,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             targetType: HTML_HUD_TARGET_TYPE.PLANET,
             viewAngle: 0,
             label: planet.rngSeed,
-            color: planet.textureMapOptions.baseColor || "",
+            color: planet.textureMapLayerOptions[0].baseColor || "",
             entity: planet,
             scanProgressNorm: 0,
           });

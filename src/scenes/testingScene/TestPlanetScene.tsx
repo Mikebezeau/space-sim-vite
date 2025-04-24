@@ -44,6 +44,10 @@ const TestPlanetScene = () => {
     planetType: "select",
   };
 
+  const effectControllerLayerOptions: any = {
+    layer: 0,
+  };
+
   const effectControllerOptions: typeTextureMapOptions = {
     scale: 0.0,
     octaves: 0,
@@ -85,39 +89,41 @@ const TestPlanetScene = () => {
           ? testPlanetRef.current.data.class
           : "sun";
       // set controller options from planet texture map options
+      effectControllerLayerOptions.layer = 0;
       effectControllerOptions.scale =
-        testPlanetRef.current.textureMapOptions.scale || 2.0;
+        testPlanetRef.current.textureMapLayerOptions[0].scale || 2.0;
       effectControllerOptions.octaves =
-        testPlanetRef.current.textureMapOptions.octaves || 10;
+        testPlanetRef.current.textureMapLayerOptions[0].octaves || 10;
       effectControllerOptions.amplitude =
-        testPlanetRef.current.textureMapOptions.amplitude || 0.5;
+        testPlanetRef.current.textureMapLayerOptions[0].amplitude || 0.5;
       effectControllerOptions.persistence =
-        testPlanetRef.current.textureMapOptions.persistence || 0.5;
+        testPlanetRef.current.textureMapLayerOptions[0].persistence || 0.5;
       effectControllerOptions.lacunarity =
-        testPlanetRef.current.textureMapOptions.lacunarity || 0.5;
+        testPlanetRef.current.textureMapLayerOptions[0].lacunarity || 0.5;
 
       effectControllerOptions.isDoubleNoise =
-        testPlanetRef.current.textureMapOptions.isDoubleNoise || false;
+        testPlanetRef.current.textureMapLayerOptions[0].isDoubleNoise || false;
 
       effectControllerOptions.stretchX =
-        testPlanetRef.current.textureMapOptions.stretchX || 1.0;
+        testPlanetRef.current.textureMapLayerOptions[0].stretchX || 1.0;
 
       effectControllerOptions.stretchY =
-        testPlanetRef.current.textureMapOptions.stretchY || 1.0;
+        testPlanetRef.current.textureMapLayerOptions[0].stretchY || 1.0;
 
       effectControllerOptions.isWarp =
-        testPlanetRef.current.textureMapOptions.isWarp || false;
+        testPlanetRef.current.textureMapLayerOptions[0].isWarp || false;
       effectControllerOptions.isRigid =
-        testPlanetRef.current.textureMapOptions.isRigid || false;
+        testPlanetRef.current.textureMapLayerOptions[0].isRigid || false;
 
       effectControllerOptions.baseColor =
-        testPlanetRef.current.textureMapOptions.baseColor || "#000000";
+        testPlanetRef.current.textureMapLayerOptions[0].baseColor || "#000000";
 
       effectControllerOptions.secondColor =
-        testPlanetRef.current.textureMapOptions.secondColor || "#ffffff";
+        testPlanetRef.current.textureMapLayerOptions[0].secondColor ||
+        "#ffffff";
 
       effectControllerOptions.isClouds =
-        testPlanetRef.current.textureMapOptions.isClouds || false;
+        testPlanetRef.current.textureMapLayerOptions[0].isClouds || false;
 
       // TODO effectUniformControllerOptions
     }
@@ -141,15 +147,15 @@ const TestPlanetScene = () => {
     }
   };
 
-  const setCameraPosition = () => {
+  const resetCameraPosition = () => {
     if (!cameraControlsRef.current || testPlanetRef.current === null) return;
     cameraControlsRef.current.reset();
     cameraControlsRef.current.target.set(0, 0, 400);
     //const distance = r / Math.sin(THREE.MathUtils.degToRad(fov / 2))
     //camera.position.set(0, 0, -distance);
     camera.position.set(0, 0, -testPlanetRef.current.radius * 3 + 400);
-    console.log("setCameraPosition", camera.position.z);
-    console.log("getTestPlanet z", getTestPlanet()?.object3d.position.z);
+    console.log("resetCameraPosition", camera.position.z);
+    console.log("getTestPlanet z", -testPlanetRef.current.radius * 3 + 400);
   };
 
   useEffect(() => {
@@ -163,16 +169,26 @@ const TestPlanetScene = () => {
         planetTypeSelectOptions
       )
       .name("Planet Type")
-      .onChange((value) => {
+      .onChange((planetTypeSelectValue) => {
         const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
-          (planetTypeData) => planetTypeData.class === value
+          (planetTypeData) => planetTypeData.class === planetTypeSelectValue
         );
         if (planetTypeData) {
           setPlanetType(planetTypeData);
           testPlanetRef.current = getTestPlanet();
           setGuiData();
-          setCameraPosition();
+          resetCameraPosition();
         }
+      });
+
+    // LAYER
+    guiRef.current
+      .add(effectControllerLayerOptions, "layer", [0, 1, 2])
+      .name("Layer")
+      .onChange((layerSelectValue) => {
+        uiCurrentShaderLayer = layerSelectValue;
+        // TODO impliment layer select
+        setGuiData();
       });
 
     folderLayer1ref.current = guiRef.current.addFolder("Layer 1");
@@ -268,7 +284,7 @@ const TestPlanetScene = () => {
       testPlanetRef.current = getTestPlanet();
     }
     setGuiData();
-    setCameraPosition();
+    resetCameraPosition();
 
     return () => {
       if (guiRef.current) {

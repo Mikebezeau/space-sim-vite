@@ -14,7 +14,8 @@ export const HEIGHT = WIDTH / 2;
 
 const textureFS = `
 uniform vec3 u_colors[2];
-uniform vec3 u_color;
+uniform vec3 u_color1[3];
+uniform vec3 u_color2[3];
 uniform float u_octaves;
 uniform float u_frequency;
 uniform float u_amplitude;
@@ -24,7 +25,7 @@ uniform int u_isDoubleNoise;
 uniform int u_isRigid;
 uniform float u_stretchX;
 uniform float u_stretchY;
-uniform int u_isWarp;
+uniform int u_isWarp[3];
 
 ${cloudsLargeShaderGPU.fragHead}
 
@@ -87,7 +88,7 @@ void main() {
   float noise = fractalNoise( coords, u_isDoubleNoise, u_isRigid, u_frequency, u_octaves, u_amplitude, u_persistence, u_lacunarity );
   
   // warp the noise
-  if( u_isWarp == 1){
+  if( u_isWarp[0] == 1){
     float warpFrequency = 0.1;
     float warpAmplitude = 0.5;
     float pX = coords.x + ( cnoise(
@@ -300,7 +301,7 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     shaderVariable.material.uniforms["u_isDoubleNoise"] = { value: 0 };
     shaderVariable.material.uniforms["u_stretchX"] = { value: 1.0 };
     shaderVariable.material.uniforms["u_stretchY"] = { value: 1.0 };
-    shaderVariable.material.uniforms["u_isWarp"] = { value: 0 };
+    shaderVariable.material.uniforms["u_isWarp"] = { value: [0] };
     //shaderVariable.material.uniforms["u_colors"] = { value: [] };
 
     //TODO incorporate clouds
@@ -425,11 +426,13 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     else uniforms["u_stretchY"] = { value: 1.0 };
 
     // undefined or boolean
-    uniforms["u_isWarp"] = { value: textureMapOptions.isWarp ? 1 : 0 };
+    uniforms["u_isWarp"] = { value: [textureMapOptions.isWarp ? 1 : 0] };
     uniforms["u_isRigid"] = { value: textureMapOptions.isRigid ? 1 : 0 };
 
-    if (textureMapOptions.shaderColors)
+    if (textureMapOptions.shaderColors) {
       uniforms["u_colors"] = { value: textureMapOptions.shaderColors };
+      uniforms["u_color1"] = { value: [textureMapOptions.shaderColors] };
+    }
 
     // FBO cloud uniforms
     uniforms["u_isClouds"] = { value: cloudShaderUniforms.u_isClouds ? 1 : 0 };
@@ -450,6 +453,9 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     textureMapOptions,
     cloudShaderUniforms = { u_isClouds: false }
   ) => {
+    // TODO accept textureMapOptions as array textureMapLayerOptions
+    // and loop through each layer
+    // check if can combine layers in shader texture
     if (get().gpuCompute !== null) {
       get().setUniforms(
         get().shaderDataVariable,

@@ -86,7 +86,7 @@ class Planet extends CelestialBody implements PlanetInt {
     }
     // set scale by planet size
     textureOptions.scale = textureOptions.scale || 1; // * this.earthRadii;
-    this.textureMapOptions = textureOptions;
+    this.textureMapLayerOptions[0] = textureOptions;
     this.setShaderColors();
   }
 }
