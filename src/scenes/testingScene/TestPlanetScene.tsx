@@ -65,7 +65,10 @@ const TestPlanetScene = () => {
   };
 
   const valuesChanger = function () {
-    getTestPlanet()?.updateTextureOptions(effectControllerOptions);
+    getTestPlanet()?.updateTextureOptions(
+      uiCurrentShaderLayer,
+      effectControllerOptions
+    );
   };
 
   const effectUniformControllerOptions: any = {
@@ -89,41 +92,53 @@ const TestPlanetScene = () => {
           ? testPlanetRef.current.data.class
           : "sun";
       // set controller options from planet texture map options
-      effectControllerLayerOptions.layer = 0;
+      effectControllerLayerOptions.layer = uiCurrentShaderLayer;
       effectControllerOptions.scale =
-        testPlanetRef.current.textureMapLayerOptions[0].scale || 2.0;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .scale || 2.0;
       effectControllerOptions.octaves =
-        testPlanetRef.current.textureMapLayerOptions[0].octaves || 10;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .octaves || 10;
       effectControllerOptions.amplitude =
-        testPlanetRef.current.textureMapLayerOptions[0].amplitude || 0.5;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .amplitude || 0.5;
       effectControllerOptions.persistence =
-        testPlanetRef.current.textureMapLayerOptions[0].persistence || 0.5;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .persistence || 0.5;
       effectControllerOptions.lacunarity =
-        testPlanetRef.current.textureMapLayerOptions[0].lacunarity || 0.5;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .lacunarity || 0.5;
 
       effectControllerOptions.isDoubleNoise =
-        testPlanetRef.current.textureMapLayerOptions[0].isDoubleNoise || false;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .isDoubleNoise || false;
 
       effectControllerOptions.stretchX =
-        testPlanetRef.current.textureMapLayerOptions[0].stretchX || 1.0;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .stretchX || 1.0;
 
       effectControllerOptions.stretchY =
-        testPlanetRef.current.textureMapLayerOptions[0].stretchY || 1.0;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .stretchY || 1.0;
 
       effectControllerOptions.isWarp =
-        testPlanetRef.current.textureMapLayerOptions[0].isWarp || false;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .isWarp || false;
       effectControllerOptions.isRigid =
-        testPlanetRef.current.textureMapLayerOptions[0].isRigid || false;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .isRigid || false;
 
       effectControllerOptions.baseColor =
-        testPlanetRef.current.textureMapLayerOptions[0].baseColor || "#000000";
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .baseColor || "#000000";
 
       effectControllerOptions.secondColor =
-        testPlanetRef.current.textureMapLayerOptions[0].secondColor ||
-        "#ffffff";
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .secondColor || "#ffffff";
 
       effectControllerOptions.isClouds =
-        testPlanetRef.current.textureMapLayerOptions[0].isClouds || false;
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .isClouds || false;
 
       // TODO effectUniformControllerOptions
     }

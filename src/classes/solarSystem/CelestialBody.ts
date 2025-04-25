@@ -27,7 +27,10 @@ interface CelestialBodyInt {
   disposeTextures(): void;
   disposeResources(): void;
   updateUniforms(): void;
-  updateTextureOptions(options: typeTextureMapOptions): void;
+  updateTextureOptions(
+    uiCurrentShaderLayer: number,
+    options: typeTextureMapOptions
+  ): void;
   updateCloudShaderUniform(options: any): void;
   useFrameUpdateUniforms(delta: number): void;
 }
@@ -232,10 +235,13 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   // for testing texture generating shader uniform settings
-  updateTextureOptions(options: typeTextureMapOptions) {
-    this.textureMapLayerOptions[0] = {
-      ...this.textureMapLayerOptions[0],
-      ...options, //options override this.textureMapLayerOptions[0]
+  updateTextureOptions(
+    uiCurrentShaderLayer: number,
+    options: typeTextureMapOptions
+  ) {
+    this.textureMapLayerOptions[uiCurrentShaderLayer] = {
+      ...this.textureMapLayerOptions[uiCurrentShaderLayer],
+      ...options, //options override this.textureMapLayerOptions[uiCurrentShaderLayer]
     };
     this.setShaderColors();
     this.genTexture();
