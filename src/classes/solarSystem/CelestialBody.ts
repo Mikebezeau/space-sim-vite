@@ -142,6 +142,9 @@ class CelestialBody implements CelestialBodyInt {
       (color) => new THREE.Vector3(color.r / 255, color.g / 255, color.b / 255)
     );
     this.textureMapLayerOptions[0].shaderColors = shaderColors;
+    // TODO only use color1 and color2
+    this.textureMapLayerOptions[0].color1 = shaderColors[0];
+    this.textureMapLayerOptions[0].color2 = shaderColors[1];
   }
 
   genTexture() {
@@ -151,7 +154,7 @@ class CelestialBody implements CelestialBodyInt {
       .getState()
       .generateTextureGPU(
         this.renderTargetGPU,
-        this.textureMapLayerOptions[0],
+        this.textureMapLayerOptions,
         this.cloudShaderUniforms
       );
 

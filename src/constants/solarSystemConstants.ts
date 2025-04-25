@@ -243,6 +243,9 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
 };
 
 export type typeTextureMapOptions = {
+  layer?: number; // for multiple texture layers
+  opacity?: number; // for multiple texture layers
+
   amplitude?: number;
   scale?: number;
   octaves?: number;
@@ -261,7 +264,11 @@ export type typeTextureMapOptions = {
   secondColor?: string;
 
   colors?: { r: number; g: number; b: number }[];
+
   shaderColors?: Vector3[];
+  color1?: Vector3;
+  color2?: Vector3;
+
   isClouds?: boolean;
   planetTypeMods?: { warpX: number; warpY: number; warpZ: number };
   craterIntensity?: number;

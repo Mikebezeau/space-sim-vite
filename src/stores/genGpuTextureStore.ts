@@ -13,18 +13,20 @@ export const WIDTH = IS_MOBILE ? 1024 : 2048; //4096;
 export const HEIGHT = WIDTH / 2;
 
 const textureFS = `
-uniform vec3 u_colors[2];
-uniform vec3 u_color1[3];
+uniform int u_layer[3];
+uniform float u_opacity[3];
+uniform vec3 u_colors[2];// OLD
+uniform vec3 u_color1[3];// TODO use color1 and color2 REMOVE u_colors
 uniform vec3 u_color2[3];
-uniform float u_octaves;
-uniform float u_frequency;
-uniform float u_amplitude;
-uniform float u_persistence;
-uniform float u_lacunarity;
-uniform int u_isDoubleNoise;
-uniform int u_isRigid;
-uniform float u_stretchX;
-uniform float u_stretchY;
+uniform float u_octaves[3];
+uniform float u_frequency[3];
+uniform float u_amplitude[3];
+uniform float u_persistence[3];
+uniform float u_lacunarity[3];
+uniform int u_isDoubleNoise[3];
+uniform int u_isRigid[3];
+uniform float u_stretchX[3];
+uniform float u_stretchY[3];
 uniform int u_isWarp[3];
 
 ${cloudsLargeShaderGPU.fragHead}
@@ -80,42 +82,59 @@ void main() {
   // use this if supplying data with a texture
   //vec2 texturePoint = texture2D( u_textureData, uv ).xy;
 
-  vec2 texturePoint = vec2( gl_FragCoord.x * u_stretchX, gl_FragCoord.y * u_stretchY );
-  
-  vec3 coords = get3dCoords( texturePoint, WIDTH, HEIGHT );
-  
-  // Use the noise function
-  float noise = fractalNoise( coords, u_isDoubleNoise, u_isRigid, u_frequency, u_octaves, u_amplitude, u_persistence, u_lacunarity );
-  
-  // warp the noise
-  if( u_isWarp[0] == 1){
-    float warpFrequency = 0.1;
-    float warpAmplitude = 0.5;
-    float pX = coords.x + ( cnoise(
-        vec3( ( coords.x + 20.0 ) * warpFrequency, coords.y * warpFrequency, coords.z * warpFrequency )
-      ) - 0.5 ) * warpAmplitude;
-    float pY = coords.y + ( cnoise(
-        vec3( coords.x * warpFrequency, ( coords.y + 20.0 ) * warpFrequency, coords.z * warpFrequency )
-      ) - 0.5 ) * warpAmplitude;
-    float pZ = coords.z + ( cnoise(
-        vec3( coords.x * warpFrequency, coords.y * warpFrequency, ( coords.z + 20.0 ) * warpFrequency )
-      ) - 0.5 ) * warpAmplitude;
-    float warpValue = cnoise( vec3( pX * u_frequency, pY * u_frequency, pZ * u_frequency ) );
-    noise *= warpValue;
+  // loop for each layer
+  for (int layerIndex = 0; layerIndex < 3; layerIndex++) {
+
+    vec2 texturePoint = vec2( gl_FragCoord.x * u_stretchX[ layerIndex ], gl_FragCoord.y * u_stretchY[ layerIndex ] );
+    
+    vec3 coords = get3dCoords( texturePoint, WIDTH, HEIGHT );
+    
+    // Use the noise function
+    float noise = fractalNoise( coords, u_isDoubleNoise[ layerIndex ], u_isRigid[ layerIndex ], u_frequency[ layerIndex ], u_octaves[ layerIndex ], u_amplitude[ layerIndex ], u_persistence[ layerIndex ], u_lacunarity[ layerIndex ] );
+    
+    // warp the noise
+    if( u_isWarp[ layerIndex ] == 1){
+      float warpFrequency = 0.1;
+      float warpAmplitude = 0.5;
+      float pX = coords.x + ( cnoise(
+          vec3( ( coords.x + 20.0 ) * warpFrequency, coords.y * warpFrequency, coords.z * warpFrequency )
+        ) - 0.5 ) * warpAmplitude;
+      float pY = coords.y + ( cnoise(
+          vec3( coords.x * warpFrequency, ( coords.y + 20.0 ) * warpFrequency, coords.z * warpFrequency )
+        ) - 0.5 ) * warpAmplitude;
+      float pZ = coords.z + ( cnoise(
+          vec3( coords.x * warpFrequency, coords.y * warpFrequency, ( coords.z + 20.0 ) * warpFrequency )
+        ) - 0.5 ) * warpAmplitude;
+      float warpValue = cnoise( vec3( pX * u_frequency[ layerIndex ], pY * u_frequency[ layerIndex ], pZ * u_frequency[ layerIndex ] ) );
+      noise *= warpValue;
+    }
+
+    noise = clamp( noise, 0.0, 1.0 );
+
+    // Assign a color based on the noise value
+    //vec3 color = mix( u_colors[0], u_colors[1], noise );
+    // now using u_color1 and u_color2
+    vec3 color = mix( u_color1[ layerIndex ], u_color2[ layerIndex ], noise );
+
+    if( layerIndex == 0 ){
+      gl_FragColor = vec4( color, 1.0 );
+      //gl_FragColor = vec4( vec3( noise ), 1.0 );//grey scale
+    }
+    else {
+      // TODO if ( layerIndex > 0 && u_layer[ layerIndex ] == 0 ) we skip loop
+      vec3 prevLayerColor = gl_FragColor.rgb;
+      gl_FragColor = vec4( mix( prevLayerColor, color, u_opacity[ layerIndex ] ), 1.0 );
+    }
   }
-
-  noise = clamp( noise, 0.0, 1.0 );
-
-  // Assign a color based on the noise value
-  vec3 color = mix( u_colors[0], u_colors[1], noise );
-
-  gl_FragColor = vec4( color, 1.0 );
-  //gl_FragColor = vec4( vec3( noise ), 1.0 );
-
-  // add clouds
-  ${cloudsLargeShaderGPU.fragMain}
+  // add clouds - removed
+  
+  // 
 }
 `;
+
+// TODO this is commented out for now - create clouds shader pass seperately
+// ${cloudsLargeShaderGPU.fragMain}
+
 /*
 const readFragmentShader = `
 uniform vec2 point1;
@@ -252,12 +271,12 @@ interface genFboTextureStoreState {
   disposeGpuCompute: () => void;
   setUniforms: (
     shaderVariable: any,
-    options: typeTextureMapOptions,
+    textureMapLayerOptions: typeTextureMapOptions[],
     cloudShaderUniforms: typeCloudShaderUniforms
   ) => void;
   generateTextureGPU: (
     renderTargetGPU: any,
-    textureMapOptions: typeTextureMapOptions,
+    textureMapLayerOptions: typeTextureMapOptions[],
     cloudShaderUniforms: typeCloudShaderUniforms
   ) => void;
 }
@@ -293,16 +312,43 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     gpuCompute.setVariableDependencies(shaderVariable, [shaderVariable]);
 
     // u_frequency / scale
-    shaderVariable.material.uniforms["u_frequency"] = { value: 2.0 };
-    shaderVariable.material.uniforms["u_octaves"] = { value: 10.0 };
-    shaderVariable.material.uniforms["u_amplitude"] = { value: 0.5 };
-    shaderVariable.material.uniforms["u_persistence"] = { value: 0.5 };
-    shaderVariable.material.uniforms["u_lacunarity"] = { value: 1.5 };
-    shaderVariable.material.uniforms["u_isDoubleNoise"] = { value: 0 };
-    shaderVariable.material.uniforms["u_stretchX"] = { value: 1.0 };
-    shaderVariable.material.uniforms["u_stretchY"] = { value: 1.0 };
-    shaderVariable.material.uniforms["u_isWarp"] = { value: [0] };
-    //shaderVariable.material.uniforms["u_colors"] = { value: [] };
+    shaderVariable.material.uniforms["u_layer"] = { value: [0, 1, 2] };
+    shaderVariable.material.uniforms["u_opacity"] = { value: [1.0, 0.5, 0.5] };
+
+    shaderVariable.material.uniforms["u_frequency"] = {
+      value: [1.0, 0.0, 0.0],
+    };
+    shaderVariable.material.uniforms["u_octaves"] = { value: [1.0, 0.0, 0.0] };
+    shaderVariable.material.uniforms["u_amplitude"] = {
+      value: [1.0, 0.0, 0.0],
+    };
+    shaderVariable.material.uniforms["u_persistence"] = {
+      value: [1.0, 0.0, 0.0],
+    };
+    shaderVariable.material.uniforms["u_lacunarity"] = {
+      value: [1.0, 0.0, 0.0],
+    };
+    shaderVariable.material.uniforms["u_isDoubleNoise"] = {
+      value: [1.0, 0.0, 0.0],
+    };
+    shaderVariable.material.uniforms["u_stretchX"] = { value: [1.0, 0.0, 0.0] };
+    shaderVariable.material.uniforms["u_stretchY"] = { value: [1.0, 0.0, 0.0] };
+    shaderVariable.material.uniforms["u_isWarp"] = { value: [0, 0, 0] };
+    shaderVariable.material.uniforms["u_isRigid"] = { value: [0, 0, 0] };
+    shaderVariable.material.uniforms["u_color1"] = {
+      value: [
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, 0),
+      ],
+    };
+    shaderVariable.material.uniforms["u_color2"] = {
+      value: [
+        new THREE.Vector3(1, 1, 1),
+        new THREE.Vector3(1, 1, 1),
+        new THREE.Vector3(1, 1, 1),
+      ],
+    };
 
     //TODO incorporate clouds
 
@@ -391,83 +437,118 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
 
   setUniforms: (
     shaderVariable,
-    textureMapOptions,
+    textureMapLayerOptions,
     cloudShaderUniforms = { u_isClouds: false }
   ) => {
     const uniforms = shaderVariable.material.uniforms;
-    if (textureMapOptions.amplitude)
-      uniforms["u_amplitude"] = {
-        value: textureMapOptions.amplitude.toFixed(2),
-      };
-    if (textureMapOptions.scale)
-      uniforms["u_frequency"] = { value: textureMapOptions.scale.toFixed(2) };
-    if (textureMapOptions.octaves)
-      uniforms["u_octaves"] = { value: textureMapOptions.octaves.toFixed(0) };
-    if (textureMapOptions.persistence)
-      uniforms["u_persistence"] = {
-        value: textureMapOptions.persistence.toFixed(3),
-      };
-    if (textureMapOptions.lacunarity)
-      uniforms["u_lacunarity"] = {
-        value: textureMapOptions.lacunarity.toFixed(3),
-      };
+    // for each layer update element in the array
+    textureMapLayerOptions.forEach((textureMapOptions, index) => {
+      // update the uniforms for each layer
+      uniforms.u_layer.value[index] = textureMapOptions.layer
+        ? textureMapOptions.layer.toFixed(0)
+        : 0;
 
-    // undefined or boolean
-    uniforms["u_isDoubleNoise"] = {
-      value: textureMapOptions.isDoubleNoise ? 1 : 0,
-    };
+      uniforms.u_opacity.value[index] = textureMapOptions.opacity
+        ? textureMapOptions.opacity.toFixed(2)
+        : 1.0;
 
-    if (textureMapOptions.stretchX)
-      uniforms["u_stretchX"] = { value: textureMapOptions.stretchX.toFixed(1) };
-    else uniforms["u_stretchX"] = { value: 1.0 };
+      uniforms.u_amplitude.value[index] = textureMapOptions.amplitude
+        ? textureMapOptions.amplitude.toFixed(2)
+        : 1.0;
 
-    if (textureMapOptions.stretchY)
-      uniforms["u_stretchY"] = { value: textureMapOptions.stretchY.toFixed(1) };
-    else uniforms["u_stretchY"] = { value: 1.0 };
+      uniforms.u_frequency.value[index] = textureMapOptions.scale
+        ? textureMapOptions.scale.toFixed(2)
+        : 1.0;
 
-    // undefined or boolean
-    uniforms["u_isWarp"] = { value: [textureMapOptions.isWarp ? 1 : 0] };
-    uniforms["u_isRigid"] = { value: textureMapOptions.isRigid ? 1 : 0 };
+      uniforms.u_octaves.value[index] = textureMapOptions.octaves
+        ? textureMapOptions.octaves.toFixed(0)
+        : 1;
 
-    if (textureMapOptions.shaderColors) {
-      uniforms["u_colors"] = { value: textureMapOptions.shaderColors };
-      uniforms["u_color1"] = { value: [textureMapOptions.shaderColors] };
+      uniforms.u_persistence.value[index] = textureMapOptions.persistence
+        ? textureMapOptions.persistence.toFixed(3)
+        : 1;
+
+      uniforms.u_lacunarity.value[index] = textureMapOptions.lacunarity
+        ? textureMapOptions.lacunarity.toFixed(3)
+        : 1;
+
+      // undefined or boolean
+      uniforms.u_isDoubleNoise.value[index] = textureMapOptions.isDoubleNoise
+        ? 1
+        : 0;
+
+      uniforms.u_stretchX.value[index] = textureMapOptions.stretchX
+        ? textureMapOptions.stretchX.toFixed(1)
+        : 1.0;
+
+      uniforms.u_stretchY.value[index] = textureMapOptions.stretchY
+        ? textureMapOptions.stretchY.toFixed(1)
+        : 1.0;
+
+      // undefined or boolean
+      uniforms.u_isWarp.value[index] = textureMapOptions.isWarp ? 1 : 0;
+
+      uniforms.u_isDoubleNoise.value[index] = textureMapOptions.isDoubleNoise
+        ? 1
+        : 0;
+
+      uniforms.u_isRigid.value[index] = textureMapOptions.isRigid ? 0 : 0;
+
+      uniforms.u_color1.value[index] = textureMapOptions.color1
+        ? textureMapOptions.color1
+        : new THREE.Vector3(0, 0, 0);
+
+      uniforms.u_color2.value[index] = textureMapOptions.color2
+        ? textureMapOptions.color2
+        : new THREE.Vector3(1, 1, 1);
+    });
+
+    if (textureMapLayerOptions[0].shaderColors) {
+      uniforms["u_colors"] = { value: textureMapLayerOptions[0].shaderColors };
     }
 
     // FBO cloud uniforms
-    uniforms["u_isClouds"] = { value: cloudShaderUniforms.u_isClouds ? 1 : 0 };
+    uniforms["u_isClouds"] = {
+      value: cloudShaderUniforms.u_isClouds ? 1 : 0,
+    };
     uniforms["u_cloudscale"] = {
       value:
         cloudShaderUniforms.u_cloudscale || new THREE.Vector3(1.0, 1.0, 1.0),
     };
-    uniforms["u_cloudColor"] = { value: cloudShaderUniforms.u_cloudColor || 1 };
-    uniforms["u_cloudCover"] = { value: cloudShaderUniforms.u_cloudCover || 0 };
+    uniforms["u_cloudColor"] = {
+      value: cloudShaderUniforms.u_cloudColor || 1,
+    };
+    uniforms["u_cloudCover"] = {
+      value: cloudShaderUniforms.u_cloudCover || 0,
+    };
     uniforms["u_cloudAlpha"] = {
       value: cloudShaderUniforms.u_cloudAlpha || 20,
     };
-    uniforms["u_rotateX"] = { value: cloudShaderUniforms.u_rotateX || 1 };
+    uniforms["u_rotateX"] = {
+      value: cloudShaderUniforms.u_rotateX || 1,
+    };
   },
 
   generateTextureGPU: (
     renderTargetGPU,
-    textureMapOptions,
+    textureMapLayerOptions,
     cloudShaderUniforms = { u_isClouds: false }
   ) => {
-    // TODO accept textureMapOptions as array textureMapLayerOptions
-    // and loop through each layer
-    // check if can combine layers in shader texture
     if (get().gpuCompute !== null) {
       get().setUniforms(
         get().shaderDataVariable,
-        textureMapOptions,
+        textureMapLayerOptions,
         cloudShaderUniforms
+      );
+      console.log(
+        "generateTextureGPU",
+        get().shaderDataVariable.material.uniforms
       );
       // @ts-ignore
       get().gpuCompute.doRenderTarget(
         get().shaderDataVariable.material,
         renderTargetGPU
       );
-      console.log("generateTextureGPU gpuCompute", textureMapOptions);
     } else {
       console.error(
         "generateTextureGPU: gpuCompute is null must call initComputeRenderer first"
