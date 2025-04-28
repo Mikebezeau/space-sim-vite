@@ -24,6 +24,7 @@ class Star extends CelestialBody implements StarInt {
   }
 
   setNewBodyData(starData: any) {
+    this.clearBodyData();
     this.starIndex = starData.starIndex;
     this.isActive = true;
     this.rngSeed = starData.starIndex.toFixed(0);
@@ -41,12 +42,16 @@ class Star extends CelestialBody implements StarInt {
       baseColor: "#ffa70f", //starData.colorHex,
       secondColor: "#FFFFFF",
       craterIntensity: 0,
+      /*
       shaderColors: [
         new THREE.Vector3(1, 167 / 255, 15 / 255),
         new THREE.Vector3(1, 1, 1),
       ],
+      */
+      // create version for star - set texture options for genTexture
+      // this.setDefaultGpuTextureOptions();
     };
-
+    this.setShaderColors();
     // generate terrian texture map
     this.genTexture();
     this.updateUniforms();

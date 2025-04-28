@@ -11,6 +11,7 @@ import {
   typeTextureMapOptions,
   PLANET_CLASS_TEXTURE_MAP,
   PLANET_TYPE_TEXTURE_MAP,
+  PLANET_TYPE_TEXTURE_LAYERS,
 } from "../../constants/solarSystemConstants";
 import {
   AU,
@@ -21,11 +22,7 @@ import {
 
 interface PlanetInt {
   setNewBodyData(genPlanetData: typeGenPlanetData): void;
-  setTextureOptions(): void;
-  setTextureLayer(
-    layerIndex: number,
-    textureOptions: typeTextureMapOptions
-  ): void;
+  setDefaultGpuTextureOptions(): void;
 }
 
 class Planet extends CelestialBody implements PlanetInt {
@@ -42,6 +39,7 @@ class Planet extends CelestialBody implements PlanetInt {
   }
 
   setNewBodyData(genPlanetData: typeGenPlanetData) {
+    this.clearBodyData();
     this.isActive = true;
     let { rngSeed, planetType, distanceFromStar, temperature } = genPlanetData;
     this.rngSeed = rngSeed;
@@ -69,33 +67,25 @@ class Planet extends CelestialBody implements PlanetInt {
     //object3d.rotation.set(axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
 
     // set texture options for genTexture
-    this.setTextureOptions();
-    // TODO testing second layer
-    const testLayer1 = {
-      layer: 1,
-      opacity: 0.2,
-      scale: 1,
-      octaves: 7,
-      amplitude: 0.4,
-      persistence: 0.6,
-      lacunarity: 1.7,
-      isDoubleNoise: true,
-      baseColor: "#ffa70f", //starData.colorHex,
-      secondColor: "#FFFFFF",
-      craterIntensity: 0,
-      shaderColors: [new Vector3(1, 167 / 255, 15 / 255), new Vector3(1, 1, 1)],
-      color1: new Vector3(1, 167 / 255, 15 / 255),
-      color2: new Vector3(1, 1, 1),
-    };
+    this.setDefaultGpuTextureOptions();
+    // default layers by planet class
+    PLANET_TYPE_TEXTURE_LAYERS[this.data.planetType].forEach(
+      (layer: typeTextureMapOptions, index: number) => {
+        this.updateTextureLayer(index + 1, layer);
+      }
+    );
+    console.log(PLANET_TYPE_TEXTURE_LAYERS[this.data.planetType], this.data);
+    console.log("planet class layers", this.textureMapLayerOptions);
+    // can add more layers by other planet details
+    //this.updateTextureLayer(1, martianDetailLayer1);
 
-    this.setTextureLayer(1, testLayer1);
     // generate terrian texture map
     this.genTexture();
     // update texture uniforms of shader material
     this.updateUniforms();
   }
 
-  setTextureOptions() {
+  setDefaultGpuTextureOptions() {
     const classOptions = PLANET_CLASS_TEXTURE_MAP[this.data.planetClass];
     const typeOptions = PLANET_TYPE_TEXTURE_MAP[this.data.planetType];
     let textureOptions: typeTextureMapOptions;
@@ -111,10 +101,6 @@ class Planet extends CelestialBody implements PlanetInt {
     textureOptions.scale = textureOptions.scale || 1; // * this.earthRadii;
     this.textureMapLayerOptions[0] = textureOptions;
     this.setShaderColors();
-  }
-
-  setTextureLayer(layerIndex: number, textureOptions: typeTextureMapOptions) {
-    this.textureMapLayerOptions[layerIndex] = textureOptions;
   }
 }
 

@@ -15,6 +15,8 @@ export const HEIGHT = WIDTH / 2;
 const textureFS = `
 uniform int u_layer[3];
 uniform float u_opacity[3];
+uniform float u_rangeStart[3];
+uniform float u_rangeEnd[3];
 uniform vec3 u_colors[2];// OLD
 uniform vec3 u_color1[3];// TODO use color1 and color2 REMOVE u_colors
 uniform vec3 u_color2[3];
@@ -111,10 +113,17 @@ void main() {
 
     noise = clamp( noise, 0.0, 1.0 );
 
+    // If within rangeStart and rangeEnd, get the normailzed noise value from rangeStart to rangeEnd
+    float rangeNoise = 0.0;
+    if( u_rangeStart[ layerIndex ] < u_rangeEnd[ layerIndex ] ){
+      rangeNoise = ( noise - u_rangeStart[ layerIndex ] ) / ( u_rangeEnd[ layerIndex ] - u_rangeStart[ layerIndex ] );
+    }
+    else {
+      rangeNoise = ( noise - u_rangeEnd[ layerIndex ] ) / ( u_rangeStart[ layerIndex ] - u_rangeEnd[ layerIndex ] );
+    }
+
     // Assign a color based on the noise value
-    //vec3 color = mix( u_colors[0], u_colors[1], noise );
-    // now using u_color1 and u_color2
-    vec3 color = mix( u_color1[ layerIndex ], u_color2[ layerIndex ], noise );
+    vec3 color = mix( u_color1[ layerIndex ], u_color2[ layerIndex ], rangeNoise );
 
     if( layerIndex == 0 ){
       gl_FragColor = vec4( color, 1.0 );
@@ -123,7 +132,19 @@ void main() {
     else {
       // TODO if ( layerIndex > 0 && u_layer[ layerIndex ] == 0 ) we skip loop
       vec3 prevLayerColor = gl_FragColor.rgb;
-      gl_FragColor = vec4( mix( prevLayerColor, color, u_opacity[ layerIndex ] ), 1.0 );
+      //gl_FragColor = vec4( mix( prevLayerColor, color, u_opacity[ layerIndex ] ), 1.0 );
+      
+      // calc layer opacity based on rangeStart and rangeEnd
+      float layerStart = u_rangeStart[ layerIndex ];
+      float layerEnd = u_rangeEnd[ layerIndex ];
+      float layerValue = noise;
+      float edgeThickness = 0.5; // Adjust this value to control the thickness of the edge
+      // Calculate the opacity based on the layer range and noise value
+      float opacity = smoothstep(layerStart, layerStart + edgeThickness, layerValue) * 
+                (1.0 - smoothstep(layerEnd - edgeThickness, layerEnd, layerValue));
+      opacity = clamp( opacity, 0.0, 1.0 ) * u_opacity[ layerIndex ];
+      // Now mix previous color and current color based on opacity
+      gl_FragColor = vec4( mix( prevLayerColor, color, opacity ), 1.0 );
     }
   }
   // add clouds - removed
@@ -314,6 +335,12 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
     // u_frequency / scale
     shaderVariable.material.uniforms["u_layer"] = { value: [0, 1, 2] };
     shaderVariable.material.uniforms["u_opacity"] = { value: [1.0, 0.5, 0.5] };
+    shaderVariable.material.uniforms["u_rangeStart"] = {
+      value: [0.0, 0.0, 0.0],
+    };
+    shaderVariable.material.uniforms["u_rangeEnd"] = {
+      value: [1.0, 1.0, 1.0],
+    };
 
     shaderVariable.material.uniforms["u_frequency"] = {
       value: [1.0, 0.0, 0.0],
@@ -448,8 +475,16 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
         ? textureMapOptions.layer.toFixed(0)
         : 0;
 
-      uniforms.u_opacity.value[index] = textureMapOptions.opacity
-        ? textureMapOptions.opacity.toFixed(2)
+      uniforms.u_opacity.value[index] = textureMapOptions.layerOpacity
+        ? textureMapOptions.layerOpacity.toFixed(2)
+        : 1.0;
+
+      uniforms.u_rangeStart.value[index] = textureMapOptions.rangeStart
+        ? textureMapOptions.rangeStart.toFixed(2)
+        : 0.0;
+
+      uniforms.u_rangeEnd.value[index] = textureMapOptions.rangeEnd
+        ? textureMapOptions.rangeEnd.toFixed(2)
         : 1.0;
 
       uniforms.u_amplitude.value[index] = textureMapOptions.amplitude
@@ -502,11 +537,11 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
         ? textureMapOptions.color2
         : new THREE.Vector3(1, 1, 1);
     });
-
+    /*
     if (textureMapLayerOptions[0].shaderColors) {
       uniforms["u_colors"] = { value: textureMapLayerOptions[0].shaderColors };
     }
-
+*/
     // FBO cloud uniforms
     uniforms["u_isClouds"] = {
       value: cloudShaderUniforms.u_isClouds ? 1 : 0,

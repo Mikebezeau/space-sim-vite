@@ -49,6 +49,9 @@ const TestPlanetScene = () => {
   };
 
   const effectControllerOptions: typeTextureMapOptions = {
+    layerOpacity: 1.0,
+    rangeStart: 0.0,
+    rangeEnd: 1.0,
     scale: 0.0,
     octaves: 0,
     amplitude: 0.0,
@@ -65,7 +68,7 @@ const TestPlanetScene = () => {
   };
 
   const valuesChanger = function () {
-    getTestPlanet()?.updateTextureOptions(
+    getTestPlanet()?.updateTextureLayer(
       uiCurrentShaderLayer,
       effectControllerOptions
     );
@@ -87,12 +90,24 @@ const TestPlanetScene = () => {
 
   const setGuiData = () => {
     if (testPlanetRef.current) {
+      // set default values if not set
       effectControllerPlanetTypeOptions.planetType =
         testPlanetRef.current instanceof PlanetClass
           ? testPlanetRef.current.data.class
           : "sun";
       // set controller options from planet texture map options
       effectControllerLayerOptions.layer = uiCurrentShaderLayer;
+
+      effectControllerOptions.layerOpacity =
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .layerOpacity || 1.0;
+      effectControllerOptions.rangeStart =
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .rangeStart || 0.0;
+      effectControllerOptions.rangeEnd =
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .rangeEnd || 1.0;
+
       effectControllerOptions.scale =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
           .scale || 2.0;
@@ -207,6 +222,18 @@ const TestPlanetScene = () => {
       });
 
     folderLayer1ref.current = guiRef.current.addFolder("Layer 1");
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "layerOpacity", 0.0, 1.0, 0.1)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "rangeStart", 0.0, 1.0, 0.1)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "rangeEnd", 0.0, 1.0, 0.1)
+      .onChange(valuesChanger);
 
     folderLayer1ref.current
       .add(effectControllerOptions, "scale", 1.0, 15.0, 1.0)

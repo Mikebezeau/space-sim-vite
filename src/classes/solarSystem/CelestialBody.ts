@@ -22,14 +22,15 @@ interface CelestialBodyInt {
   getWarpToDistanceAway(): number;
   getMinDistanceAllowWarp(): number;
   //
-  setShaderColors(): void;
+  clearBodyData(): void;
+  setShaderColors(layerIndex?: number): void;
   genTexture(): void;
   disposeTextures(): void;
   disposeResources(): void;
   updateUniforms(): void;
-  updateTextureOptions(
-    uiCurrentShaderLayer: number,
-    options: typeTextureMapOptions
+  updateTextureLayer(
+    layerIndex: number,
+    textureOptions: typeTextureMapOptions
   ): void;
   updateCloudShaderUniform(options: any): void;
   useFrameUpdateUniforms(delta: number): void;
@@ -126,28 +127,36 @@ class CelestialBody implements CelestialBodyInt {
     return this.radius * 5;
   }
 
-  setShaderColors() {
+  clearBodyData() {
+    this.textureMapLayerOptions = [];
+  }
+
+  setShaderColors(layerIndex: number = 0) {
     let colors: any[] = [];
-    if (this.textureMapLayerOptions[0].colors) {
-      colors = this.textureMapLayerOptions[0].colors;
+    if (this.textureMapLayerOptions[layerIndex].colors) {
+      colors = this.textureMapLayerOptions[layerIndex].colors;
     } else {
       //const isSun = false;
       colors = [
-        parseHexColor(this.textureMapLayerOptions[0].baseColor || "#AAAAAA"),
-        parseHexColor(this.textureMapLayerOptions[0].secondColor || "#FFFFFF"),
+        parseHexColor(
+          this.textureMapLayerOptions[layerIndex].baseColor || "#AAAAAA"
+        ),
+        parseHexColor(
+          this.textureMapLayerOptions[layerIndex].secondColor || "#FFFFFF"
+        ),
       ];
       /*generateSortedRandomColors(
         isSun,
         this.textureMapLayerOptions[0].baseColor || "#102A44"
       );*/
+      this.textureMapLayerOptions[layerIndex].colors = colors;
     }
     const shaderColors = colors.map(
       (color) => new THREE.Vector3(color.r / 255, color.g / 255, color.b / 255)
     );
-    this.textureMapLayerOptions[0].shaderColors = shaderColors;
-    // TODO only use color1 and color2
-    this.textureMapLayerOptions[0].color1 = shaderColors[0];
-    this.textureMapLayerOptions[0].color2 = shaderColors[1];
+    //this.textureMapLayerOptions[layerIndex].shaderColors = shaderColors;
+    this.textureMapLayerOptions[layerIndex].color1 = shaderColors[0];
+    this.textureMapLayerOptions[layerIndex].color2 = shaderColors[1];
   }
 
   genTexture() {
@@ -235,17 +244,18 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   // for testing texture generating shader uniform settings
-  updateTextureOptions(
-    uiCurrentShaderLayer: number,
-    options: typeTextureMapOptions
+  updateTextureLayer(
+    layerIndex: number,
+    textureOptions: typeTextureMapOptions
   ) {
-    this.textureMapLayerOptions[uiCurrentShaderLayer] = {
-      ...this.textureMapLayerOptions[uiCurrentShaderLayer],
-      ...options, //options override this.textureMapLayerOptions[uiCurrentShaderLayer]
+    this.textureMapLayerOptions[layerIndex] = {
+      ...this.textureMapLayerOptions[layerIndex],
+      ...textureOptions, //options override this.textureMapLayerOptions[layerIndex]
     };
-    this.setShaderColors();
+    this.textureMapLayerOptions[layerIndex].layer = layerIndex;
+    this.setShaderColors(layerIndex);
     this.genTexture();
-    //for original planet material shader (inc. animated clouds)
+    //for Planet Object3D material shader (lighting / effects, TODO: animated clouds)
     this.updateUniforms();
   }
 
