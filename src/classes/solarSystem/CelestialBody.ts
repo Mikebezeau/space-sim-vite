@@ -141,7 +141,6 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   setShaderColors(layerIndex: number = 0) {
-    let colors: any[] = [];
     //const isSun = false;
     const color1 = parseHexColor(
       this.textureMapLayerOptions[layerIndex].baseColor || "#AAAAAA"
@@ -178,9 +177,15 @@ class CelestialBody implements CelestialBodyInt {
         this.cloudShaderUniforms
       );
     if (this.renderTargetGPU.texture) {
-      this.material.uniforms.u_texture = {
-        value: this.renderTargetGPU.texture,
-      };
+      // testing new material
+      if (Object.hasOwn(this.material, "map")) {
+        // @ts-ignore
+        this.material.map = this.renderTargetGPU.texture;
+      } else {
+        this.material.uniforms.u_texture = {
+          value: this.renderTargetGPU.texture,
+        };
+      }
     } else {
       console.error("no GPU texture generated");
     }
@@ -192,15 +197,7 @@ class CelestialBody implements CelestialBodyInt {
         { ...this.textureMapLayerOptions[0], isBumpMap: true }, // only first layer is bump map
       ]);
 
-    /*
-    if (this.renderBumpMapTargetGPU.texture) {
-      this.material.uniforms.u_texture = {
-        value: this.renderBumpMapTargetGPU.texture,
-      };
-    }
-    */
     // TODO will need to add atmosphere texture seperately
-    // TODO bump map is not going to work with this shader
     if (
       Object.hasOwn(this.material, "bumpMap") &&
       this.renderBumpMapTargetGPU.texture

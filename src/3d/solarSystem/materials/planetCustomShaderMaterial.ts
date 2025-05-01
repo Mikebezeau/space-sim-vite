@@ -5,8 +5,12 @@ import atmosGlowShader from "../shaders/atmosGlowShader";
 import CustomShaderMaterial from "three-custom-shader-material/vanilla";
 
 // TEST FOR BUMP MAP - not working
-const planetCustomShaderMaterial = new CustomShaderMaterial({
+const planetCustomShaderMaterial = new CustomShaderMaterial<
+  typeof THREE.ShaderMaterial
+>({
+  // @ts-ignore
   baseMaterial: THREE.MeshPhysicalMaterial,
+  bumpScale: 3,
   uniforms: {
     u_texture: {
       value: null,
@@ -43,14 +47,10 @@ ${fresnelShader.fragHead}
 ${atmosGlowShader.fragHead}
 
 void main() {
-  gl_FragColor = texture2D( u_texture, vUv );
-
-  ${rotatedNormalShader.fragMain}
-  ${fresnelShader.fragMain}
-  ${atmosGlowShader.fragMain}
-
   // CustomShaderMaterial uses csm_DiffuseColor instead of gl_FragColor
-  csm_DiffuseColor  = gl_FragColor;
+  ${rotatedNormalShader.fragMain.replaceAll("gl_FragColor", "csm_DiffuseColor")}
+  ${fresnelShader.fragMain.replaceAll("gl_FragColor", "csm_DiffuseColor")}
+  ${atmosGlowShader.fragMain.replaceAll("gl_FragColor", "csm_DiffuseColor")}
 }
 `,
 });

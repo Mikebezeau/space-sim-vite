@@ -357,7 +357,7 @@ const TestPlanetScene = () => {
         rotateSpeed={3}
         panSpeed={0.5}
       />
-      <pointLight intensity={10} decay={0} />
+      <pointLight intensity={1} decay={0} position={-100000} />
       <ambientLight intensity={0.4} />
       {testPlanetRef.current && <TestPlanet />}
     </>

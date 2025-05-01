@@ -9,6 +9,7 @@ import useHudTargtingStore from "./hudTargetingStore";
 import starPointsShaderMaterial from "../galaxy/materials/starPointsShaderMaterial";
 import sunShaderMaterial from "../3d/solarSystem/materials/sunShaderMaterial";
 import planetShaderMaterial from "../3d/solarSystem/materials/planetShaderMaterial";
+import planetCustomShaderMaterial from "../3d/solarSystem/materials/planetCustomShaderMaterial";
 // classes
 import cityTerrianGen from "../terrainGen/terrainGenHelper"; // NOTE: old, make class
 import SolarSystem from "../classes/solarSystem/SolarSystem";
@@ -247,7 +248,8 @@ const useStore = create<storeState>()((set, get) => ({
 
   starPointsShaderMaterial: getInitStarPointsShaderMaterial(), //loads sprites
   sunShaderMaterial: sunShaderMaterial,
-  planetShaderMaterial: planetShaderMaterial,
+  // @ts-ignore - CSM ts error
+  planetShaderMaterial: planetCustomShaderMaterial, // planetShaderMaterial,
   clonePlanetShaderMaterial: () => {
     return get().planetShaderMaterial.clone();
   },

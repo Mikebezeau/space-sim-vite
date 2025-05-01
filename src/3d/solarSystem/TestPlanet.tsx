@@ -14,8 +14,7 @@ const TestPlanet = () => {
       //testPlanet.useFrameUpdateUniforms(delta * 10);
     }
   });
-  //console.log("vertexShader", testPlanet?.material.vertexShader);
-  //console.log("fragmentShader", testPlanet?.material.fragmentShader);
+
   return (
     <>
       {testPlanet && (
@@ -31,27 +30,8 @@ const TestPlanet = () => {
           <sphereGeometry args={[testPlanet.radius, 128, 128]} />
         </mesh>
       )}
-      {/*
-      <mesh
-        geometry={new THREE.SphereGeometry(1, 128, 128)}
-        material={new THREE.MeshBasicMaterial({ color: "red" })}
-      />*/}
     </>
   );
 };
 
 export default TestPlanet;
-
-/*
-        <mesh
-          ref={(ref) => {
-            if (ref !== null) {
-              planetRef.current = ref;
-              testPlanet.initObject3d(ref);
-            }
-          }}
-          material={testPlanet.material}
-        >
-          <sphereGeometry args={[testPlanet.radius, 64, 64]} />
-        </mesh>
-*/
