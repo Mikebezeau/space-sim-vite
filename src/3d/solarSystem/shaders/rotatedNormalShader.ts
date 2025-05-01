@@ -15,7 +15,7 @@ vRotateNormal = normal;
 uniform mat4 u_objectMatrixWorld; // object3d.matrixWorld
 varying vec3 vRotateNormal;
 
-const float PI = 3.14159265359;
+//const float PI = 3.14159265359;
 
 mat3 extractRotationMatrix( mat4 mat ) {
     return mat3( mat[0].xyz, mat[1].xyz, mat[2].xyz );

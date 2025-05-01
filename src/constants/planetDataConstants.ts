@@ -243,7 +243,8 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
 };
 
 export type typeTextureMapOptions = {
-  layer?: number; // for multiple texture layers
+  isLayerActive?: boolean; // for multiple texture layers
+  isBumpMap?: boolean; // lighting bump map
   layerOpacity?: number; // for multiple texture layers
   rangeStart?: number; // normalized range of layer visibility
   rangeEnd?: number; // normalized range of layer visibility
@@ -265,9 +266,6 @@ export type typeTextureMapOptions = {
   baseColor?: string;
   secondColor?: string;
 
-  colors?: { r: number; g: number; b: number }[];
-
-  //shaderColors?: Vector3[];
   color1?: Vector3;
   color2?: Vector3;
 
@@ -287,6 +285,7 @@ export type typeCloudShaderUniforms = {
   u_rotateX?: number;
 };
 
+// TODO make consts store arrays of layers
 export const PLANET_CLASS_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
   {
     [PLANET_CLASS.terrestrial]: {
@@ -365,37 +364,10 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       scale: 1, // Adjust for finer detail
       octaves: 10,
       amplitude: 1.0,
-      persistence: 0.8,
-      lacunarity: 1.3,
-      colors: [
-        // only using 2 colors for now
-        { r: 0, g: 25, b: 51 },
-        { r: 99, g: 110, b: 19 },
-        /*
-        // Water colors (dark to light)
-        { r: 0, g: 25, b: 51 }, // Deep ocean
-        { r: 0, g: 38, b: 76 }, // Dark blue ocean
-        { r: 0, g: 51, b: 102 }, // Ocean blue
-        { r: 0, g: 64, b: 128 }, // Lighter ocean
-        { r: 0, g: 77, b: 153 }, // Medium blue
-        { r: 0, g: 102, b: 179 }, // Light blue ocean
-        { r: 51, g: 153, b: 204 }, // Tropical water
-        { r: 102, g: 178, b: 229 }, // Shallow water
-        { r: 153, g: 204, b: 255 }, // Near-shore water
-
-        // Elevation colors (low to high)
-        { r: 34, g: 139, b: 34 }, // Coastal green (low elevations)
-        { r: 85, g: 170, b: 85 }, // Lowlands green
-        { r: 139, g: 195, b: 74 }, // Grasslands
-        { r: 222, g: 184, b: 135 }, // Light brown (hills)
-        { r: 205, g: 133, b: 63 }, // Brown (higher terrain)
-        { r: 139, g: 69, b: 19 }, // Dark brown (mountains)
-        { r: 169, g: 169, b: 169 }, // Gray (rocky peaks)
-        { r: 192, g: 192, b: 192 }, // Light gray (higher peaks)
-        { r: 240, g: 248, b: 255 }, // Icy blue white
-        { r: 255, g: 255, b: 255 }, // Snowy white (highest peaks)
-         */
-      ],
+      persistence: 0.5,
+      lacunarity: 2.5,
+      baseColor: "#001933",
+      secondColor: "#636e13",
       isClouds: false, //true, // TODO fix clouds
       /*
       cloudsUniforms: {
@@ -479,85 +451,3 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       craterIntensity: PLANET_TYPE_DATA[PLANET_TYPE.dwarf].craterIntensity || 0,
     },
   };
-
-export const martianDetailLayer1: typeTextureMapOptions = {
-  //layer: 1,
-  layerOpacity: 0.5,
-  rangeStart: 0.3,
-  rangeEnd: 1.0,
-  scale: 1,
-  octaves: 9,
-  amplitude: 3.3,
-  persistence: 0.8,
-  lacunarity: 1.7,
-  isDoubleNoise: false,
-  isWarp: false,
-  baseColor: "#ffffff", //starData.colorHex,
-  secondColor: "#afafaf",
-  craterIntensity: 0,
-};
-export const martianDetailLayer2 = {
-  //layer: 2,
-  layerOpacity: 0.5,
-  rangeStart: 0.5,
-  rangeEnd: 1.0,
-  scale: 3,
-  octaves: 9,
-  amplitude: 3.3,
-  persistence: 0.8,
-  lacunarity: 1.7,
-  isDoubleNoise: false,
-  isWarp: true,
-  baseColor: "#ffffff", //starData.colorHex,
-  secondColor: "#afafaf",
-  craterIntensity: 0,
-};
-
-export const cloudDetailLayer1: typeTextureMapOptions = {
-  //layer: 1,
-  layerOpacity: 0.9,
-  rangeStart: 0.3,
-  rangeEnd: 1.0,
-  scale: 1,
-  octaves: 9,
-  amplitude: 3.3,
-  persistence: 0.8,
-  lacunarity: 1.7,
-  isDoubleNoise: false,
-  isWarp: true,
-  baseColor: "#ffffff", //starData.colorHex,
-  secondColor: "#afafaf",
-  craterIntensity: 0,
-};
-
-export const riversDetailLayer1: typeTextureMapOptions = {
-  //layer: 1,
-  layerOpacity: 0.9,
-  rangeStart: 0.0,
-  rangeEnd: 1.0,
-  scale: 4,
-  octaves: 9,
-  amplitude: 2.3,
-  persistence: 0.7,
-  lacunarity: 1.9,
-  isDoubleNoise: false,
-  isWarp: true,
-  baseColor: "#111336", //starData.colorHex,
-  secondColor: "#111336",
-};
-
-// TODO make other consts above store arrays of layers
-export const PLANET_TYPE_TEXTURE_LAYERS: {
-  [id: number]: typeTextureMapOptions[];
-} = {
-  [PLANET_TYPE.mterran]: [martianDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.sterran]: [martianDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.terran]: [martianDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.earthLike]: [riversDetailLayer1, cloudDetailLayer1],
-  [PLANET_TYPE.suTerran]: [martianDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.venusian]: [cloudDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.neptunian]: [martianDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.jovian]: [martianDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.hotJovian]: [martianDetailLayer1, martianDetailLayer2],
-  [PLANET_TYPE.dwarf]: [martianDetailLayer1, martianDetailLayer2],
-};

@@ -11,12 +11,11 @@ const TestPlanet = () => {
 
   useFrame((_, delta) => {
     if (testPlanet) {
-      testPlanet.useFrameUpdateUniforms(delta * 10);
+      //testPlanet.useFrameUpdateUniforms(delta * 10);
     }
   });
-
-  console.log("Planet render", testPlanet);
-
+  //console.log("vertexShader", testPlanet?.material.vertexShader);
+  //console.log("fragmentShader", testPlanet?.material.fragmentShader);
   return (
     <>
       {testPlanet && (
@@ -32,10 +31,11 @@ const TestPlanet = () => {
           <sphereGeometry args={[testPlanet.radius, 128, 128]} />
         </mesh>
       )}
+      {/*
       <mesh
         geometry={new THREE.SphereGeometry(1, 128, 128)}
         material={new THREE.MeshBasicMaterial({ color: "red" })}
-      />
+      />*/}
     </>
   );
 };

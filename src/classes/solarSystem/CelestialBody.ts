@@ -12,7 +12,7 @@ import { genCraterTexture } from "../../util/genCraterTexture";
 import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
-} from "../../constants/solarSystemConstants";
+} from "../../constants/planetDataConstants";
 
 interface CelestialBodyInt {
   initObject3d(object3d: THREE.Object3D): void;
@@ -53,6 +53,7 @@ class CelestialBody implements CelestialBodyInt {
   textureMapLayerOptions: typeTextureMapOptions[];
   cloudShaderUniforms: typeCloudShaderUniforms;
   renderTargetGPU: any;
+  renderBumpMapTargetGPU: any;
   uTimeTracker: number;
 
   constructor(isUseAtmosShader?: boolean) {
@@ -72,6 +73,14 @@ class CelestialBody implements CelestialBodyInt {
     const gpuCompute = useGenFboTextureStore.getState().gpuCompute;
     if (gpuCompute) {
       this.renderTargetGPU = gpuCompute.createRenderTarget(
+        WIDTH,
+        HEIGHT,
+        THREE.ClampToEdgeWrapping,
+        THREE.ClampToEdgeWrapping,
+        THREE.NearestFilter,
+        THREE.NearestFilter
+      );
+      this.renderBumpMapTargetGPU = gpuCompute.createRenderTarget(
         WIDTH,
         HEIGHT,
         THREE.ClampToEdgeWrapping,
@@ -133,30 +142,29 @@ class CelestialBody implements CelestialBodyInt {
 
   setShaderColors(layerIndex: number = 0) {
     let colors: any[] = [];
-    if (this.textureMapLayerOptions[layerIndex].colors) {
-      colors = this.textureMapLayerOptions[layerIndex].colors;
-    } else {
-      //const isSun = false;
-      colors = [
-        parseHexColor(
-          this.textureMapLayerOptions[layerIndex].baseColor || "#AAAAAA"
-        ),
-        parseHexColor(
-          this.textureMapLayerOptions[layerIndex].secondColor || "#FFFFFF"
-        ),
-      ];
-      /*generateSortedRandomColors(
+    //const isSun = false;
+    const color1 = parseHexColor(
+      this.textureMapLayerOptions[layerIndex].baseColor || "#AAAAAA"
+    );
+    const color2 = parseHexColor(
+      this.textureMapLayerOptions[layerIndex].secondColor || "#FFFFFF"
+    );
+    /*generateSortedRandomColors(
         isSun,
         this.textureMapLayerOptions[0].baseColor || "#102A44"
       );*/
-      this.textureMapLayerOptions[layerIndex].colors = colors;
-    }
-    const shaderColors = colors.map(
-      (color) => new THREE.Vector3(color.r / 255, color.g / 255, color.b / 255)
+
+    // shader color rgb range from 0 to 1
+    this.textureMapLayerOptions[layerIndex].color1 = new THREE.Vector3(
+      color1.r / 255,
+      color1.g / 255,
+      color1.b / 255
     );
-    //this.textureMapLayerOptions[layerIndex].shaderColors = shaderColors;
-    this.textureMapLayerOptions[layerIndex].color1 = shaderColors[0];
-    this.textureMapLayerOptions[layerIndex].color2 = shaderColors[1];
+    this.textureMapLayerOptions[layerIndex].color2 = new THREE.Vector3(
+      color2.r / 255,
+      color2.g / 255,
+      color2.b / 255
+    );
   }
 
   genTexture() {
@@ -169,7 +177,6 @@ class CelestialBody implements CelestialBodyInt {
         this.textureMapLayerOptions,
         this.cloudShaderUniforms
       );
-
     if (this.renderTargetGPU.texture) {
       this.material.uniforms.u_texture = {
         value: this.renderTargetGPU.texture,
@@ -177,6 +184,33 @@ class CelestialBody implements CelestialBodyInt {
     } else {
       console.error("no GPU texture generated");
     }
+
+    // generate bump map texture
+    useGenFboTextureStore
+      .getState()
+      .generateTextureGPU(this.renderBumpMapTargetGPU, [
+        { ...this.textureMapLayerOptions[0], isBumpMap: true }, // only first layer is bump map
+      ]);
+
+    /*
+    if (this.renderBumpMapTargetGPU.texture) {
+      this.material.uniforms.u_texture = {
+        value: this.renderBumpMapTargetGPU.texture,
+      };
+    }
+    */
+    // TODO will need to add atmosphere texture seperately
+    // TODO bump map is not going to work with this shader
+    if (
+      Object.hasOwn(this.material, "bumpMap") &&
+      this.renderBumpMapTargetGPU.texture
+    ) {
+      // @ts-ignore
+      this.material.bumpMap = this.renderBumpMapTargetGPU.texture;
+      // @ts-ignore
+      this.material.bumpScale = 10;
+    }
+
     /*
     // craters
     if (this.textureMapLayerOptions[0].craterIntensity) {
@@ -252,7 +286,7 @@ class CelestialBody implements CelestialBodyInt {
       ...this.textureMapLayerOptions[layerIndex],
       ...textureOptions, //options override this.textureMapLayerOptions[layerIndex]
     };
-    this.textureMapLayerOptions[layerIndex].layer = layerIndex;
+    this.textureMapLayerOptions[layerIndex].isLayerActive = true;
     this.setShaderColors(layerIndex);
     this.genTexture();
     //for Planet Object3D material shader (lighting / effects, TODO: animated clouds)

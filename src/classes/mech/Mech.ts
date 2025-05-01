@@ -638,9 +638,11 @@ class Mech implements mechInt {
     targetQuaternoin?: THREE.Quaternion | null,
     enemyWeaponFireTargetVec3?: THREE.Vector3
   ) {
+    /*
     if (this.isPlayer) {
       this.fireMissile();
     }
+    */
 
     if (this.mechBP?.weaponList) {
       // TODO add these to the class instead of const above

@@ -19,7 +19,7 @@ import PlayerMech from "../classes/mech/PlayerMech";
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 // constants
 import { PLAYER_START } from "../constants/constants";
-import { PLANET_TYPE } from "../constants/solarSystemConstants";
+import { PLANET_TYPE } from "../constants/planetDataConstants";
 // images
 // @ts-ignore
 import starSpriteSrc from "../sprites/sprite120.png";

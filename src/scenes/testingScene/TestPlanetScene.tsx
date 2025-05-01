@@ -7,14 +7,14 @@ import useDevStore from "../../stores/devStore";
 import TestPlanet from "../../3d/solarSystem/TestPlanet";
 import StarClass from "../../classes/solarSystem/Star";
 import PlanetClass from "../../classes/solarSystem/Planet";
-import { PLANET_TYPE_DATA } from "../../constants/solarSystemConstants";
+import { PLANET_TYPE_DATA } from "../../constants/planetDataConstants";
 
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 import {
   //PLANET_TYPE_DATA,
   typeTextureMapOptions,
-} from "../../constants/solarSystemConstants";
+} from "../../constants/planetDataConstants";
 
 const TestPlanetScene = () => {
   useStore.getState().updateRenderInfo("TestPlanetScene");
@@ -49,6 +49,7 @@ const TestPlanetScene = () => {
   };
 
   const effectControllerOptions: typeTextureMapOptions = {
+    isLayerActive: false,
     layerOpacity: 1.0,
     rangeStart: 0.0,
     rangeEnd: 1.0,
@@ -97,6 +98,10 @@ const TestPlanetScene = () => {
           : "sun";
       // set controller options from planet texture map options
       effectControllerLayerOptions.layer = uiCurrentShaderLayer;
+
+      effectControllerOptions.isLayerActive =
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .isLayerActive || false;
 
       effectControllerOptions.layerOpacity =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
@@ -184,8 +189,8 @@ const TestPlanetScene = () => {
     //const distance = r / Math.sin(THREE.MathUtils.degToRad(fov / 2))
     //camera.position.set(0, 0, -distance);
     camera.position.set(0, 0, -testPlanetRef.current.radius * 3 + 400);
-    console.log("resetCameraPosition", camera.position.z);
-    console.log("getTestPlanet z", -testPlanetRef.current.radius * 3 + 400);
+    //console.log("resetCameraPosition", camera.position.z);
+    //console.log("getTestPlanet z", -testPlanetRef.current.radius * 3 + 400);
   };
 
   useEffect(() => {
@@ -213,15 +218,23 @@ const TestPlanetScene = () => {
 
     // LAYER
     guiRef.current
-      .add(effectControllerLayerOptions, "layer", [0, 1, 2])
+      .add(
+        effectControllerLayerOptions,
+        "layer",
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+      )
       .name("Layer")
       .onChange((layerSelectValue) => {
         uiCurrentShaderLayer = layerSelectValue;
-        // TODO impliment layer select
+
         setGuiData();
       });
 
     folderLayer1ref.current = guiRef.current.addFolder("Layer 1");
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "isLayerActive")
+      .onChange(valuesChanger);
 
     folderLayer1ref.current
       .add(effectControllerOptions, "layerOpacity", 0.0, 1.0, 0.1)
@@ -344,7 +357,7 @@ const TestPlanetScene = () => {
         rotateSpeed={3}
         panSpeed={0.5}
       />
-      <pointLight intensity={1} decay={0} />
+      <pointLight intensity={10} decay={0} />
       <ambientLight intensity={0.4} />
       {testPlanetRef.current && <TestPlanet />}
     </>

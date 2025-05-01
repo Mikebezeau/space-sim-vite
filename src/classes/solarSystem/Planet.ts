@@ -11,8 +11,8 @@ import {
   typeTextureMapOptions,
   PLANET_CLASS_TEXTURE_MAP,
   PLANET_TYPE_TEXTURE_MAP,
-  PLANET_TYPE_TEXTURE_LAYERS,
-} from "../../constants/solarSystemConstants";
+} from "../../constants/planetDataConstants";
+import { PLANET_TYPE_TEXTURE_LAYERS } from "../../constants/planetTextureConstants";
 import {
   AU,
   EARTH_RADIUS_KM,
@@ -74,8 +74,6 @@ class Planet extends CelestialBody implements PlanetInt {
         this.updateTextureLayer(index + 1, layer);
       }
     );
-    console.log(PLANET_TYPE_TEXTURE_LAYERS[this.data.planetType], this.data);
-    console.log("planet class layers", this.textureMapLayerOptions);
     // can add more layers by other planet details
     //this.updateTextureLayer(1, martianDetailLayer1);
 
@@ -97,9 +95,18 @@ class Planet extends CelestialBody implements PlanetInt {
         ...typeOptions, //type options override class options
       };
     }
+    // isLayerActive
+    textureOptions.isLayerActive = true;
     // set scale by planet size
     textureOptions.scale = textureOptions.scale || 1; // * this.earthRadii;
     this.textureMapLayerOptions[0] = textureOptions;
+    // textureMapLayerOptions layer 0 is the base layer
+    // maximum 10 layers
+    for (let i = 1; i < 10; i++) {
+      this.textureMapLayerOptions[i] = {
+        isLayerActive: false,
+      };
+    }
     this.setShaderColors();
   }
 }

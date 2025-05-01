@@ -4,7 +4,7 @@ import { typeObitalZonesData } from "./genObitalZonesData";
 import {
   PLANET_ZONES,
   PLANET_TYPE_DATA,
-} from "../constants/solarSystemConstants";
+} from "../constants/planetDataConstants";
 
 export type typePlanetData = {
   planetClass: number;

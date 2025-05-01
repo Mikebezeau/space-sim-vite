@@ -9,7 +9,7 @@ import StarsBackgroundScene from "./spaceFlightSceneLayers/StarsBackgroundScene"
 import SolarSystem from "../3d/solarSystem/SolarSystem";
 import Stations from "../3d/mechs/Stations";
 import { COMPONENT_RENDER_ORDER, PLAYER } from "../constants/constants";
-import { PLANET_TYPE } from "../constants/solarSystemConstants";
+import { PLANET_TYPE } from "../constants/planetDataConstants";
 
 const NewCampaignScene = () => {
   useStore.getState().updateRenderInfo("NewCampaignScene");
