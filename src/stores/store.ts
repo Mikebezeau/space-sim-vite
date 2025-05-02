@@ -19,7 +19,7 @@ import Planet from "../classes/solarSystem/Planet";
 import PlayerMech from "../classes/mech/PlayerMech";
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 // constants
-import { PLAYER_START } from "../constants/constants";
+import { IS_MOBILE, PLAYER_START } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/planetDataConstants";
 // images
 // @ts-ignore
@@ -249,7 +249,7 @@ const useStore = create<storeState>()((set, get) => ({
   starPointsShaderMaterial: getInitStarPointsShaderMaterial(), //loads sprites
   sunShaderMaterial: sunShaderMaterial,
   // @ts-ignore - CSM ts error
-  planetShaderMaterial: planetCustomShaderMaterial, // planetShaderMaterial,
+  planetShaderMaterial: planetCustomShaderMaterial, // IS_MOBILE ? planetShaderMaterial : planetCustomShaderMaterial,
   clonePlanetShaderMaterial: () => {
     return get().planetShaderMaterial.clone();
   },

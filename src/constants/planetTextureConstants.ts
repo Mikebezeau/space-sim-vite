@@ -35,7 +35,7 @@ const cloudDetailLayer1: typeTextureMapOptions = {
   layerOpacity: 0.9,
   rangeStart: 0.0,
   rangeEnd: 1.0,
-  scale: 1,
+  scale: 1.3,
   octaves: 6,
   amplitude: 0.5,
   persistence: 0.5,
@@ -50,7 +50,7 @@ const cloudDetailLayer2: typeTextureMapOptions = {
   layerOpacity: 0.9,
   rangeStart: 0.0,
   rangeEnd: 1.0,
-  scale: 3,
+  scale: 1.7,
   octaves: 6,
   amplitude: 0.5,
   persistence: 0.5,
@@ -66,7 +66,7 @@ const cloudDetailLayer3: typeTextureMapOptions = {
   layerOpacity: 0.9,
   rangeStart: 0.0,
   rangeEnd: 1.0,
-  scale: 5,
+  scale: 2,
   octaves: 6,
   amplitude: 0.5,
   persistence: 0.5,
@@ -89,8 +89,23 @@ const riversDetailLayer1: typeTextureMapOptions = {
   lacunarity: 1.9,
   isDoubleNoise: false,
   isWarp: true,
-  baseColor: "#001933", //starData.colorHex,
+  baseColor: "#001933",
   secondColor: "#001933",
+};
+
+const mountainDetailLayer1: typeTextureMapOptions = {
+  layerOpacity: 0.8,
+  rangeStart: 0.3,
+  rangeEnd: 1.0,
+  scale: 1,
+  octaves: 6,
+  amplitude: 0.5,
+  persistence: 0.8,
+  lacunarity: 2.5,
+  isDoubleNoise: false,
+  isWarp: false,
+  baseColor: "#808080",
+  secondColor: "#142608",
 };
 
 export const PLANET_TYPE_TEXTURE_LAYERS: {
@@ -101,6 +116,7 @@ export const PLANET_TYPE_TEXTURE_LAYERS: {
   [PLANET_TYPE.terran]: [martianDetailLayer1, martianDetailLayer2],
   [PLANET_TYPE.earthLike]: [
     riversDetailLayer1,
+    mountainDetailLayer1,
     cloudDetailLayer1,
     cloudDetailLayer2,
     cloudDetailLayer3,

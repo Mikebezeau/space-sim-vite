@@ -249,7 +249,7 @@ const TestPlanetScene = () => {
       .onChange(valuesChanger);
 
     folderLayer1ref.current
-      .add(effectControllerOptions, "scale", 1.0, 15.0, 1.0)
+      .add(effectControllerOptions, "scale", 0.1, 5.0, 0.1)
       .onChange(valuesChanger);
 
     folderLayer1ref.current
@@ -273,11 +273,11 @@ const TestPlanetScene = () => {
       .onChange(valuesChanger);
 
     folderLayer1ref.current
-      .add(effectControllerOptions, "stretchX", 1.0, 5.0, 1.0)
+      .add(effectControllerOptions, "stretchX", 0.1, 5.0, 0.1)
       .onChange(valuesChanger);
 
     folderLayer1ref.current
-      .add(effectControllerOptions, "stretchY", 1.0, 5.0, 1.0)
+      .add(effectControllerOptions, "stretchY", 0.1, 5.0, 0.1)
       .onChange(valuesChanger);
 
     folderLayer1ref.current

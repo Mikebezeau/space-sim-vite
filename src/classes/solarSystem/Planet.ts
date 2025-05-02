@@ -55,7 +55,7 @@ class Planet extends CelestialBody implements PlanetInt {
     this.earthMasses = getFromRange(fixedRangeRandom, planetType.mass);
     this.radius = this.earthRadii * EARTH_RADIUS_KM * PLANET_SCALE;
 
-    // position in prbit
+    // position in orbit
     const orbitRadius = distanceFromStar * AU * SYSTEM_SCALE;
     const angle = Math.random() * 2 * Math.PI;
     const x = Math.cos(angle) * orbitRadius;
@@ -68,19 +68,16 @@ class Planet extends CelestialBody implements PlanetInt {
 
     // set texture options for genTexture
     this.setDefaultGpuTextureOptions();
-    // default layers by planet class
+    // additional default layers (layer index > 0) by planet class
     PLANET_TYPE_TEXTURE_LAYERS[this.data.planetType].forEach(
       (layer: typeTextureMapOptions, index: number) => {
-        this.updateTextureLayer(index + 1, layer);
+        // set default layer isLayerActive = true for all layers
+        layer.isLayerActive = true; // set active
+        this.setTextureLayer(index + 1, layer);
       }
     );
-    // can add more layers by other planet details
-    //this.updateTextureLayer(1, martianDetailLayer1);
-
     // generate terrian texture map
     this.genTexture();
-    // update texture uniforms of shader material
-    this.updateUniforms();
   }
 
   setDefaultGpuTextureOptions() {

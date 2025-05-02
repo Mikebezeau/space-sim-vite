@@ -13,6 +13,7 @@ import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
 } from "../../constants/planetDataConstants";
+import { IS_MOBILE } from "../../constants/constants";
 
 interface CelestialBodyInt {
   initObject3d(object3d: THREE.Object3D): void;
@@ -28,6 +29,10 @@ interface CelestialBodyInt {
   disposeTextures(): void;
   disposeResources(): void;
   updateUniforms(): void;
+  setTextureLayer(
+    layerIndex: number,
+    textureOptions: typeTextureMapOptions
+  ): void;
   updateTextureLayer(
     layerIndex: number,
     textureOptions: typeTextureMapOptions
@@ -79,16 +84,19 @@ class CelestialBody implements CelestialBodyInt {
         HEIGHT,
         THREE.ClampToEdgeWrapping,
         THREE.ClampToEdgeWrapping,
-        THREE.NearestFilter,
-        THREE.LinearFilter //THREE.NearestFilter
+        THREE.NearestFilter, //THREE.LinearMipMapLinearFilter
+        IS_MOBILE ? THREE.NearestFilter : THREE.LinearFilter
       );
+      //this.renderTargetGPU.generateMipmaps = true;
+      //this.renderTargetGPU.needsUpdate = true;
+
       this.renderBumpMapTargetGPU = gpuCompute.createRenderTarget(
         WIDTH,
         HEIGHT,
         THREE.ClampToEdgeWrapping,
         THREE.ClampToEdgeWrapping,
         THREE.NearestFilter,
-        THREE.LinearFilter //THREE.NearestFilter
+        IS_MOBILE ? THREE.NearestFilter : THREE.LinearFilter
       );
     } else {
       console.error("must init gpu renderer first");
@@ -169,6 +177,8 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   genTexture() {
+    //for Planet Object3D material shader (lighting / effects)
+    this.updateUniforms();
     // useGenFboTextureStore.initComputeRenderer must be called before this
     //this.disposeTextures();
     useGenFboTextureStore
@@ -179,11 +189,22 @@ class CelestialBody implements CelestialBodyInt {
         this.cloudShaderUniforms
       );
     if (this.renderTargetGPU.texture) {
-      // testing new material
+      /*
+      var maxAnisotropy = renderer.getMaxAnisotropy();
+      texture1.anisotropy = maxAnisotropy;
+      texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
+      texture1.repeat.set( 512, 512 );
+      */
+      /*
+      this.renderTargetGPU.texture.generateMipmaps = true;
+      this.renderTargetGPU.texture.needsUpdate = true;
+      */
       if (Object.hasOwn(this.material, "map")) {
+        // for custom shader material
         // @ts-ignore
         this.material.map = this.renderTargetGPU.texture;
       } else {
+        // for regular shader material
         this.material.uniforms.u_texture = {
           value: this.renderTargetGPU.texture,
         };
@@ -192,22 +213,20 @@ class CelestialBody implements CelestialBodyInt {
       console.error("no GPU texture generated");
     }
 
-    // generate bump map texture
-    useGenFboTextureStore
-      .getState()
-      .generateTextureGPU(this.renderBumpMapTargetGPU, [
-        { ...this.textureMapLayerOptions[0], isBumpMap: true }, // only first layer is bump map
-      ]);
-
     // TODO will need to add atmosphere texture seperately
-    if (
-      Object.hasOwn(this.material, "bumpMap") &&
-      this.renderBumpMapTargetGPU.texture
-    ) {
-      // @ts-ignore
-      this.material.bumpMap = this.renderBumpMapTargetGPU.texture;
-      // @ts-ignore
-      this.material.bumpScale = 10;
+    if (Object.hasOwn(this.material, "bumpMap")) {
+      // generate bump map texture
+      useGenFboTextureStore
+        .getState()
+        .generateTextureGPU(this.renderBumpMapTargetGPU, [
+          { ...this.textureMapLayerOptions[0], isBumpMap: true }, // only first layer is bump map
+        ]);
+      if (this.renderBumpMapTargetGPU.texture) {
+        // @ts-ignore
+        this.material.bumpMap = this.renderBumpMapTargetGPU.texture;
+        // @ts-ignore
+        this.material.bumpScale = 5;
+      }
     }
 
     /*
@@ -235,7 +254,12 @@ class CelestialBody implements CelestialBodyInt {
 
   disposeTextures() {
     console.log("dispose planet textures");
-    // dispose of crater textures in material uniforms (these aren't reused)
+    if (Object.hasOwn(this.material, "map")) {
+      // @ts-ignore
+      this.material.map.dispose();
+      // @ts-ignore
+      this.material.bumpMap.dispose();
+    }
     if (this.material.uniforms.u_texture?.value?.dispose) {
       this.material.uniforms.u_texture.value.dispose();
     }
@@ -276,20 +300,22 @@ class CelestialBody implements CelestialBodyInt {
     };
   }
 
+  // set texture options
+  setTextureLayer(layerIndex: number, textureOptions: typeTextureMapOptions) {
+    this.textureMapLayerOptions[layerIndex] = {
+      ...this.textureMapLayerOptions[layerIndex],
+      ...textureOptions, //options override this.textureMapLayerOptions[layerIndex]
+    };
+    this.setShaderColors(layerIndex);
+  }
+
   // for testing texture generating shader uniform settings
   updateTextureLayer(
     layerIndex: number,
     textureOptions: typeTextureMapOptions
   ) {
-    this.textureMapLayerOptions[layerIndex] = {
-      ...this.textureMapLayerOptions[layerIndex],
-      ...textureOptions, //options override this.textureMapLayerOptions[layerIndex]
-    };
-    this.textureMapLayerOptions[layerIndex].isLayerActive = true;
-    this.setShaderColors(layerIndex);
+    this.setTextureLayer(layerIndex, textureOptions);
     this.genTexture();
-    //for Planet Object3D material shader (lighting / effects, TODO: animated clouds)
-    this.updateUniforms();
   }
 
   // for testing clouds texture generating shader uniform settings

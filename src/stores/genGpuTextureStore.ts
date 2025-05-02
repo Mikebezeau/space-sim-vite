@@ -124,16 +124,17 @@ void main() {
     }
 
     // Assign a color based on the noise value
-    vec3 color = mix( u_color1[ layerIndex ], u_color2[ layerIndex ], rangeNoise );
+    vec3 color = vec3( 0.0, 0.0, 0.0 );
+    if( u_isBumpMap[ 0 ] == 1) {
+      color = vec3( rangeNoise );//grey scale
+    } else {
+      color = mix( u_color1[ layerIndex ], u_color2[ layerIndex ], rangeNoise );
+    }
 
     if( layerIndex == 0 ){
-      if( u_isBumpMap[ 0 ] == 1) {
-        gl_FragColor = vec4( vec3( noise ), 1.0 );//grey scale
-      } else {
-        gl_FragColor = vec4( color, 1.0 );
-      }
+      gl_FragColor = vec4( color, 1.0 );
     }
-    else if ( u_isBumpMap[ 0 ] == 0 && u_isLayerActive[ layerIndex ] == 1 ){
+    else if (u_isLayerActive[ layerIndex ] == 1 ){
       vec3 prevLayerColor = gl_FragColor.rgb;
       //gl_FragColor = vec4( mix( prevLayerColor, color, u_opacity[ layerIndex ] ), 1.0 );
       
@@ -141,7 +142,7 @@ void main() {
       float layerStart = u_rangeStart[ layerIndex ];
       float layerEnd = u_rangeEnd[ layerIndex ];
       float layerValue = noise;
-      float edgeThickness = 0.5; // Adjust this value to control the thickness of the edge
+      float edgeThickness = 0.3; // Adjust this value to control the thickness of the edge
       // Calculate the opacity based on the layer range and noise value
       float opacity = smoothstep(layerStart, layerStart + edgeThickness, layerValue) * 
                 (1.0 - smoothstep(layerEnd - edgeThickness, layerEnd, layerValue));
@@ -517,11 +518,11 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
         : 1;
 
       uniforms.u_persistence.value[index] = textureMapOptions.persistence
-        ? textureMapOptions.persistence.toFixed(3)
+        ? textureMapOptions.persistence.toFixed(2)
         : 1;
 
       uniforms.u_lacunarity.value[index] = textureMapOptions.lacunarity
-        ? textureMapOptions.lacunarity.toFixed(3)
+        ? textureMapOptions.lacunarity.toFixed(2)
         : 1;
 
       // undefined or boolean
