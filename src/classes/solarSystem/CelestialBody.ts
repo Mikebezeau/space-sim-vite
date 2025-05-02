@@ -72,13 +72,15 @@ class CelestialBody implements CelestialBodyInt {
     };
     const gpuCompute = useGenFboTextureStore.getState().gpuCompute;
     if (gpuCompute) {
+      // magFilter : THREE.LinearFilter -  Bilinear interpolation, resulting in smoother,
+      // but potentially blurry, results
       this.renderTargetGPU = gpuCompute.createRenderTarget(
         WIDTH,
         HEIGHT,
         THREE.ClampToEdgeWrapping,
         THREE.ClampToEdgeWrapping,
         THREE.NearestFilter,
-        THREE.NearestFilter
+        THREE.LinearFilter //THREE.NearestFilter
       );
       this.renderBumpMapTargetGPU = gpuCompute.createRenderTarget(
         WIDTH,
@@ -86,7 +88,7 @@ class CelestialBody implements CelestialBodyInt {
         THREE.ClampToEdgeWrapping,
         THREE.ClampToEdgeWrapping,
         THREE.NearestFilter,
-        THREE.NearestFilter
+        THREE.LinearFilter //THREE.NearestFilter
       );
     } else {
       console.error("must init gpu renderer first");

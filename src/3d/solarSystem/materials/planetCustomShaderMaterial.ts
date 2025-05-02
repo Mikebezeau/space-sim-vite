@@ -4,7 +4,7 @@ import fresnelShader from "../shaders/fresnelShader";
 import atmosGlowShader from "../shaders/atmosGlowShader";
 import CustomShaderMaterial from "three-custom-shader-material/vanilla";
 
-// TEST FOR BUMP MAP - not working
+// CustomShaderMaterial used for planets - bumpMap
 const planetCustomShaderMaterial = new CustomShaderMaterial<
   typeof THREE.ShaderMaterial
 >({
@@ -12,12 +12,15 @@ const planetCustomShaderMaterial = new CustomShaderMaterial<
   baseMaterial: THREE.MeshPhysicalMaterial,
   bumpScale: 3,
   uniforms: {
+    /*
+    // using material.map to set texture
     u_texture: {
       value: null,
     },
     u_craterTexture: {
       value: null,
     },
+    */
     ...rotatedNormalShader.uniforms,
     ...atmosGlowShader.uniforms,
   },
