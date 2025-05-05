@@ -14,7 +14,7 @@ export const HEIGHT = WIDTH / 2;
 
 const textureFS = `
 uniform int u_isLayerActive[10];
-uniform int u_isBumpMap[10];
+uniform int u_isBumpMap[10];// TODO change this to not array OR change code to check for each layer element
 uniform float u_opacity[10];
 uniform float u_rangeStart[10];
 uniform float u_rangeEnd[10];
@@ -125,13 +125,20 @@ void main() {
 
     // Assign a color based on the noise value
     vec3 color = vec3( 0.0, 0.0, 0.0 );
-    if( u_isBumpMap[ 0 ] == 1) {
+    if( u_isBumpMap[ 0 ] == 1 &&  u_isBumpMap[ layerIndex ] == 1 ){
+      // TEST liquid layer
+      if( layerIndex == 0 ){
+        if( rangeNoise > 0.5 ){
+          rangeNoise = 0.5;
+        }
+      }
       color = vec3( rangeNoise );//grey scale
     } else {
-      color = mix( u_color1[ layerIndex ], u_color2[ layerIndex ], rangeNoise );
+      color = mix( u_color2[ layerIndex ], u_color1[ layerIndex ], rangeNoise );
     }
 
     if( layerIndex == 0 ){
+
       gl_FragColor = vec4( color, 1.0 );
     }
     else if (u_isLayerActive[ layerIndex ] == 1 ){

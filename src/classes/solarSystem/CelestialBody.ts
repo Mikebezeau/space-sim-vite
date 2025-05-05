@@ -42,8 +42,10 @@ interface CelestialBodyInt {
 }
 
 class CelestialBody implements CelestialBodyInt {
-  realWorldPosition: THREE.Vector3;
+  isStar: boolean;
+  isPlanet: boolean;
   isUseAtmosShader: boolean;
+  realWorldPosition: THREE.Vector3;
   isActive: boolean;
   rngSeed: string;
   id: string;
@@ -61,10 +63,12 @@ class CelestialBody implements CelestialBodyInt {
   renderBumpMapTargetGPU: any;
   uTimeTracker: number;
 
-  constructor(isUseAtmosShader?: boolean) {
+  constructor(isPlanet?: boolean) {
     this.id = uuidv4();
+    this.isPlanet = isPlanet || false;
+    this.isStar = !isPlanet;
+    this.isUseAtmosShader = this.isPlanet;
     this.realWorldPosition = new THREE.Vector3();
-    this.isUseAtmosShader = isUseAtmosShader || true;
     this.uTimeTracker = 1;
     this.textureMapLayerOptions = [];
     this.cloudShaderUniforms = {
@@ -87,9 +91,6 @@ class CelestialBody implements CelestialBodyInt {
         THREE.NearestFilter, //THREE.LinearMipMapLinearFilter
         IS_MOBILE ? THREE.NearestFilter : THREE.LinearFilter
       );
-      //this.renderTargetGPU.generateMipmaps = true;
-      //this.renderTargetGPU.needsUpdate = true;
-
       this.renderBumpMapTargetGPU = gpuCompute.createRenderTarget(
         WIDTH,
         HEIGHT,
@@ -181,6 +182,7 @@ class CelestialBody implements CelestialBodyInt {
     this.updateUniforms();
     // useGenFboTextureStore.initComputeRenderer must be called before this
     //this.disposeTextures();
+    this.textureMapLayerOptions[0].isBumpMap = false; // only first layer triggers bump map
     useGenFboTextureStore
       .getState()
       .generateTextureGPU(
@@ -216,11 +218,13 @@ class CelestialBody implements CelestialBodyInt {
     // TODO will need to add atmosphere texture seperately
     if (Object.hasOwn(this.material, "bumpMap")) {
       // generate bump map texture
+      this.textureMapLayerOptions[0].isBumpMap = true; // only first layer triggers bump map
       useGenFboTextureStore
         .getState()
-        .generateTextureGPU(this.renderBumpMapTargetGPU, [
-          { ...this.textureMapLayerOptions[0], isBumpMap: true }, // only first layer is bump map
-        ]);
+        .generateTextureGPU(
+          this.renderBumpMapTargetGPU,
+          this.textureMapLayerOptions
+        );
       if (this.renderBumpMapTargetGPU.texture) {
         // @ts-ignore
         this.material.bumpMap = this.renderBumpMapTargetGPU.texture;

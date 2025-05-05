@@ -50,6 +50,7 @@ const TestPlanetScene = () => {
 
   const effectControllerOptions: typeTextureMapOptions = {
     isLayerActive: false,
+    isBumpMap: true,
     layerOpacity: 1.0,
     rangeStart: 0.0,
     rangeEnd: 1.0,
@@ -102,7 +103,9 @@ const TestPlanetScene = () => {
       effectControllerOptions.isLayerActive =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
           .isLayerActive || false;
-
+      effectControllerOptions.isBumpMap =
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .isBumpMap || true;
       effectControllerOptions.layerOpacity =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
           .layerOpacity || 1.0;
@@ -234,6 +237,10 @@ const TestPlanetScene = () => {
 
     folderLayer1ref.current
       .add(effectControllerOptions, "isLayerActive")
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "isBumpMap")
       .onChange(valuesChanger);
 
     folderLayer1ref.current

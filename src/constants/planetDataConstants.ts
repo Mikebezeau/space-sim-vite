@@ -366,8 +366,8 @@ export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
       amplitude: 1.0,
       persistence: 0.5,
       lacunarity: 2.5,
-      baseColor: "#001933",
-      secondColor: "#636e13",
+      baseColor: "#636e13",
+      secondColor: "#001933",
       isClouds: false, //true, // TODO fix clouds
       /*
       cloudsUniforms: {

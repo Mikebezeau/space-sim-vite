@@ -80,8 +80,8 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   },
   //
   //testScreen: { planetTest: false, enemyTest: true, changeScreenTest: false },
-  testScreen: { planetTest: true, enemyTest: false, changeScreenTest: false },
-  //testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
+  //testScreen: { planetTest: true, enemyTest: false, changeScreenTest: false },
+  testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
   setTestScreen: (screen?) => {
     // set all to false
     const testScreen = get().testScreen;
@@ -117,18 +117,13 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       (planetTypeData) => planetTypeData.planetType === PLANET_TYPE.earthLike
     );
     if (planetTypeData) {
-      const isUseAtmosShader = false;
-
-      const testPlanet = new Planet(
-        {
-          rngSeed: "666-0",
-          planetType: planetTypeData,
-          subClasses: [],
-          distanceFromStar: 0,
-          temperature: { min: 0, max: 0, average: 0 },
-        },
-        isUseAtmosShader
-      );
+      const testPlanet = new Planet({
+        rngSeed: "666-0",
+        planetType: planetTypeData,
+        subClasses: [],
+        distanceFromStar: 0,
+        temperature: { min: 0, max: 0, average: 0 },
+      });
       /*
       const testPlanet = new Star(
         {
@@ -144,8 +139,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
           solarMass: 0.7823941332353969,
           starClass: "K",
           temperature: 5125,
-        },
-        isUseAtmosShader
+        }
       );
 */
       // set non zero position to recieve sun light from (0,0,0) position of sun
@@ -182,8 +176,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
         subClasses: [],
         distanceFromStar: 0,
         temperature: { min: 0, max: 0, average: 0 },
-      },
-      true
+      }
     );
     set(() => ({
       testPlanet,

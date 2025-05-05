@@ -30,8 +30,9 @@ class Planet extends CelestialBody implements PlanetInt {
   subClasses: number[];
   distanceFromStar: number;
 
-  constructor(genPlanetData: typeGenPlanetData, isUseAtmosShader?: boolean) {
-    super(isUseAtmosShader);
+  constructor(genPlanetData: typeGenPlanetData) {
+    const isPlanet = true;
+    super(isPlanet);
     this.material = useStore.getState().clonePlanetShaderMaterial(); // clone of material for differing planets / positions
     this.object3d = new Object3D();
 

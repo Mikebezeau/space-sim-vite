@@ -10,7 +10,7 @@ const planetCustomShaderMaterial = new CustomShaderMaterial<
 >({
   // @ts-ignore
   baseMaterial: THREE.MeshPhysicalMaterial,
-  bumpScale: 3,
+  bumpScale: 6,
   uniforms: {
     /*
     // using material.map to set texture

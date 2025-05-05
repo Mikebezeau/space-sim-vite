@@ -1,6 +1,7 @@
 import { typeTextureMapOptions, PLANET_TYPE } from "./planetDataConstants";
 
 const martianDetailLayer1: typeTextureMapOptions = {
+  isBumpMap: true,
   layerOpacity: 0.5,
   rangeStart: 0.3,
   rangeEnd: 1.0,
@@ -16,6 +17,7 @@ const martianDetailLayer1: typeTextureMapOptions = {
   craterIntensity: 0,
 };
 const martianDetailLayer2 = {
+  isBumpMap: true,
   layerOpacity: 0.5,
   rangeStart: 0.5,
   rangeEnd: 1.0,
@@ -32,37 +34,39 @@ const martianDetailLayer2 = {
 };
 
 const cloudDetailLayer1: typeTextureMapOptions = {
-  layerOpacity: 0.9,
+  isBumpMap: true,
+  layerOpacity: 0.3,
   rangeStart: 0.0,
   rangeEnd: 1.0,
-  scale: 1.3,
+  scale: 0.4,
   octaves: 6,
-  amplitude: 0.5,
-  persistence: 0.5,
-  lacunarity: 2.5,
-  isDoubleNoise: true,
+  amplitude: 3,
+  persistence: 0.6,
+  lacunarity: 2.9,
+  isDoubleNoise: false,
   isWarp: false,
   baseColor: "#000000",
   secondColor: "#ffffff",
-  craterIntensity: 0,
 };
+
 const cloudDetailLayer2: typeTextureMapOptions = {
-  layerOpacity: 0.9,
+  isBumpMap: true,
+  layerOpacity: 0.6,
   rangeStart: 0.0,
   rangeEnd: 1.0,
-  scale: 1.7,
+  scale: 2,
   octaves: 6,
-  amplitude: 0.5,
-  persistence: 0.5,
-  lacunarity: 2.5,
-  isDoubleNoise: true,
+  amplitude: 0.4,
+  persistence: 0.6,
+  lacunarity: 2.1,
+  isDoubleNoise: false,
   isWarp: false,
   baseColor: "#000000",
   secondColor: "#ffffff",
-  craterIntensity: 0,
 };
 
 const cloudDetailLayer3: typeTextureMapOptions = {
+  isBumpMap: true,
   layerOpacity: 0.9,
   rangeStart: 0.0,
   rangeEnd: 1.0,
@@ -79,6 +83,7 @@ const cloudDetailLayer3: typeTextureMapOptions = {
 };
 
 const riversDetailLayer1: typeTextureMapOptions = {
+  isBumpMap: false,
   layerOpacity: 0.9,
   rangeStart: 0.0,
   rangeEnd: 1.0,
@@ -94,6 +99,7 @@ const riversDetailLayer1: typeTextureMapOptions = {
 };
 
 const mountainDetailLayer1: typeTextureMapOptions = {
+  isBumpMap: true,
   layerOpacity: 0.8,
   rangeStart: 0.3,
   rangeEnd: 1.0,
@@ -119,7 +125,7 @@ export const PLANET_TYPE_TEXTURE_LAYERS: {
     mountainDetailLayer1,
     cloudDetailLayer1,
     cloudDetailLayer2,
-    cloudDetailLayer3,
+    //cloudDetailLayer3,
   ],
   [PLANET_TYPE.suTerran]: [martianDetailLayer1, martianDetailLayer2],
   [PLANET_TYPE.venusian]: [cloudDetailLayer1, martianDetailLayer2],

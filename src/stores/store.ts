@@ -249,7 +249,9 @@ const useStore = create<storeState>()((set, get) => ({
   starPointsShaderMaterial: getInitStarPointsShaderMaterial(), //loads sprites
   sunShaderMaterial: sunShaderMaterial,
   // @ts-ignore - CSM ts error
-  planetShaderMaterial: planetCustomShaderMaterial, // IS_MOBILE ? planetShaderMaterial : planetCustomShaderMaterial,
+  planetShaderMaterial: IS_MOBILE
+    ? planetShaderMaterial
+    : planetCustomShaderMaterial,
   clonePlanetShaderMaterial: () => {
     return get().planetShaderMaterial.clone();
   },

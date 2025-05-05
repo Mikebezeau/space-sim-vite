@@ -15,8 +15,8 @@ class Star extends CelestialBody implements StarInt {
   data: typeStarData;
   orbitalZonesData: typeObitalZonesData;
 
-  constructor(starData: any, isUseAtmosShader?: boolean) {
-    super(isUseAtmosShader);
+  constructor(starData: any) {
+    super();
     this.material = useStore.getState().sunShaderMaterial;
     this.object3d = new THREE.Object3D();
 
