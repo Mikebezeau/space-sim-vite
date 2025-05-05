@@ -11,6 +11,13 @@ interface ElementEntry {
   };
   activeTouches: Map<number, Touch>; // Keeps track of active touches by their identifier
   options: optionsType;
+  eventListeners: {
+    //TODO use the type
+    touchStart: (event: TouchEvent) => void;
+    touchMove: (event: TouchEvent) => void;
+    touchEnd: (event: TouchEvent) => void;
+    touchCancel: (event: TouchEvent) => void;
+  };
 }
 
 class TouchController {
@@ -26,26 +33,27 @@ class TouchController {
     },
     options?: optionsType
   ): void {
+    const listeners = {
+      touchStart: (event: TouchEvent) => this.handleTouchStart(entry, event),
+      touchMove: (event: TouchEvent) => this.handleTouchMove(entry, event),
+      touchEnd: (event: TouchEvent) => this.handleTouchEnd(entry, event),
+      touchCancel: (event: TouchEvent) => this.handleTouchEnd(entry, event),
+    };
+
     const entry: ElementEntry = {
       element,
       eventCallbacks,
       activeTouches: new Map(),
       options: options || {},
+      eventListeners: listeners,
     };
 
     // Add event listeners for touch events
-    const handleTouchStart = (event: TouchEvent) =>
-      this.handleTouchStart(entry, event);
-    const handleTouchMove = (event: TouchEvent) =>
-      this.handleTouchMove(entry, event);
-    const handleTouchEnd = (event: TouchEvent) =>
-      this.handleTouchEnd(entry, event);
+    element.addEventListener("touchstart", entry.eventListeners.touchStart);
+    element.addEventListener("touchmove", entry.eventListeners.touchMove);
 
-    element.addEventListener("touchstart", handleTouchStart);
-    element.addEventListener("touchmove", handleTouchMove);
-    element.addEventListener("touchend", handleTouchEnd);
-    element.addEventListener("touchcancel", handleTouchEnd);
-
+    element.addEventListener("touchend", entry.eventListeners.touchEnd);
+    element.addEventListener("touchcancel", entry.eventListeners.touchCancel);
     // Store the element and its listeners
     this.elements.push(entry);
   }
@@ -55,19 +63,19 @@ class TouchController {
     const index = this.elements.findIndex((entry) => entry.element === element);
     if (index !== -1) {
       const entry = this.elements[index];
-      element.removeEventListener("touchstart", (event) =>
-        this.handleTouchStart(entry, event)
+      element.removeEventListener(
+        "touchstart",
+        entry.eventListeners.touchStart
       );
-      element.removeEventListener("touchmove", (event) =>
-        this.handleTouchMove(entry, event)
-      );
-      element.removeEventListener("touchend", (event) =>
-        this.handleTouchEnd(entry, event)
-      );
-      element.removeEventListener("touchcancel", (event) =>
-        this.handleTouchEnd(entry, event)
+      element.removeEventListener("touchmove", entry.eventListeners.touchMove);
+      element.removeEventListener("touchend", entry.eventListeners.touchEnd);
+      element.removeEventListener(
+        "touchcancel",
+        entry.eventListeners.touchCancel
       );
       this.elements.splice(index, 1);
+    } else {
+      console.warn("unregisterElement not found", this.elements);
     }
   }
 
