@@ -297,10 +297,9 @@ class CelestialBody implements CelestialBodyInt {
       value: this.cloudShaderUniforms.u_cloudColor,
     };
     // atmos shader
-    this.material.uniforms.u_atmos = { value: this.isUseAtmosShader ? 1 : 0 }; // show atmosphere?
-    console.log(this);
+    this.material.uniforms.u_atmos = { value: this.isUseAtmosShader ? 1 : 0 };
+    // gives real direction to sun
     this.material.uniforms.u_planetRealPos = {
-      // gives real direction to sun
       value: this.object3d.position,
     };
   }

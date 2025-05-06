@@ -562,11 +562,6 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
         ? textureMapOptions.color2
         : new THREE.Vector3(1, 1, 1);
     });
-    /*
-    if (textureMapLayerOptions[0].shaderColors) {
-      uniforms["u_colors"] = { value: textureMapLayerOptions[0].shaderColors };
-    }
-*/
     // FBO cloud uniforms
     uniforms["u_isClouds"] = {
       value: cloudShaderUniforms.u_isClouds ? 1 : 0,
