@@ -10,7 +10,7 @@ const CelestialBody = (props: celestialBodyInt) => {
   const { celestialBody } = props;
 
   useFrame((_, delta) => {
-    celestialBody.useFrameUpdateUniforms(delta);
+    celestialBody.useFrameRotationUpdate(delta);
   });
 
   return (

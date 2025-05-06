@@ -170,6 +170,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
           true // with or without descendants
         )
       );
+      */
       intersects = intersects.concat(
         dummyRaycaster.intersectObjects(
           [
@@ -183,7 +184,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
           true // with or without descendants
         )
       );
-*/
+
       intersects = intersects.concat(
         dummyRaycaster.intersectObjects(
           useEnemyStore.getState().enemyGroup.instancedMeshs,

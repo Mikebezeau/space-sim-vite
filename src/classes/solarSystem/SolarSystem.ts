@@ -40,7 +40,7 @@ class SolarSystem implements SolarSystemInt {
       if (planetData !== null) planetsData.push(planetData);
     }
     planetsData.sort((a, b) => a.distanceFromStar - b.distanceFromStar);
-
+    // return data for galaxy map use
     return { starData, planetsData };
   }
 
@@ -73,6 +73,7 @@ class SolarSystem implements SolarSystemInt {
         this.planets.push(new Planet(planetData));
       }
     });
+    console.log(this.stars, this.planets);
   }
 }
 

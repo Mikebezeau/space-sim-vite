@@ -11,7 +11,7 @@ const TestPlanet = () => {
 
   useFrame((_, delta) => {
     if (testPlanet) {
-      //testPlanet.useFrameUpdateUniforms(delta * 10);
+      //testPlanet.useFrameRotationUpdate(delta * 10);
     }
   });
 

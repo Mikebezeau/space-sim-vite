@@ -1,8 +1,6 @@
 import { Vector3 } from "three";
-
+// NOT USING THIS ATM
 const cloudsLargeShaderGPU = {
-  //updateUniforms: (material: ShaderMaterial) => {},
-
   uniforms: {
     u_isCloudsAnimated: { value: 0 },
     u_time: {

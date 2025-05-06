@@ -38,7 +38,7 @@ interface CelestialBodyInt {
     textureOptions: typeTextureMapOptions
   ): void;
   updateCloudShaderUniform(options: any): void;
-  useFrameUpdateUniforms(delta: number): void;
+  useFrameRotationUpdate(delta: number): void;
 }
 
 class CelestialBody implements CelestialBodyInt {
@@ -298,6 +298,7 @@ class CelestialBody implements CelestialBodyInt {
     };
     // atmos shader
     this.material.uniforms.u_atmos = { value: this.isUseAtmosShader ? 1 : 0 }; // show atmosphere?
+    console.log(this);
     this.material.uniforms.u_planetRealPos = {
       // gives real direction to sun
       value: this.object3d.position,
@@ -333,7 +334,7 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   // called each animation frame
-  useFrameUpdateUniforms(delta: number) {
+  useFrameRotationUpdate(delta: number) {
     delta = Math.min(delta, 0.1); // cap delta to 100ms
     this.object3d.rotateY(delta / 500);
     // for clouds
