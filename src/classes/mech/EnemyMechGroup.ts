@@ -45,12 +45,12 @@ export interface enemyMechGroupInt {
     instancedMesh: THREE.InstancedMesh,
     instanceId: number
   ) => void;
-
-  updateLeaderColor: (instancedMesh: THREE.InstancedMesh) => void;
-  updateInstancedColor: (
+  /*
+  updateInstanceColor: (
     instancedMesh: THREE.InstancedMesh,
-    instanceId: number
+    color: THREE.Color
   ) => void;
+   */
   setDefenseTargetPositions: (
     incomingPlayerPosition: THREE.Vector3,
     playerSpeed: number
@@ -140,7 +140,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
       //this is also setting all followers of boss ship to upgrade to special mechBP
       if (!enemy.groupLeaderId) {
         //upgrade the leader mech to special mechBp
-        if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[2]; // special leader ship BP
+        if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[3]; // special leader ship BP
 
         const maxGroupSize = 7;
         this.enemyMechs
@@ -166,6 +166,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
           (e) => e.id !== enemy.id && e.groupLeaderId === enemy.id
         )
       ) {
+        if (!enemy.isBossMech) enemy.mechBP = mechDesigns.enemy[2]; // special leader ship BP
         enemy.groupLeaderId = bossMechId;
       }
     });
@@ -259,27 +260,16 @@ class EnemyMechGroup implements enemyMechGroupInt {
     }
     explodeEnemy.explode(scene);
   }
-
-  updateLeaderColor(instancedMesh: THREE.InstancedMesh) {
-    const color = useParticleStore.getState().colors.green;
+  /*
+  updateInstanceColor(instancedMesh: THREE.InstancedMesh, color: THREE.Color) {
     const instancedEnemies = this.getInstancedMeshEnemies(
       instancedMesh.userData.mechBpId
     );
     instancedEnemies.forEach((enemy, i) => {
-      if (enemy.getIsLeader()) instancedMesh.setColorAt(i, color);
+      instancedMesh.setColorAt(i, color);
     });
   }
-
-  updateInstancedColor(instancedMesh: THREE.InstancedMesh, instanceId: number) {
-    const color = new THREE.Color();
-    instancedMesh.getColorAt(instanceId, color);
-    instancedMesh.setColorAt(
-      instanceId,
-      useParticleStore.getState().colors.black
-    );
-    instancedMesh.instanceColor!.needsUpdate = true;
-  }
-
+  */
   setDefenseTargetPositions(
     incomingPlayerPosition: THREE.Vector3, // local player position when entering zone
     playerSpeed: number

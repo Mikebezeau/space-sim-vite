@@ -31,7 +31,8 @@ interface MechServoShapeInt {
       x: boolean;
       y: boolean;
       z: boolean;
-    }
+    },
+    onlyBuildcolor?: THREE.Color | undefined
   ) => THREE.Group;
 
   movePart: (props: { x: number; y: number; z: number }) => void;
@@ -78,7 +79,8 @@ class MechServoShape implements MechServoShapeInt {
       x: false,
       y: false,
       z: false,
-    }
+    },
+    onlyBuildcolor: THREE.Color | undefined
   ) {
     const servoShapesGroup = new THREE.Group();
     servoShapesGroup.position.set(this.offset.x, this.offset.y, this.offset.z);
@@ -88,10 +90,14 @@ class MechServoShape implements MechServoShapeInt {
       this.rotationRadians().z
     );
 
+    const mirrorScaleAxisX = this.mirrorAxis.x ? -1 : 1;
+    const mirrorScaleAxisY = this.mirrorAxis.y ? -1 : 1;
+    const mirrorScaleAxisZ = this.mirrorAxis.z ? -1 : 1;
+    // set the scale of the servoShapesGroup
     servoShapesGroup.scale.set(
-      (1 + this.scaleAdjust.x) * (this.mirrorAxis.x ? -1 : 1),
-      (1 + this.scaleAdjust.y) * (this.mirrorAxis.y ? -1 : 1),
-      (1 + this.scaleAdjust.z) * (this.mirrorAxis.z ? -1 : 1)
+      (1 + this.scaleAdjust.x) * mirrorScaleAxisX,
+      (1 + this.scaleAdjust.y) * mirrorScaleAxisY,
+      (1 + this.scaleAdjust.z) * mirrorScaleAxisZ
     );
 
     // update whether tree is mirrored on axis' or not
@@ -107,11 +113,9 @@ class MechServoShape implements MechServoShapeInt {
     // TODO if mirrored - the vertices flip changing side from front to back
     // dev testing condition to turn servo color green
     let testCondition = false;
-    // if mirrored on an y axis, testCondition is true
+    // if mirrored on an axis, testCondition is true
     if (mirrorAxis.x || mirrorAxis.y || mirrorAxis.z) {
       //testCondition = true;
-      // TODO reverse the vertices of the geometry to flip the side
-      // the children of this object will be mirrored as well, complicates things
     }
 
     this.servoShapes.forEach((servoShape) => {
@@ -130,10 +134,16 @@ class MechServoShape implements MechServoShapeInt {
           servoShape.recursiveBuildObject3d(
             inheritColor,
             editPartId,
-            mirrorAxis
+            mirrorAxis,
+            onlyBuildcolor
           )
         );
       } else {
+        // check if inly building certain color
+        const servoShapeColor = new THREE.Color(color);
+        if (onlyBuildcolor && !onlyBuildcolor.equals(servoShapeColor)) {
+          return;
+        }
         // if going to flip the geometry, need to create a new material
         const servoShapeMesh = new THREE.Mesh();
         servoShapeMesh.position.set(
@@ -147,18 +157,30 @@ class MechServoShape implements MechServoShapeInt {
           servoShape.rotationRadians().y,
           servoShape.rotationRadians().z
         );
+        const servoShapeScaleMirrorAxisX = servoShape.mirrorAxis.x ? -1 : 1;
+        const servoShapeScaleMirrorAxisY = servoShape.mirrorAxis.y ? -1 : 1;
+        const servoShapeScaleMirrorAxisZ = servoShape.mirrorAxis.z ? -1 : 1;
         servoShapeMesh.scale.set(
-          (1 + servoShape.scaleAdjust.x) * (servoShape.mirrorAxis.x ? -1 : 1),
-          (1 + servoShape.scaleAdjust.y) * (servoShape.mirrorAxis.y ? -1 : 1),
-          (1 + servoShape.scaleAdjust.z) * (servoShape.mirrorAxis.z ? -1 : 1)
+          (1 + servoShape.scaleAdjust.x) * servoShapeScaleMirrorAxisX,
+          (1 + servoShape.scaleAdjust.y) * servoShapeScaleMirrorAxisY,
+          (1 + servoShape.scaleAdjust.z) * servoShapeScaleMirrorAxisZ
         );
         servoShapeMesh.geometry = servoShape.geometry();
+
+        // reverse the vertices of the geometry to flip the side
+        // TODO make sure this is doing something
+        servoShapeMesh.geometry.scale(
+          servoShapeScaleMirrorAxisX,
+          servoShapeScaleMirrorAxisY,
+          servoShapeScaleMirrorAxisZ
+        );
+
         // TODO only use new meterial if for different colors
         // create material dictionary for reuse
         servoShapeMesh.material = new THREE.MeshLambertMaterial({
           color: new THREE.Color(color),
           flatShading: true,
-          side: THREE.DoubleSide,
+          side: THREE.FrontSide,
         });
         // TODO imporve implimentation of getMaterial
         // see if color can be changed for copies of the same material

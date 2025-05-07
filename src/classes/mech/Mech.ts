@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
@@ -9,9 +10,8 @@ import useWeaponFireStore from "../../stores/weaponFireStore";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
-  getGeomColorList, // list of all colors used by mech design
+  getObject3dColorList, // list of all colors used by mech design
   getMergedBufferGeom, // merge all meshes into one buffer geometry
-  getMergedBufferGeomColor, // merge all meshes of given color into one buffer geometry
   getSimplifiedGeometry, // reduce polygon count of given geometry, used to create the explosion mesh
   getTessellatedExplosionMesh, // break large geometry into smaller triangles for explosion effect
 } from "../../util/mechGeometryUtil";
@@ -48,7 +48,7 @@ interface mechInt {
   updateObb: () => void;
   setObject3dCenterOffset: () => void;
   setMergedBufferGeom: () => void;
-  setMergedBufferGeomColorsList: (geomColorList: THREE.Color[]) => void;
+  setMergedBufferGeomColors: () => void;
   setExplosionMeshFromBufferGeom: () => void;
   //
   recieveDamage: (
@@ -86,7 +86,8 @@ class Mech implements mechInt {
   builtObject3d: THREE.Object3D;
   waitObject3dLoadMeshTotal: number;
   bufferGeom: THREE.BufferGeometry | null;
-  bufferGeomColorsList: THREE.BufferGeometry[];
+  mechBpColors: THREE.Color[]; // list of colors used in mech design
+  bufferGeomColors: THREE.BufferGeometry[];
   explosionMesh: THREE.Mesh | null;
   // obb
   mechCenter: THREE.Vector3;
@@ -136,7 +137,8 @@ class Mech implements mechInt {
     //this.builtObject3d set at end of constructor
     this.waitObject3dLoadMeshTotal = 0; // total number of models to be loaded
     this.bufferGeom = null; // merged geometry for instanced mesh
-    this.bufferGeomColorsList = []; // merged geometry list of different colors for instanced mesh
+    this.mechBpColors = []; // list of colors used in mech design
+    this.bufferGeomColors = []; // merged geometry list of different colors for instanced mesh
     this.explosionMesh = null; // for explosion triangles
     this.mechCenter = new THREE.Vector3();
     this.object3dCenterOffset = new THREE.Object3D(); // for proper obb positioning
@@ -272,6 +274,10 @@ class Mech implements mechInt {
         this.builtObject3d.add(this.addedModel3dObjects);
       }
       this.setMergedBufferGeom();
+      if (this.useInstancedMesh) {
+        // to create multiple instanced meshes for multiple colors
+        this.setMergedBufferGeomColors();
+      }
       // explosion geometry and shader testing
       this.setExplosionMeshFromBufferGeom();
 
@@ -389,19 +395,21 @@ class Mech implements mechInt {
     }
   }
 
-  setMergedBufferGeomColorsList(geomColorList: THREE.Color[]) {
-    // split object children into meshes of same colors
-    // merge all meshes of same color into one buffer geometry
-    if (this.builtObject3d) {
-      // TODO displose of old bufferGeomColorsList
-      this.bufferGeomColorsList = [];
-      geomColorList.forEach((color) => {
-        /*
-        this.bufferGeomColorsList.push(
-          getMergedBufferGeomColor(this.builtObject3d, color)
-        );
-        */
+  setMergedBufferGeomColors() {
+    this.mechBpColors = getObject3dColorList(this.builtObject3d);
+    // TODO *** : useMechBpBuildStore -> getCreateMechBpBuild(this._mechBP).***bufferGeomColors***;
+    if (this.mechBpColors.length > 0 && this.builtObject3d && this._mechBP) {
+      this.bufferGeomColors = [];
+
+      this.mechBpColors.forEach((color) => {
+        const buildObjColor = new THREE.Object3D();
+        this._mechBP.buildObject3dColor(buildObjColor, color);
+        const buffGeomColor = getMergedBufferGeom(buildObjColor);
+        if (buffGeomColor) {
+          this.bufferGeomColors.push(buffGeomColor);
+        }
       });
+      console.log("setMergedBufferGeomColors", this.bufferGeomColors.length);
     }
   }
 
@@ -788,7 +796,8 @@ class Mech implements mechInt {
     this.builtObject3d.clear();
     this.addedModel3dObjects.clear();
     this.bufferGeom?.dispose();
-    this.bufferGeomColorsList.forEach((geom) => geom.dispose());
+    // TODO fix below
+    //this.bufferGeomColors.forEach((geom) => geom.dispose());
     this.explosionMesh?.geometry.dispose();
     (<THREE.ShaderMaterial>this.explosionMesh?.material)?.dispose();
   }

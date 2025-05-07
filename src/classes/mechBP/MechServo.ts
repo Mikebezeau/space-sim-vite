@@ -98,7 +98,11 @@ class MechServo extends MechServoShape implements MechServoInt {
     return roundTenth(Math.cbrt(size));
   }
 
-  buildServoObject3d(color = "#ffffff", editPartId: string | undefined) {
+  buildServoObject3d(
+    color = "#ffffff",
+    editPartId?: string | undefined,
+    onlyBuildcolor?: THREE.Color | undefined
+  ) {
     // going to group all Object3d's for this servo by color
     // this should be in a different function - preserve this function to highlight selected
     // parts in editor
@@ -107,7 +111,12 @@ class MechServo extends MechServoShape implements MechServoInt {
     // stored in the useMechBpStore materialDictionary
     const baseScaleGroup = new THREE.Group();
     baseScaleGroup.add(
-      this.recursiveBuildObject3d(this.color || color, editPartId)
+      this.recursiveBuildObject3d(
+        this.color || color,
+        editPartId,
+        undefined,
+        onlyBuildcolor
+      )
     );
     // only make this group scale size adjustment once for top level
     // TODO size should reflect the servo total volume compared to unmodified servo SP

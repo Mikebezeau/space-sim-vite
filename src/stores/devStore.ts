@@ -80,8 +80,8 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   },
   //
   //testScreen: { planetTest: false, enemyTest: true, changeScreenTest: false },
-  testScreen: { planetTest: true, enemyTest: false, changeScreenTest: false },
-  //testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
+  //testScreen: { planetTest: true, enemyTest: false, changeScreenTest: false },
+  testScreen: { planetTest: false, enemyTest: false, changeScreenTest: false },
   setTestScreen: (screen?) => {
     // set all to false
     const testScreen = get().testScreen;

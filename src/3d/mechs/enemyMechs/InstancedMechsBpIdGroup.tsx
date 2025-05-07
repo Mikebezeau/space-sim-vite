@@ -6,6 +6,7 @@ import useMechBpBuildStore from "../../../stores/mechBpBuildStore";
 import weaponFireStore from "../../../stores/weaponFireStore";
 import EnemyMech from "../../../classes/mech/EnemyMech";
 import { MECH_STATE } from "../../../classes/mech/Mech";
+import { setCustomData } from "r3f-perf";
 
 interface instancedMechsInt {
   instancedEnemies: EnemyMech[];
@@ -18,14 +19,20 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
   console.log("*** InstancedMechsBpIdGroup", mechBpId);
 
   const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
+  const instancedMeshColorsRef = useRef<THREE.InstancedMesh[]>([]);
 
   useEffect(() => {
-    if (instancedMeshRef.current === null) return;
-    // simple test to update color of certain instanced mechs
+    if (instancedMeshColorsRef.current.length === 0) return;
+    // TODO update colors of mechBpColors
+    // example using function to update color of instanced mechs
+    /*
     useEnemyStore
       .getState()
-      .enemyGroup.updateLeaderColor(instancedMeshRef.current);
-
+      .enemyGroup.updateInstanceColor(
+        instancedMeshColorsRef.current[0],
+        instancedEnemies[0].mechBpColors[0]
+      );
+    */
     /*
     // example setting geometry attribute
     const enemyColors = [];
@@ -40,32 +47,51 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
     );
     instancedMeshRef.current.geometry.attributes.aColor.needsUpdate = true;
     */
-  }, [instancedEnemies, instancedMeshRef, mechBpId]);
+  }, [instancedEnemies, instancedMeshColorsRef.current, mechBpId]);
 
   useEffect(() => {
     return () => {
       console.log("InstancedMechsBpIdGroup cleanup");
-      // remove instancedMesh from scene
+      // remove instancedMesh from enemy group
       useEnemyStore.getState().enemyGroup.removeInstancedMesh(mechBpId);
-      // remove instancedMesh from memory
-      //instancedMeshRef.current?.geometry.dispose();??
-      //instancedMeshRef.current?.material.dispose();
     };
   }, []);
 
   useFrame(() => {
-    if (instancedMeshRef.current === null) return;
-
+    if (
+      instancedMeshRef.current === null ||
+      instancedMeshColorsRef.current.length === 0
+    ) {
+      return;
+    }
     instancedEnemies.forEach((enemy: EnemyMech, i: number) => {
       if (enemy.mechState === MECH_STATE.dead) return;
       enemy.object3d.updateMatrix();
       instancedMeshRef.current!.setMatrixAt(i, enemy.object3d.matrix);
+      instancedMeshRef.current!.instanceMatrix.needsUpdate = true;
+      instancedMeshColorsRef.current.forEach((colorInstancedMesh) => {
+        colorInstancedMesh.setMatrixAt(i, enemy.object3d.matrix);
+        colorInstancedMesh.instanceMatrix.needsUpdate = true;
+      });
       // anything else for dead enemies
       if (instancedMeshRef.current?.geometry.attributes.isDead.array[i] === 1) {
-        //
+        // set colored instance mech parts isDead
+        if (
+          instancedMeshColorsRef.current[0].geometry.attributes.isDead.array[
+            i
+          ] !== 1
+        ) {
+          instancedEnemies[0].bufferGeomColors.forEach((_, j) => {
+            instancedMeshColorsRef.current[j].geometry.attributes.isDead.array[
+              i
+            ] = 1;
+            instancedMeshColorsRef.current[
+              j
+            ].geometry.attributes.isDead.needsUpdate = true;
+          });
+        }
       }
     });
-    instancedMeshRef.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -73,7 +99,7 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
       {instancedEnemies.length > 0 && (
         <>
           <instancedMesh
-            frustumCulled={false}
+            frustumCulled={true}
             ref={(ref) => {
               if (!ref) return;
               console.log(
@@ -81,7 +107,7 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
                 ref.uuid
               );
               instancedMeshRef.current = ref;
-
+              // keep track of dead mech instances
               ref.geometry.setAttribute(
                 "isDead",
                 new THREE.InstancedBufferAttribute(
@@ -104,7 +130,7 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
               useMechBpBuildStore
                 .getState()
                 .getCreateMechBpBuild(instancedEnemies[0]._mechBP)!
-                .bufferGeometry, //.scale(5, 5, 5),
+                .bufferGeometry.scale(1.1, 1.1, 1.1),
               // material - not passing material here, using onBeforeCompile below
               undefined,
               // count
@@ -112,6 +138,8 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
             ]}
           >
             <meshLambertMaterial
+              color={new THREE.Color(0xffffff)}
+              side={THREE.BackSide} //attempting an outline, not working very well
               //if changing the material type, check vertex shader replacement below
               onBeforeCompile={(shader) => {
                 shader.vertexShader =
@@ -120,11 +148,60 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
                   `#include <fog_vertex>`,
                   [
                     `#include <fog_vertex>`,
-                    `if(isDead > 0.0) gl_Position = vec4( 0, 0, - 1, 1 );`,
+                    `gl_Position = vec4( 0, 0, - 1, 1 );`, // hide
                   ].join("\n")
                 );
               }}
-              /*
+            />
+          </instancedMesh>
+          {instancedEnemies[0].bufferGeomColors.map(
+            (bufferGeomColor, colorInstanceIndex) => {
+              return (
+                <instancedMesh
+                  key={colorInstanceIndex}
+                  frustumCulled={false}
+                  ref={(ref) => {
+                    if (!ref) return;
+                    instancedMeshColorsRef.current[colorInstanceIndex] = ref;
+
+                    ref.geometry.setAttribute(
+                      "isDead",
+                      new THREE.InstancedBufferAttribute(
+                        // Int8Array: tried int array, does not work
+                        new Float32Array(
+                          instancedEnemies.map((mech) =>
+                            mech.mechState === MECH_STATE.dead ? 1 : 0
+                          )
+                        ),
+                        1
+                      )
+                    );
+                  }}
+                  args={[
+                    // geometry
+                    bufferGeomColor,
+                    // material - not passing material here, material below using onBeforeCompile
+                    undefined,
+                    // count
+                    instancedEnemies.length,
+                  ]}
+                >
+                  <meshLambertMaterial
+                    color={instancedEnemies[0].mechBpColors[colorInstanceIndex]}
+                    //side={THREE.DoubleSide}
+                    //if changing the material type, check vertex shader replacement below
+                    onBeforeCompile={(shader) => {
+                      shader.vertexShader =
+                        `attribute float isDead;\n` + shader.vertexShader;
+                      shader.vertexShader = shader.vertexShader.replace(
+                        `#include <fog_vertex>`,
+                        [
+                          `#include <fog_vertex>`,
+                          `if(isDead > 0.0) gl_Position = vec4( 0, 0, - 1, 1 );`,
+                        ].join("\n")
+                      );
+                    }}
+                    /*
                 onBeforeCompile={(shader) => {
                   //console.log(shader.vertexShader);
                   //console.log(shader.fragmentShader);
@@ -145,8 +222,16 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
                 }
               }
               */
-            />
-          </instancedMesh>
+                  />
+                </instancedMesh>
+              );
+            }
+          )}
+
+          {/*
+            })
+          }
+          */}
         </>
       )}
     </>

@@ -310,8 +310,8 @@ const useStore = create<storeState>()((set, get) => ({
       //console.log(get().stars, get().planets);
 
       // create enmey group
-      const numEnemies = Math.floor(Math.random() * 50) + 50;
-      useEnemyStore.getState().createEnemyGroup(numEnemies);
+      //const numEnemies = Math.floor(Math.random() * 50) + 50;
+      useEnemyStore.getState().createEnemyGroup(); //numEnemies);
 
       // select first star or planet as starting position
       let startPosCelestialBody: Star | Planet | null = null;

@@ -3,6 +3,8 @@ import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js"
 import { SimplifyModifier } from "three/addons/modifiers/SimplifyModifier.js";
 // TessellateModifier for adding more vertices to geometry
 import { TessellateModifier } from "three/addons/modifiers/TessellateModifier.js";
+// to combine meshes using const CSG.union();
+import { CSG } from "three-csg-ts";
 
 const simplifyModifier = new SimplifyModifier();
 
@@ -17,15 +19,19 @@ export const getSimplifiedGeometry = (
   return simplifiedGeometry;
 };
 
-export const getGeomColorList = (object3d: THREE.Object3D) => {
-  const colorList = new Set();
+export const getObject3dColorList = (
+  object3d: THREE.Object3D
+): THREE.Color[] => {
+  const colorList = new Set<string>();
   object3d.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       // color is a THREE.Color instance
-      colorList.add(child.material.color);
+      colorList.add(JSON.stringify(child.material.color));
     }
   });
-  return [...colorList];
+  return [...colorList].map(
+    (JSONstring) => new THREE.Color(JSON.parse(JSONstring))
+  );
 };
 
 export const getMergedBufferGeom = (baseObject3d: THREE.Object3D) => {
@@ -68,35 +74,6 @@ export const getMergedBufferGeom = (baseObject3d: THREE.Object3D) => {
     console.log(test);
     return null;
   }
-};
-
-export const getMergedBufferGeomColor = (
-  object3d: THREE.Object3D,
-  color: THREE.Color
-) => {
-  // TODO - never used this function so re check code
-  /*
-  const geoms: THREE.BufferGeometry[] = [];
-  const meshes: THREE.Mesh[] = [];
-  const dummyObject3D = object3d.clone();
-  dummyObject3D.position.set(0, 0, 0);
-  dummyObject3D.rotation.set(0, 0, 0);
-  dummyObject3D.updateWorldMatrix(true, true);
-  dummyObject3D.traverse((child) => {
-    if (child instanceof THREE.Mesh && child.material.color.equals(color)) {
-      const geom = child.geometry.index
-        ? child.geometry.toNonIndexed()
-        : child.geometry.clone();
-      geoms.push(geom);
-      meshes.push(child);
-    }
-  });
-  geoms.forEach((g, i) => g.applyMatrix4(meshes[i].matrixWorld));
-  const merged = BufferGeometryUtils.mergeGeometries(geoms, true);
-  merged.applyMatrix4(dummyObject3D.matrix.clone().invert());
-  merged.userData.materials = meshes.map((m) => m.material);
-  return merged;
-  */
 };
 
 type getExplosionMeshType = (

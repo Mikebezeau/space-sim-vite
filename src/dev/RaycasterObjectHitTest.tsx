@@ -84,14 +84,6 @@ const RaycasterObjectHitTest = () => {
             object as THREE.InstancedMesh,
             instanceId
           );
-        /*
-        useEnemyStore
-          .getState()
-          .enemyGroup.updateInstancedColor(
-            object as THREE.InstancedMesh,
-            instanceId
-          );
-        */
       }
       // end if instanced mesh
       // else, is not instanced mesh

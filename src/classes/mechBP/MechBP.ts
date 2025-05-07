@@ -1,11 +1,16 @@
-import { Object3D } from "three";
+import { Color, Object3D } from "three";
 import DataMechBP from "./DataMechBP";
 import MechServo from "./MechServo";
 import MechServoShape from "./MechServoShape";
 import MechWeapon from "./weaponBP/MechWeapon";
 
 interface MechBPInt {
-  buildObject3d: (object3d?: Object3D, editPartId?: string) => Object3D;
+  buildObject3dColor: (object3d: Object3D, onlyBuildColor: Color) => Object3D;
+  buildObject3d: (
+    object3d?: Object3D,
+    editPartId?: string,
+    onlyBuildColor?: Color
+  ) => Object3D;
   getPartById: (
     id: string,
     noFirstCallArr?: MechServoShape[]
@@ -27,15 +32,24 @@ class MechBP extends DataMechBP implements MechBPInt {
     super(mechBPdata);
   }
 
+  buildObject3dColor(
+    object3d: Object3D = new Object3D(),
+    onlyBuildColor: Color
+  ) {
+    return this.buildObject3d(object3d, undefined, onlyBuildColor);
+  }
+
   buildObject3d(
     object3d: Object3D = new Object3D(),
-    editPartId?: string | undefined
+    editPartId?: string | undefined,
+    onlyBuildColor?: Color | undefined
   ) {
     object3d.clear();
     this.servoList.forEach((servo: MechServo) => {
       const servoGroup = servo.buildServoObject3d(
         this.color || "#ffffff",
-        editPartId
+        editPartId,
+        onlyBuildColor
       );
       // build weapons and add
       // do not scale weapons
