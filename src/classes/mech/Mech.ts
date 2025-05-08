@@ -310,11 +310,13 @@ class Mech implements mechInt {
       this.cloneToObject3d();
 
       // TEST edges - could be used for night vision mode of something - similar to wireframe
+      // MeshToonMaterial ?
+      // npm three-line-outline ?
       /*
       const edges = new THREE.EdgesGeometry(this.bufferGeom);
       const line = new THREE.LineSegments(
         edges,
-        new THREE.LineBasicMaterial({ color: 0x6666ff })
+        new THREE.LineBasicMaterial({ color: 0xff3333 })
       );
       this.object3d.add(line);
       */
@@ -641,7 +643,8 @@ class Mech implements mechInt {
   }
 
   // TODO this function is not complete
-  // called every frame
+  // note - called every frame
+  // TODO impliment weapon fire groups
   updateFireWeaponGroup(
     targetQuaternoin?: THREE.Quaternion | null,
     enemyWeaponFireTargetVec3?: THREE.Vector3

@@ -94,10 +94,10 @@ interface playerControlStoreState {
 
 const usePlayerControlsStore = create<playerControlStoreState>()(
   (set, get) => ({
-    touchController: new TouchController(),
+    touchController: new TouchController(), // to handle simultanious touch events
 
-    playerActionMode: PLAYER.action.inspect,
-    playerControlMode: PLAYER.controls.scan,
+    playerActionMode: PLAYER.action.manualControl, //PLAYER.action.inspect,
+    playerControlMode: PLAYER.controls.combat, //PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
     // testing
     playerScreen: PLAYER.screen.mainMenu,

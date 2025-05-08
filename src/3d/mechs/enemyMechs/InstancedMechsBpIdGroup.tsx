@@ -92,6 +92,8 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
         }
       }
     });
+    //computeBoundingSphere: needed due to setMatrixAt above, used in raycasting hit detection
+    instancedMeshRef.current.computeBoundingSphere();
   });
 
   return (

@@ -71,7 +71,7 @@ export const getMaterial = (
       : constructionMaterial;
   }
 
-  material.side = THREE.DoubleSide;
+  material.side = THREE.FrontSide; //DoubleSide;
   return material;
 };
 
