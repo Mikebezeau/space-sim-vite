@@ -300,7 +300,7 @@ class CelestialBody implements CelestialBodyInt {
     this.material.uniforms.u_atmos = { value: this.isUseAtmosShader ? 1 : 0 };
     // gives real direction to sun
     this.material.uniforms.u_planetRealPos = {
-      value: this.object3d.position,
+      value: this.getRealWorldPosition(), //this.object3d.position,
     };
   }
 

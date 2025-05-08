@@ -37,7 +37,6 @@ const useEnemyStore = create<enemyStoreState>()((set, get) => ({
   // create placeholder enemy group
   enemyGroup: new EnemyMechGroup(0),
   createEnemyGroup: (numEnemies = NUM_ENEMIES) => {
-    console.log("createEnemyGroup");
     get().enemyGroup.dispose();
     set(() => ({ enemyGroup: new EnemyMechGroup(numEnemies) }));
   },

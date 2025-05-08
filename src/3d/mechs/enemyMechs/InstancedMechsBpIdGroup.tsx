@@ -16,8 +16,6 @@ interface instancedMechsInt {
 const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
   const { instancedEnemies, mechBpId } = props;
 
-  console.log("*** InstancedMechsBpIdGroup", mechBpId);
-
   const instancedMeshRef = useRef<THREE.InstancedMesh | null>(null);
   const instancedMeshColorsRef = useRef<THREE.InstancedMesh[]>([]);
 
@@ -51,7 +49,6 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
 
   useEffect(() => {
     return () => {
-      console.log("InstancedMechsBpIdGroup cleanup");
       // remove instancedMesh from enemy group
       useEnemyStore.getState().enemyGroup.removeInstancedMesh(mechBpId);
     };
@@ -92,8 +89,6 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
         }
       }
     });
-    //computeBoundingSphere: needed due to setMatrixAt above, used in raycasting hit detection
-    instancedMeshRef.current.computeBoundingSphere();
   });
 
   return (
@@ -104,10 +99,6 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
             frustumCulled={true}
             ref={(ref) => {
               if (!ref) return;
-              console.log(
-                "InstancedMechsBpIdGroup set instancedMeshRef",
-                ref.uuid
-              );
               instancedMeshRef.current = ref;
               // keep track of dead mech instances
               ref.geometry.setAttribute(

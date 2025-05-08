@@ -411,7 +411,7 @@ class Mech implements mechInt {
           this.bufferGeomColors.push(buffGeomColor);
         }
       });
-      console.log("setMergedBufferGeomColors", this.bufferGeomColors.length);
+      console.log("setMergedBufferGeomColors");
     }
   }
 

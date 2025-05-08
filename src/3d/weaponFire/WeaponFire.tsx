@@ -41,14 +41,16 @@ const WeaponFire = () => {
             useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
           ) < 50000
       ) {
-        console.log("WeaponFire Battle: zone synch");
         useStore
           .getState()
           .shiftPlayerLocalZoneToNewPosition(
             useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
           );
+        // set bounding sphere for hit detection of enemy group mech's instanced meshes
+        useEnemyStore
+          .getState()
+          .enemyGroup.setInstancedMeshHitDetectBoundingSphere();
         // set enemy group defense positions
-        console.log("WeaponFire Battle: set emeny group defense positions");
         useEnemyStore.getState().enemyGroup.setDefenseTargetPositions(
           useStore.getState().player.object3d.position, // local position
           1

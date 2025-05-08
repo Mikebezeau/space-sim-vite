@@ -31,7 +31,7 @@ export interface enemyMechGroupInt {
   removeInstancedMesh: (mechBpId: string) => void;
   getInstancedMesh: (mechBpId: string) => THREE.InstancedMesh | undefined;
   getInstancedMeshEnemies: (mechBpId: string) => EnemyMechBoid[] | undefined;
-
+  setInstancedMeshHitDetectBoundingSphere: () => void;
   recieveDamageInstancedEnemy: (
     scene: THREE.Scene,
     mechFiredId: string,
@@ -184,13 +184,6 @@ class EnemyMechGroup implements enemyMechGroupInt {
     this.removeInstancedMesh(mechBpId);
     // add to array
     this.instancedMeshs.push(instancedMesh);
-
-    console.log(
-      "EnemyMechGroup: addInstancedMesh uuid",
-      instancedMesh.uuid,
-      "count",
-      this.instancedMeshs.length
-    );
   }
   removeInstancedMesh(mechBpId: string) {
     const existingMesh = this.instancedMeshs.find(
@@ -203,7 +196,6 @@ class EnemyMechGroup implements enemyMechGroupInt {
       this.instancedMeshs = this.instancedMeshs.filter(
         (mesh) => mesh.userData.mechBpId !== mechBpId
       );
-      console.log("instance mesh removed", this.instancedMeshs);
     }
   }
 
@@ -217,6 +209,13 @@ class EnemyMechGroup implements enemyMechGroupInt {
     return this.enemyMechs.filter(
       (enemyMech) => enemyMech._mechBP.id === mechBpId
     );
+  }
+
+  setInstancedMeshHitDetectBoundingSphere() {
+    this.instancedMeshs.forEach((instancedMesh) => {
+      instancedMesh.computeBoundingSphere();
+      instancedMesh.boundingSphere!.radius = 25000;
+    });
   }
 
   recieveDamageInstancedEnemy(
@@ -256,7 +255,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
     // call explode on Mech object
     const explodeEnemy = this.getInstancedMeshEnemies(mechBpId)[instanceId];
     if (explodeEnemy.getIsLeader()) {
-      console.log("Enemy leader exploded");
+      // TODO need to set new leader
     }
     explodeEnemy.explode(scene);
   }
@@ -348,7 +347,6 @@ class EnemyMechGroup implements enemyMechGroupInt {
   }
 
   dispose() {
-    console.log("EnemyMechGroup: dispose");
     this.boidController = null;
     this.enemyMechs.forEach((enemy) => {
       enemy.dispose();

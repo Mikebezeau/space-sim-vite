@@ -73,7 +73,6 @@ class SolarSystem implements SolarSystemInt {
         this.planets.push(new Planet(planetData));
       }
     });
-    console.log(this.stars, this.planets);
   }
 }
 
