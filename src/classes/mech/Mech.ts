@@ -645,6 +645,7 @@ class Mech implements mechInt {
   // TODO this function is not complete
   // note - called every frame
   // TODO impliment weapon fire groups
+  // TODO create getWeaponPosition function to get weapon position
   updateFireWeaponGroup(
     targetQuaternoin?: THREE.Quaternion | null,
     enemyWeaponFireTargetVec3?: THREE.Vector3

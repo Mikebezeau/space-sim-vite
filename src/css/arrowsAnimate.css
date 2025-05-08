@@ -69,26 +69,36 @@
   border-right: 5px solid rgb(110, 194, 255);
   transform: rotate(45deg);
   animation: animate 2s infinite;
+  animation-timing-function: linear;
 }
 
 .animated-arrows span:nth-child(2) {
-  animation-delay: -0.2s;
+  animation-delay: -0.8s;
 }
 
 .animated-arrows span:nth-child(3) {
   animation-delay: -0.4s;
 }
 
+/* TODO add move-right animation - impliment on buttons - add move-center */
+.animated-arrows-move-right span:nth-child(2) {
+  animation-delay: -0.4s;
+}
+
+.animated-arrows-move-right span:nth-child(3) {
+  animation-delay: -0.8s;
+}
+
 @keyframes animate {
   0% {
     opacity: 0;
-    transform: rotate(45deg) translate(-20px, -20px);
+    transform: rotate(45deg) translate(0px, 0px);
   }
   50% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: rotate(45deg) translate(140px, 140px);
+    transform: rotate(45deg) translate(160px, 160px);
   }
 }

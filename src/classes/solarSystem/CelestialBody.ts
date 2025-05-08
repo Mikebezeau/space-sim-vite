@@ -181,7 +181,9 @@ class CelestialBody implements CelestialBodyInt {
     //for Planet Object3D material shader (lighting / effects)
     this.updateUniforms();
     // useGenFboTextureStore.initComputeRenderer must be called before this
+    // TODO test if textures are being disposed porperly
     //this.disposeTextures();
+    //https://discourse.threejs.org/t/when-to-dispose-how-to-completely-clean-up-a-three-js-scene/1549/22
     this.textureMapLayerOptions[0].isBumpMap = false; // only first layer triggers bump map
     useGenFboTextureStore
       .getState()

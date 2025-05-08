@@ -26,6 +26,12 @@ const WeaponFire = () => {
   }, [testArrowHelper]);
 
   useFrame((_, delta) => {
+    // set bounding sphere for hit detection of enemy group mech's instanced meshes
+    // seems to only work if calculated every frame, setting once with increased radius does not work
+    useEnemyStore
+      .getState()
+      .enemyGroup.setInstancedMeshHitDetectBoundingSphere();
+
     // synch player and enemy world zone positions
     if (
       !useStore
@@ -46,10 +52,6 @@ const WeaponFire = () => {
           .shiftPlayerLocalZoneToNewPosition(
             useEnemyStore.getState().enemyGroup.enemyGroupLocalZonePosition
           );
-        // set bounding sphere for hit detection of enemy group mech's instanced meshes
-        useEnemyStore
-          .getState()
-          .enemyGroup.setInstancedMeshHitDetectBoundingSphere();
         // set enemy group defense positions
         useEnemyStore.getState().enemyGroup.setDefenseTargetPositions(
           useStore.getState().player.object3d.position, // local position

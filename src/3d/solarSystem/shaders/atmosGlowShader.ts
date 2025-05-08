@@ -24,9 +24,7 @@ varying vec3 cameraVector;
 `,
 
   fragMain: `
-if( u_atmos ) {
-  // rotatedNormal set in rotatedNormalShader
-
+// moved this chunk from if( u_atmos ) for use in other shader code
   // lightDir not pointing to (0, 0, 0) due to relative position of sun and planets
   //vec3 lightDir = normalize(-vGlowWorldPosition);
   vec3 lightDir = normalize(-u_planetRealPos);
@@ -36,6 +34,10 @@ if( u_atmos ) {
   float lightAngle = clamp(dot(rotatedNormal, lightDir) + 0.2, 0.0, 1.0);
 
   float viewAngle = max(0.0, dot(rotatedNormal, cameraDir));
+
+
+if( u_atmos ) {
+  // rotatedNormal set in rotatedNormalShader
 
   // making the angle greater for more glow
   float adjustedLightAngle = max(0.0, dot(rotatedNormal, lightDir) + 0.3 );

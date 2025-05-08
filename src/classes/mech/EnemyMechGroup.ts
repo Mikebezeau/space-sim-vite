@@ -214,7 +214,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
   setInstancedMeshHitDetectBoundingSphere() {
     this.instancedMeshs.forEach((instancedMesh) => {
       instancedMesh.computeBoundingSphere();
-      instancedMesh.boundingSphere!.radius = 25000;
+      //instancedMesh.boundingSphere!.radius = 25000;
     });
   }
 

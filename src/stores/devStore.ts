@@ -77,6 +77,11 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       "usedJSHeapSize: ",
       roundTenth(usedJSHeapSize / 1000000)
     );
+    // TODO: add more memory info
+    /*
+    console.log( 'Memory: ', renderer.info.memory );
+    console.log( 'Render: ', renderer.info.render );
+    */
   },
   //
   //testScreen: { planetTest: false, enemyTest: true, changeScreenTest: false },
