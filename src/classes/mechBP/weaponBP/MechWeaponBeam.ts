@@ -11,6 +11,7 @@ class MechWeaponBeam extends MechWeapon implements MechWeaponBeamInt {
     super(weaponData);
 
     if (!this.name) this.name = "Beam Weapon";
+    this.isBeam = true;
     this.weaponType = equipData.weaponType.beam;
   }
 

@@ -177,7 +177,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
           const playerSpeed = useStore.getState().player.speed;
           this.targetObject3d.translateZ((playerSpeed * FPS) / timeToHit);
           // TODO check to make sure wont hit friend
-          this.updateFireWeaponGroup(null, this.targetObject3d.position);
+          this.fireReadyWeapons(null, this.targetObject3d.position);
         }
       }
     }

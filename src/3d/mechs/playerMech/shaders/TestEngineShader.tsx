@@ -1,6 +1,6 @@
 import React from "react";
 import { BoxGeometry, FrontSide, ShaderMaterial } from "three";
-import useStore from "../../../stores/store";
+import useStore from "../../../../stores/store";
 const TestEngineShader = () => {
   useStore.getState().updateRenderInfo("TestEngineShader");
 

@@ -27,6 +27,7 @@ export const getObject3dColorList = (
     if (child instanceof THREE.Mesh) {
       // color is a THREE.Color instance
       colorList.add(JSON.stringify(child.material.color));
+      //console.log(child.material.color.getHexString());// returns color as hex string i.e. "ff0000"
     }
   });
   return [...colorList].map(

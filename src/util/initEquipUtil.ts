@@ -11,6 +11,7 @@ import MechWeaponProjectile from "../classes/mechBP/weaponBP/MechWeaponProjectil
 // TODO transfer these to Class methods
 function transferProperties(mergBP: any, parsedBP: any) {
   // transfering select properties from parsedBP to mergBP
+  // to cast to correct type
   Object.keys(parsedBP).forEach((key) => {
     if (typeof parsedBP[key] !== "object") {
       // non object props: identify what props are strings, all others are numbers
@@ -32,17 +33,25 @@ function transferProperties(mergBP: any, parsedBP: any) {
           ? String(parsedBP[key])
           : Number(parsedBP[key]);
     } else if (
-      // objects with properties
+      // objects with properties, or ammoList array of objects
       key === "armor" ||
       key === "offset" ||
       key === "rotation" ||
       key === "scaleAdjust" ||
       key === "mirrorAxis" ||
       key === "shapeProps" ||
-      key === "data"
+      key === "data" ||
+      key === "ammoList"
     ) {
-      // transfering object properties
-      mergBP[key] = transferProperties(mergBP[key], parsedBP[key]);
+      if (key === "ammoList") {
+        // array of objects special case
+        // TODO enforce casting
+        mergBP[key] = parsedBP[key];
+        //parsedBP[key].forEach((parsedAmmoBP: any) => {});
+      } else {
+        // transfering object properties
+        mergBP[key] = transferProperties(mergBP[key], parsedBP[key]);
+      }
     }
   });
   return mergBP;
@@ -60,12 +69,15 @@ export const initServoShapes = (
 };
 
 const loadBlueprint = function (mechDesign: any) {
-  let loadJsonBP = mechDesign;
+  let loadJsonBP: any;
   if (typeof mechDesign === "string") {
     loadJsonBP = JSON.parse(mechDesign);
+  } else if (typeof mechDesign === "object") {
+    loadJsonBP = mechDesign;
+  } else {
+    console.error("Invalid mechDesign type");
+    return new MechBP();
   }
-  //JSON.stringify(loadJsonBP);
-  //const loadJsonBP = JSON.parse(loadJsonBP);
   return new MechBP(loadJsonBP);
 };
 

@@ -247,7 +247,18 @@ const EquipmentMenu = () => {
                       : "nonSelectedItem"
                   }
                 >
-                  <button onClick={() => setMainMenuSelection(key)}>
+                  <button
+                    onClick={() => {
+                      // set the main menu selection
+                      setMainMenuSelection(key);
+                      // if there is only 1 su selection, set it
+                      if (Object.entries(subMenuItems[key]).length === 1) {
+                        setSubSelection(Object.keys(subMenuItems[key])[0]);
+                      } else {
+                        setSubSelection("");
+                      }
+                    }}
+                  >
                     {value}
                   </button>
                 </span>
@@ -259,8 +270,8 @@ const EquipmentMenu = () => {
                 {mainMenuSelection === mainMenuPositionVal ? (
                   <PositionPartsList editorMechBP={editorMechBP} />
                 ) : (
-                  //edit servo/weapon graphical locations
-                  //will also load the blueprint design 3d interface
+                  // if submenu selection is length 1 do not show it
+                  Object.entries(subMenuItems[mainMenuSelection]).length > 1 &&
                   Object.entries(subMenuItems[mainMenuSelection]).map(
                     ([key, value]) => {
                       return (

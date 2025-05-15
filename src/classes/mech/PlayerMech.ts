@@ -14,8 +14,18 @@ class PlayerMech extends Mech implements playerMechInt {
   };
 
   constructor(mechBPIndex: number = PLAYER_START.mechBPindex) {
-    const isPlayer = true;
-    super(mechDesigns.player[mechBPIndex], false, isPlayer);
+    super(mechDesigns.player[mechBPIndex]);
+    this.isPlayer = true;
+    // TODO testing setup fireGroups
+    // set player mechBp weapons weaponFireData
+    this.mechBP.weaponList.forEach((weapon, i) => {
+      let fireGroupNum = weapon.isBeam ? 1 : weapon.isProjectile ? 2 : 3;
+      weapon.weaponFireData.fireGroupNum = fireGroupNum;
+      weapon.weaponFireData.orderNumber = i;
+      weapon.weaponFireData.isFireModeChain = true;
+      weapon.weaponFireData.timeTracker = 0;
+    });
+
     // player locations in scenes, used for changing scenes
     this.locationInfo = {
       saveSpaceObject3d: {

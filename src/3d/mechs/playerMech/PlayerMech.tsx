@@ -5,6 +5,8 @@ import PlayerParticleEffects from "./PlayerParticleEffects";
 import { setVisible } from "../../../util/gameUtil";
 import { PLAYER } from "../../../constants/constants";
 
+import { Trail } from "@react-three/drei";
+
 const PlayerMech = () => {
   useStore.getState().updateRenderInfo("PlayerMech");
 
@@ -40,6 +42,10 @@ const PlayerMech = () => {
         }}
       />
       <PlayerParticleEffects />
+      <Trail width={2} length={4} color="orange" attenuation={(t) => t * t}>
+        <object3D //ref={(ref) => (trailRefs.current[index] = ref)}
+        />
+      </Trail>
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { memo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import useWeaponFireStore from "../../stores/weaponFireStore";
 import * as THREE from "three";
@@ -11,13 +11,12 @@ interface MissileInstancedMeshProps {
 
 const reusableTransform = new THREE.Object3D();
 
-export const MissileInstancedMesh: React.FC<MissileInstancedMeshProps> = ({
+const MissileInstancedMesh: React.FC<MissileInstancedMeshProps> = ({
   geometry = new THREE.SphereGeometry(0.5, 8, 8),
   material = new THREE.MeshBasicMaterial({
     color: "orange",
   }),
 }) => {
-  console.log("MissileInstancedMesh");
   const missiles = useWeaponFireStore((state) => state.missiles);
   const updateMissiles = useWeaponFireStore((state) => state.updateMissiles);
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
@@ -85,3 +84,5 @@ export const MissileInstancedMesh: React.FC<MissileInstancedMeshProps> = ({
     </>
   );
 };
+
+export default memo(MissileInstancedMesh);

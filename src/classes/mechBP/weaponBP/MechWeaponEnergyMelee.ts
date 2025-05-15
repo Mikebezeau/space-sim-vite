@@ -13,6 +13,7 @@ class MechWeaponEnergyMelee
   constructor(weaponData?: any) {
     super(weaponData);
 
+    this.isEnergyMelee = true;
     if (!this.name) this.name = "Energy Melee Weapon";
     this.weaponType = equipData.weaponType.energyMelee;
   }

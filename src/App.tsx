@@ -5,7 +5,7 @@ import useStore from "./stores/store";
 import AppLoadingManager from "./AppLoadingManager";
 import AppLoadingScreen from "./AppLoadingScreen";
 
-//import useNoContextMenu from "./hooks/useNoContextMenu";
+import useNoContextMenu from "./hooks/useNoContextMenu";
 //import useWindowResize from "./hooks/useWindowResize";
 
 import "./css/lilGui.css";
@@ -36,7 +36,7 @@ function App() {
     }
   }, []);
 
-  //useNoContextMenu();
+  useNoContextMenu(); // disable right click context menu
   /*
   useWindowResize(() => {
     // callback function code here

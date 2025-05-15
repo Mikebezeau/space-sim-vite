@@ -101,6 +101,8 @@ interface storeState {
 
     toggleSound: (sound?: boolean) => void;
     setShoot: (value: boolean) => void;
+    setShoot2: (value: boolean) => void;
+    setShoot3: (value: boolean) => void;
     updateMouse: (event: MouseEvent) => void;
     updateTouchMobileMoveShip: (
       event: TouchEvent,
@@ -109,6 +111,8 @@ interface storeState {
   };
   mutation: {
     shoot: boolean;
+    shoot2: boolean; //TODO move all to playerControlStore and complete fixing code
+    shoot3: boolean;
     mouseControlNormalVec2: THREE.Vector2;
     //mouseScreen: THREE.Vector2;
     //ongoingTouches: any[];
@@ -278,6 +282,8 @@ const useStore = create<storeState>()((set, get) => ({
     ),
     */
     shoot: false, // used to trigger player weapon fire
+    shoot2: false, // test weapon fire groups
+    shoot3: false,
     mouseControlNormalVec2: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
     //mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
   },
@@ -403,6 +409,16 @@ const useStore = create<storeState>()((set, get) => ({
     setShoot(value: boolean) {
       // update shoot value
       get().mutation.shoot = value;
+    },
+
+    setShoot2(value: boolean) {
+      // update shoot value
+      get().mutation.shoot2 = value;
+    },
+
+    setShoot3(value: boolean) {
+      // update shoot value
+      get().mutation.shoot3 = value;
     },
 
     updateMouse({ clientX: x, clientY: y }) {

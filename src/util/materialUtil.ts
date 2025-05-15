@@ -1,8 +1,11 @@
 import * as THREE from "three";
 import MechServo from "../classes/mechBP/MechServo";
 import MechServoShape from "../classes/mechBP/MechServoShape";
-import { recursiveFindChildId } from "../stores/equipStore";
-import { mechMaterial } from "../constants/mechMaterialConstants";
+//import { recursiveFindChildId } from "../stores/equipStore";
+import {
+  getMechMaterialColor,
+  mechMaterial,
+} from "../3d/mechs/materials/mechMaterials";
 //import { CSG } from "three-csg-ts";
 
 export const getMaterial = (
@@ -40,7 +43,9 @@ export const getMaterial = (
     : null;
 
   if (!material) {
-    const constructionMaterial = new THREE.MeshLambertMaterial();
+    const constructionMaterial = getMechMaterialColor(
+      servoShape.color || thisColor
+    );
     // will have to use bounding box size to calculate texture scale
     /*
     constructionMaterial.map = texture;
@@ -56,9 +61,6 @@ export const getMaterial = (
     );
     */
 
-    constructionMaterial.flatShading = flatShading;
-    constructionMaterial.color = new THREE.Color(servoShape.color || thisColor);
-
     material = !editMode
       ? constructionMaterial
       : editPartId === servoShape.id /*||
@@ -71,8 +73,7 @@ export const getMaterial = (
       : constructionMaterial;
   }
 
-  material.side = THREE.FrontSide; //DoubleSide;
-  return material;
+  return material!;
 };
 
 /*

@@ -32,7 +32,7 @@ const ServoShape = (props: ServoShapeInt) => {
 interface ServoShapesInt {
   servo: MechServo | MechServoShape;
   parentServo?: MechServo;
-  color: string;
+  color: string | null;
   texture: THREE.Texture;
   flatShading?: boolean;
   damageReadoutMode?: boolean;
@@ -92,7 +92,7 @@ const ServoShapes = (props: ServoShapesInt) => {
               <ServoShapes
                 servo={servoShape} // passing servoShape as servo to build children
                 parentServo={parentServo} // passing parentServo to children for calculating damageReadoutMode meterial color
-                color={thisColor || servoShape.color}
+                color={thisColor || servoShape.color || null}
                 texture={texture}
                 flatShading={flatShading}
                 damageReadoutMode={damageReadoutMode}

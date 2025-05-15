@@ -83,9 +83,9 @@ const AppUI = () => {
                 <CombatHudTarget />
                 <div className="absolute top-72 right-11">
                   <ShieldsReadout />
-                  <WeaponsReadout />
                 </div>
                 <FlightHud />
+                <WeaponsReadout />
               </>
             )}
             {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}

@@ -13,9 +13,10 @@ class MechWeaponProjectile
   constructor(weaponData?: any) {
     super(weaponData);
 
+    this.isProjectile = true;
     if (!this.name) this.name = "Projectile Weapon";
     this.weaponType = equipData.weaponType.projectile;
-    if (!this.ammoList) this.ammoList = [{ type: 0, numAmmo: 10 }];
+    if (!this.ammoList) this.ammoList = [{ type: 0, numAmmo: 50 }];
   }
 
   //needed for calculating space / space efficiency properly
@@ -52,7 +53,7 @@ class MechWeaponProjectile
   //FOR PROJECTILE WEAPONS ONLY
   ammoCP() {
     let CP = 0;
-    const ammoBaseCP: number = this.baseCP() / 10;
+    const ammoBaseCP: number = this.baseCP() / 10 / this.burstValue(); // cheaper shots for BV to offset ammo cost
     for (var i = 0; i < this.ammoList.length; i++) {
       const ammoCM =
         weaponData[equipData.weaponType.projectile].ammo?.CM[

@@ -3,10 +3,12 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useEnemyStore from "../../../stores/enemyStore";
 import useMechBpBuildStore from "../../../stores/mechBpBuildStore";
-import weaponFireStore from "../../../stores/weaponFireStore";
 import EnemyMech from "../../../classes/mech/EnemyMech";
+import {
+  mechInstancedMaterialHitDetect,
+  getMechInstancedMaterialColor,
+} from "../materials/mechMaterials";
 import { MECH_STATE } from "../../../classes/mech/Mech";
-import { setCustomData } from "r3f-perf";
 
 interface instancedMechsInt {
   instancedEnemies: EnemyMech[];
@@ -21,14 +23,13 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
 
   useEffect(() => {
     if (instancedMeshColorsRef.current.length === 0) return;
-    // TODO update colors of mechBpColors
-    // example using function to update color of instanced mechs
+    // outdated example using function to update color of instanced mechs
     /*
     useEnemyStore
       .getState()
       .enemyGroup.updateInstanceColor(
         instancedMeshColorsRef.current[0],
-        instancedEnemies[0].mechBpColors[0]
+        instancedEnemies[0].instancedMeshGeomColors.mechBpColors[0]
       );
     */
     /*
@@ -78,14 +79,17 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
             i
           ] !== 1
         ) {
-          instancedEnemies[0].bufferGeomColors.forEach((_, j) => {
-            instancedMeshColorsRef.current[j].geometry.attributes.isDead.array[
-              i
-            ] = 1;
-            instancedMeshColorsRef.current[
-              j
-            ].geometry.attributes.isDead.needsUpdate = true;
-          });
+          // update all colored instances isDead
+          instancedEnemies[0].instancedMeshGeomColors.bufferGeomColors.forEach(
+            (_, j) => {
+              instancedMeshColorsRef.current[
+                j
+              ].geometry.attributes.isDead.array[i] = 1;
+              instancedMeshColorsRef.current[
+                j
+              ].geometry.attributes.isDead.needsUpdate = true;
+            }
+          );
         }
       }
     });
@@ -113,7 +117,7 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
                   1
                 )
               );
-
+              // add instancedMesh to enemy group for hit detection
               useEnemyStore
                 .getState()
                 .enemyGroup.addInstancedMesh(mechBpId, ref);
@@ -124,30 +128,13 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
                 .getState()
                 .getCreateMechBpBuild(instancedEnemies[0]._mechBP)!
                 .bufferGeometry.scale(1.1, 1.1, 1.1),
-              // material - not passing material here, using onBeforeCompile below
-              undefined,
+              // material
+              mechInstancedMaterialHitDetect,
               // count
               instancedEnemies.length,
             ]}
-          >
-            <meshLambertMaterial
-              color={new THREE.Color(0xffffff)}
-              side={THREE.BackSide} //attempting an outline, not working very well
-              //if changing the material type, check vertex shader replacement below
-              onBeforeCompile={(shader) => {
-                shader.vertexShader =
-                  `attribute float isDead;\n` + shader.vertexShader;
-                shader.vertexShader = shader.vertexShader.replace(
-                  `#include <fog_vertex>`,
-                  [
-                    `#include <fog_vertex>`,
-                    `gl_Position = vec4( 0, 0, - 1, 1 );`, // hide
-                  ].join("\n")
-                );
-              }}
-            />
-          </instancedMesh>
-          {instancedEnemies[0].bufferGeomColors.map(
+          />
+          {instancedEnemies[0].instancedMeshGeomColors.bufferGeomColors.map(
             (bufferGeomColor, colorInstanceIndex) => {
               return (
                 <instancedMesh
@@ -173,58 +160,19 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
                   args={[
                     // geometry
                     bufferGeomColor,
-                    // material - not passing material here, material below using onBeforeCompile
-                    undefined,
+                    // material
+                    getMechInstancedMaterialColor(
+                      instancedEnemies[0].instancedMeshGeomColors.mechBpColors[
+                        colorInstanceIndex
+                      ]
+                    ),
                     // count
                     instancedEnemies.length,
                   ]}
-                >
-                  <meshLambertMaterial
-                    color={instancedEnemies[0].mechBpColors[colorInstanceIndex]}
-                    //side={THREE.DoubleSide}
-                    //if changing the material type, check vertex shader replacement below
-                    onBeforeCompile={(shader) => {
-                      shader.vertexShader =
-                        `attribute float isDead;\n` + shader.vertexShader;
-                      shader.vertexShader = shader.vertexShader.replace(
-                        `#include <fog_vertex>`,
-                        [
-                          `#include <fog_vertex>`,
-                          `if(isDead > 0.0) gl_Position = vec4( 0, 0, - 1, 1 );`,
-                        ].join("\n")
-                      );
-                    }}
-                    /*
-                onBeforeCompile={(shader) => {
-                  //console.log(shader.vertexShader);
-                  //console.log(shader.fragmentShader);
-                  shader.vertexShader =
-                    `attribute vec3 aColor;\nvarying vec4 vColor;\n` +
-                    shader.vertexShader;
-        
-                  shader.fragmentShader =
-                    `varying vec4 vColor;\n` + shader.fragmentShader;
-        
-                  shader.fragmentShader = shader.fragmentShader.replace(
-                    `#include <dithering_fragment>`,
-                    [
-                      `#include <dithering_fragment>`,
-                      `gl_FragColor = vec4( 1, 0, 1, 1);`,
-                    ].join("\n")
-                  );
-                }
-              }
-              */
-                  />
-                </instancedMesh>
+                />
               );
             }
           )}
-
-          {/*
-            })
-          }
-          */}
         </>
       )}
     </>

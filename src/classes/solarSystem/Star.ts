@@ -15,7 +15,7 @@ class Star extends CelestialBody implements StarInt {
   data: typeStarData;
   orbitalZonesData: typeObitalZonesData;
 
-  constructor(starData: any) {
+  constructor(starData: typeStarData) {
     super();
     this.material = useStore.getState().sunShaderMaterial;
     this.object3d = new THREE.Object3D();
@@ -39,15 +39,10 @@ class Star extends CelestialBody implements StarInt {
       persistence: 0.6,
       lacunarity: 1.7,
       isDoubleNoise: true,
-      baseColor: "#ffa70f", //starData.colorHex,
+      baseColor: starData.colorHex,
       secondColor: "#FFFFFF",
       craterIntensity: 0,
-      /*
-      shaderColors: [
-        new THREE.Vector3(1, 167 / 255, 15 / 255),
-        new THREE.Vector3(1, 1, 1),
-      ],
-      */
+
       // create version for star - set texture options for genTexture
       // this.setDefaultGpuTextureOptions();
     };

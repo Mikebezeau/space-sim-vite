@@ -48,15 +48,15 @@ const DEFAULT_DATA = {
   hyperVelocity: 0,
 };
 
-const DEFAULT_AMMO_OBJECT = { type: 0, numAmmo: 10 };
-
 interface MechWeaponInt {
   accuracy(): number;
   damage(): number;
   range(): number;
-  burstValue(): number | string;
+  burstValue(): number;
   weight(): number;
   ammoCP(): number;
+  getAmmoCount(): number;
+  reduceAmmo(num?: number): void;
   // game util
   getSpeed(): number;
 }
@@ -64,16 +64,22 @@ interface MechWeaponInt {
 class MechWeapon extends MechServo implements MechWeaponInt {
   locationServoId: string = "";
   weaponType: number = 0;
-  SPeff: number = 0;
+  isBeam: boolean = false;
+  isEnergyMelee: boolean = false;
+  isMelee: boolean = false;
+  isMissile: boolean = false;
+  isProjectile: boolean = false;
+  SPeff: number = 0; //TODO check if these can be removed: SPeff might be equa to MechServo.SPMod
   wEff: number = 0;
   //properties for controlling weapon fire
   weaponFireData: {
-    fireGroupId: number;
+    fireGroupNum: number;
     orderNumber: number;
     isReady: boolean;
     isFireModeChain: boolean;
     chainFireTimeToFire: number;
     timeToReload: number;
+    timeTracker: number;
   };
   //properties for weapon stats
   data: {
@@ -127,7 +133,7 @@ class MechWeapon extends MechServo implements MechWeaponInt {
     //special: number;
     //variable: number;
   };
-  numMissile: number = 0;
+  numMissile: number;
   ammoList: { type: number; numAmmo: number }[];
 
   constructor(weaponData?: any) {
@@ -136,17 +142,17 @@ class MechWeapon extends MechServo implements MechWeaponInt {
     //  -> offset, rotation, scaleAdjust, shape, color
     super();
     this.weaponFireData = {
-      fireGroupId: 999,
+      fireGroupNum: 0,
       orderNumber: 0,
       isReady: true,
       isFireModeChain: true,
       chainFireTimeToFire: 0,
       timeToReload: 0,
+      timeTracker: 0,
     };
     // must set data object, or properties will not be transferred (doing this way to enforce type casting)
     this.data = { ...DEFAULT_DATA };
-    // arrays not set up for transfer in transferProperties, set ammo list directly for now
-    this.ammoList = weaponData?.ammoList || [{ ...DEFAULT_AMMO_OBJECT }];
+    this.ammoList = [];
     // transfer properties from parsed JSON data (weaponData) to this
     if (weaponData) {
       transferProperties(this, weaponData);
@@ -154,8 +160,6 @@ class MechWeapon extends MechServo implements MechWeaponInt {
         initServoShapes(this, weaponData.servoShapes);
       }
     }
-    // this is not making sense where is .ammoList
-    if (weaponData) transferProperties(this, weaponData);
   }
 
   accuracy() {
@@ -197,9 +201,14 @@ class MechWeapon extends MechServo implements MechWeaponInt {
   }
 
   burstValue() {
-    const bv =
-      weaponData[this.weaponType].burstValue?.val[this.data.burstValue];
-    return bv ? bv : 0;
+    let bv = weaponData[this.weaponType].burstValue?.val[this.data.burstValue];
+    if (typeof bv === "string") {
+      if (bv === "none") return 0;
+      if (bv === "unlimited") return 10;
+    } else {
+      return bv ? bv : 0;
+    } //TODO fix this
+    return 0;
   }
 
   servoLocation(servos: MechServo[]) {
@@ -250,6 +259,17 @@ class MechWeapon extends MechServo implements MechWeaponInt {
   //FOR PROJECTILE WEAPONS ONLY
   ammoCP() {
     return 0;
+  }
+
+  getAmmoCount() {
+    if (!this.isProjectile) return 1;
+    return this.ammoList[0].numAmmo;
+  }
+
+  reduceAmmo(num: number = 1) {
+    if (this.isProjectile) {
+      this.ammoList[0].numAmmo -= num;
+    }
   }
 
   getSpeed() {

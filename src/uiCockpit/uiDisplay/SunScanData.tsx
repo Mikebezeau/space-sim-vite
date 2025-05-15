@@ -6,9 +6,9 @@ const SunScanData = () => {
   useStore.getState().updateRenderInfo("SunScanData");
 
   const stars = useStore((state) => state.stars);
-  const focusPlanetIndex = useHudTargtingStore(
+  const focusPlanetIndex = null; /*useHudTargtingStore(
     (state) => state.focusPlanetIndex
-  );
+  );*/
 
   const data =
     stars && focusPlanetIndex === null && stars[0]

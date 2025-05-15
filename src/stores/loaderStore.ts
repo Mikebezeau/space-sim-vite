@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { BufferGeometry, Mesh, MeshLambertMaterial } from "three";
+import { BufferGeometry, Mesh } from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
+import { getMechMaterialColor } from "../3d/mechs/materials/mechMaterials";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import Mech from "../classes/mech/Mech";
 // @ts-ignore
@@ -116,10 +117,7 @@ const useLoaderStore = create<loaderStoreState>()((set, get) => ({
     model3dMesh.geometry = BufferGeometryUtils.mergeGeometries(geometries);
     model3dMesh.geometry.scale(scale, scale, scale);
 
-    // TODO get marerials from mechBpBuildStore
-    model3dMesh.material = new MeshLambertMaterial({ color: "white" });
-    // @ts-ignore material is not an array in this case
-    model3dMesh.material.flatShading = true;
+    model3dMesh.material = getMechMaterialColor();
     //
     model3dMesh.updateWorldMatrix(true, true);
     if (onLoadUpdateMech !== null) {

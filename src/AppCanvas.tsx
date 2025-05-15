@@ -22,7 +22,7 @@ const AppCanvas = () => {
             // giving rotation to camera to match player ship
             rotation: [0, -Math.PI, 0],
             near: 0.001,
-            far: 100000000,
+            far: 5000000000,
             fov: 40,
           }}
           shadows={false}

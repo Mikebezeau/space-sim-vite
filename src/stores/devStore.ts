@@ -16,6 +16,8 @@ import { roundTenth } from "../util/gameUtil";
 import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 
+import { starTypes } from "../galaxy/galaxyConstants";
+
 import { typePlanetData } from "../solarSystemGen/genPlanetData";
 import { typeGenPlanetData } from "../solarSystemGen/genPlanetData";
 
@@ -118,10 +120,13 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     if (useGenFboTextureStore.getState().gpuCompute === null) {
       useGenFboTextureStore.getState().initComputeRenderer(renderer);
     }
+
     const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
       (planetTypeData) => planetTypeData.planetType === PLANET_TYPE.earthLike
     );
+
     if (planetTypeData) {
+      /*
       const testPlanet = new Planet({
         rngSeed: "666-0",
         planetType: planetTypeData,
@@ -129,24 +134,37 @@ const useDevStore = create<devStoreState>()((set, get) => ({
         distanceFromStar: 0,
         temperature: { min: 0, max: 0, average: 0 },
       });
-      /*
-      const testPlanet = new Star(
-        {
-          age: "1.45e+9",
-          colorHex: "#FF8D23",
-          colorRGB: [1, 0.5529411764705883, 0.13725490196078433],
-          starIndex: 30420,
-          luminosity: 0.5738427122354467,
-          numPlanets: 4,
-          orbitalZonesData: {},
-          planetInnerZoneProb: 0.8,
-          size: 0.9469213561177233,
-          solarMass: 0.7823941332353969,
-          starClass: "K",
-          temperature: 5125,
-        }
-      );
-*/
+      */
+      const testPlanet = new Star({
+        age: "1.45e+9",
+        colorHex: starTypes.colorHex[6],
+        colorRGB: starTypes.colorRGB[6],
+        starIndex: 30420,
+        luminosity: 0.5738427122354467,
+        numPlanets: 4,
+        planetInnerZoneProb: 0.8,
+        orbitalZonesData: {
+          innerSolarSystem: {
+            radiusStart: 0,
+            radiusEnd: 0,
+          },
+          outerSolarSystem: {
+            radiusStart: 0,
+            radiusEnd: 0,
+          },
+          habitableZone: {
+            radiusStart: 0,
+            radiusEnd: 0,
+          },
+          asteroidBelts: [],
+          kuiperBelt: null,
+        },
+        size: 0.9469213561177233,
+        solarMass: 0.7823941332353969,
+        starClass: "K",
+        temperature: 5125,
+      });
+
       // set non zero position to recieve sun light from (0,0,0) position of sun
       testPlanet.object3d.position.set(0, 0, 400);
       set(() => ({

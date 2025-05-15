@@ -10,6 +10,7 @@ class MechWeaponMissile extends MechWeapon implements MechWeaponMissileInt {
   constructor(weaponData?: any) {
     super(weaponData);
 
+    this.isMissile = true; // Set the isMissile property to true
     if (!this.name) this.name = "Missile Weapon";
     this.weaponType = equipData.weaponType.missile;
     if (!this.numMissile) this.numMissile = 1;

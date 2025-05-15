@@ -19,15 +19,15 @@ const SolarSystem = () => {
   useEffect(() => {
     useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
-
+  //TODO do not show current star point in background star scene
   return (
     <>
-      {stars?.map((star, index) =>
+      {stars?.map((star) =>
         star.isActive ? (
           <CelestialBody key={star.id} celestialBody={star} />
         ) : null
       )}
-      {planets?.map((planet, index) =>
+      {planets?.map((planet) =>
         planet.isActive ? (
           <CelestialBody key={planet.id} celestialBody={planet} />
         ) : null

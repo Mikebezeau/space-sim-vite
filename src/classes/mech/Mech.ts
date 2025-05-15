@@ -1,26 +1,27 @@
 import * as THREE from "three";
-import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
 import MechBP from "../mechBP/MechBP";
+import usePlayerControlStore from "../../stores/playerControlsStore";
 import useMechBpBuildStore from "../../stores/mechBpBuildStore";
 import useParticleStore from "../../stores/particleStore";
 import useWeaponFireStore from "../../stores/weaponFireStore";
 import MechWeapon from "../../classes/mechBP/weaponBP/MechWeapon";
 import { loadBlueprint } from "../../util/initEquipUtil";
 import {
-  getObject3dColorList, // list of all colors used by mech design
+  //getObject3dColorList, // list of all colors used by mech design
   getMergedBufferGeom, // merge all meshes into one buffer geometry
   getSimplifiedGeometry, // reduce polygon count of given geometry, used to create the explosion mesh
   getTessellatedExplosionMesh, // break large geometry into smaller triangles for explosion effect
 } from "../../util/mechGeometryUtil";
 import { FPS } from "../../constants/constants";
-// TODO reuse materials from constants
-import { mechMaterial } from "../../constants/mechMaterialConstants";
+//import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
 import { DESIGN_TYPE } from "../../constants/particleConstants";
+import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
+import { setCustomData } from "r3f-perf";
 
 // TODO move MECH_STATE to constants
 export const MECH_STATE = {
@@ -61,15 +62,20 @@ interface mechInt {
   updateExplosionUseFrame: (delta: number, scene?: THREE.Scene) => void;
   isMechDead: () => boolean;
   setMechDead: (scene?: THREE.Scene) => void;
-  updateFireWeaponGroup: (
-    targetQuaternoin?: THREE.Quaternion,
-    enemyWeaponFireTargetVec3?: THREE.Vector3
+  updateMechWeaponsUseFrame: (delta: number) => void;
+  fireReadyWeapons: (
+    targetQuaternoin?: THREE.Quaternion | null,
+    enemyWeaponFireTargetVec3?: THREE.Vector3 | null,
+    fireGroupNum?: number
   ) => void;
+  fireMissile: (missileWeapon: MechWeapon) => void;
   fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
   dispose: () => void;
 }
 
 class Mech implements mechInt {
+  testFlag: boolean; // testing flag for debugging
+
   id: string;
   isPlayer: boolean;
   isEnemy: boolean;
@@ -86,8 +92,10 @@ class Mech implements mechInt {
   builtObject3d: THREE.Object3D;
   waitObject3dLoadMeshTotal: number;
   bufferGeom: THREE.BufferGeometry | null;
-  mechBpColors: THREE.Color[]; // list of colors used in mech design
-  bufferGeomColors: THREE.BufferGeometry[];
+  instancedMeshGeomColors: {
+    mechBpColors: THREE.Color[]; // list of colors used in mech design
+    bufferGeomColors: THREE.BufferGeometry[];
+  };
   explosionMesh: THREE.Mesh | null;
   // obb
   mechCenter: THREE.Vector3;
@@ -120,6 +128,8 @@ class Mech implements mechInt {
     isEnemy: boolean = false, // testing
     isStation: boolean = false // testing
   ) {
+    this.testFlag = false; // testing flag for debugging
+
     this.id = uuidv4();
     this.isPlayer = isPlayer;
     this.isEnemy = isEnemy;
@@ -136,9 +146,11 @@ class Mech implements mechInt {
     this.addedModel3dObjects = new THREE.Object3D(); // added meshes
     //this.builtObject3d set at end of constructor
     this.waitObject3dLoadMeshTotal = 0; // total number of models to be loaded
-    this.bufferGeom = null; // merged geometry for instanced mesh
-    this.mechBpColors = []; // list of colors used in mech design
-    this.bufferGeomColors = []; // merged geometry list of different colors for instanced mesh
+    this.bufferGeom = null; // merged geometry (used for instanced mesh hit detection)
+    this.instancedMeshGeomColors = {
+      mechBpColors: [], // list of colors used in mech design
+      bufferGeomColors: [], // merged geometry list of different colors for instanced mesh
+    };
     this.explosionMesh = null; // for explosion triangles
     this.mechCenter = new THREE.Vector3();
     this.object3dCenterOffset = new THREE.Object3D(); // for proper obb positioning
@@ -275,7 +287,7 @@ class Mech implements mechInt {
       }
       this.setMergedBufferGeom();
       if (this.useInstancedMesh) {
-        // to create multiple instanced meshes for multiple colors
+        // for instanced meshes of multiple colors
         this.setMergedBufferGeomColors();
       }
       // explosion geometry and shader testing
@@ -398,21 +410,34 @@ class Mech implements mechInt {
   }
 
   setMergedBufferGeomColors() {
-    this.mechBpColors = getObject3dColorList(this.builtObject3d);
-    // TODO *** : useMechBpBuildStore -> getCreateMechBpBuild(this._mechBP).***bufferGeomColors***;
-    if (this.mechBpColors.length > 0 && this.builtObject3d && this._mechBP) {
-      this.bufferGeomColors = [];
+    this.instancedMeshGeomColors.mechBpColors =
+      useMechBpBuildStore.getState().getCreateMechBpBuildColors(this._mechBP)
+        ?.instancedMeshGeomColors.mechBpColors || [];
 
-      this.mechBpColors.forEach((color) => {
-        const buildObjColor = new THREE.Object3D();
-        this._mechBP.buildObject3dColor(buildObjColor, color);
-        const buffGeomColor = getMergedBufferGeom(buildObjColor);
-        if (buffGeomColor) {
-          this.bufferGeomColors.push(buffGeomColor);
-        }
-      });
-      console.log("setMergedBufferGeomColors");
+    if (
+      this.instancedMeshGeomColors.mechBpColors.length > 0 &&
+      this.builtObject3d &&
+      this._mechBP
+    ) {
+      this.instancedMeshGeomColors.bufferGeomColors =
+        useMechBpBuildStore.getState().getCreateMechBpBuildColors(this._mechBP)
+          ?.instancedMeshGeomColors.bufferGeomColors || [];
     }
+
+    /*
+    // if not using the useMechBpBuildStore dictionary, create new buffer geometry manually
+    this.instancedMeshGeomColors.mechBpColors = getObject3dColorList(this.builtObject3d);
+
+    this.instancedMeshGeomColors.bufferGeomColors = [];
+    this.instancedMeshGeomColors.mechBpColors.forEach((color) => {
+      const buildObjColor = new THREE.Object3D();
+      this._mechBP.buildObject3dColor(buildObjColor, color);
+      const buffGeomColor = getMergedBufferGeom(buildObjColor);
+      if (buffGeomColor) {
+        this.instancedMeshGeomColors.bufferGeomColors.push(buffGeomColor);
+      }
+    });
+    */
   }
 
   setExplosionMeshFromBufferGeom() {
@@ -423,27 +448,26 @@ class Mech implements mechInt {
         (<THREE.Material>this.explosionMesh.material)?.dispose();
       }
 
-      const expMesh = useMechBpBuildStore
-        .getState()
-        .getCreateMechBpBuild(this._mechBP)?.explosionMesh;
-      if (expMesh) {
-        // get simplified geometry for explosion mesh using useLoaderStore bufferGeom if possible
-        this.explosionMesh =
-          this.addedModel3dObjects.children.length > 0
-            ? // accounting for additional GLB models loaded into addedModel3dObjects
-              getTessellatedExplosionMesh(
-                expolsionShaderMaterial.clone(),
-                getSimplifiedGeometry(this.bufferGeom)
-              )
-            : // using base explosionMesh from mechBpBuildStore
-              // TODO looks like this clone is not working correctly
-              //expMesh.clone();
-              getTessellatedExplosionMesh(
-                expolsionShaderMaterial.clone(),
-                getSimplifiedGeometry(this.bufferGeom)
-              );
+      if (true || this.addedModel3dObjects.children.length > 0) {
+        // expMesh.clone(); not working correctly
+        // accounting for additional GLB models loaded into addedModel3dObjects
+        this.explosionMesh = getTessellatedExplosionMesh(
+          expolsionShaderMaterial.clone(),
+          getSimplifiedGeometry(this.bufferGeom)
+        );
       } else {
-        console.error("Mech.explode(): explosionMesh not set");
+        /*
+        const expMesh = useMechBpBuildStore
+          .getState()
+          .getCreateMechBpBuild(this._mechBP)?.explosionMesh;
+        if (expMesh) {
+          // get simplified geometry for explosion mesh using useLoaderStore bufferGeom if possible
+          this.explosionMesh = // use common explosionMesh from mechBpBuildStore
+            expMesh.clone();
+        } else {
+          console.error("Mech.explode(): explosionMesh not set");
+        }
+        */
       }
     } else {
       console.error(
@@ -459,10 +483,16 @@ class Mech implements mechInt {
     if (this.isMechDead()) {
       return;
     }
+    // TODO: create function for this?
+    const playerPos = useStore.getState().player.object3d.position;
+    const distToPlayer = this.object3d.position.distanceTo(playerPos);
+    // TODO testing this for preformance
+    let distanceFactor = distToPlayer < 100 ? distToPlayer / 100 : 1; // if distance less then 100 let distanceFactor approach 1 // distance factor for explosion particles
+    distanceFactor = Math.max(distanceFactor, 0.25); // clamp distanceFactor
     // weapon fire hit explosion particles
     useParticleStore.getState().effects.addExplosion(position, {
-      numParticles: damage * 25,
-      size: damage / 20 + 0.1, // increase size of particles according to damage
+      numParticles: damage * 25 * distanceFactor,
+      size: (damage / 20 + 0.1) * distanceFactor, // increase size of particles according to damage
       spread: damage * 2 + 40, // increase spread speed according to damage
       lifeTime: 0.75,
       color: useParticleStore.getState().colors.yellow,
@@ -470,8 +500,8 @@ class Mech implements mechInt {
     });
     // contrasting weapon fire hit explosion particles
     useParticleStore.getState().effects.addExplosion(position, {
-      numParticles: damage * 10,
-      size: damage / 20 + 0.1, // increase size of particles according to damage
+      numParticles: damage * 10 * distanceFactor,
+      size: (damage / 20 + 0.1) * distanceFactor, // increase size of particles according to damage
       spread: damage * 2 + 200, // increase spread speed according to damage
       lifeTime: 1.5,
       color: useParticleStore.getState().colors.white,
@@ -484,6 +514,7 @@ class Mech implements mechInt {
     }
   }
 
+  // TODO : sometimes exploded mech objects are left in the scene
   explode(scene?: THREE.Scene) {
     if (this.isMechDead()) {
       return;
@@ -500,22 +531,19 @@ class Mech implements mechInt {
     }
 
     // adding immediate explosion particles
-    useParticleStore.getState().effects.addExplosion(
-      this.object3d.position,
-      {
-        numParticles: 3000,
-        size: this._mechBP.scale / 5, // increase size of particles according to damage
-        spread: this._mechBP.scale * 50, // increase spread speed according to damage
-        lifeTime: 0.5,
-        color: useParticleStore.getState().colors.white,
-      } /*
-      3000,
-      this._mechBP.scale / 5, // increase size of particles according to scale of mech
-      this._mechBP.scale * 50, // increase spread speed according to scale of mech
-      0.5, // lifeTime in seconds
-      useParticleStore.getState().colors.white
-      */
-    );
+    // get distance to player
+    const playerPos = useStore.getState().player.object3d.position;
+    const distToPlayer = this.object3d.position.distanceTo(playerPos);
+    // TODO testing this for preformance
+    let distanceFactor = distToPlayer < 100 ? distToPlayer / 100 : 1; // if distance less then 100 let distanceFactor approach 1 // distance factor for explosion particles
+    //distanceFactor = Math.max(distanceFactor, 0.25); // clamp distanceFactor
+    useParticleStore.getState().effects.addExplosion(this.object3d.position, {
+      numParticles: 3000 * distanceFactor,
+      size: (this._mechBP.scale / 5) * distanceFactor, // increase size of particles according to damage
+      spread: this._mechBP.scale * 50, // increase spread speed according to damage
+      lifeTime: 0.5,
+      color: useParticleStore.getState().colors.white,
+    });
 
     // add explosion mesh to object3d
     if (this.explosionMesh) {
@@ -530,7 +558,6 @@ class Mech implements mechInt {
       const explosionMesh = useMechBpBuildStore
         .getState()
         .getCreateMechBpBuild(this._mechBP)?.explosionMesh;
-      // TODO explosionMesh should already be set - fix above
       if (explosionMesh) this.object3d.add(explosionMesh.clone());
       else {
         console.error("Mech.explode(): explosionMesh not set");
@@ -539,6 +566,7 @@ class Mech implements mechInt {
   }
 
   updateMechUseFrame(delta: number, scene?: THREE.Scene) {
+    this.updateMechWeaponsUseFrame(delta);
     this.updateExplosionUseFrame(delta, scene);
   }
 
@@ -642,26 +670,55 @@ class Mech implements mechInt {
     */
   }
 
+  updateMechWeaponsUseFrame(delta: number) {
+    this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
+      weapon.weaponFireData.timeTracker += delta;
+      if (
+        weapon.weaponFireData.timeToReload <= weapon.weaponFireData.timeTracker
+      ) {
+        // ready all reloaded weapons
+        if (!weapon.weaponFireData.isReady) {
+          weapon.weaponFireData.isReady = true;
+          if (this.isPlayer) {
+            // trigger weapon readout rerender
+            usePlayerControlStore.getState().toggleWeaponUpdate();
+          }
+        }
+      }
+    });
+  }
+
   // TODO this function is not complete
   // note - called every frame
   // TODO impliment weapon fire groups
   // TODO create getWeaponPosition function to get weapon position
-  updateFireWeaponGroup(
+  fireReadyWeapons(
     targetQuaternoin?: THREE.Quaternion | null,
-    enemyWeaponFireTargetVec3?: THREE.Vector3
+    enemyWeaponFireTargetVec3?: THREE.Vector3 | null,
+    fireGroupNum?: number
   ) {
     /*
     if (this.isPlayer) {
-      this.fireMissile();
+      this.fireMissile(missileWeapon: MechWeapon);
     }
     */
+    let weaponList: MechWeapon[] | null = null;
+    if (fireGroupNum !== undefined) {
+      weaponList = this.mechBP.weaponList.filter(
+        (weapon: MechWeapon) =>
+          weapon.weaponFireData.fireGroupNum === fireGroupNum
+      );
+    } else {
+      weaponList = this.mechBP.weaponList;
+    }
 
-    if (this.mechBP?.weaponList) {
+    if (weaponList) {
       // TODO add these to the class instead of const above
       this.weaponFireMechParentObj.position.copy(this.object3d.position);
       this.weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
       // enemy aiming
       if (enemyWeaponFireTargetVec3) {
+        // TODO move position of target according to relative position of weapon
         this.weaponFireMechParentObj.lookAt(enemyWeaponFireTargetVec3);
         this.weaponFireEuler.copy(this.weaponFireMechParentObj.rotation);
         // player aiming
@@ -674,33 +731,29 @@ class Mech implements mechInt {
         // set weapon fire direction
         this.weaponFireEuler.setFromQuaternion(this.weaponFireQuaternoin);
       }
+
       // get list of weapons that are ready to fire
-      const readyWeapons = this.mechBP.weaponList.filter(
+      const readyWeapons = weaponList.filter(
         (weapon: MechWeapon) =>
           weapon.weaponFireData.isReady &&
-          weapon.weaponFireData.chainFireTimeToFire < Date.now() //TODO change to delta time
+          weapon.weaponFireData.chainFireTimeToFire <
+            weapon.weaponFireData.timeTracker
       );
-      // ready all reloaded weapons
-      this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
-        if (weapon.weaponFireData.timeToReload < Date.now()) {
-          weapon.weaponFireData.isReady = true;
-        }
-      });
-
-      // for each weapon type array
-      // testing give enemies a slower rate of fire
-      const RoF = enemyWeaponFireTargetVec3 ? 1 : 5; // rate of fire
-      const RoFTime = 1000 / RoF; // 1 second divided by RoF
-      // RoFTime divided by num weapons in the group
-
-      // TODO add weapon burst mode value for grouped bursts
-      const burstModeNormValue = 0.5;
-
-      const groupNextFireTime =
-        (RoFTime / this.mechBP.weaponList.length) * burstModeNormValue;
 
       // find weapon with lowest orderNumber that has not been fired if weapon is ready to fire
       if (readyWeapons.length > 0) {
+        // for each weapon type array
+        // testing give enemies a slower rate of fire
+        const RoF = readyWeapons[0].burstValue() + 1; // rate of fire
+        const RoFTime = 1 / RoF; // 1 second divided by RoF
+        // RoFTime divided by num weapons in the group
+
+        // TODO add weapon burst mode value for grouped bursts
+        const burstModeNormValue = 1; //0.5;
+
+        const groupNextFireTime = //TODO weaponList should be weapon group list
+          (RoFTime / weaponList.length) * burstModeNormValue;
+
         const weaponToFire = readyWeapons.reduce((prev, curr) =>
           prev.weaponFireData.orderNumber < curr.weaponFireData.orderNumber
             ? prev
@@ -709,19 +762,19 @@ class Mech implements mechInt {
         // TODO will have to set enemy weapon fire direction here
         // - account for weapon offset when looking at player
         this.fireWeapon(weaponToFire, this.weaponFireEuler);
-        weaponToFire.weaponFireData.isReady = false;
-        weaponToFire.weaponFireData.timeToReload = Date.now() + RoFTime;
-        // add delay to all weapons in the group
-        this.mechBP.weaponList.forEach((weapon: MechWeapon) => {
-          // TODO change to delta time
+
+        // chain fire: add delay to ready weapons in the group if there are multiple weapons, and isFireModeChain
+        readyWeapons.forEach((weapon: MechWeapon) => {
           weapon.weaponFireData.chainFireTimeToFire =
-            Date.now() + groupNextFireTime;
+            weaponList.length > 1 && weapon.weaponFireData.isFireModeChain
+              ? weapon.weaponFireData.timeTracker + groupNextFireTime
+              : 0;
         });
       }
     }
   }
 
-  fireMissile() {
+  fireMissile(missileWeapon: MechWeapon) {
     function addVectors(
       vec1: THREE.Vector3,
       vec2: THREE.Vector3
@@ -749,44 +802,61 @@ class Mech implements mechInt {
         .applyQuaternion(this.object3d.quaternion),
       getTargetPosition, // Function to get the target position
       getTargetVelocity, // Function to get the target velocity
-      100, // Max speed
-      Math.PI / 12, // Max turn angle
+      500, // Max speed
+      Math.PI / 6, // Max turn angle
       500, // Acceleration
-      15, // Lifespan in seconds
-      1, // Miss radius
+      5, // Lifespan in seconds
+      5, // Miss radius
       (position) => {
-        console.log("Missile exploded at:", position);
+        //console.log("Missile exploded at:", position);
       }, // Callback for explosion
-      false, // Not a cluster missile
-      0, // Cluster count
-      0 // Spread angle
+      true, // Not a cluster missile
+      4, // Cluster count
+      Math.PI / 6 // Spread angle
     );
   }
 
   fireWeapon(weapon: MechWeapon, weaponFireEuler: THREE.Euler) {
+    const RoFTime = 1 / (weapon.burstValue() + 1); // 1 second divided by RoF
+    weapon.weaponFireData.isReady = false;
+    weapon.weaponFireData.timeToReload = RoFTime;
+    weapon.weaponFireData.timeTracker = 0; // reset timeTracker for weapon
     // - use weapon.offset and weaponFireMechParentObj.rotation
     // weaponFireWeaponChildObj is a child of weaponFireMechParentObj
     // it's position is relative to weaponFireMechParentObj
     this.weaponFireWeaponChildObj.position.copy(weapon.offset);
+    // using this.weaponFireHelperVec3 reusable variable
     this.weaponFireWeaponChildObj.getWorldPosition(this.weaponFireHelperVec3);
+    // if a missile weapon addMissileFire(...)
+    if (weapon.isMissile) {
+      this.fireMissile(weapon);
+    } else {
+      /*
+      if (!this.testFlag) {
+        this.testFlag = true; // testing
+      }
+      */
+      if (weapon.getAmmoCount() > 0) {
+        weapon.reduceAmmo();
+        // fire weapon / add weaponFire to weaponFireList for hit detection
+        useWeaponFireStore
+          .getState()
+          .addWeaponFire(
+            this.id,
+            weapon,
+            this.weaponFireHelperVec3,
+            weaponFireEuler
+          );
 
-    // fire weapon / add weaponFire to weaponFireList for hit detection
-    useWeaponFireStore
-      .getState()
-      .addWeaponFire(
-        this.id,
-        weapon,
-        this.weaponFireHelperVec3,
-        weaponFireEuler
-      );
-
-    // if player show fire effect
-    if (this.isPlayer) {
-      useParticleStore.getState().playerEffects.addWeaponFireFlash(
-        // player effects are centered on player position
-        this.weaponFireWeaponChildObj.position,
-        this.object3d.rotation
-      );
+        // if player show fire effect
+        if (this.isPlayer) {
+          useParticleStore.getState().playerEffects.addWeaponFireFlash(
+            // player effects are centered on player position
+            this.weaponFireWeaponChildObj.position,
+            this.object3d.rotation
+          );
+        }
+      }
     }
     /*
     } else {
@@ -795,13 +865,12 @@ class Mech implements mechInt {
   }
 
   dispose() {
+    // dispose unused mechMaterial[color] constant materials?
     // dispose of all resources
     this.object3d.clear();
     this.builtObject3d.clear();
     this.addedModel3dObjects.clear();
     this.bufferGeom?.dispose();
-    // TODO fix below
-    //this.bufferGeomColors.forEach((geom) => geom.dispose());
     this.explosionMesh?.geometry.dispose();
     (<THREE.ShaderMaterial>this.explosionMesh?.material)?.dispose();
   }

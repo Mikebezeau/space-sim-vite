@@ -28,14 +28,15 @@ const FlightHud = () => {
   const hudLargeOuterCirlcleRef = useRef<HTMLDivElement | null>(null);
 
   const setSizes = () => {
-    const diameter =
-      window.innerWidth > window.innerHeight
-        ? window.innerHeight * 0.8
-        : window.innerWidth * 0.9;
+    const diameter = Math.min(
+      window.innerHeight * 0.8,
+      window.innerWidth * 0.9
+    );
 
     useHudTargtingStore.getState().hudRadiusPx = diameter / 2;
-    const targetDiameterPx = diameter / 20;
-    useHudTargtingStore.getState().setTargetDiameterPx(targetDiameterPx);
+    const flightHudTargetDiameterPx = diameter / 20;
+    useHudTargtingStore.getState().flightHudTargetDiameterPx =
+      flightHudTargetDiameterPx;
 
     if (hudLargeOuterCirlcleRef.current !== null) {
       hudLargeOuterCirlcleRef.current.style.marginTop = `-${diameter / 2}px`;
@@ -62,7 +63,7 @@ const FlightHud = () => {
       <div
         ref={(ref) => {
           if (ref) {
-            useHudTargtingStore.getState().playerHudCrosshairDiv = ref;
+            useHudTargtingStore.getState().playerHudCrosshairInnerDiv = ref;
           }
         }}
         className="opacity-50 absolute w-0 h-0 top-1/2 left-1/2 border-2 border-white"

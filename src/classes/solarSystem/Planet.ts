@@ -39,7 +39,7 @@ class Planet extends CelestialBody implements PlanetInt {
     this.setNewBodyData(genPlanetData);
   }
 
-  setNewBodyData(genPlanetData: typeGenPlanetData) {
+  setNewBodyData(genPlanetData: any) {
     this.clearBodyData();
     this.isActive = true;
     let { rngSeed, planetType, distanceFromStar, temperature } = genPlanetData;

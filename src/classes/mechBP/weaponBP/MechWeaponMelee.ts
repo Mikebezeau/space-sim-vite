@@ -12,6 +12,7 @@ class MechWeaponMelee extends MechWeapon implements MechWeaponMeleeInt {
   constructor(weaponData?: any) {
     super(weaponData);
 
+    this.isMelee = true;
     if (!this.name) this.name = "Melee Weapon";
     this.weaponType = equipData.weaponType.melee;
   }

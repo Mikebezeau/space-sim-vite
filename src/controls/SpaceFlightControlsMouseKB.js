@@ -43,17 +43,22 @@ const ControlsMouseKBSpaceFlight = () => {
 
   //main actions
   useMouseDown((e) => {
-    if (e.button === 0) {
-      // left click
-      if (
-        // if in combat mode
-        usePlayerControlsStore.getState().playerControlMode ===
-          PLAYER.controls.combat && // in combat
-        usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
-          PLAYER.action.manualControl // player manually piloting mech
-      ) {
+    if (
+      // if in combat mode
+      usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.combat && // in combat
+      usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
+        PLAYER.action.manualControl // player manually piloting mech
+    ) {
+      if (e.button === 0) {
+        // left click
         // if in combat mode begin shooting
         actions.setShoot(true);
+      }
+      if (e.button === 2) {
+        // right click
+        // if in combat mode begin shooting
+        actions.setShoot2(true);
       }
     }
   });
@@ -73,6 +78,8 @@ const ControlsMouseKBSpaceFlight = () => {
     }
     // right click
     if (e.button === 2) {
+      // turn off shooting
+      actions.setShoot2(false);
       // right click
       usePlayerControlsStore.getState().playerControlActions.rightClick();
     }

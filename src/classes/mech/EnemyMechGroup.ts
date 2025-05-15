@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
 import useStore from "../../stores/store";
-import useParticleStore from "../../stores/particleStore";
 import EnemyMechBoid from "./EnemyMechBoid";
 import mechDesigns from "../../equipment/data/mechDesigns";
 import BoidController from "../BoidController";

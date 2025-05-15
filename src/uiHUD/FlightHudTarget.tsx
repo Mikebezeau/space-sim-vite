@@ -20,8 +20,8 @@ const FlightHudTarget = (props: targetHUDInt) => {
     (state) => state.focusedHudTargetId
   );
 
-  const targetDiameterPx = useHudTargtingStore(
-    (state) => state.targetDiameterPx
+  const flightHudTargetDiameterPx = useHudTargtingStore(
+    (state) => state.flightHudTargetDiameterPx
   );
 
   const targetIsSelected: boolean =
@@ -41,8 +41,8 @@ const FlightHudTarget = (props: targetHUDInt) => {
       : 12 // non-focused / seleced combat target
     : // non-combat targets
     targetIsSelected || targetIsFocused
-    ? targetDiameterPx // focused / seleced non-combat target
-    : targetDiameterPx * 0.75; // non-focused / seleced non-combat target
+    ? flightHudTargetDiameterPx // focused / seleced non-combat target
+    : flightHudTargetDiameterPx * 0.75; // non-focused / seleced non-combat target
 
   const combatMode: boolean = false;
 

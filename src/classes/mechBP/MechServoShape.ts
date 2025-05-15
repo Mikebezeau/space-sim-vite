@@ -7,7 +7,9 @@ import {
   getGeometryFromList,
 } from "../../util/geometryUtil";
 import { roundhundredth } from "../../util/gameUtil";
-import { getMaterial } from "../../util/materialUtil";
+// TODO clean up getMaterial
+//import { getMaterial } from "../../util/materialUtil";
+import { getMechMaterialColor } from "../../3d/mechs/materials/mechMaterials";
 import { GEO_SHAPE_TYPE } from "../../constants/geometryConstants";
 
 export const EDIT_PART_METHOD = {
@@ -175,28 +177,12 @@ class MechServoShape implements MechServoShapeInt {
           servoShapeScaleMirrorAxisZ
         );
 
-        // TODO only use new meterial if for different colors
-        // create material dictionary for reuse
-        servoShapeMesh.material = new THREE.MeshLambertMaterial({
-          color: new THREE.Color(color),
-          flatShading: true,
-          side: THREE.FrontSide,
-        });
+        // only use new meterial if for different colors
+        // getMechMaterialColor uses mechMaterialColor dictionary for reuse
+        servoShapeMesh.material = getMechMaterialColor(color);
         // TODO imporve implimentation of getMaterial
-        // see if color can be changed for copies of the same material
         // reuse as many materials as possible
-        /*
-        getMaterial(
-          parentServo,
-          servoShape,
-          thisColor,
-          flatShading,
-          damageReadoutMode,
-          editMode,
-          editPartId,
-          isWireFrame
-        );
-*/
+
         servoShapesGroup.add(servoShapeMesh);
       }
     });

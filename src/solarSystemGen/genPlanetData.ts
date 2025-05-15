@@ -56,9 +56,9 @@ const calculateTemperature = (
 const determinePlanetType = (
   rng: () => number,
   starData: typeStarData,
-  orbitalZonesData: typeObitalZonesData,
   distanceFromStar: number
 ) => {
+  const orbitalZonesData = starData.orbitalZonesData;
   let zoneType = PLANET_ZONES.inner;
 
   if (
@@ -130,7 +130,6 @@ const genPlanetData = (starData: typeStarData, index: number = 0) => {
   const planetType: typePlanetData | undefined = determinePlanetType(
     rng,
     starData,
-    orbitalZonesData,
     distanceFromStar
   );
 

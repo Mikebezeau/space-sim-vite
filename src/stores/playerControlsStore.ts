@@ -40,6 +40,9 @@ interface playerControlStoreState {
     rightClick: () => void;
     middleClick: () => void;
   };
+  // TODO move shoot to here
+  weaponUpdateToggle: boolean;
+  toggleWeaponUpdate: () => void;
 
   flightCameraLookRotation: {
     rotateX: number;
@@ -130,11 +133,11 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           usePlayerControlsStore.getState().actions
             .selectedTargetActionButtonCallback !== null
         ) {
-          // trigger action button if player manual control mode
-          // or if using touch controls
+          // trigger action button if player inspect control mode
           if (
-            get().playerActionMode === PLAYER.action.manualControl ||
-            IS_TOUCH_SCREEN
+            get().playerControlMode === PLAYER.controls.scan &&
+            (get().playerActionMode === PLAYER.action.manualControl ||
+              IS_TOUCH_SCREEN)
           ) {
             usePlayerControlsStore.getState().actions
               .selectedTargetActionButtonCallback!();
@@ -150,6 +153,11 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           get().actions.actionModeSelect(PLAYER.action.inspect);
         }
       },
+    },
+
+    weaponUpdateToggle: false,
+    toggleWeaponUpdate: () => {
+      set(() => ({ weaponUpdateToggle: !get().weaponUpdateToggle }));
     },
 
     flightCameraLookRotation: {
@@ -486,7 +494,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         // towards where player wants to look
         setPlayerCameraRotation: (camera) => {
           // additional camera rotation based on mouse position (looking around)
-          // TODO standardize this function similar use in weaponFireTestFunction & hudTargtingGalaxyMapStore -> setSelectedTargetIndex -> updateFireWeaponGroup?
+          // TODO standardize this function similar use in weaponFireTestFunction & hudTargtingGalaxyMapStore -> setSelectedTargetIndex -> fireReadyWeapons?
           // actually just store quaternoin in state
           adjustCameraViewQuat.setFromAxisAngle(
             {
@@ -514,7 +522,22 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           if (useStore.getState().mutation.shoot) {
             useStore
               .getState()
-              .player.updateFireWeaponGroup(adjustCameraViewQuat);
+              .player.fireReadyWeapons(
+                adjustCameraViewQuat,
+                null,
+                useStore.getState().player.mechBP.weaponList[0].weaponFireData
+                  .fireGroupNum
+              );
+          }
+          if (useStore.getState().mutation.shoot2) {
+            useStore
+              .getState()
+              .player.fireReadyWeapons(
+                adjustCameraViewQuat,
+                null,
+                useStore.getState().player.mechBP.weaponList[4].weaponFireData
+                  .fireGroupNum
+              );
           }
         },
       },
@@ -549,6 +572,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           useHudTargtingStore.getState().updateTargetHUD(camera);
           useHudTargtingStore.getState().updatePlayerHudCrosshairDiv();
         }
+        // update mech
+        useStore.getState().player.updateMechUseFrame(delta);
         // fire weapon
         get().updateFrame.updateFrameHelpers.weaponFireTestFunction();
       },

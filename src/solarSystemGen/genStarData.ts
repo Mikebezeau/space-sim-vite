@@ -11,7 +11,7 @@ export type typeStarData = {
   luminosity: number;
   temperature: number;
   orbitalZonesData: typeObitalZonesData;
-  age: number;
+  age: string;
   colorHex: string;
   colorRGB: number[];
   numPlanets: number;

@@ -38,11 +38,13 @@ const SpaceFlightPlanetsScene = () => {
     // adjustments with playerLocalZonePosition position
     updatePlayerMechAndCamera(delta, camera);
 
+    // offsetting the player local zone group
     if (relativePlayerLocalZoneGroupRef.current) {
       relativePlayerLocalZoneGroupRef.current.position
         .copy(playerLocalZonePosition)
         .multiplyScalar(-1);
     }
+    // offsetting the enemy local zone group
     if (enemyRelativePlayerZoneGroupRef.current) {
       enemyRelativePlayerZoneGroupRef.current.position.copy(
         enemyGroup.getRealWorldPosition()
@@ -53,7 +55,7 @@ const SpaceFlightPlanetsScene = () => {
 
   return (
     <>
-      <ambientLight intensity={0.2} color={new Color("#AAAAFF")} />
+      <ambientLight intensity={0.4} color={new Color("#AAAAFF")} />
       <PlayerMech />
       <WeaponFire />
       <Particles />
@@ -69,7 +71,7 @@ const SpaceFlightPlanetsScene = () => {
 
       <group ref={enemyRelativePlayerZoneGroupRef}>
         <EnemyMechs enemyGroup={enemyGroup} />
-        <ObbTest ref={obbBoxForwardedRefs} />
+        {/*<ObbTest ref={obbBoxForwardedRefs} />*/}
       </group>
     </>
   );

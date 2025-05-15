@@ -34,17 +34,13 @@ export type htmlHudTargetType = {
   entity?: SpaceStationMech | EnemyMechGroup | CelestialBody;
 };
 
-// reusable objects
-const dummyVec3 = new Vector3();
-
 interface hudTargetingGalaxyMapStoreState {
   // CSS HUD targets
   isMouseOutOfHudCircle: boolean;
   hudRadiusPx: number;
-  targetDiameterPx: number;
-  setTargetDiameterPx: (targetDiameterPx: number) => void;
+  flightHudTargetDiameterPx: number;
   // HTML HUD player direction control target
-  playerHudCrosshairDiv: HTMLDivElement | null;
+  playerHudCrosshairInnerDiv: HTMLDivElement | null;
   updatePlayerHudCrosshairDiv: () => void;
   // HTML HUD Targets
   generateTargets: () => void;
@@ -79,28 +75,41 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
   (set, get) => ({
     // HUD Targeting CSS HUD
     hudRadiusPx: 0,
-    targetDiameterPx: 0,
-    setTargetDiameterPx: (targetDiameterPx) => {
-      set(() => ({ targetDiameterPx }));
-    },
+    flightHudTargetDiameterPx: 0,
     isMouseOutOfHudCircle: false, // used in custom cursor
-    playerHudCrosshairDiv: null,
+    playerHudCrosshairInnerDiv: null,
     updatePlayerHudCrosshairDiv: () => {
       const mouseControlNormalVec2 =
         useStore.getState().mutation.mouseControlNormalVec2;
 
-      if (get().playerHudCrosshairDiv !== null) {
-        get().playerHudCrosshairDiv!.style.marginLeft = `${
-          mouseControlNormalVec2.x * get().hudRadiusPx
+      if (get().playerHudCrosshairInnerDiv !== null) {
+        get().playerHudCrosshairInnerDiv!.style.marginLeft = `${
+          mouseControlNormalVec2.x * get().hudRadiusPx - 1.5
         }px`;
-        get().playerHudCrosshairDiv!.style.marginTop = `${
-          mouseControlNormalVec2.y * get().hudRadiusPx
+        get().playerHudCrosshairInnerDiv!.style.marginTop = `${
+          mouseControlNormalVec2.y * get().hudRadiusPx - 1
         }px`;
       }
     },
     generateTargets: () => {
       const htmlHudTargets: htmlHudTargetType[] = [];
-      // planets
+      // stars
+      if (useStore.getState().stars.length > 0) {
+        const targetsStars: htmlHudTargetType[] = [];
+        useStore.getState().stars.forEach((star, index) => {
+          if (!star.isActive) return;
+          targetsStars.push({
+            id: `${HTML_HUD_TARGET_TYPE.PLANET}-star-${index}`,
+            targetType: HTML_HUD_TARGET_TYPE.PLANET,
+            viewAngle: 0,
+            label: "STAR " + star.rngSeed,
+            color: "", //star.textureMapLayerOptions[0].baseColor || "",
+            entity: star,
+            scanProgressNorm: 0,
+          });
+        });
+        htmlHudTargets.push(...targetsStars);
+      } // planets
       if (useStore.getState().planets.length > 0) {
         const targetsPlanets: htmlHudTargetType[] = [];
         useStore.getState().planets.forEach((planet, index) => {

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import useWeaponFireStore from "../../stores/weaponFireStore";
-import { MissileInstancedMesh } from "./MissileInstancedMesh ";
+import MissileInstancedMesh from "./MissileInstancedMesh ";
 import { DefenseNodesHelper } from "../../scenes/testingScene/TestEnemyAttackScene";
 import { defenseNodesType } from "../../classes/mech/EnemyMechGroup";
 import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
@@ -82,4 +82,4 @@ const WeaponFire = () => {
   );
 };
 
-export default WeaponFire;
+export default memo(WeaponFire);
