@@ -30,8 +30,9 @@ const AppCanvas = () => {
           gl={{
             logarithmicDepthBuffer: true,
             //precision: "highp", // "highp", "mediump" or "lowp"
-            //powerPreference: "default", // "high-performance", "low-power" or "default"
-            antialias: navigator.gpu ? true : false,
+            // NOTE setting powerPreference & antialias false to ease load on GPU
+            powerPreference: "default", // "high-performance", "low-power" or "default"
+            antialias: false, //navigator.gpu ? true : false,
             alpha: true,
           }}
           onCreated={({ gl, camera } /*{gl, camera, scene}*/) => {

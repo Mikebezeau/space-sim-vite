@@ -36,7 +36,7 @@ function App() {
     }
   }, []);
 
-  useNoContextMenu(); // disable right click context menu
+  //useNoContextMenu(); // disable right click context menu
   /*
   useWindowResize(() => {
     // callback function code here

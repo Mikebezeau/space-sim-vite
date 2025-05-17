@@ -10,6 +10,9 @@ import { PLAYER } from "../constants/constants";
 import {
   PLANET_TYPE,
   PLANET_TYPE_DATA,
+  compositions,
+  additionalThemes,
+  culturalClassifications,
 } from "../constants/planetDataConstants";
 import { roundTenth } from "../util/gameUtil";
 
@@ -122,19 +125,26 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     }
 
     const planetTypeData = Object.values(PLANET_TYPE_DATA).find(
-      (planetTypeData) => planetTypeData.planetType === PLANET_TYPE.earthLike
+      (planetTypeData) => planetTypeData.planetType === PLANET_TYPE.jovian
     );
 
+    const specialWorldsCollection = {
+      compositions: [],
+      additionalThemes: [],
+      culturalClassifications: [
+        //culturalClassifications[2],
+      ],
+    };
+
     if (planetTypeData) {
-      /*
       const testPlanet = new Planet({
         rngSeed: "666-0",
         planetType: planetTypeData,
-        subClasses: [],
+        specialWorldsCollection,
         distanceFromStar: 0,
         temperature: { min: 0, max: 0, average: 0 },
       });
-      */
+      /*
       const testPlanet = new Star({
         age: "1.45e+9",
         colorHex: starTypes.colorHex[6],
@@ -164,6 +174,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
         starClass: "K",
         temperature: 5125,
       });
+      */
 
       // set non zero position to recieve sun light from (0,0,0) position of sun
       testPlanet.object3d.position.set(0, 0, 400);
@@ -177,9 +188,8 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       const genPlanetData: typeGenPlanetData = {
         rngSeed: "666",
         planetType: planetTypeData,
-        subClasses: [],
-        distanceFromStar: 1000,
-        temperature: { min: 30, max: 30, average: 30 },
+        distanceFromStar: 0,
+        temperature: { min: 0, max: 0, average: 0 },
       };
       get().testPlanet!.setNewBodyData(genPlanetData);
       // set non zero position to recieve sun light from (0,0,0) position of sun

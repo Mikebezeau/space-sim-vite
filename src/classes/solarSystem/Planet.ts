@@ -6,12 +6,14 @@ import { getFromRange } from "../../solarSystemGen/genStarData";
 import {
   typePlanetData,
   typeGenPlanetData,
+  typeSpecialWorldsCollection,
 } from "../../solarSystemGen/genPlanetData";
+import { typeSpecialWorlds } from "../../constants/planetDataConstants";
 import {
   typeTextureMapOptions,
   PLANET_CLASS_TEXTURE_MAP,
   PLANET_TYPE_TEXTURE_MAP,
-} from "../../constants/planetDataConstants";
+} from "../../constants/planetTextureClassTypeLayers";
 import { PLANET_TYPE_TEXTURE_LAYERS } from "../../constants/planetTextureConstants";
 import {
   AU,
@@ -23,11 +25,12 @@ import {
 interface PlanetInt {
   setNewBodyData(genPlanetData: typeGenPlanetData): void;
   setDefaultGpuTextureOptions(): void;
+  setSpecialWorldsTextureLayers(): void;
 }
 
 class Planet extends CelestialBody implements PlanetInt {
   data: typePlanetData;
-  subClasses: number[];
+  specialWorldsCollection: typeSpecialWorldsCollection;
   distanceFromStar: number;
 
   constructor(genPlanetData: typeGenPlanetData) {
@@ -38,20 +41,26 @@ class Planet extends CelestialBody implements PlanetInt {
 
     this.setNewBodyData(genPlanetData);
   }
-
+  // TODO fix type issue - planet and star use different types - causes issue trying to accept either/or
   setNewBodyData(genPlanetData: any) {
     this.clearBodyData();
     this.isActive = true;
-    let { rngSeed, planetType, distanceFromStar, temperature } = genPlanetData;
+    let {
+      rngSeed,
+      planetType,
+      specialWorldsCollection,
+      distanceFromStar,
+      temperature,
+    } = genPlanetData;
     this.rngSeed = rngSeed;
     this.data = planetType; //planet.toJSONforHud();
-    this.subClasses = [];
+    this.specialWorldsCollection = specialWorldsCollection;
     this.distanceFromStar = distanceFromStar;
     this.temperature = temperature;
 
     // planet size and mass
     const rng = seedrandom(rngSeed);
-    const fixedRangeRandom = rng();
+    const fixedRangeRandom = rng(); // radius and mass are linked by fixedRangeRandom
     this.earthRadii = getFromRange(fixedRangeRandom, planetType.size);
     this.earthMasses = getFromRange(fixedRangeRandom, planetType.mass);
     this.radius = this.earthRadii * EARTH_RADIUS_KM * PLANET_SCALE;
@@ -67,16 +76,12 @@ class Planet extends CelestialBody implements PlanetInt {
     // tilt
     //object3d.rotation.set(axialTilt * (Math.PI / 180), 0, 0); //radian = degree x (M_PI / 180.0);
 
-    // set texture options for genTexture
+    // set texture layer 0 (base layer) options for genTexture
     this.setDefaultGpuTextureOptions();
-    // additional default layers (layer index > 0) by planet class
-    PLANET_TYPE_TEXTURE_LAYERS[this.data.planetType].forEach(
-      (layer: typeTextureMapOptions, index: number) => {
-        // set default layer isLayerActive = true for all layers
-        layer.isLayerActive = true; // set active
-        this.setTextureLayer(index + 1, layer);
-      }
-    );
+
+    // additional special worlds layers
+    this.setSpecialWorldsTextureLayers();
+
     // generate terrian texture map
     this.genTexture();
   }
@@ -98,14 +103,52 @@ class Planet extends CelestialBody implements PlanetInt {
     // set scale by planet size
     textureOptions.scale = textureOptions.scale || 1; // * this.earthRadii;
     this.textureMapLayerOptions[0] = textureOptions;
-    // textureMapLayerOptions layer 0 is the base layer
-    // maximum 10 layers
+
+    this.setShaderColors();
+
+    // rest of the layers (1-9) are not active by default
     for (let i = 1; i < 10; i++) {
       this.textureMapLayerOptions[i] = {
         isLayerActive: false,
       };
     }
-    this.setShaderColors();
+
+    // additional default layers (layer index > 0) by planet class
+    PLANET_TYPE_TEXTURE_LAYERS[this.data.planetType].forEach(
+      (layer: typeTextureMapOptions, index: number) => {
+        // set default layer isLayerActive = true for all layers
+        layer.isLayerActive = true; // set active
+        // TODO fix GPU errors to much going on
+        this.setTextureLayer(index + 1, layer);
+      }
+    );
+  }
+
+  setSpecialWorldsTextureLayers() {
+    if (this.specialWorldsCollection === undefined) return;
+    const specialWorldList = [
+      ...this.specialWorldsCollection.compositions,
+      ...this.specialWorldsCollection.additionalThemes,
+      ...this.specialWorldsCollection.culturalClassifications,
+    ];
+    if (specialWorldList) {
+      specialWorldList.forEach((specialWorld: typeSpecialWorlds) => {
+        specialWorld.textureLayers.forEach(
+          (textureOptionsList: typeTextureMapOptions[]) => {
+            textureOptionsList.forEach((textureOptions) => {
+              const layerIndex = this.textureMapLayerOptions.findIndex(
+                (layer) => !layer.isLayerActive
+              );
+              if (layerIndex === -1) {
+                console.warn("Max texture layers, not adding new layer.");
+              } else {
+                this.setTextureLayer(layerIndex, textureOptions);
+              }
+            });
+          }
+        );
+      });
+    }
   }
 }
 

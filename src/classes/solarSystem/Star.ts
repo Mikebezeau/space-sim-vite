@@ -39,8 +39,8 @@ class Star extends CelestialBody implements StarInt {
       persistence: 0.6,
       lacunarity: 1.7,
       isDoubleNoise: true,
-      baseColor: starData.colorHex,
-      secondColor: "#FFFFFF",
+      lowAltColor: starData.colorHex,
+      hightAltColor: "#FFFFFF",
       craterIntensity: 0,
 
       // create version for star - set texture options for genTexture

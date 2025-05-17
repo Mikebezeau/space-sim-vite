@@ -9,6 +9,8 @@ const SolarSystem = () => {
     (state) => state.playerCurrentStarIndex
   );
 
+  const isGenNewSystem = useStore((state) => state.isGenNewSystem);
+
   // these arrays do not trigger re-render when player changes star
   // the elements are reused when player changes star
   const stars = useStore((state) => state.stars);
@@ -19,18 +21,23 @@ const SolarSystem = () => {
   useEffect(() => {
     useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
+
   //TODO do not show current star point in background star scene
   return (
     <>
-      {stars?.map((star) =>
-        star.isActive ? (
-          <CelestialBody key={star.id} celestialBody={star} />
-        ) : null
-      )}
-      {planets?.map((planet) =>
-        planet.isActive ? (
-          <CelestialBody key={planet.id} celestialBody={planet} />
-        ) : null
+      {!isGenNewSystem && (
+        <>
+          {stars?.map((star) =>
+            star.isActive ? (
+              <CelestialBody key={star.id} celestialBody={star} />
+            ) : null
+          )}
+          {planets?.map((planet) =>
+            planet.isActive ? (
+              <CelestialBody key={planet.id} celestialBody={planet} />
+            ) : null
+          )}
+        </>
       )}
     </>
   );

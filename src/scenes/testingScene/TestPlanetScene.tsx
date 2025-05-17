@@ -14,7 +14,7 @@ import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import {
   //PLANET_TYPE_DATA,
   typeTextureMapOptions,
-} from "../../constants/planetDataConstants";
+} from "../../constants/planetTextureClassTypeLayers";
 
 const TestPlanetScene = () => {
   useStore.getState().updateRenderInfo("TestPlanetScene");
@@ -51,7 +51,9 @@ const TestPlanetScene = () => {
   const effectControllerOptions: typeTextureMapOptions = {
     isLayerActive: false,
     isBumpMap: true,
+    isFlipNegative: false,
     layerOpacity: 1.0,
+    flatSurfaceNorm: 0.0,
     rangeStart: 0.0,
     rangeEnd: 1.0,
     scale: 0.0,
@@ -64,8 +66,8 @@ const TestPlanetScene = () => {
     stretchY: 1.0,
     isRigid: false,
     isWarp: false,
-    baseColor: "#000000",
-    secondColor: "#ffffff",
+    lowAltColor: "#000000",
+    hightAltColor: "#ffffff",
     isClouds: false,
   };
 
@@ -106,9 +108,15 @@ const TestPlanetScene = () => {
       effectControllerOptions.isBumpMap =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
           .isBumpMap || true;
+      effectControllerOptions.isFlipNegative =
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .isFlipNegative || false;
       effectControllerOptions.layerOpacity =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
           .layerOpacity || 1.0;
+      effectControllerOptions.flatSurfaceNorm =
+        testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
+          .flatSurfaceNorm || 0.0;
       effectControllerOptions.rangeStart =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
           .rangeStart || 0.0;
@@ -151,13 +159,13 @@ const TestPlanetScene = () => {
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
           .isRigid || false;
 
-      effectControllerOptions.baseColor =
+      effectControllerOptions.lowAltColor =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
-          .baseColor || "#000000";
+          .lowAltColor || "#000000";
 
-      effectControllerOptions.secondColor =
+      effectControllerOptions.hightAltColor =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
-          .secondColor || "#ffffff";
+          .hightAltColor || "#ffffff";
 
       effectControllerOptions.isClouds =
         testPlanetRef.current.textureMapLayerOptions[uiCurrentShaderLayer]
@@ -244,7 +252,15 @@ const TestPlanetScene = () => {
       .onChange(valuesChanger);
 
     folderLayer1ref.current
+      .add(effectControllerOptions, "isFlipNegative")
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
       .add(effectControllerOptions, "layerOpacity", 0.0, 1.0, 0.1)
+      .onChange(valuesChanger);
+
+    folderLayer1ref.current
+      .add(effectControllerOptions, "flatSurfaceNorm", 0.0, 1.0, 0.1)
       .onChange(valuesChanger);
 
     folderLayer1ref.current
@@ -296,11 +312,11 @@ const TestPlanetScene = () => {
       .onChange(valuesChanger);
 
     folderLayer1ref.current
-      .addColor(effectControllerOptions, "baseColor")
+      .addColor(effectControllerOptions, "lowAltColor")
       .onChange(valuesChanger);
 
     folderLayer1ref.current
-      .addColor(effectControllerOptions, "secondColor")
+      .addColor(effectControllerOptions, "hightAltColor")
       .onChange(valuesChanger);
 
     const folderLayer2 = guiRef.current.addFolder("Layer 2");
@@ -364,7 +380,7 @@ const TestPlanetScene = () => {
         rotateSpeed={3}
         panSpeed={0.5}
       />
-      <pointLight intensity={1} decay={0} position={-100000} />
+      <pointLight intensity={1} decay={0} position={[0, 0, -1000000]} />
       <ambientLight intensity={0.4} />
       {testPlanetRef.current && <TestPlanet />}
     </>

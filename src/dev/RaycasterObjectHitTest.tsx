@@ -119,7 +119,7 @@ const RaycasterObjectHitTest = () => {
         }
         */
         if (!intersectedMech)
-          console.log("No mech found, id:", intersectedObjectMechId);
+          console.warn("No mech found, id:", intersectedObjectMechId);
         intersectedMech?.explode();
       }
     }

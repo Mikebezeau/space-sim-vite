@@ -12,7 +12,7 @@ import { genCraterTexture } from "../../util/genCraterTexture";
 import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
-} from "../../constants/planetDataConstants";
+} from "../../constants/planetTextureClassTypeLayers";
 import { IS_MOBILE } from "../../constants/constants";
 
 interface CelestialBodyInt {
@@ -154,35 +154,35 @@ class CelestialBody implements CelestialBodyInt {
   setShaderColors(layerIndex: number = 0) {
     //const isSun = false;
     const color1 = parseHexColor(
-      this.textureMapLayerOptions[layerIndex].baseColor || "#AAAAAA"
+      this.textureMapLayerOptions[layerIndex].lowAltColor || "#AAAAAA"
     );
     const color2 = parseHexColor(
-      this.textureMapLayerOptions[layerIndex].secondColor || "#FFFFFF"
+      this.textureMapLayerOptions[layerIndex].hightAltColor || "#FFFFFF"
     );
     /*generateSortedRandomColors(
         isSun,
-        this.textureMapLayerOptions[0].baseColor || "#102A44"
+        this.textureMapLayerOptions[0].lowAltColor || "#102A44"
       );*/
 
     // shader color rgb range from 0 to 1
     this.textureMapLayerOptions[layerIndex].color1 = new THREE.Vector3(
-      color1.r / 255,
-      color1.g / 255,
-      color1.b / 255
+      parseFloat((color1.r / 255).toFixed(3)),
+      parseFloat((color1.g / 255).toFixed(3)),
+      parseFloat((color1.b / 255).toFixed(3))
     );
     this.textureMapLayerOptions[layerIndex].color2 = new THREE.Vector3(
-      color2.r / 255,
-      color2.g / 255,
-      color2.b / 255
+      parseFloat((color2.r / 255).toFixed(3)),
+      parseFloat((color2.g / 255).toFixed(3)),
+      parseFloat((color2.b / 255).toFixed(3))
     );
   }
 
   genTexture() {
+    // TODO test if textures are being disposed porperly
+    //this.disposeTextures();
     //for Planet Object3D material shader (lighting / effects)
     this.updateUniforms();
     // useGenFboTextureStore.initComputeRenderer must be called before this
-    // TODO test if textures are being disposed porperly
-    //this.disposeTextures();
     //https://discourse.threejs.org/t/when-to-dispose-how-to-completely-clean-up-a-three-js-scene/1549/22
     this.textureMapLayerOptions[0].isBumpMap = false; // only first layer triggers bump map
     useGenFboTextureStore
@@ -242,8 +242,8 @@ class CelestialBody implements CelestialBodyInt {
         WIDTH,
         HEIGHT,
         [
-          parseHexColor(this.textureMapLayerOptions[0].baseColor || "#0000FF"),
-          parseHexColor(this.textureMapLayerOptions[0].secondColor || "#FF0000"),
+          parseHexColor(this.textureMapLayerOptions[0].lowAltColor || "#0000FF"),
+          parseHexColor(this.textureMapLayerOptions[0].hightAltColor || "#FF0000"),
         ],
         this.textureMapLayerOptions[0].craterIntensity || 1,
         this.earthRadii
@@ -259,12 +259,11 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   disposeTextures() {
-    console.log("dispose planet textures");
     if (Object.hasOwn(this.material, "map")) {
       // @ts-ignore
-      this.material.map.dispose();
+      this.material.map?.dispose();
       // @ts-ignore
-      this.material.bumpMap.dispose();
+      this.material.bumpMap?.dispose();
     }
     if (this.material.uniforms.u_texture?.value?.dispose) {
       this.material.uniforms.u_texture.value.dispose();
@@ -279,10 +278,14 @@ class CelestialBody implements CelestialBodyInt {
 
   // call at end of gameplay
   disposeResources() {
+    console.log("disposeResources");
+    this.disposeTextures();
     //this.object3d.clear();//clear only removes child objects - would need if showing rings or moons
     this.material.dispose();
+    this.renderTargetGPU.texture?.dispose(); // need texture?.dispose??
+    this.renderBumpMapTargetGPU.texture?.dispose();
     this.renderTargetGPU.dispose();
-    this.disposeTextures();
+    this.renderBumpMapTargetGPU.dispose();
   }
 
   //

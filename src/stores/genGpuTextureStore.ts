@@ -4,18 +4,20 @@ import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer
 import {
   typeCloudShaderUniforms,
   typeTextureMapOptions,
-} from "../constants/planetDataConstants";
+} from "../constants/planetTextureClassTypeLayers";
 import { shaderUtilFunctions } from "../util/shaderUtilFunctions";
 import cloudsLargeShaderGPU from "../3d/solarSystem/shaders/cloudsLargeShaderGPU";
 import { IS_MOBILE } from "../constants/constants";
 
-export const WIDTH = IS_MOBILE ? 1024 : 2048; //2048 : 4096;
+export const WIDTH = 1024; //IS_MOBILE ? 1024 : 2048; //2048 : 4096;
 export const HEIGHT = WIDTH / 2;
 
 const textureFS = `
 uniform int u_isLayerActive[10];
-uniform int u_isBumpMap[10];// TODO change this to not array OR change code to check for each layer element
+uniform int u_isBumpMap[10];
+uniform int u_isFlipNegative[10];
 uniform float u_opacity[10];
+uniform float u_flatSurfaceNorm[10];
 uniform float u_rangeStart[10];
 uniform float u_rangeEnd[10];
 uniform vec3 u_colors[2];// OLD
@@ -88,10 +90,14 @@ void main() {
   // loop for each layer
   for (int layerIndex = 0; layerIndex < 10; layerIndex++) {
 
-    vec2 texturePoint = vec2( gl_FragCoord.x * u_stretchX[ layerIndex ], gl_FragCoord.y * u_stretchY[ layerIndex ] );
+    vec2 texturePoint = vec2( gl_FragCoord.x, gl_FragCoord.y );
     
     vec3 coords = get3dCoords( texturePoint, WIDTH, HEIGHT );
     
+    // Apply stretching in X and Y directions
+    coords.x /= u_stretchX[ layerIndex ];
+    coords.y /= u_stretchY[ layerIndex ];
+
     // Use the noise function
     float noise = fractalNoise( coords, u_isDoubleNoise[ layerIndex ], u_isRigid[ layerIndex ], u_frequency[ layerIndex ], u_octaves[ layerIndex ], u_amplitude[ layerIndex ], u_persistence[ layerIndex ], u_lacunarity[ layerIndex ] );
     
@@ -126,13 +132,17 @@ void main() {
     // Assign a color based on the noise value
     vec3 color = vec3( 0.0, 0.0, 0.0 );
     if( u_isBumpMap[ 0 ] == 1 &&  u_isBumpMap[ layerIndex ] == 1 ){
-      // TEST liquid layer
+      // flat layer (liquid surface)
       if( layerIndex == 0 ){
-        if( rangeNoise > 0.5 ){
-          rangeNoise = 0.5;
+        if( rangeNoise > u_flatSurfaceNorm[ layerIndex ] ){
+          rangeNoise = u_flatSurfaceNorm[ layerIndex ];
         }
       }
-      color = vec3( rangeNoise );//grey scale
+      // if u_isFlipNegative is true, flip the color to negative value
+      if( u_isFlipNegative[ layerIndex ] == 1 ){
+        rangeNoise = - rangeNoise;
+      }
+      color = vec3( rangeNoise );//grey scale for bump map
     } else {
       color = mix( u_color2[ layerIndex ], u_color1[ layerIndex ], rangeNoise );
     }
@@ -352,8 +362,15 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
       value: Array(10).fill(0),
     };
 
+    shaderVariable.material.uniforms["u_isFlipNegative"] = {
+      value: Array(10).fill(0),
+    };
+
     shaderVariable.material.uniforms["u_opacity"] = {
       value: Array(10).fill(1.0),
+    };
+    shaderVariable.material.uniforms["u_flatSurfaceNorm"] = {
+      value: Array(10).fill(0.0),
     };
     shaderVariable.material.uniforms["u_rangeStart"] = {
       value: Array(10).fill(0.0),
@@ -500,9 +517,18 @@ const useGenFboTextureStore = create<genFboTextureStoreState>()((set, get) => ({
 
       uniforms.u_isBumpMap.value[index] = textureMapOptions.isBumpMap ? 1 : 0;
 
+      uniforms.u_isFlipNegative.value[index] = textureMapOptions.isFlipNegative
+        ? 1
+        : 0;
+
       uniforms.u_opacity.value[index] = textureMapOptions.layerOpacity
         ? textureMapOptions.layerOpacity.toFixed(2)
         : 1.0;
+
+      uniforms.u_flatSurfaceNorm.value[index] =
+        textureMapOptions.flatSurfaceNorm
+          ? textureMapOptions.flatSurfaceNorm.toFixed(2)
+          : 0.0;
 
       uniforms.u_rangeStart.value[index] = textureMapOptions.rangeStart
         ? textureMapOptions.rangeStart.toFixed(2)

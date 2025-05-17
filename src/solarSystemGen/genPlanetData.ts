@@ -1,9 +1,13 @@
 import { default as seedrandom } from "seedrandom";
 import { typeStarData } from "./genStarData";
-import { typeObitalZonesData } from "./genObitalZonesData";
 import {
   PLANET_ZONES,
   PLANET_TYPE_DATA,
+  SPECIAL_WORLDS_CHANCE_MODIFIER,
+  typeSpecialWorlds,
+  compositions,
+  additionalThemes,
+  culturalClassifications,
 } from "../constants/planetDataConstants";
 
 export type typePlanetData = {
@@ -22,34 +26,18 @@ export type typePlanetData = {
   craterIntensity?: number;
 };
 
+export type typeSpecialWorldsCollection = {
+  compositions: typeSpecialWorlds[];
+  additionalThemes: typeSpecialWorlds[];
+  culturalClassifications: typeSpecialWorlds[];
+};
+
 export type typeGenPlanetData = {
   rngSeed: string;
   planetType: typePlanetData;
-  subClasses: number[];
+  specialWorldsCollection?: typeSpecialWorldsCollection;
   distanceFromStar: number;
   temperature: { min: number; max: number; average: number };
-};
-
-// Helper function to calculate planet temperature based on distance and star's temperature
-const calculateTemperature = (
-  luminosity: number,
-  distanceFromStar: number,
-  albedo = 0.4, // Earth-like planetary reflectivity
-  greenhouse = 1
-) => {
-  // How Hot is that Planet? https://spacemath.gsfc.nasa.gov/weekly/6Page61.pdf
-  let averageTemperature =
-    273 * (((1 - albedo) * luminosity) / distanceFromStar ** 2) ** (1 / 4);
-
-  averageTemperature *= greenhouse;
-  const minTemperature = averageTemperature * 0.8;
-  const maxTemperature = averageTemperature * 1.2;
-
-  return {
-    min: Math.round(minTemperature),
-    max: Math.round(maxTemperature),
-    average: Math.round(averageTemperature),
-  };
 };
 
 // Helper function to determine likely planet class based star data
@@ -112,6 +100,70 @@ const determinePlanetType = (
   }
 };
 
+// Helper function to calculate planet temperature based on distance and star's temperature
+const calculateTemperature = (
+  luminosity: number,
+  distanceFromStar: number,
+  albedo = 0.4, // Earth-like planetary reflectivity
+  greenhouse = 1
+) => {
+  // How Hot is that Planet? https://spacemath.gsfc.nasa.gov/weekly/6Page61.pdf
+  let averageTemperature =
+    273 * (((1 - albedo) * luminosity) / distanceFromStar ** 2) ** (1 / 4);
+
+  averageTemperature *= greenhouse;
+  const minTemperature = averageTemperature * 0.8;
+  const maxTemperature = averageTemperature * 1.2;
+
+  return {
+    min: Math.round(minTemperature),
+    max: Math.round(maxTemperature),
+    average: Math.round(averageTemperature),
+  };
+};
+
+// Helper function to get special worlds collection
+const getSpecialWorldsCollection = (
+  rng: () => number, // random number generator
+  planetData: typePlanetData,
+  temperature: { min: number; max: number; average: number }
+): typeSpecialWorldsCollection => {
+  const assignedCompositions: typeSpecialWorlds[] = [];
+  const assignedAdditionalThemes: typeSpecialWorlds[] = [];
+  const assignedCulturalClassifications: typeSpecialWorlds[] = [];
+  compositions.forEach((composition) => {
+    if (composition.requirements.planetTypes.includes(planetData.planetType)) {
+      const meetsMinTemp =
+        composition.requirements.minTemp === undefined ||
+        temperature.min >= composition.requirements.minTemp;
+      if (
+        meetsMinTemp &&
+        rng() * 100 < composition.chance * SPECIAL_WORLDS_CHANCE_MODIFIER
+      ) {
+        assignedCompositions.push(composition);
+      }
+    }
+  });
+
+  additionalThemes.forEach((theme) => {
+    if (rng() * 100 < theme.chance * SPECIAL_WORLDS_CHANCE_MODIFIER) {
+      assignedAdditionalThemes.push(theme);
+    }
+  });
+
+  culturalClassifications.forEach((classification) => {
+    if (rng() * 100 < classification.chance * SPECIAL_WORLDS_CHANCE_MODIFIER) {
+      assignedCulturalClassifications.push(classification);
+    }
+  });
+
+  return {
+    compositions: assignedCompositions,
+    additionalThemes: assignedAdditionalThemes,
+    culturalClassifications: assignedCulturalClassifications,
+  };
+};
+
 // Main function to generate a random planet
 const genPlanetData = (starData: typeStarData, index: number = 0) => {
   const rngSeed = starData.starIndex.toString() + "-" + index.toString();
@@ -141,10 +193,17 @@ const genPlanetData = (starData: typeStarData, index: number = 0) => {
       planetType.greenhouse
     );
 
+    // Generate special worlds collection
+    const specialWorldsCollection = getSpecialWorldsCollection(
+      rng,
+      planetType,
+      temperature
+    );
+
     const planetData: typeGenPlanetData = {
       rngSeed,
       planetType,
-      subClasses: [],
+      specialWorldsCollection,
       distanceFromStar,
       temperature,
     };

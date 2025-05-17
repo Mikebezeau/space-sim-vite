@@ -47,7 +47,7 @@ export const generateSortedRandomColors = (
   isSun: boolean,
   baseColorHex: string /*, factor*/
 ) => {
-  const baseColor = parseHexColor(baseColorHex);
+  const lowAltColor = parseHexColor(baseColorHex);
 
   const alterLum = (
     color: { r: number; g: number; b: number },
@@ -74,7 +74,7 @@ export const generateSortedRandomColors = (
     return Math.max(factorR, factorG, factorB);
   };
 
-  const { r, g, b } = baseColor;
+  const { r, g, b } = lowAltColor;
   const colorArray = [
     { value: r, key: "r" },
     { value: g, key: "g" },
@@ -88,7 +88,7 @@ export const generateSortedRandomColors = (
   // for suns, ensure that the brightest color is white
   const genAltLumFactor = () => {
     if (isSun) {
-      const maxAltLumFactor = getFactorLumWhite(baseColor) + 0.2;
+      const maxAltLumFactor = getFactorLumWhite(lowAltColor) + 0.2;
       const minAltLumFactor = -0.4;
       return (
         Math.random() * (maxAltLumFactor - minAltLumFactor) + minAltLumFactor
@@ -99,7 +99,7 @@ export const generateSortedRandomColors = (
   for (let j = 0; j < 2; j++) {
     for (let i = 0; i < 6; i++) {
       //const adjustment = (Math.random() - 0.5) * 250 * factor;
-      let newColor = { ...baseColor };
+      let newColor = { ...lowAltColor };
       /*
       const colorComponent = colorArray[Math.floor(i / 3)]; // 0-2: strongest, 3-4: second strongest, 5: weakest
       newColor[colorComponent.key] = Math.min(

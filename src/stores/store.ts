@@ -59,6 +59,7 @@ interface storeState {
   isGalaxyInit: boolean;
 
   sound: boolean;
+  isGenNewSystem: boolean; // used to trigger removal of old solar system
   playerCurrentStarIndex: number | null;
 
   galaxy: Galaxy;
@@ -97,6 +98,7 @@ interface storeState {
   actions: {
     setSpeed: (speedValue: number) => void;
     getPlayerCurrentStarIndex: () => number;
+    warpToStarIndex: (starIndex: number) => void;
     setPlayerCurrentStarIndex: (playerCurrentStarIndex: number) => void;
 
     toggleSound: (sound?: boolean) => void;
@@ -185,6 +187,7 @@ const useStore = create<storeState>()((set, get) => ({
 
   sound: false,
 
+  isGenNewSystem: false, // used to trigger removal of old solar system
   // current player solar system location
   // used to trigger re-renders in solar system related components
   // initially set to null until starting solar system is set
@@ -298,7 +301,16 @@ const useStore = create<storeState>()((set, get) => ({
     // intial star position selection in galaxy map
     getPlayerCurrentStarIndex: () => get().playerCurrentStarIndex!,
 
-    // slecting star in galaxy map
+    warpToStarIndex: (starIndex: number) => {
+      set(() => ({
+        isGenNewSystem: true,
+      }));
+      setTimeout(() => {
+        get().actions.setPlayerCurrentStarIndex(starIndex);
+      }, 1000); // delay to allow for cleanup of old solar system
+    },
+
+    // create star system and set player position
     setPlayerCurrentStarIndex(playerCurrentStarIndex) {
       // playerCurrentStarIndex set at end, then triggering render of solar system related components
       // update background stars
@@ -398,8 +410,12 @@ const useStore = create<storeState>()((set, get) => ({
       // playerCurrentStarIndex set at end, triggers render of solar system related components
       usePlayerControlsStore.getState().cancelPlayerWarp(); // reset player warp states to show correct ui buttons
 
-      console.log("set playerCurrentStarIndex");
+      console.log("set playerCurrentStarIndex", playerCurrentStarIndex);
       set(() => ({ playerCurrentStarIndex }));
+      // all done
+      set(() => ({
+        isGenNewSystem: false,
+      }));
     },
 
     toggleSound(sound = !get().sound) {

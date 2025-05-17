@@ -456,7 +456,7 @@ function generateCityTerrain(gridSize, elevation) {
 
   // Initialize the base mesh parameters and create the base mesh
 
-  var baseColor = colors.DARK_BROWN;
+  var lowAltColor = colors.DARK_BROWN;
 
   var baseGeometryParams = {
     width: getCityWidth(gridSize),
@@ -470,7 +470,7 @@ function generateCityTerrain(gridSize, elevation) {
     z: 0,
   };
 
-  var baseMesh = getBoxMesh(baseGeometryParams, basePosition, baseColor);
+  var baseMesh = getBoxMesh(baseGeometryParams, basePosition, lowAltColor);
 
   // Initialize the water mesh parameters and create the water mesh
 

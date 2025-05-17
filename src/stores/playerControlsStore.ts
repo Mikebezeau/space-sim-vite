@@ -276,9 +276,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       if (currentTarget.targetType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR) {
         const selectedWarpStar = useGalaxyMapStore.getState().selectedWarpStar;
         if (selectedWarpStar !== null) {
-          useStore
-            .getState()
-            .actions.setPlayerCurrentStarIndex(selectedWarpStar);
+          useStore.getState().actions.warpToStarIndex(selectedWarpStar);
         }
       }
 

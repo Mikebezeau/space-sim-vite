@@ -1,5 +1,5 @@
-import { Vector3 } from "three";
 import { typePlanetData } from "../solarSystemGen/genPlanetData";
+import { typeTextureMapOptions } from "./planetTextureClassTypeLayers";
 
 export const PLANET_ZONES = {
   inner: 1,
@@ -21,7 +21,6 @@ export const PLANET_CLASS_LABEL = {
   [PLANET_CLASS.gasGiant]: "Gas Giant",
   [PLANET_CLASS.dwarf]: "Dwarf",
 };
-
 export const PLANET_TYPE = {
   mterran: 1,
   sterran: 2,
@@ -36,53 +35,518 @@ export const PLANET_TYPE = {
 
   dwarf: 40,
 };
-/*
-  const compositions = [
-    "Chthonian",
-    "Carbon",
-    "Coreless",
-    "Desert",
-    "Gas Dwarf",
-    "Gas Giant",
-    "Helium",
-    "Hycean",
-    "Ice Giant",
-    "Ice",
-    "Iron",
-    "Lava",
-    "Martian",
-    "Ocean",
-    "Protoplanet",
-    "Puffy",
-    "Rocky",
-    "Super-Puff",
-    "Silicate",
-    "Terrestrial",
-    "Water",
-  ];
 
-  const additionalThemes = [
-    "Living Planet",
-    "Shattered World",
-    "Dyson Sphere",
-    "Ethereal World",
-    "Haunted World",
-  ];
+//const compositions."Coreless", use for moons / asteroids only
 
-  const culturalClassifications = [
-    "Ruins",
-    "Ancient Structures",
-    "Post-Apocalypse",
-    "New Colony",
-    "Megacity",
-    "Entire Surface Urbanized",
-    "Mining/Resource ",
-    "Heavily Exploited",
-    "Religious/Spiritual",
-    "Pilgrimage Site",
-    "Trade Hub",
-  ];
-*/
+export type typeSpecialWorlds = {
+  name: string;
+  description: string;
+  chance: number;
+  textureLayers: any[];
+  requirements: {
+    planetTypes: number[];
+    minTemp?: number;
+    maxTemp?: number;
+  };
+};
+
+export const SPECIAL_WORLDS_CHANCE_MODIFIER = 5; // x5 chance to get a special world
+
+export const SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS: {
+  [id: string]: typeTextureMapOptions[];
+} = {
+  water: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.8,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 2.0,
+      octaves: 8,
+      amplitude: 1.5,
+      persistence: 0.7,
+      lacunarity: 2.0,
+      lowAltColor: "#0044FF",
+      hightAltColor: "#00AAFF",
+    },
+  ],
+  ice: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.9,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 1.5,
+      octaves: 7,
+      amplitude: 1.2,
+      persistence: 0.6,
+      lacunarity: 2.5,
+      lowAltColor: "#88CCFF",
+      hightAltColor: "#FFFFFF",
+    },
+  ],
+  sand: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.7,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 2.5,
+      octaves: 6,
+      amplitude: 1.8,
+      persistence: 0.8,
+      lacunarity: 1.9,
+      lowAltColor: "#D2B48C",
+      hightAltColor: "#F4A460",
+    },
+  ],
+  rock: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.6,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 3.0,
+      octaves: 9,
+      amplitude: 2.0,
+      persistence: 0.7,
+      lacunarity: 2.3,
+      lowAltColor: "#555555",
+      hightAltColor: "#AAAAAA",
+    },
+  ],
+  lava: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.9,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 1.8,
+      octaves: 8,
+      amplitude: 2.5,
+      persistence: 0.6,
+      lacunarity: 2.8,
+      lowAltColor: "#FF4500",
+      hightAltColor: "#FF6347",
+    },
+  ],
+  vegetation: [
+    {
+      isLayerActive: true,
+      isBumpMap: false,
+      layerOpacity: 0.8,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 2.2,
+      octaves: 7,
+      amplitude: 1.7,
+      persistence: 0.7,
+      lacunarity: 2.1,
+      lowAltColor: "#228B22",
+      hightAltColor: "#32CD32",
+    },
+  ],
+  clouds: [
+    {
+      isLayerActive: true,
+      isClouds: true,
+      layerOpacity: 0.5,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 1.0,
+      octaves: 6,
+      amplitude: 1.0,
+      persistence: 0.5,
+      lacunarity: 2.0,
+      lowAltColor: "#FFFFFF",
+      hightAltColor: "#DDDDDD",
+    },
+  ],
+  metallic: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.7,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 2.0,
+      octaves: 8,
+      amplitude: 1.5,
+      persistence: 0.6,
+      lacunarity: 2.4,
+      lowAltColor: "#CCCCCC",
+      hightAltColor: "#EEEEEE",
+    },
+  ],
+  gas: [
+    {
+      isLayerActive: true,
+      isWarp: true,
+      layerOpacity: 0.6,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 1.5,
+      octaves: 5,
+      amplitude: 1.2,
+      persistence: 0.5,
+      lacunarity: 1.8,
+      lowAltColor: "#FFDD44",
+      hightAltColor: "#FFAA00",
+    },
+  ],
+  urban: [
+    {
+      isLayerActive: true,
+      isBumpMap: false,
+      layerOpacity: 0.8,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 2.0,
+      octaves: 7,
+      amplitude: 1.5,
+      persistence: 0.7,
+      lacunarity: 2.2,
+      lowAltColor: "#444444",
+      hightAltColor: "#888888",
+    },
+  ],
+  ruins: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.6,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 2.5,
+      octaves: 8,
+      amplitude: 1.8,
+      persistence: 0.6,
+      lacunarity: 2.0,
+      lowAltColor: "#7A5230",
+      hightAltColor: "#A0522D",
+    },
+  ],
+  industrial: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.7,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 2.3,
+      octaves: 7,
+      amplitude: 1.6,
+      persistence: 0.7,
+      lacunarity: 2.3,
+      lowAltColor: "#555555",
+      hightAltColor: "#777777",
+    },
+  ],
+  shattered: [
+    {
+      isLayerActive: true,
+      isBumpMap: true,
+      layerOpacity: 0.9,
+      rangeStart: 0.0,
+      rangeEnd: 1.0,
+      scale: 3.0,
+      octaves: 9,
+      amplitude: 2.5,
+      persistence: 0.8,
+      lacunarity: 2.5,
+      lowAltColor: "#8B0000",
+      hightAltColor: "#FF4500",
+    },
+  ],
+};
+
+export const compositions: typeSpecialWorlds[] = [
+  {
+    name: "Chthonian",
+    description:
+      "A gas giant stripped of its atmosphere, leaving behind a scorched metallic core.",
+    chance: 5,
+    textureLayers: [
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.metallic,
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.rock,
+    ],
+    requirements: { planetTypes: [PLANET_TYPE.hotJovian], minTemp: 973.15 },
+  },
+  {
+    name: "Desert",
+    description:
+      "Arid and dry, with endless sand dunes and minimal surface water.",
+    chance: 15,
+    textureLayers: [
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.sand,
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.rock,
+    ],
+    requirements: {
+      planetTypes: [PLANET_TYPE.terran, PLANET_TYPE.venusian],
+      minTemp: 300,
+      maxTemp: 400,
+    },
+  },
+  {
+    name: "Helium",
+    description: "A gas giant rich in helium with minimal hydrogen.",
+    chance: 10,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.gas],
+    requirements: { planetTypes: [PLANET_TYPE.jovian, PLANET_TYPE.neptunian] },
+  },
+  {
+    name: "Hycean",
+    description:
+      "An ocean-covered exoplanet with a hot, humid hydrogen-rich atmosphere.",
+    chance: 8,
+    textureLayers: [
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.water,
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.clouds,
+    ],
+    requirements: {
+      planetTypes: [PLANET_TYPE.earthLike],
+      minTemp: 273.15,
+      maxTemp: 373.15,
+    },
+  },
+  {
+    name: "Ice Giant",
+    description:
+      "A massive planet composed largely of ices, such as water, methane, and ammonia.",
+    chance: 12,
+    textureLayers: [
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.ice,
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.gas,
+    ],
+    requirements: { planetTypes: [PLANET_TYPE.neptunian], maxTemp: 200 },
+  },
+  {
+    name: "Ice",
+    description:
+      "Frozen and remote, with a crust of solid ice and minimal atmosphere.",
+    chance: 10,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.ice],
+    requirements: { planetTypes: [PLANET_TYPE.dwarf], maxTemp: 150 },
+  },
+  {
+    name: "Iron",
+    description:
+      "Dense with a metallic surface, likely the remnant of a planetary core.",
+    chance: 7,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.metallic],
+    requirements: { planetTypes: [PLANET_TYPE.mterran, PLANET_TYPE.sterran] },
+  },
+  {
+    name: "Lava",
+    description:
+      "A hellish world with molten rock seas and constant volcanic activity.",
+    chance: 5,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.lava],
+    requirements: { planetTypes: [PLANET_TYPE.venusian], minTemp: 700 },
+  },
+  {
+    name: "Ocean",
+    description: "Covered almost entirely by water with minimal landmasses.",
+    chance: 10,
+    textureLayers: [
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.water,
+      SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.clouds,
+    ],
+    requirements: {
+      planetTypes: [PLANET_TYPE.earthLike, PLANET_TYPE.terran],
+      minTemp: 273.15,
+      maxTemp: 373.15,
+    },
+  },
+  {
+    name: "Protoplanet",
+    description:
+      "A young, forming planet with an unstable surface and minimal differentiation.",
+    chance: 8,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.rock],
+    requirements: { planetTypes: [PLANET_TYPE.dwarf], maxTemp: 300 },
+  },
+  {
+    name: "Puffy",
+    description:
+      "A gas giant with a low-density atmosphere that appears oversized for its mass.",
+    chance: 5,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.gas],
+    requirements: { planetTypes: [PLANET_TYPE.hotJovian], minTemp: 700 },
+  },
+  {
+    name: "Rocky",
+    description:
+      "A solid-surfaced planet with little to no atmosphere, composed mainly of silicates.",
+    chance: 20,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.rock],
+    requirements: {
+      planetTypes: [
+        PLANET_TYPE.terran,
+        PLANET_TYPE.sterran,
+        PLANET_TYPE.mterran,
+      ],
+    },
+  },
+  {
+    name: "Super-Puff",
+    description:
+      "An extremely low-density planet with a large radius and minimal mass.",
+    chance: 3,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.gas],
+    requirements: { planetTypes: [PLANET_TYPE.hotJovian], minTemp: 700 },
+  },
+  {
+    name: "Silicate",
+    description:
+      "Rich in rocky silicates, often resembling Earth-like or Venusian compositions.",
+    chance: 10,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.rock],
+    requirements: { planetTypes: [PLANET_TYPE.terran, PLANET_TYPE.sterran] },
+  },
+  {
+    name: "Water",
+    description:
+      "Significant liquid water coverage, essential for potential life.",
+    chance: 12,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.water],
+    requirements: {
+      planetTypes: [PLANET_TYPE.earthLike, PLANET_TYPE.terran],
+      minTemp: 273.15,
+      maxTemp: 373.15,
+    },
+  },
+];
+
+export const additionalThemes: typeSpecialWorlds[] = [
+  {
+    name: "Living Planet",
+    description: "An entire world functions as a sentient organism.",
+    chance: 2,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.vegetation],
+    requirements: { planetTypes: [PLANET_TYPE.earthLike] },
+  },
+  {
+    name: "Shattered World",
+    description:
+      "A planet broken into massive floating fragments, possibly from a past catastrophe.",
+    chance: 5,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.shattered],
+    requirements: { planetTypes: [PLANET_TYPE.dwarf, PLANET_TYPE.terran] },
+  },
+  {
+    name: "Dyson Sphere",
+    description:
+      "A megastructure built around a star, harvesting its energy completely.",
+    chance: 1,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.metallic],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "Ethereal World",
+    description:
+      "Mysterious and otherworldly, as if caught between dimensions.",
+    chance: 3,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.clouds],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "Haunted World",
+    description: "Rumored to be cursed or inhabited by spectral entities.",
+    chance: 4,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.ruins],
+    requirements: { planetTypes: [] },
+  },
+];
+
+export const culturalClassifications: typeSpecialWorlds[] = [
+  {
+    name: "Ruins",
+    description: "Crumbled remains of a long-lost civilization.",
+    chance: 10,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.ruins],
+    requirements: { planetTypes: [PLANET_TYPE.earthLike, PLANET_TYPE.terran] },
+  },
+  {
+    name: "Ancient Structures",
+    description: "Massive, enduring architecture from ancient eras.",
+    chance: 8,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.urban],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "Post-Apocalypse",
+    description: "Survivors cling to remnants of a once-advanced world.",
+    chance: 6,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.ruins],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "New Colony",
+    description: "A fresh settlement, recently established by pioneers.",
+    chance: 12,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.urban],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "Megacity",
+    description: "Vast urban sprawl covers continents with dense populations.",
+    chance: 10,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.urban],
+    requirements: { planetTypes: [PLANET_TYPE.earthLike, PLANET_TYPE.terran] },
+  },
+  {
+    name: "Entire Surface Urbanized",
+    description: "No wilderness remains—only infrastructure and cities.",
+    chance: 5,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.urban],
+    requirements: { planetTypes: [PLANET_TYPE.earthLike] },
+  },
+  {
+    name: "Mining/Resource",
+    description:
+      "Heavily industrialized with large-scale extraction operations.",
+    chance: 15,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.industrial],
+    requirements: { planetTypes: [PLANET_TYPE.dwarf, PLANET_TYPE.terran] },
+  },
+  {
+    name: "Heavily Exploited",
+    description: "Natural resources depleted and biosphere damaged.",
+    chance: 8,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.industrial],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "Religious/Spiritual",
+    description:
+      "Sacred to one or more civilizations; center of worship or pilgrimage.",
+    chance: 7,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.urban],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "Pilgrimage Site",
+    description:
+      "Draws travelers from across the stars seeking spiritual connection.",
+    chance: 6,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.urban],
+    requirements: { planetTypes: [] },
+  },
+  {
+    name: "Trade Hub",
+    description: "A major center of commerce and interstellar logistics.",
+    chance: 10,
+    textureLayers: [SPECIAL_WORLDS_TEXTURE_LAYERS_OPTIONS.urban],
+    requirements: { planetTypes: [] },
+  },
+];
+
 export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
   [PLANET_TYPE.mterran]: {
     planetClass: PLANET_CLASS.terrestrial,
@@ -241,213 +705,3 @@ export const PLANET_TYPE_DATA: { [id: number]: typePlanetData } = {
     craterIntensity: 5,
   },
 };
-
-export type typeTextureMapOptions = {
-  isLayerActive?: boolean; // for multiple texture layers
-  isBumpMap?: boolean; // lighting bump map
-  layerOpacity?: number; // for multiple texture layers
-  rangeStart?: number; // normalized range of layer visibility
-  rangeEnd?: number; // normalized range of layer visibility
-
-  amplitude?: number;
-  scale?: number;
-  octaves?: number;
-  persistence?: number;
-  lacunarity?: number;
-
-  isDoubleNoise?: boolean;
-
-  stretchX?: number;
-  stretchY?: number;
-
-  isRigid?: boolean;
-  isWarp?: boolean;
-
-  baseColor?: string;
-  secondColor?: string;
-
-  color1?: Vector3;
-  color2?: Vector3;
-
-  isClouds?: boolean;
-  planetTypeMods?: { warpX: number; warpY: number; warpZ: number };
-  craterIntensity?: number;
-  grayscale?: boolean;
-  debug?: boolean;
-};
-
-export type typeCloudShaderUniforms = {
-  u_isClouds: boolean;
-  u_cloudscale?: number;
-  u_cloudColor?: Vector3;
-  u_cloudCover?: number;
-  u_cloudAlpha?: number;
-  u_rotateX?: number;
-};
-
-// TODO make consts store arrays of layers
-export const PLANET_CLASS_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
-  {
-    [PLANET_CLASS.terrestrial]: {
-      scale: 2, // Adjust for finer detail
-      octaves: 10,
-      amplitude: 0.3,
-      persistence: 0.9,
-      lacunarity: 1.4,
-      baseColor: "#AA4444",
-      secondColor: "#999999",
-      isClouds: false,
-    },
-    [PLANET_CLASS.gasGiant]: {
-      scale: 1,
-      octaves: 6,
-      amplitude: 1.3,
-      persistence: 0.5,
-      lacunarity: 1.5,
-      isDoubleNoise: true,
-      isWarp: false,
-      stretchY: 5.0,
-      baseColor: "#DD44DD",
-      secondColor: "#999999",
-      planetTypeMods: { warpX: 1, warpY: 1, warpZ: 20 },
-    },
-    [PLANET_CLASS.dwarf]: {
-      scale: 1,
-      octaves: 5,
-      amplitude: 0.5,
-      persistence: 0.5,
-      lacunarity: 1.5,
-      baseColor: "#444444",
-      secondColor: "#999999",
-    },
-  };
-
-export const PLANET_TYPE_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
-  {
-    [PLANET_TYPE.mterran]: {
-      scale: 1,
-      octaves: 9,
-      amplitude: 2.5,
-      persistence: 0.9,
-      lacunarity: 1.9,
-      isWarp: true,
-      baseColor: "#8f6742",
-      secondColor: "#545559",
-      craterIntensity:
-        PLANET_TYPE_DATA[PLANET_TYPE.mterran].craterIntensity || 0,
-    },
-    [PLANET_TYPE.sterran]: {
-      scale: 3,
-      octaves: 9,
-      amplitude: 1.3,
-      persistence: 0.8,
-      lacunarity: 2.5,
-      isWarp: true,
-      baseColor: "#7f552e",
-      secondColor: "#f5a65c",
-      craterIntensity:
-        PLANET_TYPE_DATA[PLANET_TYPE.sterran].craterIntensity || 0,
-    },
-    [PLANET_TYPE.terran]: {
-      scale: 3,
-      octaves: 9,
-      amplitude: 1.3,
-      persistence: 0.9,
-      lacunarity: 2.7,
-      isWarp: true,
-      baseColor: "#4f4740",
-      secondColor: "#786859",
-      craterIntensity:
-        PLANET_TYPE_DATA[PLANET_TYPE.terran].craterIntensity || 0,
-    },
-    [PLANET_TYPE.earthLike]: {
-      scale: 1, // Adjust for finer detail
-      octaves: 10,
-      amplitude: 1.0,
-      persistence: 0.5,
-      lacunarity: 2.5,
-      baseColor: "#636e13",
-      secondColor: "#001933",
-      isClouds: false, //true, // TODO fix clouds
-      /*
-      cloudsUniforms: {
-        u_cloudscale: { value: 1.0 },
-        u_cloudCover: { value: 0.0 },
-        u_cloudAlpha: { value: 20 },
-        u_rotateX: { value: 1.7 },
-      },
-      */
-      craterIntensity:
-        PLANET_TYPE_DATA[PLANET_TYPE.earthLike].craterIntensity || 0,
-    },
-    [PLANET_TYPE.suTerran]: {
-      scale: 4, // Adjust for finer detail
-      octaves: 13,
-      amplitude: 3.9,
-      persistence: 0.3,
-      lacunarity: 5.0,
-      isDoubleNoise: true,
-      isWarp: true,
-      baseColor: PLANET_TYPE_DATA[PLANET_TYPE.suTerran].color,
-      craterIntensity:
-        PLANET_TYPE_DATA[PLANET_TYPE.suTerran].craterIntensity || 0,
-    },
-    [PLANET_TYPE.venusian]: {
-      scale: 3, // Adjust for finer detail
-      octaves: 7,
-      amplitude: 0.4,
-      persistence: 0.6,
-      lacunarity: 1.7,
-      isDoubleNoise: true,
-      baseColor: "#6b2b00",
-      secondColor: "#db8b00",
-      craterIntensity:
-        PLANET_TYPE_DATA[PLANET_TYPE.venusian].craterIntensity || 0,
-    },
-    [PLANET_TYPE.neptunian]: {
-      scale: 1,
-      octaves: 6,
-      amplitude: 1.3,
-      persistence: 0.5,
-      lacunarity: 1.5,
-      isDoubleNoise: false,
-      isWarp: true,
-      stretchY: 5.0,
-      baseColor: "#3d4b94",
-      secondColor: "#8589ff",
-    },
-    [PLANET_TYPE.jovian]: {
-      scale: 1,
-      octaves: 6,
-      amplitude: 1.3,
-      persistence: 0.5,
-      lacunarity: 1.5,
-      isDoubleNoise: false,
-      isWarp: true,
-      stretchY: 5.0,
-      baseColor: "#ad3d00",
-      secondColor: "#f1ffcc",
-    },
-    [PLANET_TYPE.hotJovian]: {
-      scale: 1,
-      octaves: 6,
-      amplitude: 1.3,
-      persistence: 0.5,
-      lacunarity: 1.5,
-      isDoubleNoise: false,
-      isWarp: true,
-      stretchY: 5.0,
-      baseColor: "#ad0000",
-      secondColor: "#ff6a38",
-    },
-    [PLANET_TYPE.dwarf]: {
-      scale: 1,
-      octaves: 7,
-      amplitude: 0.3,
-      persistence: 0.5,
-      lacunarity: 3.0,
-      baseColor: "#151d3c",
-      secondColor: "#5e68a1",
-      craterIntensity: PLANET_TYPE_DATA[PLANET_TYPE.dwarf].craterIntensity || 0,
-    },
-  };
