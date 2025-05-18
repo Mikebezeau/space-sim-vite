@@ -5,7 +5,7 @@ import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 const NUM_ENEMIES = 50;
 
 // from https://www.youtube.com/watch?v=bqtqltqcQhw
-// TODO can use this for boids to avoid obstacles
+// TODO can use this as directions for boids to check path for boids to avoid obstacles
 function initSphereCast() {
   const sphereCastDirections: THREE.Vector3[] = [];
   const numViewDirections = 300;

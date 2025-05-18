@@ -24,7 +24,7 @@ export const BIOD_PARAMS = {
 
 export interface ballContaineroidControllerInt {
   updateDevStorePropModifiers: () => void;
-  updateUseFrame: () => void;
+  updateUseFrameBoids: () => void;
   seek: (currentMech: EnemyMechBoid, target: THREE.Vector3) => THREE.Vector3;
   addAlignVector: (mech1: EnemyMechBoid, mech2: EnemyMechBoid) => void;
   normalizeAlignVector: (currentMech: EnemyMechBoid) => THREE.Vector3;
@@ -87,7 +87,7 @@ class BoidController implements ballContaineroidControllerInt {
     */
   }
 
-  updateUseFrame() {
+  updateUseFrameBoids() {
     // reset all mech boid vars
     this.mechs.forEach((mech) => {
       mech.resetVectors();
@@ -208,7 +208,7 @@ class BoidController implements ballContaineroidControllerInt {
       // test avoid player - not working quite right
       //mech1.applyForce(this.avoidSteerVector);
       // enemyGroup udpates all mechs positions in:
-      // EnemyMechs.tsx -> useEffect -> enemyGroup.updateUseFrame
+      // EnemyMechs.tsx -> useEffect -> enemyGroup.updateUseFrameEnemyGroup
     }
   }
 

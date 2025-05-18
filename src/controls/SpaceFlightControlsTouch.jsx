@@ -2,7 +2,7 @@ import { useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useTouchController from "../hooks/controls/useTouchController";
-import { ActionShoot } from "../uiCockpit/CockpitControls";
+import { ActionButtonIcon } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 //import controls from "../assets/icons/controls.svg";
 import controlStick from "/images/cockpit/controls/controlStick.png";
@@ -131,18 +131,18 @@ const SpaceFlightControlsTouch = () => {
     },
     touchMove: (event, touch) => {
       // if touching move control, then move ship
-      if (moveControl.current) {
-        const rect = moveControl.current.getBoundingClientRect();
-        if (
-          // giving extra room for movement touch control
-          touch.clientX >= rect.left - 40 &&
-          touch.clientX <= rect.right + 40 &&
-          touch.clientY >= rect.top - 40 &&
-          touch.clientY <= rect.bottom + 40
-        ) {
-          useStore.getState().actions.updateTouchMobileMoveShip(event, touch);
-        }
+      //if (moveControl.current) {
+      const rect = event.target.getBoundingClientRect();
+      if (
+        // giving extra room for movement touch control
+        touch.clientX >= rect.left - 40 &&
+        touch.clientX <= rect.right + 40 &&
+        touch.clientY >= rect.top - 40 &&
+        touch.clientY <= rect.bottom + 40
+      ) {
+        useStore.getState().actions.updateTouchMobileMoveShip(event, touch);
       }
+      //}
     },
     touchEnd: () => {
       numControlTouches--;
@@ -217,11 +217,12 @@ const SpaceFlightControlsTouch = () => {
       <div className="absolute w-[200px] h-[100px] bottom-5 right-28 flex justify-end">
         <div
           id="btn-action"
-          className="pointer-events-auto ml-1 w-24 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
+          className="pointer-events-auto relative ml-1 w-32 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
         >
-          <div className="relative scale-x-[-1] right-2 top-2">
+          {/*<div className="relative scale-x-[-1] right-2 top-2">
             <ActionShoot />
-          </div>
+          </div>*/}
+          <ActionButtonIcon />
         </div>
       </div>
       <div className="absolute rounded-tl-3xl border-2 border-white -bottom-[2px] -right-[2px] h-52 w-28">

@@ -41,8 +41,8 @@ interface playerControlStoreState {
     middleClick: () => void;
   };
   // TODO move shoot to here
-  weaponUpdateToggle: boolean;
-  toggleWeaponUpdate: () => void;
+  weaponUpdateUiToggle: boolean;
+  toggleWeaponUpdateUi: () => void;
 
   flightCameraLookRotation: {
     rotateX: number;
@@ -99,8 +99,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
   (set, get) => ({
     touchController: new TouchController(), // to handle simultanious touch events
 
-    playerActionMode: PLAYER.action.manualControl, //PLAYER.action.inspect,
-    playerControlMode: PLAYER.controls.combat, //PLAYER.controls.scan,
+    playerActionMode: IS_TOUCH_SCREEN
+      ? PLAYER.action.inspect
+      : PLAYER.action.manualControl,
+    playerControlMode: PLAYER.controls.scan,
     playerViewMode: PLAYER.view.firstPerson,
     // testing
     playerScreen: PLAYER.screen.mainMenu,
@@ -155,9 +157,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       },
     },
 
-    weaponUpdateToggle: false,
-    toggleWeaponUpdate: () => {
-      set(() => ({ weaponUpdateToggle: !get().weaponUpdateToggle }));
+    weaponUpdateUiToggle: false,
+    toggleWeaponUpdateUi: () => {
+      set(() => ({ weaponUpdateUiToggle: !get().weaponUpdateUiToggle }));
     },
 
     flightCameraLookRotation: {
@@ -571,7 +573,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           useHudTargtingStore.getState().updatePlayerHudCrosshairDiv();
         }
         // update mech
-        useStore.getState().player.updateMechUseFrame(delta);
+        useStore.getState().player.updateUseFrameMech(delta);
         // fire weapon
         get().updateFrame.updateFrameHelpers.weaponFireTestFunction();
       },

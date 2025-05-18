@@ -54,7 +54,7 @@ export interface enemyMechGroupInt {
     incomingPlayerPosition: THREE.Vector3,
     playerSpeed: number
   ) => void;
-  updateUseFrame: (delta: number, scene: THREE.Scene) => void; // require scene to add remove instanced mech objects
+  updateUseFrameEnemyGroup: (delta: number, scene: THREE.Scene) => void; // require scene to add remove instanced mech objects
   dispose: () => void;
 }
 
@@ -328,7 +328,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
     });
   }
 
-  updateUseFrame(delta: number, scene: THREE.Scene) {
+  updateUseFrameEnemyGroup(delta: number, scene: THREE.Scene) {
     if (
       useStore
         .getState()
@@ -336,11 +336,11 @@ class EnemyMechGroup implements enemyMechGroupInt {
     ) {
       delta = Math.min(delta, 0.1); // cap delta to 100ms
 
-      this.boidController?.updateUseFrame();
+      this.boidController?.updateUseFrameBoids();
 
       this.enemyMechs.forEach((enemy) => {
         enemy.updateUseFrameBoidForce(delta);
-        enemy.updateMechUseFrame(delta, scene);
+        enemy.updateUseFrameMech(delta, scene);
       });
     }
   }

@@ -31,6 +31,44 @@ import camera from "../assets/icons/camera-change.svg";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
 import useGalaxyMapStore from "../stores/galaxyMapStore";
 
+export const ActionButtonIcon = () => {
+  const playerControlMode = usePlayerControlsStore(
+    (state) => state.playerControlMode
+  );
+  const selectedHudTargetId = useHudTargtingStore(
+    (state) => state.selectedHudTargetId
+  );
+  const isShowWarpButton = useHudTargtingStore(
+    (state) => state.isShowWarpButton
+  );
+  const isPlayerWarping = usePlayerControlsStore(
+    (state) => state.isPlayerWarping
+  );
+  const isShowScanButton = useHudTargtingStore(
+    (state) => state.isShowScanButton
+  );
+  const scanProgressNormHudTarget = useHudTargtingStore(
+    (state) => state.scanProgressNormHudTarget
+  );
+  return (
+    <div className="text-white text-3xl uppercase flex items-center justify-center h-full">
+      {playerControlMode === PLAYER.controls.combat
+        ? "Shoot"
+        : isPlayerWarping
+        ? ""
+        : isShowWarpButton
+        ? selectedHudTargetId
+          ? "Warp"
+          : "Target"
+        : isShowScanButton
+        ? scanProgressNormHudTarget < 1
+          ? "Scan"
+          : ""
+        : "Target"}
+    </div>
+  );
+};
+
 export const ActionShoot = () => {
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
@@ -453,10 +491,7 @@ export const CockpitControlEquip = () => {
 export const ControlIconsRowBottom = () => {
   return (
     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-      <div
-        className="flex flex-row gap-2"
-        style={{ transform: "scale(0.7, 0.7)" }}
-      >
+      <div className="flex flex-row gap-2" style={{ transform: "scale(1, 1)" }}>
         <CockpitControlMode />
         <CockpitControlMap />
         <CockpitControlView />
@@ -468,10 +503,7 @@ export const ControlIconsRowBottom = () => {
 const ControlIconsColumnRight = () => {
   return (
     <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-      <div
-        className="flex flex-col gap-2"
-        style={{ transform: "scale(0.7, 0.7)" }}
-      >
+      <div className="flex flex-col gap-2" style={{ transform: "scale(1, 1)" }}>
         <CockpitControlMode />
         <CockpitControlMap />
         <CockpitControlView />
@@ -488,10 +520,10 @@ export const Cockpit3rdPersonControls = () => {
     <>
       {playerActionMode === PLAYER.action.inspect && (
         <>
-          <div className="hidden md:block">
+          <div className="portrait:hidden">
             <ControlIconsRowBottom />
           </div>
-          <div className="md:hidden">
+          <div className="landscape:hidden">
             <ControlIconsColumnRight />
           </div>
         </>

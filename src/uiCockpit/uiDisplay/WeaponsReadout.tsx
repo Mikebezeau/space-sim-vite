@@ -1,7 +1,7 @@
 import React from "react";
 import useStore from "../../stores/store";
 import usePlayerControlStore from "../../stores/playerControlsStore";
-import { PLAYER } from "../../constants/constants";
+import { IS_TOUCH_SCREEN, PLAYER } from "../../constants/constants";
 //import { equipData } from "../equipment/data/equipData";
 
 const WeaponsReadout = ({ isAlwaysDisplay = false }) => {
@@ -9,8 +9,8 @@ const WeaponsReadout = ({ isAlwaysDisplay = false }) => {
   const playerControlMode = usePlayerControlStore(
     (state) => state.playerControlMode
   );
-  const weaponUpdateToggle = usePlayerControlStore(
-    (state) => state.weaponUpdateToggle
+  const weaponUpdateUiToggle = usePlayerControlStore(
+    (state) => state.weaponUpdateUiToggle
   );
 
   return (
@@ -24,7 +24,9 @@ const WeaponsReadout = ({ isAlwaysDisplay = false }) => {
                 i % 2 === 0 ? "flex-row" : "flex-row-reverse justify-start" //justify reversed
               } text-white w-[300px] text-[12px] font-bold uppercase`}
               style={{
-                bottom: `${200 - Math.ceil((i + 1) / 2) * 60}px`,
+                bottom: `${
+                  (IS_TOUCH_SCREEN ? 350 : 200) - Math.ceil((i + 1) / 2) * 30
+                }px`,
                 left: i % 2 === 0 ? "0" : "calc(100% - 300px)", // Adjust 200px to the width of the text if needed
                 textAlign: i % 2 === 0 ? "left" : "right",
               }}

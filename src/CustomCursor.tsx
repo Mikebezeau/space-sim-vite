@@ -12,7 +12,7 @@ wrap the AppUI component in a div with the following id
 
 const CustomCursor = () => {
   const customCursorRef = React.useRef<HTMLDivElement | null>(null);
-
+  //TODO remove this requestAnimationFrame - do updates in store function
   const move = (e: MouseEvent) => {
     requestAnimationFrame(() => {
       if (customCursorRef.current) {

@@ -27,7 +27,7 @@ const EnemyMechs = (props: EnemyMechsInt) => {
   const { scene } = useThree();
 
   useFrame((_, delta) => {
-    enemyGroup.updateUseFrame(delta, scene);
+    enemyGroup.updateUseFrameEnemyGroup(delta, scene);
   }, COMPONENT_RENDER_ORDER.positionsUpdate); //render order - positions are updated first
 
   return (

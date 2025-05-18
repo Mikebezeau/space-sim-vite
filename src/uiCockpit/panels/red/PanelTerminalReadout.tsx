@@ -116,6 +116,7 @@ const PanelTerminalReadout = () => {
         computerScreen.current.innerHTML = SPACE_TEXT_TITLE;
       }
     }
+    // TODO: remove this timeout and use a requestAnimationFrame instead
     timeoutRef.current = setTimeout(
       () => {
         requestAnimationFrame(updateComputerScreen);

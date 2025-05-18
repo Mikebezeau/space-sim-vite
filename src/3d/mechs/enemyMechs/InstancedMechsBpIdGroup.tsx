@@ -127,7 +127,7 @@ const InstancedMechsBpIdGroup = (props: instancedMechsInt) => {
               useMechBpBuildStore
                 .getState()
                 .getCreateMechBpBuild(instancedEnemies[0]._mechBP)!
-                .bufferGeometry.scale(1.1, 1.1, 1.1),
+                .bufferGeometry,
               // material
               mechInstancedMaterialHitDetect,
               // count

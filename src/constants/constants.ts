@@ -25,7 +25,7 @@ export const IS_TOUCH_SCREEN =
   "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
 export const PLAYER_START = {
-  system: 17050,
+  system: 118040,
   mechBPindex: 0,
 };
 

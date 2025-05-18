@@ -58,7 +58,7 @@ interface mechInt {
     scene?: THREE.Scene
   ) => void;
   explode: (scene?: THREE.Scene) => void;
-  updateMechUseFrame: (delta: number, scene?: THREE.Scene) => void;
+  updateUseFrameMech: (delta: number, scene?: THREE.Scene) => void;
   updateExplosionUseFrame: (delta: number, scene?: THREE.Scene) => void;
   isMechDead: () => boolean;
   setMechDead: (scene?: THREE.Scene) => void;
@@ -565,7 +565,7 @@ class Mech implements mechInt {
     }
   }
 
-  updateMechUseFrame(delta: number, scene?: THREE.Scene) {
+  updateUseFrameMech(delta: number, scene?: THREE.Scene) {
     this.updateMechWeaponsUseFrame(delta);
     this.updateExplosionUseFrame(delta, scene);
   }
@@ -681,7 +681,7 @@ class Mech implements mechInt {
           weapon.weaponFireData.isReady = true;
           if (this.isPlayer) {
             // trigger weapon readout rerender
-            usePlayerControlStore.getState().toggleWeaponUpdate();
+            usePlayerControlStore.getState().toggleWeaponUpdateUi();
           }
         }
       }

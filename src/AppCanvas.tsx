@@ -28,6 +28,7 @@ const AppCanvas = () => {
           shadows={false}
           resize={{ debounce: 1000 }}
           gl={{
+            preserveDrawingBuffer: false, //TODO test performance seems to be better with this
             logarithmicDepthBuffer: true,
             //precision: "highp", // "highp", "mediump" or "lowp"
             // NOTE setting powerPreference & antialias false to ease load on GPU

@@ -63,6 +63,7 @@ const Cockpit = () => {
         // the rotateX and rotateY are swapped because CSS rotations work that way
       });
     }
+    //TODO remove this requestAnimationFrame - do updates in store function
     requestFrameIdRef.current = requestAnimationFrame(updateView);
   };
 

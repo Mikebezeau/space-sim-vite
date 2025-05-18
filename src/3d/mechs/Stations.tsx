@@ -29,7 +29,7 @@ const Station = memo((props: StationInt) => {
       const r = stationGroupRef.current.rotation.y + delta / 30;
       stationGroupRef.current.rotation.set(0, r, 0);
     }
-    station.updateMechUseFrame(delta);
+    station.updateUseFrameMech(delta);
   });
 
   const loadModel3dObjects = [
