@@ -24,10 +24,7 @@ const ControlsMouseKBSpaceFlight = () => {
 
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
-  ); /*
-  const actionModeSelect = usePlayerControlsStore(
-    (state) => state.actions.actionModeSelect
-  );*/
+  );
   const getPlayerSpeedSetting = usePlayerControlsStore(
     (state) => state.getPlayerSpeedSetting
   );

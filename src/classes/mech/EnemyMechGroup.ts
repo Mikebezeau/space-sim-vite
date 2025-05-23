@@ -15,7 +15,7 @@ export type defenseNodesType = {
   }[];
 };
 
-export interface enemyMechGroupInt {
+interface enemyMechGroupInt {
   getRealWorldPosition: () => THREE.Vector3;
   getRealWorldDistanceTo(fromPosition: THREE.Vector3): void;
   getWarpToDistanceAway(): number;

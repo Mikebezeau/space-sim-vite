@@ -1,0 +1,231 @@
+RPG CHARACTER SYSTEM
+
+
+🧬 CHARACTER ATTRIBUTES
+
+Attributes provide core modifiers to skills and defenses:
+
+Strength (STR): Affects melee damage, lifting, athletics
+
+Agility (AGI): Modifies stealth, dodge, speed, piloting
+
+Endurance (END): Increases HP, resist pain, toxin resistance
+
+Reflexes (REF): Modifies dodge, initiative, ranged accuracy
+
+Intelligence (INT): Modifies science, matrix, engineering
+
+Perception (PER): Modifies ranged weapon accuracy, awareness
+
+Willpower (WIL): Mental resistance, leadership, resilience
+
+Charisma (CHA): Social checks, negotiation, performance
+
+Empathy (EMP): Modifies medicine, influence, alien relations
+
+
+🛡 DEFENSIVE SKILLS
+
+These are used to avoid damage or resist effects:
+
+Dodge (AGI + REF) – Avoid melee/ranged attacks
+
+Resist Influence (WIL + CHA) – Mental coercion defense
+
+Endure Pain (END + WIL) – Survive trauma and critical injuries
+
+Evade Systems (INT + REF) – Avoid detection or digital locks
+
+Mental Fortitude (WIL + INT) – Resist fear, illusions, or psychic attacks
+
+Environmental Resistance (END + INT) – Toxin, radiation, and vacuum tolerance
+
+🎓 CHARACTER SKILLS AND SPECIALTIES
+Each skill can have one or more specialties. More detailed systems can grant bonuses for focused specialties.
+
+
+🔹 Social
+
+Faction Relations – Dealing with station factions, guilds
+
+Corporate Etiquette – Navigating high-level business
+
+Streetwise – Local underworld, black markets
+
+Nomad Culture – Caravan/outer rim diplomacy
+
+Military Protocol – Ranks, chain of command
+
+Influence – Persuasion, charm, intimidation
+
+Communication – Public speaking, negotiation
+
+Alien Diplomacy – Cross-species relations
+
+Disguise – Passing as someone else in a social environment
+
+Performance – Acting, singing, public persuasion
+
+
+🔹 Science
+
+Energy Systems – Reactors, plasma, fusion
+
+Engineering – Repairs, constructs, mechanics
+
+Astronomy – Celestial navigation, anomalies
+
+Genetics – Bioengineering, cloning
+
+Nanotech – Nanosurgery, microfabrication
+
+Quantum Theory – AI cores, entanglement, experiments
+
+Medical Science – Diagnosis, surgery
+
+Chemistry – Toxins, pharmacology
+
+Botany/Xenobotany – Exotic plant life, food systems
+
+Cybernetics – Implant integration, nervous system interfacing
+
+Xenoarchaeology – Alien ruins and artifacts
+
+Theoretical Physics – Exotic matter, wormholes, time phenomena
+
+
+🔹 Matrix
+
+Matrix Influence – Control AI, digital persuasion
+
+Interference – Code disruption, disable networks
+
+Programs – Code creation, utility hacking
+
+AI Interaction – Social with sentient code
+
+Security Bypass – Firewalls, ICE, intrusion
+
+Signal Hijack – Drones, feeds, vehicle override
+
+Deepnet Navigation – Black market and shadow layer data exploration
+
+Augmented Warfare – Matrix-driven combat overlay, enhancements
+
+VR Subversion – Hijacking virtual environments
+
+
+🔹 Mechanics
+
+Fabrication – 3D printing, blueprint work
+
+Mecha Repair – Advanced vehicle support
+
+Weapon Tuning – Enhancements, recoil calibration
+
+Structural Repair – Station integrity, habitat
+
+Tool Use – Efficiency and field repair
+
+Power Systems – Capacitors, relays, generators
+
+Sensor Calibration – Drones, satellites, base arrays
+
+Drone Maintenance – Small mech and utility drone work
+
+Suit Upgrades – Space armor, environmental suits
+
+
+🔹 Combat
+
+Melee Combat – Blunt, blade, exotic
+
+Unarmed Combat – Grappling, martial arts
+
+Ranged Weapons – Pistols, rifles, smart guns
+
+Heavy Weapons – Cannons, missile pods
+
+Tactics – Command, ambush, terrain usage
+
+Cover Usage – Sliding, leaning, positioning
+
+Weapon Maintenance – Keeps arms reliable and efficient
+
+Dual-Wielding – Mastering offhand combat
+
+
+🔹 Physical
+
+Athletics – Running, jumping, swimming
+
+Climbing – Station interiors, broken domes
+
+Stealth – Movement, concealment
+
+Survival – Harsh environments, resource use
+
+Parkour – Urban movement, vaulting, wall-run
+
+Endurance Running – Long-range escape or pursuit
+
+Swimming – Underwater hazards or alien seas
+
+
+🔹 Vehicle & Mecha
+
+Piloting (Space) – Interceptors, shuttles
+
+Piloting (Ground) – Tanks, mecha walkers
+
+Piloting (Atmospheric) – Jets, dropships
+
+Sensors – Targeting, scanning, awareness
+
+Target Tracking – Lock-on systems, drone tracking
+
+Maneuvering – Boosting, drifting, evasive flight
+
+Systems Sync – Interface alignment, cyber controls
+
+Gunnery – Mecha and vehicle mounted weaponry
+
+Maintenance-on-the-Fly – Emergency in-combat vehicle repairs
+
+
+🔹 Trade & Knowledge
+
+Trade – Buy/sell negotiation
+
+Navigation – Star charting, local routes
+
+Linguistics – Alien or dead languages
+
+Investigation – Crime solving, analysis
+
+History/Politics – Galactic lore and power groups
+
+Archaeology – Ruins, pre-jump technology
+
+Cultural Analysis – Understanding and using alien norms
+
+Legal Systems – Galactic law, corporate contracts
+
+
+🔹 Other / Exotic
+
+Psychic Control – ESP, projection, mindforce (rare)
+
+Beast Handling – Alien fauna
+
+Art/Culture – Music, painting, social rituals
+
+Forgery – Document, ID replication
+
+Dream Hacking – Navigating the subconscious net
+
+Occult Sciences – Forbidden tech and theoretical applications
+
+Memory Editing – Implanting or removing experiences
+
+Mind Sculpting – Personality tuning, mental trait alterations

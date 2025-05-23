@@ -2,7 +2,7 @@ import * as THREE from "three";
 import Mech from "./Mech";
 import mechDesigns from "../../equipment/data/mechDesigns";
 
-export interface enemyMechInt {
+interface enemyMechInt {
   getIsLeader: () => boolean;
   getHasGroup: () => boolean;
   explode: (scene) => void;

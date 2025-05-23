@@ -21,7 +21,7 @@ import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial"
 import { DESIGN_TYPE } from "../../constants/particleConstants";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
-import { setCustomData } from "r3f-perf";
+import useHudTargtingStore from "../../stores/hudTargetingStore";
 
 // TODO move MECH_STATE to constants
 export const MECH_STATE = {
@@ -33,6 +33,9 @@ export const MECH_STATE = {
 };
 
 interface mechInt {
+  getRealWorldPosition(): void;
+  getRealWorldDistanceTo(fromPosition: THREE.Vector3): void;
+
   setBuildObject3d: () => void;
   // assign mech to object3d ref from in scene component
   assignObject3dComponent: (
@@ -75,6 +78,8 @@ interface mechInt {
 
 class Mech implements mechInt {
   testFlag: boolean; // testing flag for debugging
+
+  realWorldPosition: THREE.Vector3;
 
   id: string;
   isPlayer: boolean;
@@ -130,6 +135,7 @@ class Mech implements mechInt {
   ) {
     this.testFlag = false; // testing flag for debugging
 
+    this.realWorldPosition = new THREE.Vector3();
     this.id = uuidv4();
     this.isPlayer = isPlayer;
     this.isEnemy = isEnemy;
@@ -195,6 +201,15 @@ class Mech implements mechInt {
         0
       ));
     this.structureTemp = { max: totalServoStructure, damage: 0 };
+  }
+
+  getRealWorldPosition() {
+    this.object3d.getWorldPosition(this.realWorldPosition);
+    return this.realWorldPosition;
+  }
+
+  getRealWorldDistanceTo(fromPosition: THREE.Vector3) {
+    return this.getRealWorldPosition().distanceTo(fromPosition);
   }
 
   setBuildObject3d() {
@@ -652,6 +667,9 @@ class Mech implements mechInt {
   setMechDead(scene?: THREE.Scene) {
     this.mechState = MECH_STATE.dead;
     this.object3d.clear();
+    // remove target from HUD
+    console.log(this.id);
+    useHudTargtingStore.getState().setTargetDead(this.id);
     // position mech object far away to not interfear with scene
     // TODO the boidcontroller gets messed up when object is moved far away
     //this.object3d.position.set(this.object3d.position.x + 100000, 0, 0);
@@ -660,6 +678,7 @@ class Mech implements mechInt {
     if (scene?.children.find((obj) => obj.id === this.object3d.id)) {
       scene.remove(this.object3d);
     }
+
     /*
     // TODO dispose explosionMesh and other cleanup for Mechs
     if (this.explosionMesh !== null) {

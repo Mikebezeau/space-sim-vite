@@ -4,7 +4,7 @@ import { PLAYER } from "../constants/constants";
 //@ts-ignore
 import hudCrosshairOuter1 from "/images/hud/hudCrosshairOuter1.png";
 
-const CombatHudTarget = () => {
+const CombatHudCrosshairOuter = () => {
   const playerActionMode = usePlayerControlsStore(
     (state) => state.playerActionMode
   );
@@ -30,4 +30,4 @@ const CombatHudTarget = () => {
   );
 };
 
-export default CombatHudTarget;
+export default CombatHudCrosshairOuter;

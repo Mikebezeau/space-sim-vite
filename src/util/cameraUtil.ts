@@ -44,10 +44,10 @@ export const getCameraAngleDiffToPosition = (
 // avoiding creating new objects in loop
 const dummyVec3 = new Vector3();
 
-export const getScreenPosition = (camera: any, position: Vector3) => {
-  const angleDiff = getCameraAngleDiffToPosition(camera, position);
+export const getScreenPosition = (camera: any, worldPosition: Vector3) => {
+  const angleDiff = getCameraAngleDiffToPosition(camera, worldPosition);
   // dummyVec3: normalized position is -1 to 1 when on screen (values beyond are off screen)
-  dummyVec3.copy(position);
+  dummyVec3.copy(worldPosition);
   dummyVec3.project(camera);
   // flipping sign of y to match CSS screen coordinates x y
   return { xn: dummyVec3.x, yn: -dummyVec3.y, angleDiff };

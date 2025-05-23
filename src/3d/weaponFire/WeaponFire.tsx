@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
+import useHudTargtingStore from "../../stores/hudTargetingStore";
 import useWeaponFireStore from "../../stores/weaponFireStore";
 import MissileInstancedMesh from "./MissileInstancedMesh ";
 import { DefenseNodesHelper } from "../../scenes/testingScene/TestEnemyAttackScene";
@@ -12,7 +13,7 @@ import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
 // TODO create WeaponFire class
 const WeaponFire = () => {
   const defenseNodesRef = useRef<defenseNodesType | null>(null);
-  const { scene } = useThree();
+  const { camera, scene } = useThree();
   // for testing ray position and direction
   const testArrowHelper = false; // can impliment this in testing GUI
   const arrowHelperRef = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
@@ -57,19 +58,30 @@ const WeaponFire = () => {
           useStore.getState().player.object3d.position, // local position
           1
         );
+        // set enemy targets for Hud
+        useHudTargtingStore.getState().generateEnemyCombatTargets();
+
         // testing
         defenseNodesRef.current =
           useEnemyStore.getState().enemyGroup.defenseNodes;
       }
     }
+    /*
+    // not using this for now, could be useful for other things
     useWeaponFireStore
       .getState()
-      .updateWeaponFireUseFrame(
-        delta,
-        scene,
+      .updateCombatTargetsUseFrame(
+        camera,
         testArrowHelper,
         arrowHelperRef.current
       );
+*/
+    useWeaponFireStore.getState().updateWeaponFireUseFrame(
+      delta,
+      scene,
+      false, //testArrowHelper,
+      arrowHelperRef.current
+    );
   }, COMPONENT_RENDER_ORDER.weaponFireUpdate);
 
   return (

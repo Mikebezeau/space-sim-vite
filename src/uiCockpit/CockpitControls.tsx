@@ -69,27 +69,6 @@ export const ActionButtonIcon = () => {
   );
 };
 
-export const ActionShoot = () => {
-  const playerControlMode = usePlayerControlsStore(
-    (state) => state.playerControlMode
-  );
-  return (
-    <>
-      {playerControlMode === PLAYER.controls.combat && (
-        <div className="icon-button-cyber w-[10vh] h-[10vh]">
-          <span className="icon-button-cyber-content">
-            <img
-              src={crosshair}
-              alt="shoot icon"
-              className="w-[10vh] h-[10vh] pointer-events-none"
-            />
-          </span>
-        </div>
-      )}
-    </>
-  );
-};
-
 // for mouse users, click to enter manual control mode of piloting
 const ActionControlPilot = () => {
   const actionModeSelect = usePlayerControlsStore(
@@ -130,6 +109,7 @@ const ActionCancelPilot = () => {
     >
       <span className="icon-button-cyber-content">
         <img
+          // TODO its a middle click
           src={rightClick}
           alt="cancel controls icon"
           className="w-[10vh] h-[10vh] pointer-events-none"
@@ -241,7 +221,7 @@ export const SelectedTargetActionButton = () => {
 
   const isEnemytarget =
     useHudTargtingStore.getState().getSelectedHudTarget()?.targetType ===
-      HTML_HUD_TARGET_TYPE.ENEMY || false;
+      HTML_HUD_TARGET_TYPE.ENEMY_GROUP || false;
 
   if (isEnemytarget) {
     // for use in mouse controls - clicking appropriate button triggers callback

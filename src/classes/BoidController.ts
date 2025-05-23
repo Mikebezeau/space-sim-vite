@@ -29,6 +29,7 @@ export interface ballContaineroidControllerInt {
   addAlignVector: (mech1: EnemyMechBoid, mech2: EnemyMechBoid) => void;
   normalizeAlignVector: (currentMech: EnemyMechBoid) => THREE.Vector3;
   addSeparateVector: (mech1: EnemyMechBoid, mech2: EnemyMechBoid) => void;
+  addSeparateVectorAvoidPlayer: (currentMech: EnemyMechBoid) => void;
   normalizeSeparateVector: (currentMech: EnemyMechBoid) => THREE.Vector3;
   addCohesionVector: (mech1: EnemyMechBoid, mech2: EnemyMechBoid) => void;
   setCohesionGroupVector: (currentMech: EnemyMechBoid) => void;
@@ -196,11 +197,15 @@ class BoidController implements ballContaineroidControllerInt {
         this.addSeparateVector(mech1, mech2);
       }
       // avoid player mech
+      /*
       this.avoid(
         mech1,
         useStore.getState().player.object3d.position,
         mech1.maxHalfWidth * 3 + useStore.getState().player.maxHalfWidth * 3
       );
+      */
+
+      this.addSeparateVectorAvoidPlayer(mech1);
       // all flocking forces have been calculated for mech1, apply forces to mech1
       mech1.applyForce(this.normalizeAlignVector(mech1));
       mech1.applyForce(this.normalizeSeparateVector(mech1));
@@ -303,6 +308,30 @@ class BoidController implements ballContaineroidControllerInt {
         mech2.separateSumVector.add(this.toMeVector.negate());
         mech2.separateCount++;
       }
+    }
+  }
+
+  addSeparateVectorAvoidPlayer(mech1: EnemyMechBoid) {
+    const player = useStore.getState().player;
+    const dist = mech1.object3d.position.distanceTo(player.object3d.position);
+    const separateDistance =
+      mech1.maxHalfWidth +
+      player.maxHalfWidth * this.params.separate.effectiveRangeMult;
+    if (dist > 0 && dist < separateDistance) {
+      // mech1
+      this.toMeVector.set(0, 0, 0);
+      this.toMeVector.subVectors(
+        mech1.object3d.position,
+        player.object3d.position
+      );
+      this.toMeVector.normalize();
+      this.toMeVector.divideScalar(dist / separateDistance);
+      // mech1
+      // TODO scalar calculation
+      //if (mech1.sizeMechBP <= player.sizeMechBP) {
+      mech1.separateSumVector.add(this.toMeVector);
+      mech1.separateCount++;
+      //}
     }
   }
 

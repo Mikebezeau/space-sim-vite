@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { Vector3 } from "three";
 import useStore from "./store";
 import usePlayerControlsStore from "./playerControlsStore";
 import useEnemyStore from "./enemyStore";
@@ -9,31 +8,36 @@ import {
   getScreenPosition,
   getScreenPositionFromDirection,
 } from "../util/cameraUtil";
-import SpaceStationMech from "../classes/mech/SpaceStationMech";
+import HudTarget from "../classes/hudTargets/HudTarget";
+import EnemyMech from "../classes/mech/EnemyMech";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
-import CelestialBody from "../classes/solarSystem/CelestialBody";
 import { IS_TOUCH_SCREEN, PLAYER } from "../constants/constants";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
   PLANET: 1,
   STATION: 2,
-  ENEMY: 3,
+  ENEMY_GROUP: 3,
+  ENEMY_COMBAT: 4,
 };
-
+/*
 export type htmlHudTargetType = {
   id: string;
+  isActive: boolean; // hides target if false
   targetType: number;
-  viewAngle: number;
+  viewAngle: number; // used to sort targets and limit combat targets
+  distanceNorm: number; // used for combat target, coloring: darker for further away targets
   label: string;
   scanProgressNorm: number;
   textColor?: string;
   color?: string;
   opacity?: number;
   divElement?: HTMLDivElement;
-  entity?: SpaceStationMech | EnemyMechGroup | CelestialBody;
+  combatTriangleSvgs: SVGElement[];
+  nonCombatCircleDiv?: HTMLDivElement;
+  entity?: EnemyMech | SpaceStationMech | EnemyMechGroup | CelestialBody;
 };
-
+*/
 interface hudTargetingGalaxyMapStoreState {
   // CSS HUD targets
   isMouseOutOfHudCircle: boolean;
@@ -44,16 +48,19 @@ interface hudTargetingGalaxyMapStoreState {
   updatePlayerHudCrosshairDiv: () => void;
   // HTML HUD Targets
   generateTargets: () => void;
-  getHudTargetById: (id: string) => htmlHudTargetType | undefined;
+  generateEnemyCombatTargets: (enemyGroup?: EnemyMechGroup) => void;
+  setTargetDead: (id: string) => void; // remove targets from htmlHudTargets array
+  getEnemyCombatTargets: () => HudTarget[];
+  getHudTargetById: (id: string) => HudTarget | undefined;
   //getWarpToHudTarget: () => htmlHudTargetType | undefined;
-  getFocusedHudTarget: () => htmlHudTargetType | undefined;
-  getSelectedHudTarget: () => htmlHudTargetType | undefined;
+  getFocusedHudTarget: () => HudTarget | undefined;
+  getSelectedHudTarget: () => HudTarget | undefined;
   getTargetPosition: (
     xn: number,
     yn: number,
     angleDiff: number
   ) => { marginLeftPx: number; marginTopPx: number };
-  htmlHudTargets: htmlHudTargetType[];
+  htmlHudTargets: HudTarget[];
   selectedHudTargetId: string | null;
   setSelectedHudTargetId: (selectedHudTargetId?: string | null) => void;
   focusedHudTargetId: string | null;
@@ -92,81 +99,130 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       }
     },
     generateTargets: () => {
-      const htmlHudTargets: htmlHudTargetType[] = [];
+      // keep all enemy combat targets
+      const htmlHudTargets = get().getEnemyCombatTargets();
       // stars
       if (useStore.getState().stars.length > 0) {
-        const targetsStars: htmlHudTargetType[] = [];
+        const targetsStars: HudTarget[] = [];
         useStore.getState().stars.forEach((star, index) => {
           if (!star.isActive) return;
-          targetsStars.push({
-            id: `${HTML_HUD_TARGET_TYPE.PLANET}-star-${index}`,
-            targetType: HTML_HUD_TARGET_TYPE.PLANET,
-            viewAngle: 0,
-            label: "STAR " + star.rngSeed,
-            color: "", //star.textureMapLayerOptions[0].lowAltColor || "",
-            entity: star,
-            scanProgressNorm: 0,
-          });
+          targetsStars.push(
+            new HudTarget({
+              id: `${HTML_HUD_TARGET_TYPE.PLANET}-star-${index}`,
+              isActive: true,
+              targetType: HTML_HUD_TARGET_TYPE.PLANET,
+              label: "STAR " + star.rngSeed,
+              color: "", //star.textureMapLayerOptions[0].lowAltColor || "",
+              entity: star,
+            })
+          );
         });
         htmlHudTargets.push(...targetsStars);
       } // planets
       if (useStore.getState().planets.length > 0) {
-        const targetsPlanets: htmlHudTargetType[] = [];
+        const targetsPlanets: HudTarget[] = [];
         useStore.getState().planets.forEach((planet, index) => {
           if (!planet.isActive) return;
-          targetsPlanets.push({
-            id: `${HTML_HUD_TARGET_TYPE.PLANET}-${index}`,
-            targetType: HTML_HUD_TARGET_TYPE.PLANET,
-            viewAngle: 0,
-            label: planet.rngSeed,
-            color: planet.textureMapLayerOptions[0].lowAltColor || "",
-            entity: planet,
-            scanProgressNorm: 0,
-          });
+          targetsPlanets.push(
+            new HudTarget({
+              id: `${HTML_HUD_TARGET_TYPE.PLANET}-${index}`,
+              isActive: true,
+              targetType: HTML_HUD_TARGET_TYPE.PLANET,
+              label: planet.rngSeed,
+              color: planet.textureMapLayerOptions[0].lowAltColor || "",
+              entity: planet,
+            })
+          );
         });
         htmlHudTargets.push(...targetsPlanets);
       }
       // stations
       if (useStore.getState().stations.length > 0) {
-        const targetsStations: htmlHudTargetType[] = [];
+        const targetsStations: HudTarget[] = [];
         useStore.getState().stations.forEach((station, index) => {
-          targetsStations.push({
-            id: `${HTML_HUD_TARGET_TYPE.STATION}-${index}`,
-            targetType: HTML_HUD_TARGET_TYPE.STATION,
-            viewAngle: 0,
-            label: station.name,
-            color: "gray",
-            entity: station,
-            scanProgressNorm: 0,
-          });
+          targetsStations.push(
+            new HudTarget({
+              id: `${HTML_HUD_TARGET_TYPE.STATION}-${index}`,
+              isActive: true,
+              targetType: HTML_HUD_TARGET_TYPE.STATION,
+              label: station.name,
+              color: "gray",
+              entity: station,
+            })
+          );
         });
         htmlHudTargets.push(...targetsStations);
       }
       // enemy groups
       if (useEnemyStore.getState().enemyGroup.enemyMechs.length > 0) {
-        htmlHudTargets.push({
-          id: `${HTML_HUD_TARGET_TYPE.ENEMY}`, //-${index}`,
-          targetType: HTML_HUD_TARGET_TYPE.ENEMY,
-          viewAngle: 0,
-          label: "ENEMY",
-          color: "red",
-          entity: useEnemyStore.getState().enemyGroup,
-          scanProgressNorm: 0,
-        });
+        htmlHudTargets.push(
+          new HudTarget({
+            id: `${HTML_HUD_TARGET_TYPE.ENEMY_GROUP}`, //-${index}`,
+            isActive: true,
+            targetType: HTML_HUD_TARGET_TYPE.ENEMY_GROUP,
+            label: "ENEMY GROUP",
+            color: "red",
+            entity: useEnemyStore.getState().enemyGroup,
+          })
+        );
       }
 
       // warp to star
-      htmlHudTargets.push({
-        id: `${HTML_HUD_TARGET_TYPE.WARP_TO_STAR}`,
-        targetType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
-        viewAngle: 0,
-        label: "SYSTEM WARP",
-        textColor: "yellow",
-        color: "white", // TODO get star color
-        opacity: 1,
-        scanProgressNorm: 0,
+      htmlHudTargets.push(
+        new HudTarget({
+          id: `${HTML_HUD_TARGET_TYPE.WARP_TO_STAR}`,
+          isActive: false,
+          targetType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
+          label: "SYSTEM WARP",
+          textColor: "yellow",
+          color: "white", // TODO get star color
+          // TODO borderColor implementation
+          opacity: 1,
+        })
+      );
+      set({ htmlHudTargets });
+    },
+    generateEnemyCombatTargets: (
+      enemyGroup: EnemyMechGroup = useEnemyStore.getState().enemyGroup
+    ) => {
+      // keep current non-combat targets
+      const htmlHudTargets = get().htmlHudTargets.filter(
+        (
+          target: HudTarget //TODO combatTarget
+        ) => target.targetType !== HTML_HUD_TARGET_TYPE.ENEMY_COMBAT
+      );
+
+      enemyGroup.enemyMechs.forEach((enemyMech) => {
+        //if is not dead
+        if (enemyMech.isMechDead()) return;
+        htmlHudTargets.push(
+          new HudTarget({
+            id: `${enemyMech.id}`,
+            isActive: false, // update will set to true for enemies infront of player
+            targetType: HTML_HUD_TARGET_TYPE.ENEMY_COMBAT,
+            label: "",
+            color: "red",
+            entity: enemyMech,
+          })
+        );
       });
       set({ htmlHudTargets });
+    },
+    setTargetDead: (id: string) => {
+      // remove target from htmlHudTargets array
+      const htmlHudTarget = get().htmlHudTargets.find(
+        (target) => target.id === id
+      );
+      if (htmlHudTarget) {
+        htmlHudTarget.isDead = true; // set target to dead
+      }
+    },
+    //TODO move all target functions to parent class?
+    // TODO get targets by type parameter non-specific
+    getEnemyCombatTargets: () => {
+      return get().htmlHudTargets.filter(
+        (target) => target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_COMBAT
+      );
     },
     getHudTargetById: (id: string) => {
       return get().htmlHudTargets.find((target) => target.id === id);
@@ -208,7 +264,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       const marginTopPx = pyNorm;
       return { marginLeftPx, marginTopPx };
     },
-    htmlHudTargets: [],
+    htmlHudTargets: [], //TODO fully reset htmlHudTargets array when generating new targets to trigger update
     selectedHudTargetId: null,
     setSelectedHudTargetId(
       selectedHudTargetId: string | null = get().focusedHudTargetId
@@ -279,8 +335,9 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       const selectedTarget = get().getSelectedHudTarget();
       // check if close enough to objects to warp to, used when inside the solar system
       const targetEntity = selectedTarget?.entity;
-      if (targetEntity) {
+      if (targetEntity && !(targetEntity instanceof EnemyMech)) {
         const playerPosition = useStore.getState().player.object3d.position;
+        // TODO setting the distance above already
         const distanceToWarpTarget =
           targetEntity.getRealWorldDistanceTo(playerPosition);
         const distanceAllowWarp = targetEntity.getMinDistanceAllowWarp();
@@ -302,7 +359,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       let isShowScanButton = false;
       const selectedTarget = get().getSelectedHudTarget();
       const targetEntity = selectedTarget?.entity;
-      if (!targetEntity) {
+      if (!targetEntity || targetEntity instanceof EnemyMech) {
+        // TODO scanning not implemented for mechs yet
         // nothing to scan - only star warp target is not scannable ATM
         // - change button to "calculating course"?)
         return;
@@ -337,20 +395,39 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
 
     // update div elements for HUD targets each frame
     updateTargetHUD: (camera) => {
+      const playerPosition = useStore.getState().player.object3d.position;
+      const playerControlMode =
+        usePlayerControlsStore.getState().playerControlMode;
       get().htmlHudTargets.forEach((htmlHudTarget) => {
         if (!htmlHudTarget.divElement) return;
+        if (htmlHudTarget.isDead) {
+          htmlHudTarget.isActive = false; // hide target
+          return;
+        }
+        // display target types based on control mode
+        if (
+          playerControlMode === PLAYER.controls.combat
+            ? !htmlHudTarget.isCombat()
+            : htmlHudTarget.isCombat() ||
+              (htmlHudTarget.targetType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR &&
+                !useGalaxyMapStore.getState().selectedWarpStar)
+        ) {
+          htmlHudTarget.viewAngle = 10; // for sorting TODO add isActive to sort
+          htmlHudTarget.isActive = false; // hide target
+          return;
+        }
+
         let distanceToTargetLabel = "";
         let screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
 
+        let targetEntity: any;
         switch (htmlHudTarget.targetType) {
           case HTML_HUD_TARGET_TYPE.PLANET:
           case HTML_HUD_TARGET_TYPE.STATION:
-          case HTML_HUD_TARGET_TYPE.ENEMY:
-            const targetEntity = htmlHudTarget.entity;
+          case HTML_HUD_TARGET_TYPE.ENEMY_GROUP:
+            targetEntity = htmlHudTarget.entity;
             if (targetEntity) {
               // distance label in Au measurement
-              const playerPosition =
-                useStore.getState().player.object3d.position;
               distanceToTargetLabel = getSystemScaleDistanceLabel(
                 targetEntity.getRealWorldDistanceTo(playerPosition)
               );
@@ -363,13 +440,18 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             break;
 
           case HTML_HUD_TARGET_TYPE.WARP_TO_STAR:
+            /*
             if (useGalaxyMapStore.getState().selectedWarpStar === null) {
               htmlHudTarget.viewAngle = 10; // for sorting
               // send off screen if no target
-              htmlHudTarget.divElement.style.marginLeft = `5000px`;
+              htmlHudTarget.isActive = false;
               // exit loop
               return;
             }
+            */
+            // display warp star target
+            htmlHudTarget.isActive = true;
+            // set label in Ly measurment
             distanceToTargetLabel =
               (useGalaxyMapStore.getState().selectedWarpStarDistance * 7) // TODO standardize this number in galaxy creation - eyeballing average distance between stars to set multiplier
                 .toFixed(3) + " Ly";
@@ -380,6 +462,23 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             );
             break;
 
+          case HTML_HUD_TARGET_TYPE.ENEMY_COMBAT:
+            targetEntity = htmlHudTarget.entity;
+            if (targetEntity) {
+              htmlHudTarget.distanceNorm = 1; /* Math.max(
+                0.1,
+                Math.min(
+                  1,
+                  targetEntity.getRealWorldDistanceTo(playerPosition) / 1000
+                )
+              );*/
+              screenPosition = getScreenPosition(
+                camera,
+                targetEntity.getRealWorldPosition()
+              );
+            }
+            break;
+
           default:
             console.error("Unknown htmlHudTarget.targetType");
             break;
@@ -388,27 +487,41 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         // store angleDiff as viewAngle property
         htmlHudTarget.viewAngle = screenPosition.angleDiff;
 
-        const { marginLeftPx, marginTopPx } = get().getTargetPosition(
-          screenPosition.xn,
-          screenPosition.yn,
-          screenPosition.angleDiff
-        );
-        // set position of target div
-        htmlHudTarget.divElement.style.marginLeft = `${marginLeftPx}px`;
-        htmlHudTarget.divElement.style.marginTop = `${marginTopPx}px`;
-        // casting as HTMLElement
-        const targetInfoDiv = htmlHudTarget.divElement.getElementsByClassName(
-          "flight-hud-target-info"
-        )[0] as HTMLElement;
-        // target text positioning
-        targetInfoDiv.style.right = marginLeftPx <= 0 ? "100%" : "auto";
-        targetInfoDiv.style.left = marginLeftPx > 0 ? "100%" : "auto";
-        targetInfoDiv.style.textAlign = marginLeftPx <= 0 ? "right" : "left";
-        // display the distance to target
-        //targetInfoDiv.children[1].textContent = distanceToTargetLabel;
-        targetInfoDiv.getElementsByClassName(
-          "target-info-detail"
-        )[0].textContent = distanceToTargetLabel;
+        htmlHudTarget.isActive =
+          htmlHudTarget.targetType === HTML_HUD_TARGET_TYPE.ENEMY_COMBAT
+            ? htmlHudTarget.viewAngle < 0.5 //2 * htmlHudTarget.distanceNorm // set combat target active if within x radian of camera
+            : true; // default isActive = true
+
+        if (!htmlHudTarget.isActive) {
+          // exit loop
+          return;
+        } else {
+          const { marginLeftPx, marginTopPx } = get().getTargetPosition(
+            screenPosition.xn,
+            screenPosition.yn,
+            screenPosition.angleDiff
+          );
+          // set position of target div
+          htmlHudTarget.divElement.style.marginLeft = `${marginLeftPx}px`;
+          htmlHudTarget.divElement.style.marginTop = `${marginTopPx}px`;
+          // set text labels
+          if (htmlHudTarget.targetType !== HTML_HUD_TARGET_TYPE.ENEMY_COMBAT) {
+            // target text positioning
+            if (htmlHudTarget.divInfo) {
+              htmlHudTarget.divInfo.style.right =
+                marginLeftPx <= 0 ? "100%" : "auto";
+              htmlHudTarget.divInfo.style.left =
+                marginLeftPx > 0 ? "100%" : "auto";
+              htmlHudTarget.divInfo.style.textAlign =
+                marginLeftPx <= 0 ? "right" : "left";
+
+              // display the distance to target
+              if (htmlHudTarget.divInfoDetail) {
+                htmlHudTarget.divInfoDetail.textContent = distanceToTargetLabel;
+              }
+            }
+          }
+        }
       });
       // sort targets by viewAngle, smallest is last
       // using the index in array to set z-index
@@ -437,18 +550,38 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
               htmlHudTarget.divElement.style.zIndex =
                 htmlHudTarget.id === get().selectedHudTargetId
                   ? "1000" // selected target is always on top
-                  : index.toString(); // closest to center of screen is on top
+                  : index.toString(); // closest to center of screen is on top, targets are reverse ordered above so this works easily here
             }
           });
         }
       } else {
         // else player not in manual control mode
         // reset focused target id to selected target id
-        get().setFocusedHudTargetId(get().selectedHudTargetId);
+        if (
+          // update if focused target has changed
+          get().focusedHudTargetId !== get().selectedHudTargetId
+        ) {
+          get().setFocusedHudTargetId(get().selectedHudTargetId);
+        }
       }
       // update warp / scan possibility
-      get().checkCanWarpToTarget();
-      get().checkCanScanTarget();
+      if (
+        // if action mode is scan
+        // TODO create setter in store
+        usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.scan
+      ) {
+        get().checkCanWarpToTarget();
+        get().checkCanScanTarget();
+      }
+      // else check can interface target ? types: social, matrix, ...
+      //update all targets
+      get().htmlHudTargets.forEach((htmlHudTarget) => {
+        htmlHudTarget.updateTargetUseFrame(
+          get().selectedHudTargetId,
+          get().focusedHudTargetId
+        );
+      });
     },
   })
 );

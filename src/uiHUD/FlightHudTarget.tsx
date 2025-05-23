@@ -1,130 +1,101 @@
 import React from "react";
-import useHudTargtingStore, {
-  htmlHudTargetType,
-  HTML_HUD_TARGET_TYPE,
-} from "../stores/hudTargetingStore";
-import "../css/FlightHudTarget.css";
+import HudTarget from "../classes/hudTargets/HudTarget";
 
 type targetHUDInt = {
-  target: htmlHudTargetType;
+  target: HudTarget;
 };
 
 const FlightHudTarget = (props: targetHUDInt) => {
   const { target } = props;
 
-  const selectedHudTargetId = useHudTargtingStore(
-    (state) => state.selectedHudTargetId
-  );
-
-  const focusedHudTargetId = useHudTargtingStore(
-    (state) => state.focusedHudTargetId
-  );
-
-  const flightHudTargetDiameterPx = useHudTargtingStore(
-    (state) => state.flightHudTargetDiameterPx
-  );
-
-  const targetIsSelected: boolean =
-    selectedHudTargetId !== null && selectedHudTargetId === target.id;
-
-  const targetIsFocused: boolean =
-    focusedHudTargetId !== null && focusedHudTargetId === target.id;
-
-  const combatTarget: boolean =
-    target.targetType === HTML_HUD_TARGET_TYPE.ENEMY ||
-    target.targetType === HTML_HUD_TARGET_TYPE.STATION; // true false
-  // triangles or circle
-  const targetSize: number = combatTarget
-    ? // combat targets
-      targetIsSelected || targetIsFocused
-      ? 24 // selected combat target
-      : 12 // non-focused / seleced combat target
-    : // non-combat targets
-    targetIsSelected || targetIsFocused
-    ? flightHudTargetDiameterPx // focused / seleced non-combat target
-    : flightHudTargetDiameterPx * 0.75; // non-focused / seleced non-combat target
-
-  const combatMode: boolean = false;
-
   return (
     <div
-      ref={(targetDivElement) => {
-        if (targetDivElement) {
-          // for position updates, directly assign div element to 'divElement'
-          // property of this 'htmlHudTargetType' object in array: useHudTargtingStore -> htmlHudTargets
-          target.divElement = targetDivElement;
+      ref={(tde) => {
+        if (tde) {
+          target.divElement = tde; // updates movement (margin left and top), or hide target (marginLeft -5000)
         }
       }}
       className="absolute top-1/2 left-1/2"
-      style={{
-        opacity: target.opacity ? target.opacity : targetIsFocused ? 0.9 : 0.5,
-      }}
+      // opacity set in updateTargetUseFrame
     >
-      <div
-        // updated in hudTargtingStore
-        //   -> updateTargetHU -> getElementsByClassName("flight-hud-target-info")
-        className={`${!targetIsFocused && "flight-hud-target-info-hidden"} 
-          flight-hud-target-info 
+      {!target.isCombat() && ( //only show labels if not show combat target
+        <div
+          ref={(tdi) => {
+            if (tdi) {
+              target.divInfo = tdi; // update backgroundColor if focused
+            }
+          }}
+          // updated in hudTargtingStore
+          className="
           absolute w-auto m-2 -top-3 px-4
           transition-all duration-800 ease-in-out
-          rounded-md bg-black whitespace-nowrap text-white
-          ${combatMode && "hidden"}`}
-      >
-        <div
-          className="target-info-label"
-          style={{
-            color: target.textColor,
-          }}
+          rounded-md bg-black whitespace-nowrap text-white"
         >
-          {target.label}
-        </div>
-        <div className="target-info-detail text-white">
-          INFO
-          {/* updated in hudTargtingStore -> updateTargetHU -> getElementsByClassName("target-info-detail") */}
-        </div>
-      </div>
-      {combatTarget ? (
-        [
-          [0, -targetSize / 2, "180deg"],
-          [-targetSize / 2, targetSize / 2, "45deg"],
-          [targetSize / 2, targetSize / 2, "-45deg"],
-        ].map((point, index) => (
-          <svg
-            key={index}
-            height="12"
-            width="12"
-            className="absolute transition-all duration-800 ease-in-out"
+          <div
+            ref={(tdil) => {
+              if (tdil) {
+                target.divInfoLabel = tdil; // update label opacity if focused
+              }
+            }}
             style={{
-              left: `${point[0]}px`,
-              top: `${point[1]}px`,
-              marginLeft: `-${6}px`,
-              marginTop: `-${9}px`,
-              rotate: targetIsSelected ? `${point[2]}` : "0deg",
+              color: target.textColor,
             }}
           >
-            <polygon
-              points="6, 0 0, 12 12, 12"
-              style={{
-                fill: "red",
-                stroke: targetIsSelected ? "cyan" : "none",
-                strokeWidth: "2",
-              }}
-            />
-          </svg>
-        ))
-      ) : (
-        <div
-          className={`absolute box-border border-white rounded-full
-            ${targetIsSelected ? "border-4" : "border-2"}`}
-          style={{
-            top: `${-targetSize / 2}px`,
-            left: `${-targetSize / 2}px`,
-            width: `${targetSize}px`,
-            height: `${targetSize}px`,
-            backgroundColor: target.color,
-          }}
-        />
+            {target.label}
+          </div>
+          <div
+            ref={(targetDivInfoDetail) => {
+              if (targetDivInfoDetail) {
+                target.divInfoDetail = targetDivInfoDetail; //update hides when not focused
+              }
+            }}
+            className="text-white"
+          >
+            INFO
+            {/* updated in hudTargtingStore -> updateTargetHUD */}
+          </div>
+        </div>
       )}
+      {
+        // TODO SVG is taking to much render time
+        false ? ( //target.isUseCombatTarget() ? (
+          [0, 1, 2].map((index) => (
+            <svg
+              key={index}
+              // add ref to array
+              ref={(svgElement) => {
+                if (svgElement) {
+                  target.combatTriangleSvgs[index] = svgElement;
+                }
+              }}
+              height="12"
+              width="12"
+              className="absolute transition-all duration-800 ease-in-out"
+            >
+              <polygon
+                points="6, 0 0, 12 12, 12"
+                style={{
+                  fill: "red",
+                  //stroke: targetIsSelected ? "cyan" : "none",
+                  strokeWidth: "2",
+                }}
+              />
+            </svg>
+          ))
+        ) : (
+          <div
+            ref={(divElement) => {
+              if (divElement) {
+                target.nonCombatCircleDiv = divElement;
+              }
+            }}
+            style={{
+              backgroundColor: target.color,
+            }}
+            className="absolute box-border border-white rounded-full" // border set in updateTargetUseFrame
+          />
+        )
+      }
     </div>
   );
 };

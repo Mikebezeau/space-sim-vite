@@ -4,7 +4,7 @@ import EnemyMech from "./EnemyMech";
 import { FPS } from "../../constants/constants";
 import { BIOD_PARAMS } from "../../classes/BoidController";
 
-export interface enemyMechBoidInt {
+interface enemyMechBoidInt {
   resetVectors: () => void;
   applyForce: (fVec3: THREE.Vector3) => void;
   getSpeed: () => number;

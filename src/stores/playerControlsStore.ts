@@ -2,14 +2,13 @@ import { create } from "zustand";
 import { Object3D, Quaternion, Vector3 } from "three";
 import useStore from "./store";
 import useGalaxyMapStore from "./galaxyMapStore";
-import useHudTargtingStore, {
-  HTML_HUD_TARGET_TYPE,
-  htmlHudTargetType,
-} from "./hudTargetingStore";
+import useHudTargtingStore, { HTML_HUD_TARGET_TYPE } from "./hudTargetingStore";
 import useDevStore from "./devStore";
 import TouchController from "../hooks/controls/TouchController";
 import { flipRotation } from "../util/cameraUtil";
 import { lerp } from "../util/gameUtil";
+import HudTarget from "../classes/hudTargets/HudTarget";
+import EnemyMech from "../classes/mech/EnemyMech";
 import {
   PLAYER,
   FPS,
@@ -25,6 +24,9 @@ const rotateShipQuat = new Quaternion(),
 
 interface playerControlStoreState {
   touchController: TouchController;
+  isReverseSideTouchControls: boolean;
+  toggleReverseSideTouchControls: () => void;
+
   playerActionMode: number;
   playerControlMode: number;
   playerViewMode: number;
@@ -62,7 +64,6 @@ interface playerControlStoreState {
   playerSpeedSetting: number;
   getPlayerSpeedSetting: () => number;
   isPlayerPilotControl: () => boolean;
-  isReverseSideTouchControls: boolean;
   actions: {
     actionModeSelect: (playerActionMode: number) => void;
     controlModeSelect: (playerControlMode: number) => void;
@@ -75,7 +76,7 @@ interface playerControlStoreState {
   playerWarpSpeed: number | null;
   playerWarpDistanceToDecelerate: number | null; // used to set speed of ship when warping
   playerMaxWarpDistance: number | null;
-  setPlayerWarpToHudTarget: (currentTarget?: htmlHudTargetType) => void;
+  setPlayerWarpToHudTarget: (currentTarget?: HudTarget) => void;
   updateFrame: {
     updateFrameHelpers: {
       updatePlayerWarpFrame: (deltaFPS: number) => void;
@@ -98,6 +99,12 @@ interface playerControlStoreState {
 const usePlayerControlsStore = create<playerControlStoreState>()(
   (set, get) => ({
     touchController: new TouchController(), // to handle simultanious touch events
+    isReverseSideTouchControls: false,
+    toggleReverseSideTouchControls: () => {
+      set(() => ({
+        isReverseSideTouchControls: !get().isReverseSideTouchControls,
+      }));
+    },
 
     playerActionMode: IS_TOUCH_SCREEN
       ? PLAYER.action.inspect
@@ -214,7 +221,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         ? true
         : false;
     },
-    isReverseSideTouchControls: true,
 
     actions: {
       actionModeSelect(playerActionMode) {
@@ -271,7 +277,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     setPlayerWarpToHudTarget(
       currentTarget = useHudTargtingStore.getState().getSelectedHudTarget()
     ) {
-      if (!currentTarget) {
+      if (!currentTarget || currentTarget.entity instanceof EnemyMech) {
         console.warn("No current target to warp to");
         return;
       }

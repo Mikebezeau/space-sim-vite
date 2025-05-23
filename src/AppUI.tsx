@@ -11,7 +11,7 @@ import {
   ActionModeControlGroup,
   Cockpit3rdPersonControls,
 } from "./uiCockpit/CockpitControls";
-import CombatHudTarget from "./uiHUD/CombatHudTarget";
+import CombatHudCrosshairOuter from "./uiHUD/CombatHudCrosshairOuter";
 import SpeedReadout from "./uiCockpit/uiDisplay/SpeedReadout";
 import ShieldsReadout from "./uiCockpit/uiDisplay/ShieldsReadout";
 import WeaponsReadout from "./uiCockpit/uiDisplay/WeaponsReadout";
@@ -80,7 +80,7 @@ const AppUI = () => {
                     </div>
                   )
                 }
-                <CombatHudTarget />
+                <CombatHudCrosshairOuter />
                 <div className="absolute top-72 right-11">
                   <ShieldsReadout />
                 </div>

@@ -20,7 +20,7 @@ const ThrottleControlsDisplay = () => {
       <img
         src={throttleStick}
         alt="controls icon"
-        className="pointer-events-none absolute w-28 right-2 opacity-75"
+        className="pointer-events-none absolute w-28 right-2 opacity-75 scale-x-[-1]"
         style={{ bottom: `${playerSpeedSetting * 24 - 8}px` }}
       />
       <div className="relative flex flex-col-reverse">
@@ -49,7 +49,10 @@ const ThrottleControlsDisplay = () => {
 
 const SpaceFlightControlsTouch = () => {
   // TODO player settings - flip touch control positions
-  const isReverseSideTouchControls = false;
+  const isReverseSideTouchControls = usePlayerControlsStore(
+    (state) => state.isReverseSideTouchControls
+  );
+
   /*usePlayerControlsStore(
     (state) => state.isReverseSideTouchControls
   );*/
@@ -190,7 +193,11 @@ const SpaceFlightControlsTouch = () => {
 
   return (
     <>
-      <div className="absolute w-[180px] h-[180px] bottom-5 left-2">
+      <div
+        className={`absolute w-[180px] h-[180px] bottom-5 ${
+          isReverseSideTouchControls ? "right-2 scale-x-[-1]" : "left-2"
+        }`}
+      >
         <div
           id="btn-ship-move"
           ref={moveControl}
@@ -200,9 +207,7 @@ const SpaceFlightControlsTouch = () => {
             <img
               src={controlStick}
               alt="controls icon"
-              className={`${
-                isReverseSideTouchControls && "scale-x-[-1]"
-              } pointer-events-none absolute w-20 left-12 top-10 opacity-75`}
+              className={`pointer-events-none absolute w-20 left-12 top-10 opacity-75 scale-x-[-1]`}
             />
             {/*
             <img
@@ -214,18 +219,25 @@ const SpaceFlightControlsTouch = () => {
           </div>
         </div>
       </div>
-      <div className="absolute w-[200px] h-[100px] bottom-5 right-28 flex justify-end">
+      <div
+        className={`absolute w-[200px] h-[100px] bottom-5 flex justify-end ${
+          isReverseSideTouchControls ? "left-10" : "right-28"
+        }`}
+      >
         <div
           id="btn-action"
           className="pointer-events-auto relative ml-1 w-32 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
         >
-          {/*<div className="relative scale-x-[-1] right-2 top-2">
-            <ActionShoot />
-          </div>*/}
           <ActionButtonIcon />
         </div>
       </div>
-      <div className="absolute rounded-tl-3xl border-2 border-white -bottom-[2px] -right-[2px] h-52 w-28">
+      <div
+        className={`absolute border-2 border-white rounded-tl-3xl -bottom-[2px] h-52 w-28 ${
+          isReverseSideTouchControls
+            ? "-left-[2px] scale-x-[-1]"
+            : "-right-[2px]"
+        }`}
+      >
         <div className=" bg-gray-500 opacity-45 rounded-tl-3xl h-full w-full">
           <div className="relative p-5 pt-8">
             <div

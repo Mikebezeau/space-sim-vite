@@ -10,14 +10,18 @@ const LilGui = () => {
   const switchScreen = usePlayerControlsStore(
     (state) => state.actions.switchScreen
   );
+  const isReverseSideTouchControls = usePlayerControlsStore(
+    (state) => state.isReverseSideTouchControls
+  );
 
   const controls = {
-    perfRenderCheck: false,
-    perfMemoryCheck: false,
+    isReverseSideTouchControls,
     enemyTest: false,
     planetTest: false,
     removeEnemies: false,
     spawnEnemies: false,
+    perfRenderCheck: false,
+    perfMemoryCheck: false,
     viewTitleScreen: false,
     viewStationScreen: false,
     viewEquipmentScreen: false,
@@ -29,6 +33,10 @@ const LilGui = () => {
 
     gui.close();
 
+    gui.add(controls, "isReverseSideTouchControls").onChange(() => {
+      usePlayerControlsStore.getState().toggleReverseSideTouchControls();
+    });
+    /*
     gui.add(controls, "enemyTest").onChange(() => {
       controls.enemyTest = false;
       useDevStore.getState().setTestScreen("enemyTest");
@@ -45,7 +53,7 @@ const LilGui = () => {
       controls.spawnEnemies = false;
       useDevStore.getState().spawnEnemies();
     });
-
+*/
     const folderPerf = gui.addFolder("Performance");
     folderPerf.open(true);
 

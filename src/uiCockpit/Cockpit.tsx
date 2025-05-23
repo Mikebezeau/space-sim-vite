@@ -92,8 +92,8 @@ const Cockpit = () => {
             <SelectedTargetActionButton />
           </div>
           <div
-            className="absolute w-[40vh] ml-[-17.5vh] top-[6vh] flex flex-row gap-2"
-            style={{ transform: "scale(0.7, 0.7)" }}
+            className="absolute w-[40vh] ml-[-17.5vh] top-[12vh] lg:top-[8vh] flex flex-row gap-2
+            lg:scale-x-[0.7] lg:scale-y-[0.7]"
           >
             <CockpitControlMode />
             <CockpitControlMap />

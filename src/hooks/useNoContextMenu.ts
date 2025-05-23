@@ -5,6 +5,16 @@ const useNoContextMenu = () => {
     // define a custom handler function
     // for the contextmenu event
     const handleContextMenu = (e) => {
+      // TODO this is temporary for dev
+      if (
+        // @ts-ignore - ignore import.meta.env warning
+        import.meta.env.DEV &&
+        e.target.classList &&
+        e.target.classList.contains("title")
+      ) {
+        // allow developers to right-click on the Lil-Ui title bar for context menu
+        return;
+      }
       // prevent the right-click menu from appearing
       e.preventDefault();
       e.stopPropagation();

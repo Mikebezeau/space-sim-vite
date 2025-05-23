@@ -1,19 +1,15 @@
 import React, { useEffect, useRef } from "react";
 import useStore from "../stores/store";
-import usePlayerControlsStore from "../stores/playerControlsStore";
 import useHudTargtingStore from "../stores/hudTargetingStore";
 import useWindowResize from "../hooks/useWindowResize";
+import CombatHudCrosshairInner from "./CombatHudCrosshairInner";
 import FlightHudTarget from "./FlightHudTarget";
-//@ts-ignore
-import hudCrosshairInner1 from "/images/hud/hudCrosshairInner1.png";
-import { PLAYER } from "../constants/constants";
+
+import { testMotivationMatrix } from "../classes/rpgSystem/factionMatrix";
 
 const FlightHud = () => {
   const playerCurrentStarIndex = useStore(
     (state) => state.playerCurrentStarIndex
-  );
-  const playerActionMode = usePlayerControlsStore(
-    (state) => state.playerActionMode
   );
 
   const htmlHudTargets = useHudTargtingStore((state) => state.htmlHudTargets);
@@ -51,6 +47,7 @@ const FlightHud = () => {
   });
 
   useEffect(() => {
+    testMotivationMatrix();
     setSizes();
   }, [hudLargeOuterCirlcleRef.current]);
 
@@ -68,21 +65,7 @@ const FlightHud = () => {
         }}
         className="opacity-50 absolute w-0 h-0 top-1/2 left-1/2 border-2 border-white"
       >
-        {playerActionMode === PLAYER.action.inspect ? (
-          <div
-            className="w-[5vh] h-[5vh] -mt-[2.5vh] -ml-[2.5vh]
-              absolute border-2 border-cyan-200 rounded-full"
-          />
-        ) : (
-          <div
-            className="w-[20vh] h-[15vh] -mt-[7.5vh] -ml-[10vh] 
-            md:w-[30vh] md:h-[20vh] md:-mt-[10vh] md:-ml-[15vh]"
-            style={{
-              backgroundSize: "100% 100%",
-              backgroundImage: `url(${hudCrosshairInner1})`,
-            }}
-          />
-        )}
+        <CombatHudCrosshairInner />
       </div>
       {htmlHudTargets.map((target) => (
         <FlightHudTarget key={target.id} target={target} />
