@@ -275,7 +275,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerWarpDistanceToDecelerate: null,
     playerMaxWarpDistance: null,
     setPlayerWarpToHudTarget(
-      currentTarget = useHudTargtingStore.getState().getSelectedHudTarget()
+      currentTarget = useHudTargtingStore
+        .getState()
+        .hudTargetController.getSelectedHudTarget()
     ) {
       if (!currentTarget || currentTarget.entity instanceof EnemyMech) {
         console.warn("No current target to warp to");

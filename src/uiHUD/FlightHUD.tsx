@@ -3,7 +3,9 @@ import useStore from "../stores/store";
 import useHudTargtingStore from "../stores/hudTargetingStore";
 import useWindowResize from "../hooks/useWindowResize";
 import CombatHudCrosshairInner from "./CombatHudCrosshairInner";
-import FlightHudTarget from "./FlightHudTarget";
+import FlightHudTarget from "./hudTargetTypes/FlightHudTarget";
+import FlightHudCombatTarget from "./hudTargetTypes/FlightHudCombatTarget";
+import FlightHudTargetReticule from "./FlightHudTargetReticule";
 
 import { testMotivationMatrix } from "../classes/rpgSystem/factionMatrix";
 
@@ -12,13 +14,21 @@ const FlightHud = () => {
     (state) => state.playerCurrentStarIndex
   );
 
-  const htmlHudTargets = useHudTargtingStore((state) => state.htmlHudTargets);
+  const htmlHudTargets = useHudTargtingStore(
+    (state) => state.hudTargetController.htmlHudTargets
+  );
+  const htmlHudTargetsCombat = useHudTargtingStore(
+    (state) => state.hudTargetController.htmlHudTargetsCombat
+  );
+  const htmlHudTargetReticule = useHudTargtingStore(
+    (state) => state.hudTargetController.htmlHudTargetReticule
+  );
   // update frame function below called within the playerControlsStore updatePlayerMechAndCamera
-  //useHudTargtingStore.getState().updateTargetHUD(camera);
+  //useHudTargtingStore.getState().hudTargetController.updateTargetHUD(camera);
 
   // if player is in new solar system, update targets
   useEffect(() => {
-    useHudTargtingStore.getState().generateTargets();
+    useHudTargtingStore.getState().hudTargetController.generateTargets();
   }, [playerCurrentStarIndex]);
 
   const hudLargeOuterCirlcleRef = useRef<HTMLDivElement | null>(null);
@@ -70,6 +80,12 @@ const FlightHud = () => {
       {htmlHudTargets.map((target) => (
         <FlightHudTarget key={target.id} target={target} />
       ))}
+      {htmlHudTargetsCombat.map((target) => (
+        <FlightHudCombatTarget key={target.id} target={target} />
+      ))}
+      {htmlHudTargetReticule && (
+        <FlightHudTargetReticule target={htmlHudTargetReticule} />
+      )}
     </>
   );
 };

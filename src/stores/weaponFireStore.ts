@@ -7,8 +7,6 @@ import MechWeapon from "../classes/mechBP/weaponBP/MechWeapon";
 import { equipData } from "../equipment/data/equipData";
 import Mech from "../classes/mech/Mech";
 import MissileController, { Missile } from "../classes/missileController";
-import useHudTargtingStore from "./hudTargetingStore";
-import { setCustomData } from "r3f-perf";
 
 export type weaponFireType = {
   mechFiredId: string;
@@ -173,82 +171,6 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
 
     return intersects;
   },
-  /*
-  updateCombatTargetsUseFrame: (camera, testArrowHelper, arrowHelper) => {
-    const combatHtmlHudTargets = useHudTargtingStore
-      .getState()
-      .getEnemyCombatTargets();
-
-    // reset all targets
-    combatHtmlHudTargets.forEach((target) => {
-      target.isActive = false;
-    });
-
-    dummyRaycaster.far = 1000;
-    // TODO use these functions elsewhere
-    camera.getWorldPosition(dummyVec3);
-    camera.getWorldDirection(dummy2Vec3);
-
-    dummyRaycaster.set(dummyVec3, dummy2Vec3);
-
-    if (testArrowHelper) {
-      arrowHelper.position.copy(dummyVec3);
-      arrowHelper.setDirection(dummy2Vec3);
-      arrowHelper.setLength(1000);
-    }
-
-    const intersects = get().getRaycasterIntersects(dummyRaycaster);
-    let intersectedMechId: string;
-    intersects.forEach((intersect) => {
-      let intersectedObject = intersect.object;
-      if (!intersectedObject) {
-        return;
-      }
-
-      if (intersectedObject instanceof THREE.InstancedMesh) {
-        const instanceId = intersect.instanceId;
-        if (typeof instanceId === "undefined") {
-          console.warn("instanceId undefined");
-          return;
-        }
-        const mechBpId = intersectedObject.userData.mechBpId;
-        intersectedMechId = useEnemyStore
-          .getState()
-          .enemyGroup.getInstancedMeshEnemies(mechBpId)[instanceId].id;
-      }
-      // end if instanced mesh
-      // else, is not instanced mesh
-      else {
-        // get mech id from object tree (stored at top level) - TODO place id in userData for all parts
-        // could also get servo / part id hit
-        while (!intersectedObject.userData.mechId && intersectedObject.parent) {
-          intersectedObject = intersectedObject.parent;
-        }
-        const topParentMechObj = intersectedObject;
-        intersectedMechId = topParentMechObj.userData.mechId;
-
-        if (!intersectedMechId) {
-          console.warn(
-            "Weaponfire target test: no mech id found in mech object tree"
-          );
-          return;
-        }
-      }
-      // update target
-      const updateTarget = combatHtmlHudTargets.find(
-        (target) => target.id === intersectedMechId
-      );
-      if (updateTarget) {
-        updateTarget.isActive = true;
-      }
-    });
-    if (intersects.length > 0)
-      setCustomData(
-        intersects.length
-        //combatHtmlHudTargets.filter((target) => target.isActive).length
-      );
-  },
-  */
 
   updateWeaponFireUseFrame: (
     timeDelta,
@@ -291,7 +213,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
       }
 
       // weaponFireSpeed (in seconds) * timeDelta (fraction of scecond passed this frame)
-      dummyRaycaster.far = weaponFire.weaponFireSpeed * timeDelta * 2; // giving a little extra distance
+      dummyRaycaster.far = weaponFire.weaponFireSpeed * timeDelta * 1.2; // giving a little extra distance
       dummyRaycaster.set(dummyRay.origin, dummyRay.direction);
 
       const intersects = get().getRaycasterIntersects(dummyRaycaster);

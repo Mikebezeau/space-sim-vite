@@ -21,8 +21,6 @@ import { FPS, WEAPON_FIRE_SPEED } from "../constants/constants";
 import { SPRITE_TYPE, DESIGN_TYPE } from "../constants/particleConstants";
 import usePlayerControlsStore from "./playerControlsStore";
 
-import { setCustomData } from "r3f-perf";
-
 const starSpriteTex = new TextureLoader().load(starSpriteSrc);
 //const featheredSpriteTex= new TextureLoader().load(featheredSpriteSrc);
 const smokeTexture = new TextureLoader().load(smokeTextureSrc);
@@ -456,7 +454,6 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         // make particles closer to the player with playerWarpSpeed
         const playerWarpSpeed =
           usePlayerControlsStore.getState().playerWarpSpeed;
-        //setCustomData(playerWarpSpeed);
         numParticles = numParticles * (playerWarpSpeed! / 200000);
 
         //positionRadius = positionRadius + positionRadius * playerWarpSpeed; // to get a smaller radius

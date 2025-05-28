@@ -220,9 +220,10 @@ export const SelectedTargetActionButton = () => {
   }
 
   const isEnemytarget =
-    useHudTargtingStore.getState().getSelectedHudTarget()?.targetType ===
-      HTML_HUD_TARGET_TYPE.ENEMY_GROUP || false;
+    useHudTargtingStore.getState().hudTargetController.getSelectedHudTarget()
+      ?.targetType === HTML_HUD_TARGET_TYPE.ENEMY_GROUP || false;
 
+  // TODO update this
   if (isEnemytarget) {
     // for use in mouse controls - clicking appropriate button triggers callback
     usePlayerControlsStore.getState().actions.selectedTargetActionButtonCallback =

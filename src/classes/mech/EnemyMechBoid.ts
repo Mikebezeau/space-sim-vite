@@ -2,12 +2,14 @@ import * as THREE from "three";
 import useStore from "../../stores/store";
 import EnemyMech from "./EnemyMech";
 import { FPS } from "../../constants/constants";
+import { calculateFuturePosition } from "../../util/targetingUtils";
 import { BIOD_PARAMS } from "../../classes/BoidController";
 
 interface enemyMechBoidInt {
   resetVectors: () => void;
   applyForce: (fVec3: THREE.Vector3) => void;
   getSpeed: () => number;
+  getFuturePosition: (timeToHit: number) => THREE.Vector3;
   updateUseFrameBoidForce: (delta: number) => void;
 }
 
@@ -109,8 +111,20 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     return this.lerpVelocity.length();
   }
 
+  getFuturePosition(timeToHit: number) {
+    // TODO fix to not create new vec3 each time
+    // calculate future position based on current position, speed, and time to hit
+    const speed = this.getSpeed();
+    const dummyVec3 = calculateFuturePosition(this.object3d, speed, timeToHit);
+    return dummyVec3;
+  }
+
   // update Boid movement
   updateUseFrameBoidForce(delta: number) {
+    if (this.isMechDead()) {
+      return;
+    }
+
     if (!this.isBossMech) {
       const deltaFPS = delta * FPS;
 
@@ -132,6 +146,10 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
       // update position
       this.object3d.position.add(this.adjustedLerpVelocityDeltaFPS); // TESTING WITH AVERAGE
 
+      if (this.isExploding()) {
+        return;
+      }
+
       // lookAt
       this.heading.copy(this.velocity); // set to average velocity
       // using lerp - apply mech engine manuever as factor
@@ -144,10 +162,6 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
       // mesh.quaternion.rotateTowards( targetQuaternion, step );
       this.object3d.lookAt(this.lerpHeadingPlusPosition);
 
-      // fire at player if possible
-      if (this.isMechDead()) {
-        return;
-      }
       const distanceToPlayer = this.object3d.position.distanceTo(
         useStore.getState().player.object3d.position
       );
@@ -164,6 +178,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
         // angle difence between forward and target direction
         const angle = this.forwardVec3.angleTo(this.targetDirectionVec3);
         // if angle is small enough, fire
+        // TODO use the future position of player to predict where to fire
         if (angle < 0.3) {
           // TODO place in weaponFire function to reduce calcs
           // predictPlayerPosition
@@ -173,7 +188,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
           this.targetObject3d.rotation.copy(
             useStore.getState().player.object3d.rotation
           );
-          const timeToHit = ((distanceToPlayer / 500) * 1000) / FPS; //?1000? //TODO using beam speed for test
+          const timeToHit = ((distanceToPlayer / 500) * 1000) / FPS; // in seconds //TODO using beam speed for test
           const playerSpeed = useStore.getState().player.speed;
           this.targetObject3d.translateZ((playerSpeed * FPS) / timeToHit);
           // TODO check to make sure wont hit friend

@@ -27,12 +27,6 @@ const WeaponFire = () => {
   }, [testArrowHelper]);
 
   useFrame((_, delta) => {
-    // set bounding sphere for hit detection of enemy group mech's instanced meshes
-    // seems to only work if calculated every frame, setting once with increased radius does not work
-    useEnemyStore
-      .getState()
-      .enemyGroup.setInstancedMeshHitDetectBoundingSphere();
-
     // synch player and enemy world zone positions
     if (
       !useStore
@@ -59,7 +53,9 @@ const WeaponFire = () => {
           1
         );
         // set enemy targets for Hud
-        useHudTargtingStore.getState().generateEnemyCombatTargets();
+        useHudTargtingStore
+          .getState()
+          .hudTargetController.generateEnemyCombatTargets();
 
         // testing
         defenseNodesRef.current =

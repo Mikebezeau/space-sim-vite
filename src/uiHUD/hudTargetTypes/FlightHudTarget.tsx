@@ -1,5 +1,6 @@
 import React from "react";
-import HudTarget from "../classes/hudTargets/HudTarget";
+import HudTarget from "../../classes/hudTargets/HudTarget";
+import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
 
 type targetHUDInt = {
   target: HudTarget;
@@ -52,13 +53,14 @@ const FlightHudTarget = (props: targetHUDInt) => {
             className="text-white"
           >
             INFO
-            {/* updated in hudTargtingStore -> updateTargetHUD */}
+            {/* updated in hudTargtingStore.hudTargetController -> updateTargetHUD */}
           </div>
         </div>
       )}
       {
         // TODO SVG is taking to much render time
-        false ? ( //target.isUseCombatTarget() ? (
+        target.isUseCombatTarget() ? (
+          /*
           [0, 1, 2].map((index) => (
             <svg
               key={index}
@@ -81,7 +83,53 @@ const FlightHudTarget = (props: targetHUDInt) => {
                 }}
               />
             </svg>
-          ))
+          ))*/
+          <div
+            className="absolute"
+            ref={(crosshairDivElement) => {
+              if (crosshairDivElement) {
+                target.crosshairDivElement = crosshairDivElement;
+              }
+            }}
+          >
+            {/* Top Left */}
+            <div
+              className={`absolute top-0 left-0 w-1/3 h-1/3 ${
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                  ? "border-red-800"
+                  : "border-white"
+              }`}
+              // use styles for border with
+              style={{ borderTopWidth: "1px", borderLeftWidth: "1px" }}
+            />
+            {/* Top Right */}
+            <div
+              className={`absolute top-0 right-0 w-1/3 h-1/3 ${
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                  ? "border-red-800"
+                  : "border-white"
+              }`}
+              style={{ borderTopWidth: "1px", borderRightWidth: "1px" }}
+            />
+            {/* Bottom Left */}
+            <div
+              className={`absolute bottom-0 left-0 w-1/3 h-1/3 ${
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                  ? "border-red-800"
+                  : "border-white"
+              }`}
+              style={{ borderBottomWidth: "1px", borderLeftWidth: "1px" }}
+            />
+            {/* Bottom Right */}
+            <div
+              className={`absolute bottom-0 right-0 w-1/3 h-1/3 ${
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                  ? "border-red-800"
+                  : "border-white"
+              }`}
+              style={{ borderBottomWidth: "1px", borderRightWidth: "1px" }}
+            />
+          </div>
         ) : (
           <div
             ref={(divElement) => {

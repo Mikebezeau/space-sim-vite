@@ -242,7 +242,9 @@ const useDevStore = create<devStoreState>()((set, get) => ({
   },
   removeEnemies() {
     useEnemyStore.getState().enemyGroup.dispose();
-    useHudTargtingStore.getState().generateEnemyCombatTargets();
+    useHudTargtingStore
+      .getState()
+      .hudTargetController.generateEnemyCombatTargets();
   },
   spawnEnemies() {
     useEnemyStore.getState().createEnemyGroup();
@@ -251,7 +253,9 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       .enemyGroup.enemyGroupLocalZonePosition.copy(
         useStore.getState().playerRealWorldPosition
       );
-    useHudTargtingStore.getState().generateEnemyCombatTargets();
+    useHudTargtingStore
+      .getState()
+      .hudTargetController.generateEnemyCombatTargets();
   },
 
   // NOTE: these are old and not used mostly

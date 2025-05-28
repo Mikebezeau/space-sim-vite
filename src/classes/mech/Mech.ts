@@ -534,6 +534,9 @@ class Mech implements mechInt {
     if (this.isMechDead()) {
       return;
     }
+    // remove target
+    useHudTargtingStore.getState().hudTargetController.setTargetDead(this.id);
+
     this.mechState = MECH_STATE.explode;
     this.timeCounter = 0;
 
@@ -578,6 +581,9 @@ class Mech implements mechInt {
         console.error("Mech.explode(): explosionMesh not set");
       }
     }
+  }
+  isExploding() {
+    return this.mechState === MECH_STATE.explode;
   }
 
   updateUseFrameMech(delta: number, scene?: THREE.Scene) {
@@ -668,8 +674,7 @@ class Mech implements mechInt {
     this.mechState = MECH_STATE.dead;
     this.object3d.clear();
     // remove target from HUD
-    console.log(this.id);
-    useHudTargtingStore.getState().setTargetDead(this.id);
+    useHudTargtingStore.getState().hudTargetController.setTargetDead(this.id);
     // position mech object far away to not interfear with scene
     // TODO the boidcontroller gets messed up when object is moved far away
     //this.object3d.position.set(this.object3d.position.x + 100000, 0, 0);

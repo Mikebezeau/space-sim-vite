@@ -28,9 +28,10 @@ interface enemyMechGroupInt {
     instancedMesh: THREE.InstancedMesh
   ) => void;
   removeInstancedMesh: (mechBpId: string) => void;
+  getMechById: (id: string) => EnemyMechBoid | undefined; // get enemy mech by id, used for targeting and hit detection
   getInstancedMesh: (mechBpId: string) => THREE.InstancedMesh | undefined;
   getInstancedMeshEnemies: (mechBpId: string) => EnemyMechBoid[] | undefined;
-  setInstancedMeshHitDetectBoundingSphere: () => void;
+  setInstancedMeshHitDetectBoundingSphere: () => void; // note: must call this each frame
   recieveDamageInstancedEnemy: (
     scene: THREE.Scene,
     mechFiredId: string,
@@ -198,6 +199,10 @@ class EnemyMechGroup implements enemyMechGroupInt {
     }
   }
 
+  getMechById(id: string) {
+    return this.enemyMechs.find((mech) => mech.id === id);
+  }
+
   getInstancedMesh(mechBpId: string) {
     return this.instancedMeshs.find(
       (mesh) => mesh.userData.mechBpId === mechBpId
@@ -342,6 +347,10 @@ class EnemyMechGroup implements enemyMechGroupInt {
         enemy.updateUseFrameBoidForce(delta);
         enemy.updateUseFrameMech(delta, scene);
       });
+
+      // set bounding sphere for hit detection of enemy group mech's instanced meshes
+      // seems to only work if calculated every frame, setting once with increased radius does not work
+      this.setInstancedMeshHitDetectBoundingSphere();
     }
   }
 
