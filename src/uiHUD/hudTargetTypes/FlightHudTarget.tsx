@@ -60,30 +60,6 @@ const FlightHudTarget = (props: targetHUDInt) => {
       {
         // TODO SVG is taking to much render time
         target.isUseCombatTarget() ? (
-          /*
-          [0, 1, 2].map((index) => (
-            <svg
-              key={index}
-              // add ref to array
-              ref={(svgElement) => {
-                if (svgElement) {
-                  target.combatTriangleSvgs[index] = svgElement;
-                }
-              }}
-              height="12"
-              width="12"
-              className="absolute transition-all duration-800 ease-in-out"
-            >
-              <polygon
-                points="6, 0 0, 12 12, 12"
-                style={{
-                  fill: "red",
-                  //stroke: targetIsSelected ? "cyan" : "none",
-                  strokeWidth: "2",
-                }}
-              />
-            </svg>
-          ))*/
           <div
             className="absolute"
             ref={(crosshairDivElement) => {

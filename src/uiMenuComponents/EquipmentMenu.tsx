@@ -311,11 +311,7 @@ const EquipmentMenu = () => {
           onClick={() => resetCamera()}
         >
           <span className="icon-button-cyber-content">
-            <img
-              src={camera}
-              alt="camera icon"
-              className="w-[10vh] h-[10vh] pointer-events-none"
-            />
+            <img src={camera} alt="camera icon" className="w-[10vh] h-[10vh]" />
           </span>
         </div>
       </div>

@@ -42,7 +42,7 @@ const WeaponSliderControl = (props: WeaponSliderControlInt) => {
           min={controlData.min}
           max={controlData.max}
           value={weaponBP.data[controlData.field]}
-          className="slider pointer-events-auto"
+          className="slider"
         />
       </div>
       <span className="formSliderLabel">

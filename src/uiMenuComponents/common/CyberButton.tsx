@@ -33,7 +33,7 @@ const CyberButton = (props: cyberButtonInt) => {
 
   return (
     <div
-      className={`pointer-events-auto cursor-pointer cybr-btn ${
+      className={`pointer-events-auto cybr-btn ${
         isSmall ? "cybr-btn-small-font" : "cybr-btn-medium-font"
       } w-full pl-[10%]`}
       style={mainStyle}

@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import LilGui from "./dev/LilGui";
+import { useEffect, useRef } from "react";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
@@ -19,7 +18,6 @@ import MainMenu from "./uiTitleScreen/MainMenu";
 import GalaxyMapMenu from "./uiMenuComponents/GalaxyMapMenu";
 import StationDockMenu from "./uiMenuComponents/StationDockMenu";
 import EquipmentMenu from "./uiMenuComponents/EquipmentMenu";
-import CustomCursor from "./CustomCursor";
 import { IS_TOUCH_SCREEN, PLAYER } from "./constants/constants";
 import "./css/cyberPunk.css";
 import "./css/glitch.css";
@@ -45,66 +43,44 @@ const AppUI = () => {
 
   return (
     <>
-      {testScreen.changeScreenTest ? (
-        <div className="pointer-events-none touch-none">
-          <GalaxyMapMenu />
-        </div>
-      ) : testScreen.enemyTest ? (
-        <>Enemy Test</>
-      ) : testScreen.planetTest ? (
-        <>Planet Test</>
-      ) : isTestScreen.current ? (
+      {isTestScreen.current ? (
         <></>
       ) : (
         <>
-          <LilGui />
-          {!IS_TOUCH_SCREEN && <CustomCursor />}
-          <div
-            id="custom-cursor-hide-cursor"
-            className="pointer-events-none touch-none"
-          >
-            {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
-            {playerScreen === PLAYER.screen.flight && (
-              <>
-                {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
-                {playerViewMode === PLAYER.view.thirdPerson && (
-                  <>
-                    <Cockpit3rdPersonControls />
-                    <ActionModeControlGroup />
-                  </>
-                )}
-                {
-                  /*playerViewMode === PLAYER.view.thirdPerson*/ true && (
-                    <div className="absolute top-20 left-10">
-                      <SpeedReadout />
-                    </div>
-                  )
-                }
-                <CombatHudCrosshairOuter />
-                <div className="absolute top-72 right-11">
-                  <ShieldsReadout />
-                </div>
-                <FlightHud />
-                <WeaponsReadout />
-              </>
-            )}
-            {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
-            {playerScreen === PLAYER.screen.dockedStation && (
-              <StationDockMenu />
-            )}
-            {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
+          {playerScreen === PLAYER.screen.mainMenu && <MainMenu />}
 
-            {(playerScreen === PLAYER.screen.flight ||
-              playerScreen === PLAYER.screen.landedPlanet) && (
-              <>
-                {IS_TOUCH_SCREEN ? (
-                  <SpaceFlightControlsTouch />
-                ) : (
-                  <SpaceFlightControlsMouseKB />
-                )}
-              </>
-            )}
-          </div>
+          {playerScreen === PLAYER.screen.flight && (
+            <>
+              {playerViewMode === PLAYER.view.firstPerson && <Cockpit />}
+              {playerViewMode === PLAYER.view.thirdPerson && (
+                <>
+                  <Cockpit3rdPersonControls />
+                  <ActionModeControlGroup />
+                </>
+              )}
+              {
+                /*playerViewMode === PLAYER.view.thirdPerson*/ true && (
+                  <div className="absolute top-20 left-10">
+                    <SpeedReadout />
+                  </div>
+                )
+              }
+              <CombatHudCrosshairOuter />
+              <div className="absolute top-72 right-11">
+                <ShieldsReadout />
+              </div>
+              <FlightHud />
+              <WeaponsReadout />
+              {IS_TOUCH_SCREEN ? (
+                <SpaceFlightControlsTouch />
+              ) : (
+                <SpaceFlightControlsMouseKB />
+              )}
+            </>
+          )}
+          {playerScreen === PLAYER.screen.galaxyMap && <GalaxyMapMenu />}
+          {playerScreen === PLAYER.screen.dockedStation && <StationDockMenu />}
+          {playerScreen === PLAYER.screen.equipmentBuild && <EquipmentMenu />}
         </>
       )}
     </>

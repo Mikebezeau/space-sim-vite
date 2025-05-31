@@ -1,17 +1,3 @@
-.control-button {
-  width: 160px;
-  background-color: black;
-  border: 2px solid rgb(61, 224, 61);
-  cursor: pointer;
-  font-size: 1rem;
-  outline: none;
-  padding: 4px;
-}
-.control-button:hover {
-  background-color: rgb(61, 224, 61);
-  color: black;
-}
-
 .perspective-400 {
   perspective: 400px;
 }

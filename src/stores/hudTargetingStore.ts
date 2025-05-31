@@ -100,6 +100,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         // update if focused target has changed
         get().focusedHudTargetId !== focusedHudTargetId
       ) {
+        console.log(get().hudTargetController.getFocusedHudTarget());
         set({ focusedHudTargetId });
       }
     },
@@ -216,14 +217,14 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       const selectedHudTargetId =
         get().hudTargetController.getSelectedHudTarget()?.id;
 
-      //update all targets
       const playerPosition = useStore.getState().player.object3d.position;
+
       // update targeting reticule
       get().hudTargetController.htmlHudTargetReticule.updateTargetUseFrame(
         camera,
-        playerPosition,
-        selectedHudTargetId
+        playerPosition
       );
+
       // update all action mode target data
       actionModeTargets.forEach((htmlHudTarget) => {
         htmlHudTarget.updateTargetUseFrame(
@@ -236,18 +237,31 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // sort targets by screenPosition.angleDiff, smallest is last
       // using the index in array to set z-index
       // this will make the target closest to the center of the screen on top
-      actionModeTargets.sort((a, b) =>
-        !a.isDead &&
+      actionModeTargets.sort((a, b) => {
+        // If 'a' is active and 'b' is not, 'a' should come first
+        if (a.isActive && !b.isActive) return -1;
+        // If 'a' is not active and 'b' is, 'b' should come first
+        else if (!a.isActive && b.isActive) return 1;
+
+        if (a.screenPosition.angleDiff + 0.01 < b.screenPosition.angleDiff)
+          // 0.01 small buffer to avoid flicker issues
+          return -1; // a is closer to center, so it should come first
+
+        return 0;
+      });
+
+      /*
+        a.isActive && // ?????if a active, a comes bofore b (a positive value below means a is after b)
         a.screenPosition.angleDiff < b.screenPosition.angleDiff + 0.01 //small buffer to avoid flicker issues
           ? // TODO add second button action in scan mode to toggle target
             1
           : -1
       );
+*/
 
       // update focused hud target z-index and CSS class
       // focused target is the one closest to the center of the screen
-      const newFocusedTargetId =
-        actionModeTargets[actionModeTargets.length - 1].id;
+      const newFocusedTargetId = actionModeTargets[0].id;
       if (
         // update focused target if in manual pilot control mode OR if is touch controls
         IS_TOUCH_SCREEN ||

@@ -27,14 +27,14 @@ export type HudTargetOptionsType = {
 interface HudTargetInt {
   isUseCombatTarget: () => boolean;
   isCombat: () => boolean;
-  setDivInfoLabelTextContent: (label: string) => void; // TODO to use the label as an action button
+  //setDivInfoLabelTextContent: (label: string) => void; // TODO to use the label as an action button
   setDivInfoDetailTextContent: (label: string) => void; // method to set target detail label
   hideTargetSetMarginLeft: () => void; // method to hide target by setting margin left
   resetPosition: () => void; // method to reset target position
   updateTargetUseFrame: (
-    camera?: THREE.Camera | undefined,
-    playerPosition?: THREE.Vector3 | undefined,
-    selectedHudTargetId?: string
+    camera: THREE.Camera,
+    playerPosition: THREE.Vector3,
+    selectedHudTargetId: string
   ) => void; // method to update target styles in useFrame
   updateTargetStylesUseFrame: (
     selectedHudTargetId: string,
@@ -119,18 +119,17 @@ class HudTarget implements HudTargetInt {
       this.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
     );
   }
-
+  /*
   setDivInfoLabelTextContent(label: string): void {
     this.label = label;
     if (this.divInfoLabel) {
       this.divInfoLabel.textContent = label;
     }
   }
-
-  setDivInfoDetailTextContent(label: string): void {
-    this.label = label;
-    if (this.divInfoLabel) {
-      this.divInfoLabel.textContent = label;
+*/
+  setDivInfoDetailTextContent(info: string): void {
+    if (this.divInfoDetail) {
+      this.divInfoDetail.textContent = info;
     }
   }
 
@@ -145,20 +144,15 @@ class HudTarget implements HudTargetInt {
   }
 
   updateTargetUseFrame(
-    camera?: THREE.Camera | undefined,
-    playerPosition?: THREE.Vector3 | undefined,
+    camera: THREE.Camera,
+    playerPosition: THREE.Vector3,
     selectedHudTargetId: string | null = null
   ): void {
     if (!this.divElement) return;
 
-    if (!camera || !playerPosition) {
-      console.error("Camera or player position is not defined");
-      return;
-    }
-
     let screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
-
     let targetEntity: any;
+
     switch (this.targetType) {
       case HTML_HUD_TARGET_TYPE.PLANET:
       case HTML_HUD_TARGET_TYPE.STATION:
@@ -180,30 +174,24 @@ class HudTarget implements HudTargetInt {
         break;
 
       case HTML_HUD_TARGET_TYPE.WARP_TO_STAR:
-        /*
-            if (useGalaxyMapStore.getState().selectedWarpStar === null) {
-              this.screenPosition... = 10; // for sorting
-              // send off screen if no target
-              this.isActive = false;
-              // exit loop
-              return;
-            }
-            */
-        // display warp star target
-        if (this.isActive) {
-          // set label in Ly measurment
-          this.setDivInfoDetailTextContent(
-            (useGalaxyMapStore.getState().selectedWarpStarDistance * 7) // TODO standardize this number in galaxy creation - eyeballing average distance between stars to set multiplier
-              .toFixed(3) + " Ly"
-          );
-          // get screen position of target
-          screenPosition = getScreenPositionFromDirection(
-            camera,
-            useGalaxyMapStore.getState().selectedWarpStarDirection!
-          );
-        } else {
+        if (useGalaxyMapStore.getState().selectedWarpStar === null) {
+          this.isActive = false;
+          // exit
           return;
-        } // exit loop if not active
+        }
+        // display warp star target
+        this.isActive = true;
+        // set label in Ly measurment
+        this.setDivInfoDetailTextContent(
+          (useGalaxyMapStore.getState().selectedWarpStarDistance * 7) // TODO standardize this number in galaxy creation - eyeballing average distance between stars to set multiplier
+            .toFixed(3) + " Ly"
+        );
+        // get screen position of target
+        screenPosition = getScreenPositionFromDirection(
+          camera,
+          useGalaxyMapStore.getState().selectedWarpStarDirection!
+        );
+        // exit loop if not active
         break;
 
       case HTML_HUD_TARGET_TYPE.ENEMY_COMBAT:

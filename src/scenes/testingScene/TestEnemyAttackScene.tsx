@@ -37,7 +37,7 @@ const TestEnemyAttackScene = () => {
   const trackRef = useRef<THREE.Mesh | null>(null);
   //const attackPathRef = useRef<defenseNodesType | null>(null);
 
-  const controllerOptions = { changeScreenTest: false, resetEnemies: false };
+  const controllerOptions = { resetEnemies: false };
 
   const { scene } = useThree();
 
@@ -68,16 +68,6 @@ const TestEnemyAttackScene = () => {
   useEffect(() => {
     if (!guiRef.current) {
       guiRef.current = new GUI();
-
-      guiRef.current.add(controllerOptions, "changeScreenTest").onChange(() => {
-        useDevStore
-          .getState()
-          .setTestScreen(
-            controllerOptions.changeScreenTest
-              ? "changeScreenTest"
-              : "enemyTest"
-          );
-      });
 
       guiRef.current.add(controllerOptions, "resetEnemies").onChange(() => {
         controllerOptions.resetEnemies = false;

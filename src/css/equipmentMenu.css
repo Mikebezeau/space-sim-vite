@@ -10,10 +10,12 @@ option {
 
 #equipmentMenu {
   overflow-y: scroll;
-  pointer-events: all;
-  cursor: pointer;
   border: 1px solid #fff;
   color: white;
+}
+
+#equipmentMenu * {
+  pointer-events: auto !important;
 }
 
 #equipmentMenu li {

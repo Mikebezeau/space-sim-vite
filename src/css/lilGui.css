@@ -1,3 +1,8 @@
+.lil-gui * {
+  pointer-events: auto !important;
+  cursor: auto !important;
+}
+
 .lil-gui option {
   background-color: #fff;
   color: #000;

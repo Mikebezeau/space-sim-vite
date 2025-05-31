@@ -19,7 +19,7 @@ import Planet from "../classes/solarSystem/Planet";
 import PlayerMech from "../classes/mech/PlayerMech";
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
 // constants
-import { IS_MOBILE, PLAYER_START } from "../constants/constants";
+import { IS_MOBILE, PLAYER, PLAYER_START } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/planetDataConstants";
 // images
 // @ts-ignore
@@ -116,9 +116,10 @@ interface storeState {
     shoot2: boolean; //TODO move all to playerControlStore and complete fixing code
     shoot3: boolean;
     mouseControlNormalVec2: THREE.Vector2;
-    //mouseScreen: THREE.Vector2;
-    //ongoingTouches: any[];
+    mouseScreen: THREE.Vector2;
   };
+  customCursorDivElement: HTMLDivElement | null; // used to update custom cursor position
+  updateCustomCursor: () => void; // called in App.tsx
 }
 
 const useStore = create<storeState>()((set, get) => ({
@@ -155,6 +156,8 @@ const useStore = create<storeState>()((set, get) => ({
       get().renderTime[componentName].start;
     //console.log(componentName, delta);
   },
+
+  // main init function for game store
   initGameStore: (renderer) => {
     // async init of galaxy star data
     get()
@@ -288,7 +291,7 @@ const useStore = create<storeState>()((set, get) => ({
     shoot2: false, // test weapon fire groups
     shoot3: false,
     mouseControlNormalVec2: new THREE.Vector2(0, 0), // relative x, y mouse position used for mech movement -1 to 1
-    //mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
+    mouseScreen: new THREE.Vector2(0, 0), // mouse position on screen used for custom cursor
   },
 
   actions: {
@@ -463,7 +466,7 @@ const useStore = create<storeState>()((set, get) => ({
       // update x, y mouseControlNormalVec2 position
       get().mutation.mouseControlNormalVec2.set(mouseX, mouseY);
       // save x, y pixel position on screen
-      //get().mutation.mouseScreen.set(x, y);
+      get().mutation.mouseScreen.set(x, y);
     },
 
     // save screen touch position (-0.5 to 0.5) relative to
@@ -490,6 +493,33 @@ const useStore = create<storeState>()((set, get) => ({
         get().mutation.mouseControlNormalVec2.set(setX, setY);
       }
     },
+  },
+  customCursorDivElement: null, // used to update custom cursor position
+  updateCustomCursor: () => {
+    // called in AppCanvasScene
+    if (get().customCursorDivElement !== null) {
+      if (
+        // conditions to hide cursor
+        !useHudTargtingStore.getState().isMouseOutOfHudCircle &&
+        usePlayerControlsStore.getState().playerScreen ===
+          PLAYER.screen.flight &&
+        usePlayerControlsStore.getState().playerActionMode ===
+          PLAYER.action.manualControl
+      ) {
+        // @ts-ignore
+        get().customCursorDivElement.style.left = "-3000px";
+      } else {
+        // show cursor
+        // @ts-ignore
+        get().customCursorDivElement.style.left = `${
+          get().mutation.mouseScreen.x
+        }px`;
+        // @ts-ignore
+        get().customCursorDivElement.style.top = `${
+          get().mutation.mouseScreen.y
+        }px`;
+      }
+    }
   },
 }));
 

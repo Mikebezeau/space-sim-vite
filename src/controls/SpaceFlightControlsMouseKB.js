@@ -3,7 +3,6 @@ import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import {
   useKBControls,
-  useMouseMove,
   useMouseDown,
   useMouseUp,
   useMouseWheelRoll,
@@ -12,8 +11,8 @@ import {
 } from "../hooks/controls/useMouseKBControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 
-const ControlsMouseKBSpaceFlight = () => {
-  const componentName = "ControlsMouseKBSpaceFlight";
+const SpaceFlightControlsMouseKB = () => {
+  const componentName = "SpaceFlightControlsMouseKB";
   useStore.getState().updateRenderInfo(componentName);
   useEffect(() => {
     useStore.getState().updateRenderDoneInfo(componentName);
@@ -33,11 +32,13 @@ const ControlsMouseKBSpaceFlight = () => {
   );
 
   //mouse move
+  // now handled in AppCanvas.tsx
+  /*
   function handleMouseMove(e) {
     actions.updateMouse(e);
   }
   useMouseMove(handleMouseMove);
-
+*/
   //main actions
   useMouseDown((e) => {
     if (
@@ -137,4 +138,4 @@ const ControlsMouseKBSpaceFlight = () => {
   return null;
 };
 
-export default ControlsMouseKBSpaceFlight;
+export default SpaceFlightControlsMouseKB;

@@ -113,6 +113,15 @@
 }
 
 * {
+  pointer-events: none;
+  touch-action: none;
+}
+
+canvas {
+  pointer-events: auto;
+}
+
+img {
   box-sizing: border-box;
 }
 
@@ -140,7 +149,6 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir,
     helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   color: black;
-  cursor: move !important;
 }
 
 h1 {

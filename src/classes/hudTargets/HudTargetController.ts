@@ -250,27 +250,19 @@ class HudTargetController implements HudTargetControllerInt {
         this.htmlHudTargetReticule.hideTargetSetMarginLeft();
       }
     }
-    // further isActive testing
-    const actionModeTargets =
-      playerControlMode === PLAYER.controls.scan
-        ? this.htmlHudTargets
-        : this.htmlHudTargetsCombat;
-    //this.htmlHudTargetReticule,
+    // get system warp target
+    const sysWarpTarget = useHudTargtingStore
+      .getState()
+      .hudTargetController.htmlHudTargets.find(
+        (target) => target.targetType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR
+      );
 
-    actionModeTargets.forEach((htmlHudTarget) => {
-      if (htmlHudTarget.isDead) {
-        htmlHudTarget.isActive = false; // hide target
-      }
-      if (
-        htmlHudTarget.targetType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR &&
-        !useGalaxyMapStore.getState().selectedWarpStar
-      ) {
-        htmlHudTarget.isActive = false; // hide target
-      }
-      if (!htmlHudTarget.isActive) {
-        htmlHudTarget.screenPosition.angleDiff = 10; // for sorting TODO add isActive to sort
-      }
-    });
+    if (sysWarpTarget)
+      sysWarpTarget.isActive =
+        playerControlMode === PLAYER.controls.scan &&
+        useGalaxyMapStore.getState().selectedWarpStar
+          ? true
+          : false; // hide target
   }
 
   setTargetDead(id: string) {
@@ -280,16 +272,18 @@ class HudTargetController implements HudTargetControllerInt {
     );
     if (htmlHudTarget) {
       htmlHudTarget.isDead = true; // set target to dead
+      htmlHudTarget.isActive = false; // hide target
     }
-    // reset reticule if dead target is selected
+    // set selected target null if inactive
     if (
       useHudTargtingStore.getState().selectedHudTargetId === id &&
-      this.htmlHudTargetReticule.isActive
+      !this.htmlHudTargetReticule.isActive
     ) {
-      this.htmlHudTargetReticule.resetPosition(); // move reticule to center
       useHudTargtingStore.getState().selectedHudTargetId = null; // reset selected target
     }
   }
+
+  //UPDATE FUNC HERE
 }
 
 export default HudTargetController;

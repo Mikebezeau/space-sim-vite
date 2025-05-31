@@ -46,7 +46,7 @@ const WeaponsReadout = ({ isAlwaysDisplay = false }) => {
                 {/*weapon.currentAmmo currentHeat*/}
               </span>
               <span
-                className={`inline-block box-border w-2.5 h-2.5 ${
+                className={`w-2.5 h-2.5 ${
                   weapon.getAmmoCount() === 0
                     ? "bg-red-500"
                     : weapon.weaponFireData.isReady

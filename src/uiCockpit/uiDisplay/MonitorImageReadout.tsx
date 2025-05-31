@@ -103,7 +103,7 @@ const MonitorImageReadout = (props: monitorImageReadoutInt) => {
     <img
       ref={screenImageRef}
       src={screenMenuSymbols}
-      className="absolute w-full h-full pointer-events-none"
+      className="absolute w-full h-full"
       alt="digital display"
     />
   );

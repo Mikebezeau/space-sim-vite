@@ -2,11 +2,12 @@ import { useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useTouchController from "../hooks/controls/useTouchController";
-import { ActionButtonIcon } from "../uiCockpit/CockpitControls";
+import { ActionButtonPrimary } from "../uiCockpit/CockpitControls";
 import { PLAYER, SPEED_VALUES } from "../constants/constants";
 //import controls from "../assets/icons/controls.svg";
 import controlStick from "/images/cockpit/controls/controlStick.png";
 import throttleStick from "/images/cockpit/controls/throttleStick.png";
+import useHudTargtingStore from "../stores/hudTargetingStore";
 
 const ThrottleControlsDisplay = () => {
   const playerSpeedSetting = usePlayerControlsStore(
@@ -20,14 +21,14 @@ const ThrottleControlsDisplay = () => {
       <img
         src={throttleStick}
         alt="controls icon"
-        className="pointer-events-none absolute w-28 right-2 opacity-75 scale-x-[-1]"
+        className="absolute w-28 right-2 opacity-75 scale-x-[-1]"
         style={{ bottom: `${playerSpeedSetting * 24 - 8}px` }}
       />
       <div className="relative flex flex-col-reverse">
         {SPEED_VALUES.map((s, index) => (
           <div
             key={s}
-            className="pointer-events-none w-full h-[22px] mt-1 border-[2px] border-black rounded-tl-full rounded-br-full"
+            className="w-full h-[22px] mt-1 border-[2px] border-black rounded-tl-full rounded-br-full"
             style={{
               backgroundColor:
                 index === 0
@@ -104,6 +105,9 @@ const SpaceFlightControlsTouch = () => {
         usePlayerControlsStore.getState().playerControlMode ===
         PLAYER.controls.combat
       ) {
+        // update current target
+        useHudTargtingStore.getState().setSelectedHudTargetId();
+
         // if in combat mode begin shooting
         useStore.getState().actions.setShoot(true);
       }
@@ -201,19 +205,19 @@ const SpaceFlightControlsTouch = () => {
         <div
           id="btn-ship-move"
           ref={moveControl}
-          className="rounded-full w-full h-full pointer-events-auto border-2 border-white"
+          className="pointer-events-auto rounded-full w-full h-full border-2 border-white"
         >
           <div className="rounded-full w-full h-full bg-gray-500 opacity-45">
             <img
               src={controlStick}
               alt="controls icon"
-              className={`pointer-events-none absolute w-20 left-12 top-10 opacity-75 scale-x-[-1]`}
+              className={`absolute w-20 left-12 top-10 opacity-75 scale-x-[-1]`}
             />
             {/*
             <img
               src={controls}
               alt="controls icon"
-              className="pointer-events-none absolute w-36 h-36 left-2 top-2 opacity-25"
+              className="absolute w-36 h-36 left-2 top-2 opacity-25"
             />
             */}
           </div>
@@ -228,7 +232,7 @@ const SpaceFlightControlsTouch = () => {
           id="btn-action"
           className="pointer-events-auto relative ml-1 w-32 h-full bg-gray-500 opacity-75 rounded-md rounded-tl-3xl rounded-br-3xl"
         >
-          <ActionButtonIcon />
+          <ActionButtonPrimary />
         </div>
       </div>
       <div

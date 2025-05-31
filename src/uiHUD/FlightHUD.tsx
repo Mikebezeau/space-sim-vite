@@ -26,11 +26,6 @@ const FlightHud = () => {
   // update frame function below called within the playerControlsStore updatePlayerMechAndCamera
   //useHudTargtingStore.getState().hudTargetController.updateTargetHUD(camera);
 
-  // if player is in new solar system, update targets
-  useEffect(() => {
-    useHudTargtingStore.getState().hudTargetController.generateTargets();
-  }, [playerCurrentStarIndex]);
-
   const hudLargeOuterCirlcleRef = useRef<HTMLDivElement | null>(null);
 
   const setSizes = () => {
@@ -56,9 +51,17 @@ const FlightHud = () => {
     setSizes();
   });
 
+  // if player is in new solar system, update targets
+  useEffect(() => {
+    useHudTargtingStore.getState().hudTargetController.generateTargets();
+  }, [playerCurrentStarIndex]);
+
   useEffect(() => {
     testMotivationMatrix();
-    setSizes();
+    // set initial sizes of the HUD elements
+    if (hudLargeOuterCirlcleRef.current) {
+      setSizes();
+    }
   }, [hudLargeOuterCirlcleRef.current]);
 
   return (
@@ -90,4 +93,5 @@ const FlightHud = () => {
   );
 };
 
-export default React.memo(FlightHud);
+//export default React.memo(FlightHud);
+export default FlightHud;

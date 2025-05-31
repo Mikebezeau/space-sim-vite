@@ -31,7 +31,7 @@ import camera from "../assets/icons/camera-change.svg";
 import { IS_MOBILE, PLAYER } from "../constants/constants";
 import useGalaxyMapStore from "../stores/galaxyMapStore";
 
-export const ActionButtonIcon = () => {
+export const ActionButtonPrimary = () => {
   const playerControlMode = usePlayerControlsStore(
     (state) => state.playerControlMode
   );
@@ -50,21 +50,29 @@ export const ActionButtonIcon = () => {
   const scanProgressNormHudTarget = useHudTargtingStore(
     (state) => state.scanProgressNormHudTarget
   );
+
+  const buttonLabel =
+    playerControlMode === PLAYER.controls.combat
+      ? "Shoot"
+      : isPlayerWarping
+      ? ""
+      : isShowWarpButton
+      ? selectedHudTargetId
+        ? "Warp"
+        : "Target"
+      : isShowScanButton
+      ? scanProgressNormHudTarget < 1
+        ? "Scan"
+        : ""
+      : "Target";
+
   return (
-    <div className="text-white text-3xl uppercase flex items-center justify-center h-full">
-      {playerControlMode === PLAYER.controls.combat
-        ? "Shoot"
-        : isPlayerWarping
-        ? ""
-        : isShowWarpButton
-        ? selectedHudTargetId
-          ? "Warp"
-          : "Target"
-        : isShowScanButton
-        ? scanProgressNormHudTarget < 1
-          ? "Scan"
-          : ""
-        : "Target"}
+    <div
+      className={`${
+        buttonLabel === "" && "opacity-50"
+      } text-white text-3xl uppercase flex items-center justify-center h-full`}
+    >
+      {buttonLabel}
     </div>
   );
 };
@@ -112,7 +120,7 @@ const ActionCancelPilot = () => {
           // TODO its a middle click
           src={rightClick}
           alt="cancel controls icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
+          className="w-[10vh] h-[10vh]"
         />
       </span>
     </div>
@@ -239,14 +247,16 @@ export const SelectedTargetActionButton = () => {
 
   return (
     <>
-      <CyberButtonProgressAnimArrows
-        title={title}
-        isShowArrows={isShowArrows}
-        isShowProgressNorm={isShowScanButton ? scanProgressNormHudTarget : 0}
-        onClickCallback={onClickCallback}
-        index={index}
-      />
-      {/*scanProgressNormHudTarget >= 1 && <div>DATA DATA DATA DATA DATA</div>*/}
+      {usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.scan && (
+        <CyberButtonProgressAnimArrows
+          title={title}
+          isShowArrows={isShowArrows}
+          isShowProgressNorm={isShowScanButton ? scanProgressNormHudTarget : 0}
+          onClickCallback={onClickCallback}
+          index={index}
+        />
+      )}
     </>
   );
 };
@@ -303,7 +313,7 @@ export const CockpitControlMode = () => {
             <img
               src={sword}
               alt="comabt mode icon"
-              className="w-[10vh] h-[10vh] pointer-events-none"
+              className="w-[10vh] h-[10vh]"
             />
           </span>
         </div>
@@ -317,7 +327,7 @@ export const CockpitControlMode = () => {
             <img
               src={radarDish}
               alt="radar icon"
-              className="w-[10vh] h-[10vh] pointer-events-none"
+              className="w-[10vh] h-[10vh]"
             />
           </span>
         </div>
@@ -337,11 +347,7 @@ export const CockpitControlMap = () => {
       onClick={() => switchScreen(PLAYER.screen.galaxyMap)}
     >
       <span className="icon-button-cyber-content">
-        <img
-          src={stars}
-          alt="stars icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
+        <img src={stars} alt="stars icon" className="w-[10vh] h-[10vh]" />
       </span>
     </div>
   );
@@ -369,11 +375,7 @@ export const CockpitControlWarp = () => {
           selectedWarpStar && "bg-green-500"
         }`}
       >
-        <img
-          src={warp}
-          alt="warp icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
+        <img src={warp} alt="warp icon" className="w-[10vh] h-[10vh]" />
       </span>
     </div>
   );
@@ -399,11 +401,7 @@ export const CockpitControlView = () => {
       }
     >
       <span className="icon-button-cyber-content">
-        <img
-          src={camera}
-          alt="camera icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
+        <img src={camera} alt="camera icon" className="w-[10vh] h-[10vh]" />
       </span>
     </div>
   );
@@ -438,11 +436,7 @@ export const CockpitControlDockStation = () => {
       }}
     >
       <span className="icon-button-cyber-content">
-        <img
-          src={satellite}
-          alt="station icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
+        <img src={satellite} alt="station icon" className="w-[10vh] h-[10vh]" />
       </span>
     </div>
   );
@@ -459,11 +453,7 @@ export const CockpitControlEquip = () => {
       onClick={() => switchScreen(PLAYER.screen.equipmentBuild)}
     >
       <span className="icon-button-cyber-content">
-        <img
-          src={gear}
-          alt="gear icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
+        <img src={gear} alt="gear icon" className="w-[10vh] h-[10vh]" />
       </span>
     </div>
   );

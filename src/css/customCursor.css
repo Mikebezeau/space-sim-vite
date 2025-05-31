@@ -1,5 +1,5 @@
 #custom-cursor-hide-cursor * {
-  cursor: none;
+  cursor: none !important;
 }
 
 .custom-cursor {
@@ -9,14 +9,7 @@
   border: 2px solid rgb(0, 255, 255);
   border-radius: 100%;
   transform: translate(-50%, -50%);
-  /*
-  -webkit-transition-duration: 100ms;
-  transition-duration: 100ms;
-  -webkit-transition-timing-function: ease-out;
-  transition-timing-function: ease-out;
-  */
-  z-index: 999;
-  pointer-events: none;
+  z-index: 1001;
 }
 
 .custom-cursor-dot {

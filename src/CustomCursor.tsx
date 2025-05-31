@@ -1,18 +1,24 @@
-import React from "react";
+import useStore from "./stores/store";
+/*
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useHudTargtingStore from "./stores/hudTargetingStore";
 import { useMouseMove } from "./hooks/controls/useMouseKBControls";
 import { PLAYER } from "./constants/constants";
+*/
 import "./css/customCursor.css";
 /*
 to hide the default cursor while using the custom cursor
-wrap the AppUI component in a div with the following id 
-<div id="custom-cursor-hide-cursor">
+wrap the AppUI component in a div with the following id and tailwind classes
+<div
+  id="custom-cursor-hide-cursor"
+  className="absolute w-full h-full touch-none"
+>
 */
 
 const CustomCursor = () => {
+  /*
   const customCursorRef = React.useRef<HTMLDivElement | null>(null);
-  //TODO remove this requestAnimationFrame - do updates in store function
+  //removed requestAnimationFrame - update done in store function
   const move = (e: MouseEvent) => {
     requestAnimationFrame(() => {
       if (customCursorRef.current) {
@@ -35,9 +41,14 @@ const CustomCursor = () => {
   };
 
   useMouseMove(move);
-
+*/
   return (
-    <div ref={customCursorRef} className="custom-cursor">
+    <div
+      ref={(divElement) =>
+        (useStore.getState().customCursorDivElement = divElement)
+      }
+      className="custom-cursor"
+    >
       <div className="custom-cursor-dot" />
     </div>
   );

@@ -67,7 +67,7 @@ const ItemDescription = () => {
         </div>
         <div className="mb-2 text-xs">{item?.description}</div>
         <div
-          className="cursor-pointer pointer-events-auto bg-blue-500 hover:bg-blue-600 active:bg-blue-700 cursor-pointer flex items-center justify-center text-white pt-1.5"
+          className="cursor-pointer pointer-events-auto bg-blue-500 hover:bg-blue-600 active:bg-blue-700 flex items-center justify-center text-white pt-1.5"
           onClick={handleLike}
         >
           Like

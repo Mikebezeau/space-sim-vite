@@ -14,11 +14,7 @@ const ButtonIcon = (props: ButtonIconInt) => {
       onClick={onClick}
     >
       <span className="icon-button-cyber-content">
-        <img
-          src={iconSrc}
-          alt="camera icon"
-          className="w-[10vh] h-[10vh] pointer-events-none"
-        />
+        <img src={iconSrc} alt="camera icon" className="w-[10vh] h-[10vh]" />
       </span>
     </div>
   );

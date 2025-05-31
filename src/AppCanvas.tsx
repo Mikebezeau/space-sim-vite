@@ -1,4 +1,3 @@
-import React from "react";
 import { useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import useStore from "./stores/store";
@@ -28,7 +27,7 @@ const AppCanvas = () => {
           shadows={false}
           resize={{ debounce: 1000 }}
           gl={{
-            preserveDrawingBuffer: false, //TODO test performance seems to be better with this
+            preserveDrawingBuffer: false, // performance seems to be better with this
             logarithmicDepthBuffer: true,
             //precision: "highp", // "highp", "mediump" or "lowp"
             // NOTE setting powerPreference & antialias false to ease load on GPU
@@ -44,7 +43,7 @@ const AppCanvas = () => {
           }}
         >
           <Perf
-            logsPerSecond={5}
+            logsPerSecond={1}
             minimal={IS_MOBILE}
             customData={{
               value: 0, // initial value,

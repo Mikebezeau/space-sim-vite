@@ -4,7 +4,6 @@
   border: 0;
   outline: none;
   background-color: rgba(3, 198, 0, 0.527);
-  cursor: pointer;
   font-family: "tomorrow", sans-serif;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -12,6 +11,7 @@
 }
 
 .icon-button-cyber-content {
+  pointer-events: auto !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,8 +163,7 @@
     8% 80%,
     0 70%
   );
-  pointer-events: auto;
-  cursor: pointer;
+  pointer-events: auto !important;
   font-family: "tomorrow", sans-serif;
   color: var(--color);
   background: transparent;

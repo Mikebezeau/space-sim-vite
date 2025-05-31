@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from "react";
 import { useEffect } from "react";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "./stores/store";
 import usePlayerControlsStore from "./stores/playerControlsStore";
 import useDevStore from "./stores/devStore";
@@ -44,9 +44,7 @@ const AppCanvasScene = () => {
 
   return (
     <>
-      {testScreen.changeScreenTest ? (
-        <GalaxyMap />
-      ) : testScreen.planetTest ? (
+      {testScreen.planetTest ? (
         <TestPlanetScene />
       ) : testScreen.enemyTest ? (
         <TestEnemyAttackScene />

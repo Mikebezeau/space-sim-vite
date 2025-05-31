@@ -1,9 +1,13 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import AppUI from "./AppUI";
 import AppCanvas from "./AppCanvas";
 import useStore from "./stores/store";
 import AppLoadingManager from "./AppLoadingManager";
 import AppLoadingScreen from "./AppLoadingScreen";
+import CustomCursor from "./CustomCursor";
+import { useMouseMove } from "./hooks/controls/useMouseKBControls";
+import { IS_TOUCH_SCREEN } from "./constants/constants";
+import LilGui from "./dev/LilGui";
 
 import useNoContextMenu from "./hooks/useNoContextMenu";
 //import useWindowResize from "./hooks/useWindowResize";
@@ -36,19 +40,33 @@ function App() {
     }
   }, []);
 
-  useNoContextMenu(); // disable right click context menu
+  useNoContextMenu(); // disable right click and mobile touch hold context menu
+
   /*
   useWindowResize(() => {
     // callback function code here
   });
   */
 
+  useMouseMove((e) => {
+    // update mouse position for custom cursor
+    if (!IS_TOUCH_SCREEN) {
+      useStore.getState().actions.updateMouse(e);
+      useStore.getState().updateCustomCursor();
+    }
+  });
+
   return (
     <>
-      <AppCanvas />
       <AppLoadingScreen />
       <AppLoadingManager />
-      <AppUI />
+
+      <div id="custom-cursor-hide-cursor" className="absolute w-full h-full">
+        {!IS_TOUCH_SCREEN && <CustomCursor />}
+        <AppCanvas />
+        <AppUI />
+      </div>
+      <LilGui />
     </>
   );
 }

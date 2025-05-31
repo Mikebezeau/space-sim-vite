@@ -1,13 +1,28 @@
 import MenuCategory from "../MenuCategory";
 import MenuEffect from "../effects/MenuEffect";
 
-const MenuItems = ({
-  items,
-  menuCategoryName,
-  onClick,
-  selectedItem,
-  baseIndex = 0,
-}) => {
+interface MenuItemsInt {
+  items: Array<{
+    id: string,
+    name: string,
+    likes: number,
+    weight?: number,
+  }>;
+  menuCategoryName: string;
+  onClick: (index: number) => void;
+  selectedItem: number;
+  baseIndex?: number;
+}
+
+const MenuItems = (props: MenuItemsInt) => {
+  const {
+    items,
+    menuCategoryName,
+    onClick,
+    selectedItem,
+    baseIndex = 0,
+  } = props;
+
   return (
     <>
       <MenuCategory name={menuCategoryName} />
