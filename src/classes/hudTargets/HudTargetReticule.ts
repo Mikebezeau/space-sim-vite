@@ -5,8 +5,7 @@ import HudTarget, { HudTargetOptionsType } from "./HudTarget";
 import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
 import { getScreenPosition } from "../../util/cameraUtil";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
-import { FPS, PLAYER } from "../../constants/constants";
-import { setCustomData } from "r3f-perf";
+import { PLAYER } from "../../constants/constants";
 
 class HudTargetReticule extends HudTarget {
   constructor(options: HudTargetOptionsType) {
@@ -59,7 +58,6 @@ class HudTargetReticule extends HudTarget {
             targetedMechEntity.getFuturePosition(timeToHit);
           this.screenPosition = getScreenPosition(camera, futurePosition);
           this.isActive = true;
-          //setCustomData(timeToHit);
         }
       }
     }
