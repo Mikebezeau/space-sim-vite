@@ -3,9 +3,9 @@ import useStore from "../stores/store";
 import useHudTargtingStore from "../stores/hudTargetingStore";
 import useWindowResize from "../hooks/useWindowResize";
 import CombatHudCrosshairInner from "./CombatHudCrosshairInner";
-import FlightHudTarget from "./hudTargetTypes/FlightHudTarget";
-import FlightHudCombatTarget from "./hudTargetTypes/FlightHudCombatTarget";
-import FlightHudTargetReticule from "./FlightHudTargetReticule";
+import FlightHudTarget from "./hudTargetComponents/FlightHudTarget";
+import FlightHudCombatTarget from "./hudTargetComponents/FlightHudCombatTarget";
+import FlightHudTargetReticule from "./hudTargetComponents/FlightHudTargetReticule";
 
 import { testMotivationMatrix } from "../classes/rpgSystem/factionMatrix";
 
