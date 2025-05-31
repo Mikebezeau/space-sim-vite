@@ -115,14 +115,20 @@ class Galaxy implements galaxyInt {
       i < this.starBackgroundCoordsBuffer.array.length / 3;
       i = i + 1
     ) {
+      // do not include the current player star in the background stars
+      if (i === playerStarIndex) {
+        this.starBackgroundDistanceSelectedBuffer.array[i] = 0; // do not show current star in background
+        continue;
+      }
       // get relative distance to star from player star position
-      const { x, y, z } = this.getDistanceCoordFromStarToStar(
-        playerStarIndex,
-        i
-      );
+      const { x, y, z } =
+        //i === playerStarIndex
+        //  ? { x: 0, y: 0, z: 0 } :
+        this.getDistanceCoordFromStarToStar(playerStarIndex, i);
       //const distance = Math.sqrt(x * x + y * y + z * z);
       // to show the nebula sprite particles instead of star for far away stars
-      this.starBackgroundDistanceSelectedBuffer.array[i] = 0; //distance > 40 ? 1 : 0;// not using this for now - TODO fix up stars shader
+      this.starBackgroundDistanceSelectedBuffer.array[i] =
+        i === playerStarIndex ? -1 : 0; //distance > 40 ? 1 : 0;// 1 for far away stars, 0 for close stars
       this.starBackgroundCoordsBuffer.array[i * 3 + 0] = x;
       this.starBackgroundCoordsBuffer.array[i * 3 + 1] = y;
       this.starBackgroundCoordsBuffer.array[i * 3 + 2] = z;

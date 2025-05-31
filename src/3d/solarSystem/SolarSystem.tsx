@@ -22,7 +22,6 @@ const SolarSystem = () => {
     useStore.getState().updateRenderDoneInfo(componentName);
   }, []);
 
-  //TODO do not show current star point in background star scene
   return (
     <>
       {!isGenNewSystem && (

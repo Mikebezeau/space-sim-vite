@@ -1,8 +1,7 @@
 const starPointsShader = {
   uniforms: {
-    uTexture: { value: null },
+    uTexture: { value: null }, // TODO? performance option to draw circle instead of texture
     uTextureNebula: { value: null },
-    uBackground: { value: 0.0 }, // if is being displayed as background
   },
 
   vertShader: `
@@ -35,7 +34,11 @@ const starPointsShader = {
     gl_Position = projectionMatrix * mvPosition;
     
     if( round( uBackground ) == 1.0) {
-     if( round( vSelected ) == 1.0 ){
+      if( round( vSelected ) == -1.0 ){
+        // discarding point that player is located at by setting position beyond clip plane
+        gl_Position = vec4( 0.0 );
+      }
+     else if( round( vSelected ) == 1.0 ){
         gl_PointSize =  25.0;
         vColor = vec4( 0.2, 0.5, 0.8, 1.0 );
       }
