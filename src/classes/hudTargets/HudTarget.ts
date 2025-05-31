@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import useHudTargtingStore from "../../stores/hudTargetingStore";
 import useGalaxyMapStore from "../../stores/galaxyMapStore";
-import EnemyMech from "../mech/EnemyMech";
+import EnemyMechBoid from "../mech/EnemyMech";
 import SpaceStationMech from "../mech/SpaceStationMech";
 import EnemyMechGroup from "../mech/EnemyMechGroup";
 import CelestialBody from "../solarSystem/CelestialBody";
@@ -21,7 +21,7 @@ export type HudTargetOptionsType = {
   color?: string;
   borderColor?: string;
   opacity?: number;
-  entity?: EnemyMech | SpaceStationMech | EnemyMechGroup | CelestialBody;
+  entity?: EnemyMechBoid | SpaceStationMech | EnemyMechGroup | CelestialBody;
 };
 
 interface HudTargetInt {
@@ -67,7 +67,7 @@ class HudTarget implements HudTargetInt {
   combatTriangleSvgs: SVGElement[]; // not using this, slows rendering
   crosshairDivElement?: HTMLDivElement; // div element for crosshair, used for combat targets
   nonCombatCircleDiv?: HTMLDivElement;
-  entity?: EnemyMech | SpaceStationMech | EnemyMechGroup | CelestialBody;
+  entity?: EnemyMechBoid | SpaceStationMech | EnemyMechGroup | CelestialBody;
 
   constructor(options: HudTargetOptionsType) {
     const {

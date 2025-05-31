@@ -1,4 +1,3 @@
-import React from "react";
 import * as THREE from "three";
 import MechServo from "../../classes/mechBP/MechServo";
 import MechServoShape from "../../classes/mechBP/MechServoShape";
@@ -55,7 +54,7 @@ const ServoShapes = (props: ServoShapesInt) => {
   let parentServo: MechServo | undefined = props.parentServo;
   if (!props.parentServo && servo instanceof MechServo) parentServo = servo;
 
-  const thisColor = servo.color || color;
+  const thisColor = servo.color || color || "#ffffff";
 
   return (
     <group scale={servo instanceof MechServo ? servo.size() : 1}>

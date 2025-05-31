@@ -123,13 +123,14 @@ const PositionPartEditButtons = (props: MechServoInt) => {
   const handleSetAdjustmentAmount = (val) => {
     setAdjustmentFactor(val);
   };
-
+  // <div className="fixed top-[5%] left-[15%] w-[45%] clip-path-cyber bg-white">
+  // <div className="clip-path-cyber-inner bg-black p-8 min-h-[300px]">
   if (part === undefined) return null;
   return (
-    <div className="fixed top-[5%] left-[15%] w-[45%] clip-path-cyber bg-white">
-      <div className="clip-path-cyber-inner bg-black p-8">
+    <div className="fixed top-[5%] left-[15%] w-[45%] bg-white p-1">
+      <div className="bg-black p-8 min-h-[300px]">
         <span className="text-2xl">Editing: {part.label()}</span>
-        <div>
+        <div className="border-b-2 border-gray-500 mb-2 pb-2">
           {
             // if has servoShapes is a group, show add shape button
             part.servoShapes.length > 0 ? (

@@ -44,7 +44,7 @@ class HudTargetReticule extends HudTarget {
         // ensure valid targetedMechEntity
         targetedMechEntity === undefined ||
         targetedMechTarget.targetType !== HTML_HUD_TARGET_TYPE.ENEMY_COMBAT ||
-        targetedMechEntity.isExploding()
+        targetedMechEntity.isExploding() //TODO still need this?
       ) {
         useHudTargtingStore.getState().setSelectedHudTargetId(null);
         this.resetPosition(); // place reticule back in middle of screen
@@ -55,9 +55,10 @@ class HudTargetReticule extends HudTarget {
           );
           const timeToHit = distance / 500; // in seconds //TODO using beam speed for test
           // TODO solve slowdown issues
-          //const futurePosition = targetedMechEntity.getFuturePosition(timeToHit);
-          //this.screenPosition = getScreenPosition(camera, futurePosition);
-          //this.isActive = true;
+          const futurePosition =
+            targetedMechEntity.getFuturePosition(timeToHit);
+          this.screenPosition = getScreenPosition(camera, futurePosition);
+          this.isActive = true;
           //setCustomData(timeToHit);
         }
       }

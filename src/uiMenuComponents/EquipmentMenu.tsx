@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import useEquipStore from "../stores/equipStore";
 import CyberMenuBorder from "./common/CyberMenuBorder";
@@ -51,13 +51,13 @@ const EquipmentMenu = () => {
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);
   const [subSelection, setSubSelection] = useState(""); //current sub menu
 
-  const mainMenuPositionVal = 4;
+  const menuPositionPartEditButtonsValue = 4; // special case for Position Parts List and Edit Buttons
   const mainMenuItems = [
     "Save / Load",
     "Mech",
     "Design Parts",
     "Assign Part Locations",
-    "Position Servo Shapes",
+    "Position Servo Shapes", // this is the special case
   ];
   const subMenuItems = [
     {
@@ -267,7 +267,7 @@ const EquipmentMenu = () => {
             <hr />
             <div className="overflow-y-scroll">
               <div className="grow w-full ">
-                {mainMenuSelection === mainMenuPositionVal ? (
+                {mainMenuSelection === menuPositionPartEditButtonsValue ? (
                   <PositionPartsList editorMechBP={editorMechBP} />
                 ) : (
                   // if submenu selection is length 1 do not show it
@@ -294,7 +294,7 @@ const EquipmentMenu = () => {
                 )}
 
                 <hr style={{ clear: "both" }} />
-                {mainMenuSelection !== mainMenuPositionVal &&
+                {mainMenuSelection !== menuPositionPartEditButtonsValue &&
                   subMenuItems[mainMenuSelection][subSelection] &&
                   subMenuItems[mainMenuSelection][subSelection].component}
               </div>
@@ -302,7 +302,7 @@ const EquipmentMenu = () => {
           </div>
         </CyberMenuBorder>
       </div>
-      {mainMenuSelection === mainMenuPositionVal && (
+      {mainMenuSelection === menuPositionPartEditButtonsValue && (
         <PositionPartEditButtons editorMechBP={editorMechBP} />
       )}
       <div className="absolute bottom-4 right-4">

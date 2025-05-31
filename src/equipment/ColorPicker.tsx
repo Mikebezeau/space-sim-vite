@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 
 interface ColorPickerInt {
@@ -10,6 +10,7 @@ const ColorPicker = (props: ColorPickerInt) => {
 
   // COLOR PICKER
   const [openColorPicker, setOpenColorPicker] = useState(false);
+  const colorPickerPopupRef = useRef<HTMLDivElement>(null);
   const colorPickerRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,7 +26,35 @@ const ColorPicker = (props: ColorPickerInt) => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [colorPickerRef]);
+  }, []);
+
+  useEffect(() => {
+    if (colorPickerPopupRef.current) {
+      // make sure the color picker popup is positioned correctly fully visible on screen
+      const rect = colorPickerPopupRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const offsetX = rect.width / 2;
+      const offsetY = rect.height / 2;
+      if (rect.left < 0) {
+        colorPickerPopupRef.current.style.left = "0px";
+      }
+      if (rect.right > windowWidth) {
+        colorPickerPopupRef.current.style.left = `${
+          windowWidth - rect.width
+        }px`;
+      }
+      if (rect.top < 0) {
+        colorPickerPopupRef.current.style.top = "0px";
+      }
+      if (rect.bottom > windowHeight) {
+        colorPickerPopupRef.current.style.top = `${
+          windowHeight - rect.height
+        }px`;
+      }
+      colorPickerPopupRef.current.style.transform = `translate(-${offsetX}px, -${offsetY}px)`;
+    }
+  }, [colorPickerPopupRef.current]);
 
   return (
     <>
@@ -39,8 +68,8 @@ const ColorPicker = (props: ColorPickerInt) => {
         </button>
       </span>
       {openColorPicker && (
-        <span className="relative">
-          <div className="absolute -top-1 -left-52">
+        <span ref={colorPickerPopupRef} className="relative">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <div ref={colorPickerRef}>
               <HexColorPicker
                 color={color || undefined}

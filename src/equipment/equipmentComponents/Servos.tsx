@@ -1,4 +1,3 @@
-import React from "react";
 import useEquipStore from "../../stores/equipStore";
 import EditorMechBP from "../../classes/mechBP/EditorMechBP";
 import MechServo from "../../classes/mechBP/MechServo";
