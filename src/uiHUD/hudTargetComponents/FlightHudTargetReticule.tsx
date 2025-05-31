@@ -1,5 +1,5 @@
 import React from "react";
-import HudTargetReticule from "../classes/hudTargets/HudTargetReticule";
+import HudTargetReticule from "../../classes/hudTargets/HudTargetReticule";
 
 type targetHUDInt = {
   target: HudTargetReticule;
