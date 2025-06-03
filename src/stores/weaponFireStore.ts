@@ -39,14 +39,6 @@ interface weaponFireStoreState {
   ) => void;
   removeOldWeaponFire: () => void;
   getRaycasterIntersects: (raycaster: THREE.Raycaster) => any[];
-  /*
-  // this can be used as an instant tester raycast on player and enemy mechs in scene
-  updateCombatTargetsUseFrame: (
-    camera: THREE.Camera,
-    testArrowHelper: boolean,
-    arrowHelper: THREE.ArrowHelper
-  ) => void; // set active targets in enemy group for Hud targeting system
-   */
   updateWeaponFireUseFrame: (
     timeDelta: number,
     scene: THREE.Scene,

@@ -11,19 +11,19 @@ const FlightHudTarget = (props: targetHUDInt) => {
 
   return (
     <div
-      ref={(tde) => {
-        if (tde) {
-          target.divElement = tde; // updates movement (margin left and top), or hide target (marginLeft -5000)
+      ref={(divElement) => {
+        if (divElement) {
+          target.divElement = divElement; // updates movement (margin left and top), or hide target (marginLeft -5000)
         }
       }}
       className="absolute top-1/2 left-1/2"
       // opacity set in updateTargetUseFrame
     >
-      {!target.isCombat() && ( //only show labels if not show combat target
+      {target.isShowTargetInfo && ( //only show labels if not show combat target
         <div
-          ref={(tdi) => {
-            if (tdi) {
-              target.divInfo = tdi; // update backgroundColor if focused
+          ref={(divInfo) => {
+            if (divInfo) {
+              target.divInfo = divInfo; // update backgroundColor if focused
             }
           }}
           // updated in hudTargtingStore
@@ -33,9 +33,9 @@ const FlightHudTarget = (props: targetHUDInt) => {
           rounded-md bg-black whitespace-nowrap text-white"
         >
           <div
-            ref={(tdil) => {
-              if (tdil) {
-                target.divInfoLabel = tdil; // update label opacity if focused
+            ref={(divInfoLabel) => {
+              if (divInfoLabel) {
+                target.divInfoLabel = divInfoLabel; // update label opacity if focused
               }
             }}
             style={{
@@ -45,9 +45,9 @@ const FlightHudTarget = (props: targetHUDInt) => {
             {target.label}
           </div>
           <div
-            ref={(targetDivInfoDetail) => {
-              if (targetDivInfoDetail) {
-                target.divInfoDetail = targetDivInfoDetail; //update hides when not focused
+            ref={(divInfoDetail) => {
+              if (divInfoDetail) {
+                target.divInfoDetail = divInfoDetail; //update hides when not focused
               }
             }}
             className="text-white"
@@ -58,22 +58,23 @@ const FlightHudTarget = (props: targetHUDInt) => {
         </div>
       )}
       {
-        // TODO SVG is taking to much render time
-        target.isUseCombatTarget() ? (
+        // use box target for mech targets
+        target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_GROUP ||
+        target.targetType === HTML_HUD_TARGET_TYPE.STATION ? (
           <div
             className="absolute"
-            ref={(crosshairDivElement) => {
-              if (crosshairDivElement) {
-                target.crosshairDivElement = crosshairDivElement;
+            ref={(divTargetSquare) => {
+              if (divTargetSquare) {
+                target.divTargetSquare = divTargetSquare;
               }
             }}
           >
             {/* Top Left */}
             <div
               className={`absolute top-0 left-0 w-1/3 h-1/3 ${
-                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
-                  ? "border-red-800"
-                  : "border-white"
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_GROUP
+                  ? "border-red-800" // red for enemy group
+                  : "border-white" // white for station
               }`}
               // use styles for border with
               style={{ borderTopWidth: "1px", borderLeftWidth: "1px" }}
@@ -81,7 +82,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
             {/* Top Right */}
             <div
               className={`absolute top-0 right-0 w-1/3 h-1/3 ${
-                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_GROUP
                   ? "border-red-800"
                   : "border-white"
               }`}
@@ -90,7 +91,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
             {/* Bottom Left */}
             <div
               className={`absolute bottom-0 left-0 w-1/3 h-1/3 ${
-                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_GROUP
                   ? "border-red-800"
                   : "border-white"
               }`}
@@ -99,7 +100,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
             {/* Bottom Right */}
             <div
               className={`absolute bottom-0 right-0 w-1/3 h-1/3 ${
-                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                target.targetType === HTML_HUD_TARGET_TYPE.ENEMY_GROUP
                   ? "border-red-800"
                   : "border-white"
               }`}
@@ -107,10 +108,11 @@ const FlightHudTarget = (props: targetHUDInt) => {
             />
           </div>
         ) : (
+          // else use default circle target
           <div
             ref={(divElement) => {
               if (divElement) {
-                target.nonCombatCircleDiv = divElement;
+                target.divTargetCircle = divElement;
               }
             }}
             style={{

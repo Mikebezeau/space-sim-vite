@@ -1,4 +1,5 @@
 import { Object3D, Vector3 } from "three";
+import EnemyMechBoid from "../classes/mech/EnemyMechBoid";
 import { FPS } from "../constants/constants";
 
 export const calculateFuturePosition = (
@@ -43,4 +44,15 @@ export const calculateFuturePosition = (
 
     return center.add(rotatedOffset);
   }
+};
+
+const dummyVec3 = new Vector3();
+
+export const calculateFuturePositionBoid = (
+  enemyMechBoid: EnemyMechBoid,
+  t: number //time in seconds
+): Vector3 => {
+  dummyVec3.copy(enemyMechBoid.object3d.position);
+  dummyVec3.add(enemyMechBoid.lerpVelocity.multiplyScalar(t * FPS));
+  return dummyVec3;
 };

@@ -1,19 +1,9 @@
 import { create } from "zustand";
 import useStore from "./store";
 import usePlayerControlsStore from "./playerControlsStore";
-import useEnemyStore from "./enemyStore";
-import useGalaxyMapStore from "./galaxyMapStore";
-import { getSystemScaleDistanceLabel } from "../util/gameUtil";
-import {
-  getScreenPosition,
-  getScreenPositionFromDirection,
-} from "../util/cameraUtil";
-import HudTarget from "../classes/hudTargets/HudTarget";
 import EnemyMech from "../classes/mech/EnemyMech";
-import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 import { IS_TOUCH_SCREEN, PLAYER } from "../constants/constants";
 import HudTargetController from "../classes/hudTargets/HudTargetController";
-import EnemyMechBoid from "../classes/mech/EnemyMechBoid";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
@@ -100,7 +90,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         // update if focused target has changed
         get().focusedHudTargetId !== focusedHudTargetId
       ) {
-        console.log(get().hudTargetController.getFocusedHudTarget());
         set({ focusedHudTargetId });
       }
     },
@@ -250,18 +239,12 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         return 0;
       });
 
-      /*
-        a.isActive && // ?????if a active, a comes bofore b (a positive value below means a is after b)
-        a.screenPosition.angleDiff < b.screenPosition.angleDiff + 0.01 //small buffer to avoid flicker issues
-          ? // TODO add second button action in scan mode to toggle target
-            1
-          : -1
-      );
-*/
-
       // update focused hud target z-index and CSS class
       // focused target is the one closest to the center of the screen
-      const newFocusedTargetId = actionModeTargets[0].id;
+      // only set if there is an active target
+      const newFocusedTargetId = actionModeTargets[0].isActive
+        ? actionModeTargets[0].id
+        : null;
       if (
         // update focused target if in manual pilot control mode OR if is touch controls
         IS_TOUCH_SCREEN ||

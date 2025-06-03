@@ -43,9 +43,11 @@ interface playerControlStoreState {
     middleClick: () => void;
   };
   // TODO move shoot to here
+  // TODO add Cockpit updateUseFrameCockpit function to update cockpit panels perspective CSS
   weaponUpdateUiToggle: boolean;
   toggleWeaponUpdateUi: () => void;
 
+  // todo USE flightCameraLookRotation IN TARGETING
   flightCameraLookRotation: {
     rotateX: number;
     rotateY: number;
@@ -55,6 +57,9 @@ interface playerControlStoreState {
   setIsSwitchingPlayerScreen: (isSwitchingPlayerScreen: boolean) => void;
   canvasSceneRendered: boolean;
   setCanvasSceneRendered: (canvasSceneRendered: boolean) => void;
+  // 1st person cockpit rotation styles
+  cockpitDivElement: HTMLDivElement | null; // ref to cockpit div
+  zoomOffsetY: number; // offset for cockpit zoom
   // within solar system warp
   isPlayerWarping: boolean; // trigger to update components
   playerWarpToPosition: Vector3 | null;
@@ -84,6 +89,7 @@ interface playerControlStoreState {
         deltaFPS: number,
         angleNorm?: { x: number; y: number }
       ) => void;
+      updatePlayerCockpitStyles1stPerson: () => void;
       setPlayerShipRotation: (deltaFPS: number) => void;
       updatePlayerSpeed: (deltaFPS: number) => void;
       updatePlayerPosition: (deltaFPS: number) => void;
@@ -109,14 +115,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
     playerActionMode: IS_TOUCH_SCREEN
       ? PLAYER.action.inspect
       : PLAYER.action.manualControl,
-    playerControlMode: PLAYER.controls.scan,
+    playerControlMode: PLAYER.controls.scan, //TODO switch to combat when in combat zone - display message
     playerViewMode: PLAYER.view.firstPerson,
-    // testing
     playerScreen: PLAYER.screen.mainMenu,
-    //playerScreen: PLAYER.screen.newCampaign,
-    //playerScreen: PLAYER.screen.flight,
-    //playerScreen: PLAYER.screen.equipmentBuild,
-    //playerScreen: PLAYER.screen.galaxyMap,
     getPlayerState: () => {
       return {
         playerActionMode: get().playerActionMode,
@@ -138,18 +139,14 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         if (selectedHudTargetId !== focusedHudTargetId) {
           // trigger select target action
           useHudTargtingStore.getState().setSelectedHudTargetId();
-        } else if (
-          usePlayerControlsStore.getState().actions
-            .selectedTargetActionButtonCallback !== null
-        ) {
+        } else if (get().actions.selectedTargetActionButtonCallback !== null) {
           // trigger action button if player inspect control mode
           if (
             get().playerControlMode === PLAYER.controls.scan &&
             (get().playerActionMode === PLAYER.action.manualControl ||
               IS_TOUCH_SCREEN)
           ) {
-            usePlayerControlsStore.getState().actions
-              .selectedTargetActionButtonCallback!();
+            get().actions.selectedTargetActionButtonCallback!();
           }
         }
       },
@@ -162,6 +159,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           get().actions.actionModeSelect(PLAYER.action.inspect);
         }
       },
+      // TODO mouse button hold actions
     },
 
     weaponUpdateUiToggle: false,
@@ -187,7 +185,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         set({ canvasSceneRendered });
       }
     },
-
+    // 1st person cockpit rotation styles
+    cockpitDivElement: null, // ref to cockpit div
+    zoomOffsetY: 0, // offset for cockpit zoom
     // within solar system warp
     isPlayerWarping: false,
     playerWarpToPosition: null,
@@ -420,6 +420,36 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           );
         },
 
+        updatePlayerCockpitStyles1stPerson: () => {
+          const cockpitDivElement = get().cockpitDivElement;
+          if (cockpitDivElement) {
+            let zoomOffsetY = get().zoomOffsetY;
+
+            const flightCameraLookRotation = get().flightCameraLookRotation;
+            const isManualControl =
+              get().getPlayerState().playerActionMode ===
+              PLAYER.action.manualControl;
+            // move the cockpit down out of the way if isManualControl, back up if not
+            const lerpToY = isManualControl ? 20 : 0;
+            zoomOffsetY = lerp(zoomOffsetY, lerpToY, 0.15);
+            const translateX = flightCameraLookRotation.rotateX * 60;
+            const translateY =
+              -flightCameraLookRotation.rotateY *
+                60 *
+                (isManualControl ? 0.5 : 1) +
+              zoomOffsetY;
+            // apply rotation/position styles to cockpit panels
+            [...cockpitDivElement.children].forEach((group: any) => {
+              group.style.transform = `
+                translateX(${translateX}vh)
+                translateY(${translateY}vh)
+                rotateX(${-flightCameraLookRotation.rotateY * 20}deg)
+                rotateY(${-flightCameraLookRotation.rotateX * 40}deg)`;
+              // the rotateX and rotateY are swapped because CSS rotations work that way
+            });
+          }
+        },
+
         setPlayerShipRotation: (deltaFPS) => {
           const player = useStore.getState().player;
           const mouseControlNormalVec2 =
@@ -566,6 +596,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           get().updateFrame.updateFrameHelpers.updatePlayerCameraLookAngle(
             deltaFPS
           );
+          get().updateFrame.updateFrameHelpers.updatePlayerCockpitStyles1stPerson();
           get().updateFrame.updateFrameHelpers.setPlayerShipRotation(deltaFPS);
           get().updateFrame.updateFrameHelpers.updatePlayerSpeed(deltaFPS);
           get().updateFrame.updateFrameHelpers.updatePlayerPosition(deltaFPS);

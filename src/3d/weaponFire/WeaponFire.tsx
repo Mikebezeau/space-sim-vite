@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import useStore from "../../stores/store";
@@ -6,14 +6,13 @@ import useEnemyStore from "../../stores/enemyStore";
 import useHudTargtingStore from "../../stores/hudTargetingStore";
 import useWeaponFireStore from "../../stores/weaponFireStore";
 import MissileInstancedMesh from "./MissileInstancedMesh ";
-import { DefenseNodesHelper } from "../../scenes/testingScene/TestEnemyAttackScene";
+//import { DefenseNodesHelper } from "../../scenes/testingScene/TestEnemyAttackScene";
 import { defenseNodesType } from "../../classes/mech/EnemyMechGroup";
 import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
 
-// TODO create WeaponFire class
 const WeaponFire = () => {
   const defenseNodesRef = useRef<defenseNodesType | null>(null);
-  const { camera, scene } = useThree();
+  const { scene } = useThree();
   // for testing ray position and direction
   const testArrowHelper = false; // can impliment this in testing GUI
   const arrowHelperRef = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
@@ -62,16 +61,6 @@ const WeaponFire = () => {
           useEnemyStore.getState().enemyGroup.defenseNodes;
       }
     }
-    /*
-    // not using this for now, could be useful for other things
-    useWeaponFireStore
-      .getState()
-      .updateCombatTargetsUseFrame(
-        camera,
-        testArrowHelper,
-        arrowHelperRef.current
-      );
-*/
     useWeaponFireStore.getState().updateWeaponFireUseFrame(
       delta,
       scene,

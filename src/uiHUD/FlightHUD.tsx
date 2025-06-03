@@ -7,8 +7,6 @@ import FlightHudTarget from "./hudTargetComponents/FlightHudTarget";
 import FlightHudCombatTarget from "./hudTargetComponents/FlightHudCombatTarget";
 import FlightHudTargetReticule from "./hudTargetComponents/FlightHudTargetReticule";
 
-import { testMotivationMatrix } from "../classes/rpgSystem/factionMatrix";
-
 const FlightHud = () => {
   const playerCurrentStarIndex = useStore(
     (state) => state.playerCurrentStarIndex
@@ -57,7 +55,6 @@ const FlightHud = () => {
   }, [playerCurrentStarIndex]);
 
   useEffect(() => {
-    testMotivationMatrix();
     // set initial sizes of the HUD elements
     if (hudLargeOuterCirlcleRef.current) {
       setSizes();

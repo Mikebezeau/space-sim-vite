@@ -24,12 +24,13 @@ const FlightHudTargetReticule = (props: targetHUDInt) => {
           // add ref to array
           ref={(svgElement) => {
             if (svgElement) {
-              target.combatTriangleSvgs[index] = svgElement;
+              target.divTargetTriangles[index] = svgElement;
             }
           }}
           height="12"
           width="12"
-          className="absolute transition-all duration-800 ease-in-out"
+          className="absolute"
+          style={{ transition: "transform 1s" }}
         >
           <polygon
             points="6, 0 0, 12 12, 12"

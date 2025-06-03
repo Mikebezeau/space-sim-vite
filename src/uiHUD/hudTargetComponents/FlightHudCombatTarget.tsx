@@ -20,9 +20,9 @@ const FlightHudCombatTarget = (props: targetHUDInt) => {
     >
       <div
         className="absolute"
-        ref={(crosshairDivElement) => {
-          if (crosshairDivElement) {
-            target.crosshairDivElement = crosshairDivElement;
+        ref={(divTargetSquare) => {
+          if (divTargetSquare) {
+            target.divTargetSquare = divTargetSquare;
           }
         }}
       >
@@ -62,7 +62,7 @@ export default React.memo(FlightHudCombatTarget);
     // add ref to array
     ref={(svgElement) => {
       if (svgElement) {
-        target.combatTriangleSvgs[index] = svgElement;
+        target.divTargetTriangles[index] = svgElement;
       }
     }}
     height="12"

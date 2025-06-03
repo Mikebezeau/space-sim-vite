@@ -105,7 +105,7 @@ const SpaceFlightControlsTouch = () => {
         usePlayerControlsStore.getState().playerControlMode ===
         PLAYER.controls.combat
       ) {
-        // update current target
+        // update current target // TODO do this on quick click, shoot on hold click
         useHudTargtingStore.getState().setSelectedHudTargetId();
 
         // if in combat mode begin shooting

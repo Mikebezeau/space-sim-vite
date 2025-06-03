@@ -10,14 +10,7 @@ import { PLAYER } from "../../constants/constants";
 class HudTargetReticule extends HudTarget {
   constructor(options: HudTargetOptionsType) {
     super(options);
-  }
-
-  isUseCombatTarget(): boolean {
-    return true;
-  }
-
-  isCombat(): boolean {
-    return true;
+    this.isShowTargetInfo = false; // reticule does not show target info
   }
 
   updateTargetUseFrame(
@@ -42,8 +35,7 @@ class HudTargetReticule extends HudTarget {
       if (
         // ensure valid targetedMechEntity
         targetedMechEntity === undefined ||
-        targetedMechTarget.targetType !== HTML_HUD_TARGET_TYPE.ENEMY_COMBAT ||
-        targetedMechEntity.isExploding() //TODO still need this?
+        targetedMechTarget.targetType !== HTML_HUD_TARGET_TYPE.ENEMY_COMBAT
       ) {
         useHudTargtingStore.getState().setSelectedHudTargetId(null);
         this.resetPosition(); // place reticule back in middle of screen
@@ -57,9 +49,41 @@ class HudTargetReticule extends HudTarget {
           const futurePosition =
             targetedMechEntity.getFuturePosition(timeToHit);
           this.screenPosition = getScreenPosition(camera, futurePosition);
-          this.isActive = true;
         }
       }
+    }
+  }
+
+  updateTargetStylesUseFrame(
+    selectedHudTargetId: string | null,
+    focusedHudTargetId: string | null
+  ): void {
+    super.updateTargetStylesUseFrame(selectedHudTargetId, focusedHudTargetId);
+
+    // update triangle positions for triangles
+    if (this.divTargetTriangles.length > 0) {
+      const targetIsLocked: boolean = selectedHudTargetId !== null;
+
+      let targetSize: number = 32;
+      targetSize = targetSize * 1; //this.distanceFromPlayer > 0 ? 1 - this.distanceFromPlayer : 1; // scale target size based on distance to target
+
+      const points = [
+        [0, -targetSize / 2, "180deg"],
+        [-targetSize / 2, targetSize / 2, "45deg"],
+        [targetSize / 2, targetSize / 2, "-45deg"],
+      ];
+      this.divTargetTriangles.forEach((triangle, index) => {
+        if (triangle) {
+          triangle.style.left = `${points[index][0]}px`;
+          triangle.style.top = `${points[index][1]}px`;
+          triangle.style.marginLeft = `-${6}px`;
+          triangle.style.marginTop = `-${9}px`;
+          // transform is animated transition
+          triangle.style.transform = targetIsLocked
+            ? `rotate(${points[index][2]})`
+            : "rotate(0deg)";
+        }
+      });
     }
   }
 }

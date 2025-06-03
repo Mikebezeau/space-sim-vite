@@ -4,18 +4,11 @@ import useHudTargtingStore, {
 } from "../../stores/hudTargetingStore";
 import useEnemyStore from "../../stores/enemyStore";
 import useGalaxyMapStore from "../../stores/galaxyMapStore";
-import {
-  getScreenPosition,
-  getScreenPositionFromDirection,
-} from "../../util/cameraUtil";
-import { getSystemScaleDistanceLabel } from "../../util/gameUtil";
 import HudTarget from "./HudTarget";
+import HudCombatTarget from "./HudCombatTarget";
 import HudTargetReticule from "./HudTargetReticule";
-import EnemyMech from "../mech/EnemyMech";
-import SpaceStationMech from "../mech/SpaceStationMech";
 import EnemyMechGroup from "../mech/EnemyMechGroup";
-import CelestialBody from "../solarSystem/CelestialBody";
-import { IS_TOUCH_SCREEN, PLAYER } from "../../constants/constants";
+import { PLAYER } from "../../constants/constants";
 import usePlayerControlsStore from "../../stores/playerControlsStore";
 
 interface HudTargetControllerInt {
@@ -40,8 +33,8 @@ interface HudTargetControllerInt {
 
 class HudTargetController implements HudTargetControllerInt {
   currentControlMode: number;
-  htmlHudTargets: HudTarget[]; // array of targets
-  htmlHudTargetsCombat: HudTarget[]; // array of targets
+  htmlHudTargets: (HudTarget | HudCombatTarget)[]; // array of targets
+  htmlHudTargetsCombat: HudCombatTarget[]; // array of targets
   htmlHudTargetReticule: HudTargetReticule; // targeting reticule
 
   constructor() {
@@ -97,7 +90,7 @@ class HudTargetController implements HudTargetControllerInt {
     if (useStore.getState().stations.length > 0) {
       useStore.getState().stations.forEach((station, index) => {
         this.htmlHudTargets.push(
-          new HudTarget({
+          new HudCombatTarget({
             id: `${HTML_HUD_TARGET_TYPE.STATION}-${index}`,
             isActive: true,
             targetType: HTML_HUD_TARGET_TYPE.STATION,
@@ -111,7 +104,7 @@ class HudTargetController implements HudTargetControllerInt {
     // enemy groups
     if (useEnemyStore.getState().enemyGroup.enemyMechs.length > 0) {
       this.htmlHudTargets.push(
-        new HudTarget({
+        new HudCombatTarget({
           id: `${HTML_HUD_TARGET_TYPE.ENEMY_GROUP}`, //-${index}`,
           isActive: true,
           targetType: HTML_HUD_TARGET_TYPE.ENEMY_GROUP,
@@ -146,7 +139,7 @@ class HudTargetController implements HudTargetControllerInt {
       //if is not dead
       if (enemyMech.isMechDead()) return;
       this.htmlHudTargetsCombat.push(
-        new HudTarget({
+        new HudCombatTarget({
           id: `${enemyMech.id}`,
           isActive: false, // update will set to true for enemies infront of player
           targetType: HTML_HUD_TARGET_TYPE.ENEMY_COMBAT,
@@ -267,19 +260,15 @@ class HudTargetController implements HudTargetControllerInt {
 
   setTargetDead(id: string) {
     // remove target from htmlHudTargets array
-    const htmlHudTarget = this.htmlHudTargetsCombat.find(
-      (target) => target.id === id
-    );
+    const htmlHudTarget = this.getHudTargetById(id);
     if (htmlHudTarget) {
       htmlHudTarget.isDead = true; // set target to dead
-      htmlHudTarget.isActive = false; // hide target
     }
     // set selected target null if inactive
-    if (
-      useHudTargtingStore.getState().selectedHudTargetId === id &&
-      !this.htmlHudTargetReticule.isActive
-    ) {
+    if (useHudTargtingStore.getState().selectedHudTargetId === id) {
       useHudTargtingStore.getState().selectedHudTargetId = null; // reset selected target
+      // reset reticule target position to center
+      this.htmlHudTargetReticule.resetPosition();
     }
   }
 
