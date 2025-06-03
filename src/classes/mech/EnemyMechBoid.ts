@@ -2,7 +2,7 @@ import * as THREE from "three";
 import useStore from "../../stores/store";
 import EnemyMech from "./EnemyMech";
 import { FPS } from "../../constants/constants";
-import { calculateFuturePosition } from "../../util/targetingUtils";
+import { calculateFuturePositionBoid } from "../../util/targetingUtils";
 import { BIOD_PARAMS } from "../../classes/BoidController";
 
 interface enemyMechBoidInt {
@@ -112,11 +112,8 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
   }
 
   getFuturePosition(timeToHit: number) {
-    // TODO fix to not create new vec3 each time
     // calculate future position based on current position, speed, and time to hit
-    const speed = this.getSpeed();
-    const dummyVec3 = calculateFuturePosition(this.object3d, speed, timeToHit);
-    return dummyVec3;
+    return calculateFuturePositionBoid(this, timeToHit);
   }
 
   // update Boid movement

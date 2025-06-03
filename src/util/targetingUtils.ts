@@ -2,6 +2,7 @@ import { Object3D, Vector3 } from "three";
 import EnemyMechBoid from "../classes/mech/EnemyMechBoid";
 import { FPS } from "../constants/constants";
 
+// not using this one yet
 export const calculateFuturePosition = (
   object: Object3D,
   speed: number,
@@ -52,7 +53,8 @@ export const calculateFuturePositionBoid = (
   enemyMechBoid: EnemyMechBoid,
   t: number //time in seconds
 ): Vector3 => {
-  dummyVec3.copy(enemyMechBoid.object3d.position);
-  dummyVec3.add(enemyMechBoid.lerpVelocity.multiplyScalar(t * FPS));
+  dummyVec3.copy(enemyMechBoid.lerpVelocity);
+  dummyVec3.multiplyScalar(t * FPS);
+  dummyVec3.add(enemyMechBoid.object3d.position);
   return dummyVec3;
 };
