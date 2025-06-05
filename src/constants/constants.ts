@@ -19,6 +19,7 @@ export const EARTH_RADIUS_KM = 6378;
 
 export const STARS_IN_GALAXY = 150000;
 export const GALAXY_SIZE = 40;
+export const GALAXY_AU_DISTANCE_SCALE = 7; // scale for galaxy map distance in AU
 
 export const IS_MOBILE = /Mobi|Android/i.test(navigator.userAgent);
 export const IS_TOUCH_SCREEN =

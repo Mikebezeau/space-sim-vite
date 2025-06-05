@@ -20,7 +20,7 @@ interface enemyMechGroupInt {
   getRealWorldDistanceTo(fromPosition: THREE.Vector3): void;
   getWarpToDistanceAway(): number;
   getMinDistanceAllowWarp(): number;
-  getLeaderId: () => string | null;
+  getLeaderMech: (currentMech: EnemyMechBoid) => EnemyMechBoid | undefined;
   genBoidEnemies: () => void;
   groupEnemies: () => void;
   addInstancedMesh: (
@@ -93,7 +93,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
     // group enemies into squads, sets leaders and upgrades leader ships
     this.groupEnemies();
     // set boid controller
-    this.boidController = new BoidController(this.enemyMechs);
+    this.boidController = new BoidController(this);
   }
 
   getRealWorldPosition() {
@@ -117,9 +117,8 @@ class EnemyMechGroup implements enemyMechGroupInt {
     return 1500;
   }
 
-  getLeaderId() {
-    const leaderId = this.enemyMechs.find((mech) => mech.groupLeaderId)?.id;
-    return leaderId || null;
+  getLeaderMech(enemyMech: EnemyMechBoid) {
+    return this.enemyMechs.find((mech) => mech.id === enemyMech.groupLeaderId); // && !mech.getIsLeader());
   }
 
   genBoidEnemies() {

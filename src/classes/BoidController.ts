@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import useStore from "../stores/store";
 import useDevStore from "../stores/devStore";
-import Mech from "./mech/Mech";
+import EnemyMechGroup from "./mech/EnemyMechGroup";
 import EnemyMechBoid from "./mech/EnemyMechBoid";
 
 export const BIOD_PARAMS = {
@@ -22,7 +22,7 @@ export const BIOD_PARAMS = {
   },
 };
 
-export interface ballContaineroidControllerInt {
+export interface boidControllerInt {
   updateDevStorePropModifiers: () => void;
   updateUseFrameBoids: () => void;
   seek: (currentMech: EnemyMechBoid, target: THREE.Vector3) => THREE.Vector3;
@@ -41,13 +41,10 @@ export interface ballContaineroidControllerInt {
     targetVec3: THREE.Vector3,
     radius?: number
   ) => THREE.Vector3;
-  // TODO move getLeaderMech to mech group class
-  getLeaderMech: (currentMech: EnemyMechBoid) => any;
 }
 
-class BoidController implements ballContaineroidControllerInt {
-  // TODO use mechgroup instead of mechs
-  mechs: EnemyMechBoid[];
+class BoidController implements boidControllerInt {
+  enemyMechGroup: EnemyMechGroup;
   bossMech?: EnemyMechBoid;
   params: any;
   seekGoalVector: THREE.Vector3;
@@ -61,9 +58,9 @@ class BoidController implements ballContaineroidControllerInt {
 
   home: THREE.Vector3; // not used
 
-  constructor(mechs: EnemyMechBoid[] = []) {
-    this.mechs = mechs;
-    this.bossMech = mechs.find((mech) => mech.isBossMech);
+  constructor(enemyMechGroup: EnemyMechGroup) {
+    this.enemyMechGroup = enemyMechGroup;
+    this.bossMech = enemyMechGroup.enemyMechs.find((mech) => mech.isBossMech);
     this.params = BIOD_PARAMS;
     this.seekGoalVector = new THREE.Vector3();
     this.seekSteerVector = new THREE.Vector3();
@@ -90,19 +87,19 @@ class BoidController implements ballContaineroidControllerInt {
 
   updateUseFrameBoids() {
     // reset all mech boid vars
-    this.mechs.forEach((mech) => {
+    this.enemyMechGroup.enemyMechs.forEach((mech) => {
       mech.resetVectors();
     });
 
     // calculate flocking behaviour of mechs
-    for (let i = 0, il = this.mechs.length; i < il; i++) {
-      const mech1 = this.mechs[i];
+    for (let i = 0, il = this.enemyMechGroup.enemyMechs.length; i < il; i++) {
+      const mech1 = this.enemyMechGroup.enemyMechs[i];
       // skip this mech if it is in a state that should be ignored
       if (mech1.isMechDead()) {
         continue;
       }
 
-      const leaderMech = this.getLeaderMech(mech1);
+      const leaderMech = this.enemyMechGroup.getLeaderMech(mech1);
 
       // if mech has a group and is not the leader, follow leader - and orbit leader if target reached
       if (mech1.getHasGroup() && !mech1.getIsLeader()) {
@@ -124,7 +121,6 @@ class BoidController implements ballContaineroidControllerInt {
       }
 
       // if mech is wandering and needs a target, set target
-      // TODO move to mech boid update
       if (mech1.getIsLeader()) {
         // seek current target
         if (mech1.isBoidDefending) {
@@ -180,8 +176,12 @@ class BoidController implements ballContaineroidControllerInt {
 
       // check other mechs for: addAlignVector addCohesionVector addSeparateVector
       // only check mechs against eachother once and apply forces to each
-      for (let j = i + 1, jl = this.mechs.length; j < jl; j++) {
-        const mech2 = this.mechs[j];
+      for (
+        let j = i + 1, jl = this.enemyMechGroup.enemyMechs.length;
+        j < jl;
+        j++
+      ) {
+        const mech2 = this.enemyMechGroup.enemyMechs[j];
         // skip this mech if it is in a state that should be ignored
         if (mech2.isMechDead()) {
           continue;
@@ -370,9 +370,8 @@ class BoidController implements ballContaineroidControllerInt {
 
   setCohesionGroupVector(currentMech: EnemyMechBoid) {
     // no minimum distance to flock to group leader
-    const leaderPosition = this.mechs.find(
-      (mech) => mech.id === currentMech.groupLeaderId
-    )?.object3d.position;
+    const leaderPosition =
+      this.enemyMechGroup.getLeaderMech(currentMech)?.object3d.position;
 
     if (leaderPosition) {
       currentMech.cohesionSumVector.copy(leaderPosition);
@@ -464,12 +463,6 @@ class BoidController implements ballContaineroidControllerInt {
     }
 
     return this.seekOrbitTargetSteerVector;
-  }
-
-  // TODO move to mech group class
-  getLeaderMech(currentMech: EnemyMechBoid) {
-    // TODO do not return if this mech is the leader - can have a heirarchy of leaders as well
-    return this.mechs.find((mech) => mech.id === currentMech.groupLeaderId); // && !mech.getIsLeader());
   }
 }
 

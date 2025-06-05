@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import useStore from "../stores/store";
+import { useEffect, useRef } from "react";
 import useHudTargtingStore from "../stores/hudTargetingStore";
 import useWindowResize from "../hooks/useWindowResize";
 import CombatHudCrosshairInner from "./CombatHudCrosshairInner";
@@ -8,10 +7,6 @@ import FlightHudCombatTarget from "./hudTargetComponents/FlightHudCombatTarget";
 import FlightHudTargetReticule from "./hudTargetComponents/FlightHudTargetReticule";
 
 const FlightHud = () => {
-  const playerCurrentStarIndex = useStore(
-    (state) => state.playerCurrentStarIndex
-  );
-
   const htmlHudTargets = useHudTargtingStore(
     (state) => state.hudTargetController.htmlHudTargets
   );
@@ -21,8 +16,7 @@ const FlightHud = () => {
   const htmlHudTargetReticule = useHudTargtingStore(
     (state) => state.hudTargetController.htmlHudTargetReticule
   );
-  // update frame function below called within the playerControlsStore updatePlayerMechAndCamera
-  //useHudTargtingStore.getState().hudTargetController.updateTargetHUD(camera);
+  // update frame function called within the playerControlsStore updatePlayerMechAndCamera
 
   const hudLargeOuterCirlcleRef = useRef<HTMLDivElement | null>(null);
 
@@ -49,17 +43,17 @@ const FlightHud = () => {
     setSizes();
   });
 
-  // if player is in new solar system, update targets
-  useEffect(() => {
-    useHudTargtingStore.getState().hudTargetController.generateTargets();
-  }, [playerCurrentStarIndex]);
-
   useEffect(() => {
     // set initial sizes of the HUD elements
     if (hudLargeOuterCirlcleRef.current) {
       setSizes();
     }
   }, [hudLargeOuterCirlcleRef.current]);
+
+  // if rerendering, reset hudTargetingStore => currentPlayerControlMode
+  useEffect(() => {
+    useHudTargtingStore.getState().currentPlayerControlMode = -1;
+  }, []);
 
   return (
     <>

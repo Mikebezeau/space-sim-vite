@@ -27,7 +27,6 @@ import starSpriteSrc from "../sprites/sprite120.png";
 // @ts-ignore
 import featheredSpriteSrc from "../sprites/feathered60.png";
 import usePlayerControlsStore from "./playerControlsStore";
-import useWeaponFireStore from "./weaponFireStore";
 
 // reusable objects
 const dummyVec3 = new THREE.Vector3();
@@ -410,10 +409,13 @@ const useStore = create<storeState>()((set, get) => ({
       //clear selected warp star
       useGalaxyMapStore.getState().galaxyMapActions.setSelectedWarpStar(null);
 
-      // playerCurrentStarIndex set at end, triggers render of solar system related components
       usePlayerControlsStore.getState().cancelPlayerWarp(); // reset player warp states to show correct ui buttons
 
+      // new solar system, update targets
+      useHudTargtingStore.getState().hudTargetController.generateTargets();
+
       console.log("set playerCurrentStarIndex", playerCurrentStarIndex);
+      // playerCurrentStarIndex set, triggers render of solar system related components
       set(() => ({ playerCurrentStarIndex }));
       // all done
       set(() => ({

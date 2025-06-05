@@ -10,11 +10,13 @@ import {
   getScreenPosition,
   getScreenPositionFromDirection,
 } from "../../util/cameraUtil";
+import { GALAXY_AU_DISTANCE_SCALE } from "../../constants/constants";
 import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
+import usePlayerControlsStore from "../../stores/playerControlsStore";
 
 export type HudTargetOptionsType = {
   id: string;
-  isActive: boolean;
+  playerControlModeActive: number; // player control mode target is active in
   targetType: number;
   label: string;
   isShowTargetInfo?: boolean; // true if target info should be shown, no info display for combat targets
@@ -26,14 +28,14 @@ export type HudTargetOptionsType = {
 };
 
 interface HudTargetInt {
-  //setDivInfoLabelTextContent: (label: string) => void; // TODO to use the label as an action button
+  setActiveStatus: () => void; // sets isActive true if target is active
+  //setDivInfoLabelTextContent: (label: string) => void;
   setDivInfoDetailTextContent: (label: string) => void; // method to set target detail label
   hideTargetSetMarginLeft: () => void; // method to hide target by setting margin left
   resetPosition: () => void; // method to reset target position
   updateTargetUseFrame: (
     camera: THREE.Camera,
-    playerPosition: THREE.Vector3,
-    selectedHudTargetId: string
+    playerPosition: THREE.Vector3
   ) => void; // method to update target styles in useFrame
   updateTargetStylesUseFrame: (
     selectedHudTargetId: string,
@@ -44,7 +46,7 @@ interface HudTargetInt {
 class HudTarget implements HudTargetInt {
   // options
   id: string; // unique id of target (mech.id for mech combat targets)
-  isActive: boolean; // hides target if false
+  playerControlModeActive: number; // player control mode target is active in
   targetType: number;
   label: string;
   isShowTargetInfo: boolean; // true if target info should be shown, no info display for combat targets
@@ -54,6 +56,7 @@ class HudTarget implements HudTargetInt {
   opacity?: number;
   entity?: EnemyMechBoid | SpaceStationMech | EnemyMechGroup | CelestialBody;
   // set in constructor
+  isActive: boolean; // true if target is active
   isDead: boolean; // true if target is dead - used for enemy mechs
   screenPosition: {
     xn: number;
@@ -75,7 +78,7 @@ class HudTarget implements HudTargetInt {
   constructor(options: HudTargetOptionsType) {
     const {
       id,
-      isActive,
+      playerControlModeActive,
       targetType,
       label,
       isShowTargetInfo,
@@ -86,8 +89,8 @@ class HudTarget implements HudTargetInt {
       entity,
     } = options;
     this.id = id;
+    this.playerControlModeActive = playerControlModeActive; // player action mode target is active in
     this.isDead = false; // true if target is dead - used for enemy mechs
-    this.isActive = isActive;
     this.targetType = targetType;
     this.label = label;
     this.isShowTargetInfo = isShowTargetInfo || true;
@@ -107,6 +110,22 @@ class HudTarget implements HudTargetInt {
     //this.divElement = div element refs provided on render of target
     this.divTargetTriangles = [];
     //this.divTargetCircle = divTargetCircle;
+  }
+  setActiveStatus() {
+    let isActive = false; // default to not active
+    // active if player is in scan mode
+    if (
+      !this.isDead &&
+      this.playerControlModeActive ===
+        usePlayerControlsStore.getState().playerControlMode
+    ) {
+      if (this.targetType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR) {
+        isActive = useGalaxyMapStore.getState().selectedWarpStar !== null;
+      } else {
+        isActive = true;
+      }
+    }
+    this.isActive = isActive;
   }
   /*
   setDivInfoLabelTextContent(label: string): void {
@@ -130,17 +149,24 @@ class HudTarget implements HudTargetInt {
   }
 
   hideTargetSetMarginLeft(): void {
-    if (this.divElement) this.divElement.style.marginLeft = `5000px`;
+    //this.screenPosition = { xn: -2, yn: 0, angleDiff: 0 };
+    if (this.divElement) this.divElement.style.marginLeft = `-5000px`;
   }
 
   updateTargetUseFrame(
     camera: THREE.Camera,
-    playerPosition: THREE.Vector3,
-    selectedHudTargetId: string | null = null
+    playerPosition: THREE.Vector3
   ): void {
+    this.screenPosition = { xn: 0, yn: 0, angleDiff: 10 }; // angleDiff for sorting to find focused target
+
     if (!this.divElement) return;
 
-    let screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
+    this.setActiveStatus();
+
+    if (!this.isActive) {
+      return;
+    }
+
     let targetEntity: any;
 
     switch (this.targetType) {
@@ -156,7 +182,7 @@ class HudTarget implements HudTargetInt {
             )
           );
           // get screen position of target world position (required due to relative positioning to player)
-          screenPosition = getScreenPosition(
+          this.screenPosition = getScreenPosition(
             camera,
             targetEntity.getRealWorldPosition()
           );
@@ -164,23 +190,20 @@ class HudTarget implements HudTargetInt {
         break;
 
       case HTML_HUD_TARGET_TYPE.WARP_TO_STAR:
-        if (useGalaxyMapStore.getState().selectedWarpStar === null) {
-          this.isActive = false;
-          // exit
-          return;
+        if (useGalaxyMapStore.getState().selectedWarpStar !== null) {
+          // set label in Ly measurment
+          this.setDivInfoDetailTextContent(
+            (
+              useGalaxyMapStore.getState().selectedWarpStarDistance *
+              GALAXY_AU_DISTANCE_SCALE
+            ).toFixed(3) + " Ly"
+          );
+          // get screen position of target
+          this.screenPosition = getScreenPositionFromDirection(
+            camera,
+            useGalaxyMapStore.getState().selectedWarpStarDirection!
+          );
         }
-        // display warp star target
-        this.isActive = true;
-        // set label in Ly measurment
-        this.setDivInfoDetailTextContent(
-          (useGalaxyMapStore.getState().selectedWarpStarDistance * 7) // TODO standardize this number in galaxy creation - eyeballing average distance between stars to set multiplier
-            .toFixed(3) + " Ly"
-        );
-        // get screen position of target
-        screenPosition = getScreenPositionFromDirection(
-          camera,
-          useGalaxyMapStore.getState().selectedWarpStarDirection!
-        );
         // exit loop if not active
         break;
 
@@ -188,8 +211,6 @@ class HudTarget implements HudTargetInt {
         console.error("Unknown htmlHudTarget.targetType");
         break;
     }
-
-    this.screenPosition = screenPosition;
   }
 
   updateTargetStylesUseFrame(

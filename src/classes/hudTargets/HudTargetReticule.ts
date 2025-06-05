@@ -1,11 +1,9 @@
 import * as THREE from "three";
 import useHudTargtingStore from "../../stores/hudTargetingStore";
-import usePlayerControlsStore from "../../stores/playerControlsStore";
 import HudTarget, { HudTargetOptionsType } from "./HudTarget";
 import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
 import { getScreenPosition } from "../../util/cameraUtil";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
-import { PLAYER } from "../../constants/constants";
 
 class HudTargetReticule extends HudTarget {
   constructor(options: HudTargetOptionsType) {
@@ -18,10 +16,8 @@ class HudTargetReticule extends HudTarget {
     playerPosition: THREE.Vector3
   ): void {
     // if in combat mode update reticule position based on targeted mech
-    if (
-      usePlayerControlsStore.getState().playerControlMode ===
-      PLAYER.controls.combat
-    ) {
+    super.setActiveStatus(); // if in combat mode, reticule is set to active
+    if (this.isActive) {
       const targetedMechTarget = useHudTargtingStore
         .getState()
         .hudTargetController.getSelectedHudTarget();

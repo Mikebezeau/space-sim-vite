@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import HudTarget, { HudTargetOptionsType } from "./HudTarget";
-import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
+import useHudTargtingStore, {
+  HTML_HUD_TARGET_TYPE,
+} from "../../stores/hudTargetingStore";
 import { getScreenPosition } from "../../util/cameraUtil";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
 
@@ -12,36 +14,40 @@ class HudCombatTarget extends HudTarget {
     }
   }
 
+  setActiveStatus() {
+    super.setActiveStatus();
+    if (this.isActive) {
+      this.isActive =
+        // always show if selected target
+        useHudTargtingStore.getState().selectedHudTargetId === this.id ||
+        // set combat target active if within x radian of camera
+        this.screenPosition.angleDiff < 0.15; //2 * this.distanceFromPlayer
+    }
+  }
+
   updateTargetUseFrame(
     camera: THREE.Camera,
-    playerPosition: THREE.Vector3,
-    selectedHudTargetId: string | null = null
+    playerPosition: THREE.Vector3
   ): void {
+    this.screenPosition = { xn: 0, yn: 0, angleDiff: 10 }; // angleDiff for sorting to find focused target
+
+    if (this.isDead) {
+      return;
+    }
     if (this.targetType !== HTML_HUD_TARGET_TYPE.ENEMY_COMBAT) {
-      super.updateTargetUseFrame(camera, playerPosition, selectedHudTargetId);
+      super.updateTargetUseFrame(camera, playerPosition);
     } else {
-      if (this.isDead) {
-        this.isActive = false; // hide target if dead
-      } else {
-        let targetEntity = this.entity as EnemyMechBoid | undefined;
-        let distance = 0;
-        if (targetEntity) {
-          distance = targetEntity.object3d.position.distanceTo(playerPosition);
-          if (distance > 800) {
-            this.isActive = false;
-          } else {
-            this.distanceFromPlayer = distance;
-            this.screenPosition = getScreenPosition(
-              camera,
-              targetEntity.object3d.position
-            );
-            this.isActive =
-              selectedHudTargetId === this.id ||
-              // set combat target active if within x radian of camera
-              this.screenPosition.angleDiff < 0.15; //2 * this.distanceFromPlayer
-          }
-        }
+      let targetEntity = this.entity as EnemyMechBoid | undefined;
+      let distance = 0;
+      if (targetEntity) {
+        distance = targetEntity.object3d.position.distanceTo(playerPosition);
+        this.distanceFromPlayer = distance;
+        this.screenPosition = getScreenPosition(
+          camera,
+          targetEntity.object3d.position
+        );
       }
+      this.setActiveStatus(); // calculated at end of function, based on angle to camera above
     }
   }
 

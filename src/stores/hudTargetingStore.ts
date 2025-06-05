@@ -24,6 +24,7 @@ interface hudTargetingGalaxyMapStoreState {
   updatePlayerHudCrosshairDiv: () => void;
   // HTML HUD Targets
   hudTargetController: HudTargetController;
+  currentPlayerControlMode: number; // used to determine which targets to show
   selectedHudTargetId: string | null;
   setSelectedHudTargetId: (selectedHudTargetId?: string | null) => void;
   focusedHudTargetId: string | null;
@@ -63,6 +64,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     },
 
     hudTargetController: new HudTargetController(), //TODO fully reset htmlHudTargets array when generating new targets to trigger update
+    currentPlayerControlMode: -1, // used as trigger to hide targets for other control mode, reset on rerender of FlightHud.tsx
     selectedHudTargetId: null,
     setSelectedHudTargetId(
       selectedHudTargetId: string | null = get().focusedHudTargetId
@@ -191,20 +193,27 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // start scanning target if not already scanning
       get().doScanHudTarget();
     },
-    // update div elements for HUD targets each frame
+
     updateTargetHUD: (camera) => {
       const playerControlMode =
         usePlayerControlsStore.getState().playerControlMode;
 
-      get().hudTargetController.setControlModeActiveTargets();
+      if (get().currentPlayerControlMode !== playerControlMode) {
+        get().currentPlayerControlMode = playerControlMode;
+        const hideTargets = // hide targets of previous control mode
+          playerControlMode !== PLAYER.controls.scan
+            ? get().hudTargetController.htmlHudTargets
+            : get().hudTargetController.htmlHudTargetsCombat;
+        // hide targets
+        hideTargets.forEach((htmlHudTarget) => {
+          htmlHudTarget.hideTargetSetMarginLeft();
+        });
+      }
 
-      const actionModeTargets =
+      const playerControlModeTargets =
         playerControlMode === PLAYER.controls.scan
           ? get().hudTargetController.htmlHudTargets
           : get().hudTargetController.htmlHudTargetsCombat;
-
-      const selectedHudTargetId =
-        get().hudTargetController.getSelectedHudTarget()?.id;
 
       const playerPosition = useStore.getState().player.object3d.position;
 
@@ -215,23 +224,14 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       );
 
       // update all action mode target data
-      actionModeTargets.forEach((htmlHudTarget) => {
-        htmlHudTarget.updateTargetUseFrame(
-          camera,
-          playerPosition,
-          selectedHudTargetId
-        );
+      playerControlModeTargets.forEach((htmlHudTarget) => {
+        htmlHudTarget.updateTargetUseFrame(camera, playerPosition);
       });
 
       // sort targets by screenPosition.angleDiff, smallest is last
       // using the index in array to set z-index
       // this will make the target closest to the center of the screen on top
-      actionModeTargets.sort((a, b) => {
-        // If 'a' is active and 'b' is not, 'a' should come first
-        if (a.isActive && !b.isActive) return -1;
-        // If 'a' is not active and 'b' is, 'b' should come first
-        else if (!a.isActive && b.isActive) return 1;
-
+      playerControlModeTargets.sort((a, b) => {
         if (a.screenPosition.angleDiff + 0.01 < b.screenPosition.angleDiff)
           // 0.01 small buffer to avoid flicker issues
           return -1; // a is closer to center, so it should come first
@@ -242,8 +242,8 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // update focused hud target z-index and CSS class
       // focused target is the one closest to the center of the screen
       // only set if there is an active target
-      const newFocusedTargetId = actionModeTargets[0].isActive
-        ? actionModeTargets[0].id
+      const newFocusedTargetId = playerControlModeTargets[0].isActive
+        ? playerControlModeTargets[0].id
         : null;
       if (
         // update focused target if in manual pilot control mode OR if is touch controls
@@ -258,7 +258,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
           // set focused target id
           get().setFocusedHudTargetId(newFocusedTargetId);
           // z-index and CSS class
-          actionModeTargets.forEach((htmlHudTarget, index) => {
+          playerControlModeTargets.forEach((htmlHudTarget, index) => {
             if (htmlHudTarget.divElement) {
               // apply z-index to div elements
               htmlHudTarget.divElement.style.zIndex =
@@ -284,7 +284,6 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
       // update warp / scan possibility
       if (
         // if action mode is scan
-        // TODO create setter in store?
         usePlayerControlsStore.getState().playerControlMode ===
         PLAYER.controls.scan
       ) {
@@ -300,7 +299,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         get().focusedHudTargetId
       );
       // update all action mode target data
-      actionModeTargets.forEach((htmlHudTarget) => {
+      playerControlModeTargets.forEach((htmlHudTarget) => {
         htmlHudTarget.updateTargetStylesUseFrame(
           get().selectedHudTargetId,
           get().focusedHudTargetId

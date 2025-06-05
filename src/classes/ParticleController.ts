@@ -19,8 +19,7 @@ const UPDATEABLE_ATTRIBUTES = [
   "aSprite",
   "aDesign",
   "positionStart",
-  // TODO rename uTime to uTimeElapsed
-  "startTime", // TODO remove - not using this - uTime starts at 0 and is updated each frame
+  "startTime",
   "velocity",
   "acceleration",
   "aAngle",

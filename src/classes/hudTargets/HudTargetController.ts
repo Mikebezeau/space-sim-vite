@@ -3,17 +3,17 @@ import useHudTargtingStore, {
   HTML_HUD_TARGET_TYPE,
 } from "../../stores/hudTargetingStore";
 import useEnemyStore from "../../stores/enemyStore";
-import useGalaxyMapStore from "../../stores/galaxyMapStore";
 import HudTarget from "./HudTarget";
 import HudCombatTarget from "./HudCombatTarget";
 import HudTargetReticule from "./HudTargetReticule";
 import EnemyMechGroup from "../mech/EnemyMechGroup";
 import { PLAYER } from "../../constants/constants";
-import usePlayerControlsStore from "../../stores/playerControlsStore";
 
 interface HudTargetControllerInt {
   generateTargets: () => void;
   generateEnemyCombatTargets: (enemyGroup?: EnemyMechGroup) => void;
+
+  setTargetDead: (id: string) => void; // method to set target as dead
 
   getHudTargetById: (id: string) => HudTarget | undefined;
   getFocusedHudTarget: () => HudTarget | undefined;
@@ -26,25 +26,20 @@ interface HudTargetControllerInt {
     marginLeftPx: number;
     marginTopPx: number;
   }; // method to get target position in HUD circle
-
-  setControlModeActiveTargets: (playerControlMode?: number) => void; // method to set active targets based on control mode
-  setTargetDead: (id: string) => void; // method to set target as dead
 }
 
 class HudTargetController implements HudTargetControllerInt {
-  currentControlMode: number;
   htmlHudTargets: (HudTarget | HudCombatTarget)[]; // array of targets
   htmlHudTargetsCombat: HudCombatTarget[]; // array of targets
   htmlHudTargetReticule: HudTargetReticule; // targeting reticule
 
   constructor() {
-    this.currentControlMode = -1;
     this.htmlHudTargets = [];
     this.htmlHudTargetsCombat = [];
     // targeting reticule
     this.htmlHudTargetReticule = new HudTargetReticule({
       id: "targeting-reticule",
-      isActive: false, // update will set to true if enemy is selected target
+      playerControlModeActive: PLAYER.controls.combat,
       targetType: HTML_HUD_TARGET_TYPE.ENEMY_TARGETING,
       label: "",
       color: "transparent",
@@ -62,7 +57,7 @@ class HudTargetController implements HudTargetControllerInt {
         this.htmlHudTargets.push(
           new HudTarget({
             id: `${HTML_HUD_TARGET_TYPE.PLANET}-star-${index}`,
-            isActive: true,
+            playerControlModeActive: PLAYER.controls.scan,
             targetType: HTML_HUD_TARGET_TYPE.PLANET,
             label: "STAR " + star.rngSeed,
             color: "", //star.textureMapLayerOptions[0].lowAltColor || "",
@@ -77,7 +72,7 @@ class HudTargetController implements HudTargetControllerInt {
         this.htmlHudTargets.push(
           new HudTarget({
             id: `${HTML_HUD_TARGET_TYPE.PLANET}-${index}`,
-            isActive: true,
+            playerControlModeActive: PLAYER.controls.scan,
             targetType: HTML_HUD_TARGET_TYPE.PLANET,
             label: planet.rngSeed,
             color: planet.textureMapLayerOptions[0].lowAltColor || "",
@@ -92,7 +87,7 @@ class HudTargetController implements HudTargetControllerInt {
         this.htmlHudTargets.push(
           new HudCombatTarget({
             id: `${HTML_HUD_TARGET_TYPE.STATION}-${index}`,
-            isActive: true,
+            playerControlModeActive: PLAYER.controls.scan,
             targetType: HTML_HUD_TARGET_TYPE.STATION,
             label: station.name,
             color: "gray",
@@ -106,7 +101,7 @@ class HudTargetController implements HudTargetControllerInt {
       this.htmlHudTargets.push(
         new HudCombatTarget({
           id: `${HTML_HUD_TARGET_TYPE.ENEMY_GROUP}`, //-${index}`,
-          isActive: true,
+          playerControlModeActive: PLAYER.controls.scan,
           targetType: HTML_HUD_TARGET_TYPE.ENEMY_GROUP,
           label: "ENEMY GROUP",
           color: "red",
@@ -118,7 +113,7 @@ class HudTargetController implements HudTargetControllerInt {
     this.htmlHudTargets.push(
       new HudTarget({
         id: `${HTML_HUD_TARGET_TYPE.WARP_TO_STAR}`,
-        isActive: false,
+        playerControlModeActive: PLAYER.controls.scan,
         targetType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
         label: "SYSTEM WARP",
         textColor: "yellow",
@@ -141,7 +136,7 @@ class HudTargetController implements HudTargetControllerInt {
       this.htmlHudTargetsCombat.push(
         new HudCombatTarget({
           id: `${enemyMech.id}`,
-          isActive: false, // update will set to true for enemies infront of player
+          playerControlModeActive: PLAYER.controls.combat,
           targetType: HTML_HUD_TARGET_TYPE.ENEMY_COMBAT,
           label: "",
           color: "transparent",
@@ -150,6 +145,24 @@ class HudTargetController implements HudTargetControllerInt {
         })
       );
     });
+  }
+
+  setTargetDead(id: string) {
+    // remove target from htmlHudTargets array
+    const htmlHudTarget = this.getHudTargetById(id);
+    if (htmlHudTarget) {
+      htmlHudTarget.isDead = true; // set target to dead
+    }
+    // set focused target null if dead target is focused
+    if (useHudTargtingStore.getState().focusedHudTargetId === id) {
+      useHudTargtingStore.getState().focusedHudTargetId = null; // reset focused target
+    }
+    if (useHudTargtingStore.getState().selectedHudTargetId === id) {
+      useHudTargtingStore.getState().focusedHudTargetId = null; // reset focused target
+      useHudTargtingStore.getState().selectedHudTargetId = null; // reset selected target
+      // reset reticule target position to center
+      this.htmlHudTargetReticule.resetPosition();
+    }
   }
 
   getHudTargetById(id: string) {
@@ -215,64 +228,6 @@ class HudTargetController implements HudTargetControllerInt {
     const marginTopPx = pyNorm;
     return { marginLeftPx, marginTopPx };
   }
-
-  setControlModeActiveTargets(
-    playerControlMode: number = usePlayerControlsStore.getState()
-      .playerControlMode
-  ) {
-    if (this.currentControlMode !== playerControlMode) {
-      // set current control mode
-      this.currentControlMode = playerControlMode;
-      // set active targets based on control mode
-      // non-combat targets
-      this.htmlHudTargets.forEach((target) => {
-        target.isActive = playerControlMode === PLAYER.controls.scan;
-        target.hideTargetSetMarginLeft(); // hide target if not active
-      });
-      // combat targets
-      this.htmlHudTargetsCombat.forEach((target) => {
-        target.isActive = playerControlMode === PLAYER.controls.combat;
-        target.hideTargetSetMarginLeft(); // hide target if not active
-      });
-      // targeting reticule
-      this.htmlHudTargetReticule.isActive =
-        playerControlMode === PLAYER.controls.combat;
-      if (playerControlMode === PLAYER.controls.combat) {
-        this.htmlHudTargetReticule.resetPosition();
-      } else {
-        this.htmlHudTargetReticule.hideTargetSetMarginLeft();
-      }
-    }
-    // get system warp target
-    const sysWarpTarget = useHudTargtingStore
-      .getState()
-      .hudTargetController.htmlHudTargets.find(
-        (target) => target.targetType === HTML_HUD_TARGET_TYPE.WARP_TO_STAR
-      );
-
-    if (sysWarpTarget)
-      sysWarpTarget.isActive =
-        playerControlMode === PLAYER.controls.scan &&
-        useGalaxyMapStore.getState().selectedWarpStar
-          ? true
-          : false; // hide target
-  }
-
-  setTargetDead(id: string) {
-    // remove target from htmlHudTargets array
-    const htmlHudTarget = this.getHudTargetById(id);
-    if (htmlHudTarget) {
-      htmlHudTarget.isDead = true; // set target to dead
-    }
-    // set selected target null if inactive
-    if (useHudTargtingStore.getState().selectedHudTargetId === id) {
-      useHudTargtingStore.getState().selectedHudTargetId = null; // reset selected target
-      // reset reticule target position to center
-      this.htmlHudTargetReticule.resetPosition();
-    }
-  }
-
-  //UPDATE FUNC HERE
 }
 
 export default HudTargetController;
