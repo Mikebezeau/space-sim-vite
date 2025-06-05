@@ -152,6 +152,7 @@ class HudTargetController implements HudTargetControllerInt {
     const htmlHudTarget = this.getHudTargetById(id);
     if (htmlHudTarget) {
       htmlHudTarget.isDead = true; // set target to dead
+      htmlHudTarget.isActive = false; // update active status
     }
     // set focused target null if dead target is focused
     if (useHudTargtingStore.getState().focusedHudTargetId === id) {

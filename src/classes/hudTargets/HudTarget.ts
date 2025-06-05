@@ -111,6 +111,7 @@ class HudTarget implements HudTargetInt {
     this.divTargetTriangles = [];
     //this.divTargetCircle = divTargetCircle;
   }
+
   setActiveStatus() {
     let isActive = false; // default to not active
     // active if player is in scan mode
@@ -149,7 +150,6 @@ class HudTarget implements HudTargetInt {
   }
 
   hideTargetSetMarginLeft(): void {
-    //this.screenPosition = { xn: -2, yn: 0, angleDiff: 0 };
     if (this.divElement) this.divElement.style.marginLeft = `-5000px`;
   }
 
@@ -237,7 +237,7 @@ class HudTarget implements HudTargetInt {
 
     const targetIsFocused: boolean = focusedHudTargetId === this.id;
 
-    // @ts-ignore - number works fine here
+    // @ts-ignore - number assignment to opacity works fine
     this.divElement.style.opacity = this.opacity
       ? this.opacity
       : targetIsFocused

@@ -16,12 +16,13 @@ class HudCombatTarget extends HudTarget {
 
   setActiveStatus() {
     super.setActiveStatus();
-    if (this.isActive) {
+    if (
+      this.isActive &&
+      this.targetType === HTML_HUD_TARGET_TYPE.ENEMY_COMBAT
+    ) {
       this.isActive =
-        // always show if selected target
-        useHudTargtingStore.getState().selectedHudTargetId === this.id ||
-        // set combat target active if within x radian of camera
-        this.screenPosition.angleDiff < 0.15; //2 * this.distanceFromPlayer
+        useHudTargtingStore.getState().selectedHudTargetId === this.id || // always show if selected target
+        this.screenPosition.angleDiff < 0.15; // set combat target active if within x radian of camera
     }
   }
 
@@ -31,6 +32,7 @@ class HudCombatTarget extends HudTarget {
   ): void {
     this.screenPosition = { xn: 0, yn: 0, angleDiff: 10 }; // angleDiff for sorting to find focused target
 
+    // isActive status set at end of function, only limit to alive targets here
     if (this.isDead) {
       return;
     }
@@ -58,7 +60,7 @@ class HudCombatTarget extends HudTarget {
     super.updateTargetStylesUseFrame(selectedHudTargetId, focusedHudTargetId);
 
     // thick border lines for when selected
-    if (this.divTargetSquare) {
+    if (this.divTargetSquare && this.isActive) {
       const targetIsSelected: boolean = selectedHudTargetId === this.id;
 
       const targetIsFocused: boolean = focusedHudTargetId === this.id;
