@@ -23,8 +23,8 @@ interface HudTargetControllerInt {
     yn: number,
     angleDiff: number
   ) => {
-    marginLeftPx: number;
-    marginTopPx: number;
+    transformX: number;
+    transformY: number;
   }; // method to get target position in HUD circle
 }
 
@@ -117,8 +117,7 @@ class HudTargetController implements HudTargetControllerInt {
         targetType: HTML_HUD_TARGET_TYPE.WARP_TO_STAR,
         label: "SYSTEM WARP",
         textColor: "yellow",
-        color: "white", // TODO get star color
-        // TODO borderColor implementation
+        borderColor: "yellow",
         opacity: 1,
       })
     );
@@ -138,8 +137,6 @@ class HudTargetController implements HudTargetControllerInt {
           id: `${enemyMech.id}`,
           playerControlModeActive: PLAYER.controls.combat,
           targetType: HTML_HUD_TARGET_TYPE.ENEMY_COMBAT,
-          label: "",
-          color: "transparent",
           entity: enemyMech,
           opacity: 1,
         })
@@ -225,9 +222,9 @@ class HudTargetController implements HudTargetControllerInt {
         Math.sin(atan2Angle) * useHudTargtingStore.getState().hudRadiusPx;
     }
     // set position of target div
-    const marginLeftPx = pxNorm;
-    const marginTopPx = pyNorm;
-    return { marginLeftPx, marginTopPx };
+    const transformX = pxNorm;
+    const transformY = pyNorm;
+    return { transformX, transformY };
   }
 }
 

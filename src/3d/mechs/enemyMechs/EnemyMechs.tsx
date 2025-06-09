@@ -35,7 +35,7 @@ const EnemyMechs = (props: EnemyMechsInt) => {
       {enemies.length > 0 && (
         <>
           {enemies.map((enemyMech) =>
-            !enemyMech.useInstancedMesh ? (
+            !enemyMech.isUseInstancedMesh ? (
               <React.Fragment key={enemyMech.id}>
                 <object3D
                   rotation={[Math.PI / 2, 0, Math.PI / 2]}

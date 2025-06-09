@@ -1,6 +1,6 @@
 const starPointsShader = {
   uniforms: {
-    uTexture: { value: null }, // TODO? performance option to draw circle instead of texture
+    uTexture: { value: null }, // performance: draw circle instead of texture?
     uTextureNebula: { value: null },
   },
 

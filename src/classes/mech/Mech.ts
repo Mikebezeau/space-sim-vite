@@ -15,22 +15,14 @@ import {
   getSimplifiedGeometry, // reduce polygon count of given geometry, used to create the explosion mesh
   getTessellatedExplosionMesh, // break large geometry into smaller triangles for explosion effect
 } from "../../util/mechGeometryUtil";
-import { FPS } from "../../constants/constants";
-//import { mechMaterial } from "../../constants/mechMaterialConstants";
 import expolsionShaderMaterial from "../../3d/explosion/explosionShaderMaterial";
-import { DESIGN_TYPE } from "../../constants/particleConstants";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import useHudTargtingStore from "../../stores/hudTargetingStore";
-
-// TODO move MECH_STATE to constants
-export const MECH_STATE = {
-  idle: 0,
-  moving: 1,
-  attack: 2,
-  explode: 3,
-  dead: 4,
-};
+import { FPS } from "../../constants/constants";
+import { MECH_STATE } from "../../constants/mechConstants";
+//import { mechMaterial } from "../../constants/mechMaterialConstants";
+import { DESIGN_TYPE } from "../../constants/particleConstants";
 
 interface mechInt {
   getRealWorldPosition(): void;
@@ -55,6 +47,7 @@ interface mechInt {
   setMergedBufferGeomColors: () => void;
   setExplosionMeshFromBufferGeom: () => void;
   //
+  getFuturePosition: (t: number) => THREE.Vector3; // calculate future position based on current position, speed, and time to hit
   recieveDamage: (
     position: THREE.Vector3,
     damage: number,
@@ -87,8 +80,8 @@ class Mech implements mechInt {
   isStation: boolean;
 
   mechState: number;
-  timeCounter: number;
-  useInstancedMesh: boolean;
+  expoldeTimeCounter: number;
+  isUseInstancedMesh: boolean;
   _mechBP: MechBP;
   sizeMechBP: number;
   // threejs
@@ -114,6 +107,7 @@ class Mech implements mechInt {
   maxHalfWidth: number;
 
   speed: number;
+  futurePositionVec3: THREE.Vector3; // used for testing future position calculations
 
   weaponFireMechParentObj: THREE.Group;
   weaponFireWeaponChildObj: THREE.Group;
@@ -128,7 +122,7 @@ class Mech implements mechInt {
 
   constructor(
     mechDesign: any,
-    useInstancedMesh: boolean = false,
+    isUseInstancedMesh: boolean = false,
     isPlayer: boolean = false, // just in case we need to know for constructor
     isEnemy: boolean = false, // testing
     isStation: boolean = false // testing
@@ -141,8 +135,8 @@ class Mech implements mechInt {
     this.isEnemy = isEnemy;
     this.isStation = isStation;
     this.mechState = MECH_STATE.moving;
-    this.timeCounter = 0;
-    this.useInstancedMesh = useInstancedMesh;
+    this.expoldeTimeCounter = 0;
+    this.isUseInstancedMesh = isUseInstancedMesh;
     // try to set 'new MechBP' directly error:
     // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
     this._mechBP = loadBlueprint(mechDesign);
@@ -167,6 +161,7 @@ class Mech implements mechInt {
     this.obbGeoHelperUpdated = false;
     this.obbRotationHelper = new THREE.Matrix4();
     this.speed = 0;
+    this.futurePositionVec3 = new THREE.Vector3(); // used for future position calculations
 
     this.weaponFireMechParentObj = new THREE.Group();
     this.weaponFireWeaponChildObj = new THREE.Group();
@@ -243,7 +238,7 @@ class Mech implements mechInt {
       return;
     }
 
-    if (this.useInstancedMesh) {
+    if (this.isUseInstancedMesh) {
       console.warn(
         "assignObject3dComponent: cannot assign object3dRef to instanced mesh mech"
       );
@@ -301,7 +296,7 @@ class Mech implements mechInt {
         this.builtObject3d.add(this.addedModel3dObjects);
       }
       this.setMergedBufferGeom();
-      if (this.useInstancedMesh) {
+      if (this.isUseInstancedMesh) {
         // for instanced meshes of multiple colors
         this.setMergedBufferGeomColors();
       }
@@ -352,7 +347,7 @@ class Mech implements mechInt {
 
   cloneToObject3d() {
     // clone Mech build into this.object3d
-    if (!this.useInstancedMesh) {
+    if (!this.isUseInstancedMesh) {
       this.object3d.add(this.builtObject3d.clone());
     } else {
       if (this.object3d.children.length > 0) {
@@ -491,6 +486,19 @@ class Mech implements mechInt {
     }
   }
 
+  getFuturePosition(t: number): THREE.Vector3 {
+    // Efficiently calculate future position using direction vector and speed
+    this.futurePositionVec3
+      .set(0, 0, 1)
+      .applyQuaternion(this.object3d.quaternion);
+    // distance = speed * time
+    const distance = this.speed * FPS * t; // speed applied each frame
+    this.futurePositionVec3
+      .multiplyScalar(distance)
+      .add(this.object3d.position);
+    return this.futurePositionVec3;
+  }
+
   recieveDamage(position: THREE.Vector3, damage: number, scene?: THREE.Scene) {
     if (this.isPlayer) {
       console.log("player hit");
@@ -498,12 +506,12 @@ class Mech implements mechInt {
     if (this.isMechDead()) {
       return;
     }
-    // TODO: create function for this?
     const playerPos = useStore.getState().player.object3d.position;
     const distToPlayer = this.object3d.position.distanceTo(playerPos);
-    // TODO testing this for preformance
-    let distanceFactor = distToPlayer < 100 ? distToPlayer / 100 : 1; // if distance less then 100 let distanceFactor approach 1 // distance factor for explosion particles
-    distanceFactor = Math.max(distanceFactor, 0.25); // clamp distanceFactor
+    let distanceFactor = Math.max(
+      distToPlayer < 100 ? distToPlayer / 100 : 1,
+      0.1
+    );
     // weapon fire hit explosion particles
     useParticleStore.getState().effects.addExplosion(position, {
       numParticles: damage * 25 * distanceFactor,
@@ -513,7 +521,7 @@ class Mech implements mechInt {
       color: useParticleStore.getState().colors.yellow,
       designType: DESIGN_TYPE.circle,
     });
-    // contrasting weapon fire hit explosion particles
+    // more weapon fire hit explosion particles
     useParticleStore.getState().effects.addExplosion(position, {
       numParticles: damage * 10 * distanceFactor,
       size: (damage / 20 + 0.1) * distanceFactor, // increase size of particles according to damage
@@ -529,7 +537,6 @@ class Mech implements mechInt {
     }
   }
 
-  // TODO : sometimes exploded mech objects are left in the scene
   explode(scene?: THREE.Scene) {
     if (this.isMechDead()) {
       return;
@@ -538,10 +545,10 @@ class Mech implements mechInt {
     useHudTargtingStore.getState().hudTargetController.setTargetDead(this.id);
 
     this.mechState = MECH_STATE.explode;
-    this.timeCounter = 0;
+    this.expoldeTimeCounter = 0;
 
     // add explosion mesh to scene for instanced mechs
-    if (this.useInstancedMesh && scene) {
+    if (this.isUseInstancedMesh && scene) {
       // add object3d to scene if not already added
       if (!scene.children.find((obj) => obj.id === this.object3d.id)) {
         scene.add(this.object3d);
@@ -552,9 +559,10 @@ class Mech implements mechInt {
     // get distance to player
     const playerPos = useStore.getState().player.object3d.position;
     const distToPlayer = this.object3d.position.distanceTo(playerPos);
-    // TODO testing this for preformance
-    let distanceFactor = distToPlayer < 100 ? distToPlayer / 100 : 1; // if distance less then 100 let distanceFactor approach 1 // distance factor for explosion particles
-    //distanceFactor = Math.max(distanceFactor, 0.25); // clamp distanceFactor
+    let distanceFactor = Math.max(
+      distToPlayer < 100 ? distToPlayer / 100 : 1,
+      0.1
+    );
     useParticleStore.getState().effects.addExplosion(this.object3d.position, {
       numParticles: 3000 * distanceFactor,
       size: (this._mechBP.scale / 5) * distanceFactor, // increase size of particles according to damage
@@ -582,6 +590,7 @@ class Mech implements mechInt {
       }
     }
   }
+
   isExploding() {
     return this.mechState === MECH_STATE.explode;
   }
@@ -593,9 +602,9 @@ class Mech implements mechInt {
 
   updateExplosionUseFrame(delta: number, scene?: THREE.Scene) {
     if (this.mechState !== MECH_STATE.explode) return;
-    this.timeCounter += delta;
+    this.expoldeTimeCounter += delta;
     const explosionTimeMax = (1 + this._mechBP.scale) / 2;
-    const explosionTimeNormalized = this.timeCounter / explosionTimeMax;
+    const explosionTimeNormalized = this.expoldeTimeCounter / explosionTimeMax;
 
     // update explosion material uniform
     if (this.explosionMesh) {
@@ -653,7 +662,7 @@ class Mech implements mechInt {
       this.setMechDead(scene);
       /*
       //TESTING: reset mech to original state
-      if (!this.useInstancedMesh) {
+      if (!this.isUseInstancedMesh) {
         this.mechState = MECH_STATE.idle;
         this.cloneToObject3d();
       }
@@ -675,23 +684,10 @@ class Mech implements mechInt {
     this.object3d.clear();
     // remove target from HUD
     useHudTargtingStore.getState().hudTargetController.setTargetDead(this.id);
-    // position mech object far away to not interfear with scene
-    // TODO the boidcontroller gets messed up when object is moved far away
-    //this.object3d.position.set(this.object3d.position.x + 100000, 0, 0);
-
     // removing mech explosion object from scene
     if (scene?.children.find((obj) => obj.id === this.object3d.id)) {
       scene.remove(this.object3d);
     }
-
-    /*
-    // TODO dispose explosionMesh and other cleanup for Mechs
-    if (this.explosionMesh !== null) {
-      this.explosionMesh.geometry?.dispose();
-      // not using material array ( <THREE.Material[]> ) so treat material as single material
-      (<THREE.Material>this.explosionMesh.material)?.dispose();
-    }
-    */
   }
 
   updateMechWeaponsUseFrame(delta: number) {
@@ -712,10 +708,7 @@ class Mech implements mechInt {
     });
   }
 
-  // TODO this function is not complete
-  // note - called every frame
-  // TODO impliment weapon fire groups
-  // TODO create getWeaponPosition function to get weapon position
+  // TODO impliment weapon fire groups, create getWeaponPosition function to get weapon position
   fireReadyWeapons(
     targetQuaternoin?: THREE.Quaternion | null,
     enemyWeaponFireTargetVec3?: THREE.Vector3 | null,
@@ -737,7 +730,6 @@ class Mech implements mechInt {
     }
 
     if (weaponList) {
-      // TODO add these to the class instead of const above
       this.weaponFireMechParentObj.position.copy(this.object3d.position);
       this.weaponFireMechParentObj.rotation.copy(this.object3d.rotation);
       // enemy aiming

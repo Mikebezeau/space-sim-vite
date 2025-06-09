@@ -18,7 +18,7 @@ export type HudTargetOptionsType = {
   id: string;
   playerControlModeActive: number; // player control mode target is active in
   targetType: number;
-  label: string;
+  label?: string;
   isShowTargetInfo?: boolean; // true if target info should be shown, no info display for combat targets
   textColor?: string;
   color?: string;
@@ -29,9 +29,14 @@ export type HudTargetOptionsType = {
 
 interface HudTargetInt {
   setActiveStatus: () => void; // sets isActive true if target is active
+  updateStyle: (
+    divElement: HTMLDivElement | undefined,
+    styleName: string,
+    value: string
+  ) => void;
   //setDivInfoLabelTextContent: (label: string) => void;
   setDivInfoDetailTextContent: (label: string) => void; // method to set target detail label
-  hideTargetSetMarginLeft: () => void; // method to hide target by setting margin left
+  hideTargetSetOpacity: () => void; // method to hide target by setting margin left
   resetPosition: () => void; // method to reset target position
   updateTargetUseFrame: (
     camera: THREE.Camera,
@@ -50,10 +55,10 @@ class HudTarget implements HudTargetInt {
   targetType: number;
   label: string;
   isShowTargetInfo: boolean; // true if target info should be shown, no info display for combat targets
-  textColor?: string;
-  color?: string;
-  borderColor?: string;
-  opacity?: number;
+  textColor: string;
+  color: string;
+  borderColor: string;
+  opacity?: number; // overrides opacity of target, if set will be used instead of focused / selected target opacity
   entity?: EnemyMechBoid | SpaceStationMech | EnemyMechGroup | CelestialBody;
   // set in constructor
   isActive: boolean; // true if target is active
@@ -92,11 +97,11 @@ class HudTarget implements HudTargetInt {
     this.playerControlModeActive = playerControlModeActive; // player action mode target is active in
     this.isDead = false; // true if target is dead - used for enemy mechs
     this.targetType = targetType;
-    this.label = label;
+    this.label = label || "";
     this.isShowTargetInfo = isShowTargetInfo || true;
-    this.textColor = textColor;
-    this.color = color;
-    this.borderColor = borderColor;
+    this.textColor = textColor || "white";
+    this.color = color || "transparent";
+    this.borderColor = borderColor || "white";
     this.opacity = opacity;
     this.entity = entity;
 
@@ -128,6 +133,17 @@ class HudTarget implements HudTargetInt {
     }
     this.isActive = isActive;
   }
+
+  updateStyle(
+    divElement: HTMLDivElement | undefined,
+    styleName: string,
+    value: string
+  ): void {
+    if (!divElement) return;
+    // only change if different to avoid unnecessary reflows
+    if (divElement.style[styleName] === value) return;
+    divElement.style[styleName] = value;
+  }
   /*
   setDivInfoLabelTextContent(label: string): void {
     this.label = label;
@@ -144,13 +160,13 @@ class HudTarget implements HudTargetInt {
 
   resetPosition(): void {
     this.screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
+    this.updateStyle(this.divElement, "marginLeft", "0px");
+    this.updateStyle(this.divElement, "marginTop", "0px");
     if (!this.divElement) return;
-    this.divElement.style.marginLeft = `0px`;
-    this.divElement.style.marginTop = `0px`;
   }
 
-  hideTargetSetMarginLeft(): void {
-    if (this.divElement) this.divElement.style.marginLeft = `-5000px`;
+  hideTargetSetOpacity(): void {
+    if (this.divElement) this.divElement.style.opacity = "0";
   }
 
   updateTargetUseFrame(
@@ -220,20 +236,19 @@ class HudTarget implements HudTargetInt {
     if (!this.divElement) return;
     if (!this.isActive) {
       // if not active move off screen
-      this.hideTargetSetMarginLeft();
+      this.hideTargetSetOpacity();
       return;
     }
 
     // set position of target div
-    const { marginLeftPx, marginTopPx } = useHudTargtingStore
+    const { transformX, transformY } = useHudTargtingStore
       .getState()
       .hudTargetController.getTargetPosition(
         this.screenPosition.xn,
         this.screenPosition.yn,
         this.screenPosition.angleDiff
       );
-    this.divElement.style.marginLeft = `${marginLeftPx}px`;
-    this.divElement.style.marginTop = `${marginTopPx}px`;
+    this.divElement.style.transform = `translate3d(${transformX}px, ${transformY}px, 0)`;
 
     const targetIsFocused: boolean = focusedHudTargetId === this.id;
 
@@ -248,15 +263,15 @@ class HudTarget implements HudTargetInt {
       this.divInfo.style.backgroundColor = targetIsFocused
         ? "black"
         : "transparent";
-      this.divInfo.style.right = marginLeftPx <= 0 ? "100%" : "auto";
-      this.divInfo.style.left = marginLeftPx > 0 ? "100%" : "auto";
-      this.divInfo.style.textAlign = marginLeftPx <= 0 ? "right" : "left";
+      this.divInfo.style.right = transformX <= 0 ? "100%" : "auto";
+      this.divInfo.style.left = transformX > 0 ? "100%" : "auto";
+      this.divInfo.style.textAlign = transformX <= 0 ? "right" : "left";
       // border?
       if (this.divInfoLabel) {
         this.divInfoLabel.style.opacity = targetIsFocused ? "1" : "0.5";
       }
       if (this.divInfoDetail) {
-        this.divInfoDetail.style.display = targetIsFocused ? "block" : "none";
+        this.divInfoDetail.style.opacity = targetIsFocused ? "1" : "0";
       }
     }
 

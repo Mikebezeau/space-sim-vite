@@ -118,7 +118,6 @@ class Planet extends CelestialBody implements PlanetInt {
       (layer: typeTextureMapOptions, index: number) => {
         // set default layer isLayerActive = true for all layers
         layer.isLayerActive = true; // set active
-        // TODO fix GPU errors to much going on
         this.setTextureLayer(index + 1, layer);
       }
     );

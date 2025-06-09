@@ -125,7 +125,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
     get().objectsToTest = [
       //player.object3d,
       ...enemyGroup.enemyMechs
-        .filter((enemy: Mech) => !enemy.useInstancedMesh)
+        .filter((enemy: Mech) => !enemy.isUseInstancedMesh)
         .map((enemy: Mech) => enemy.object3d),
       // instanceed meshes
       ...instancedMeshs.map((instancedMesh) => instancedMesh),
@@ -146,7 +146,7 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
           ...useEnemyStore
             .getState()
             .enemyGroup.enemyMechs.filter(
-              (enemy: Mech) => !enemy.useInstancedMesh
+              (enemy: Mech) => !enemy.isUseInstancedMesh
             )
             .map((enemy: Mech) => enemy.object3d),
         ],

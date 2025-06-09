@@ -5,6 +5,7 @@ import EnemyMechBoid from "./EnemyMechBoid";
 import mechDesigns from "../../equipment/data/mechDesigns";
 import BoidController from "../BoidController";
 import { FPS } from "../../constants/constants";
+import { ENEMY_MECH_ORDERS } from "../../constants/mechConstants";
 
 export type defenseNodesType = {
   curve: THREE.CatmullRomCurve3;
@@ -40,11 +41,13 @@ interface enemyMechGroupInt {
     intersectPoint: THREE.Vector3,
     damage: number
   ) => boolean; // returns false if mech hitting self
+  /*
   explodeInstancedEnemy: (
     scene: THREE.Scene,
     instancedMesh: THREE.InstancedMesh,
     instanceId: number
   ) => void;
+  */
   /*
   updateInstanceColor: (
     instancedMesh: THREE.InstancedMesh,
@@ -237,30 +240,12 @@ class EnemyMechGroup implements enemyMechGroupInt {
     } else {
       enemyToDamage.recieveDamage(intersectPoint, damage, scene);
       if (enemyToDamage.isMechDead()) {
-        // TODO below code duplicate of explodeInstancedEnemy
         instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
         instancedMesh.geometry.attributes.isDead.needsUpdate = true;
       }
+      // return true if damage was applied - will remove the weapon fire from the scene
       return true;
     }
-  }
-
-  explodeInstancedEnemy(
-    scene: THREE.Scene,
-    instancedMesh: THREE.InstancedMesh,
-    instanceId: number
-  ) {
-    // TODO if leader explodes create new leader to replace
-    const mechBpId = instancedMesh.userData.mechBpId;
-    // TODO could only update ranges of the attribute array instead of entire thing
-    instancedMesh.geometry.attributes.isDead.array[instanceId] = 1;
-    instancedMesh.geometry.attributes.isDead.needsUpdate = true;
-    // call explode on Mech object
-    const explodeEnemy = this.getInstancedMeshEnemies(mechBpId)[instanceId];
-    if (explodeEnemy.getIsLeader()) {
-      // TODO need to set new leader
-    }
-    explodeEnemy.explode(scene);
   }
   /*
   updateInstanceColor(instancedMesh: THREE.InstancedMesh, color: THREE.Color) {
@@ -327,7 +312,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
             : curr
         );
         */
-      enemy.isBoidDefending = true;
+      enemy.currentOrders = ENEMY_MECH_ORDERS.defend;
       enemy.targetPosition.copy(interceptPoint); //closestPoint);
     });
   }

@@ -41,10 +41,10 @@ class HudTargetReticule extends HudTarget {
             targetedMechEntity.object3d.position
           );
           const timeToHit = distance / 500; // in seconds //TODO using beam speed for test
-          // TODO solve slowdown issues
-          const futurePosition =
-            targetedMechEntity.getFuturePosition(timeToHit);
-          this.screenPosition = getScreenPosition(camera, futurePosition);
+          this.screenPosition = getScreenPosition(
+            camera,
+            targetedMechEntity.getFuturePosition(timeToHit)
+          );
         }
       }
     }
@@ -63,17 +63,19 @@ class HudTargetReticule extends HudTarget {
       let targetSize: number = 32;
       targetSize = targetSize * 1; //this.distanceFromPlayer > 0 ? 1 - this.distanceFromPlayer : 1; // scale target size based on distance to target
 
-      const points = [
+      const points: [number, number, string][] = [
         [0, -targetSize / 2, "180deg"],
         [-targetSize / 2, targetSize / 2, "45deg"],
         [targetSize / 2, targetSize / 2, "-45deg"],
       ];
       this.divTargetTriangles.forEach((triangle, index) => {
         if (triangle) {
-          triangle.style.left = `${points[index][0]}px`;
-          triangle.style.top = `${points[index][1]}px`;
-          triangle.style.marginLeft = `-${6}px`;
-          triangle.style.marginTop = `-${9}px`;
+          const left = `${points[index][0] - 6}px`;
+          const top = `${points[index][1] - 9}px`;
+          if (triangle.style.left !== left) triangle.style.left = left;
+          if (triangle.style.top !== top) triangle.style.top = top;
+          //triangle.style.marginLeft = `-${6}px`;
+          //triangle.style.marginTop = `-${9}px`;
           // transform is animated transition
           triangle.style.transform = targetIsLocked
             ? `rotate(${points[index][2]})`

@@ -13,7 +13,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
     <div
       ref={(divElement) => {
         if (divElement) {
-          target.divElement = divElement; // updates movement (margin left and top), or hide target (marginLeft -5000)
+          target.divElement = divElement; // updates movement (translate3d()), or hide target
         }
       }}
       className="absolute top-1/2 left-1/2"
@@ -31,6 +31,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
           absolute w-auto m-2 -top-3 px-4
           transition-all duration-800 ease-in-out
           rounded-md bg-black whitespace-nowrap text-white"
+          style={{ borderColor: target.borderColor }}
         >
           <div
             ref={(divInfoLabel) => {

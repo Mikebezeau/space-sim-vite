@@ -12,7 +12,7 @@ const FlightHudTargetReticule = (props: targetHUDInt) => {
     <div
       ref={(tde) => {
         if (tde) {
-          target.divElement = tde; // updates movement (margin left and top), or hide target (marginLeft -5000)
+          target.divElement = tde; // updates movement (translate3d()), or hide target
         }
       }}
       className="absolute top-1/2 left-1/2"

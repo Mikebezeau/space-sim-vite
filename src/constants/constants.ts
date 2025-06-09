@@ -55,7 +55,6 @@ export const PLAYER = {
 export const ZERO_SPEED_SETTING_INDEX = 1;
 export const SPEED_VALUES = [-0.2, 0, 0.2, 0.5, 1, 5];
 
-// TODO use enum for others
 export const WEAPON_FIRE_SPEED = {
   [equipData.weaponType.beam]: 500,
   [equipData.weaponType.projectile]: 200,

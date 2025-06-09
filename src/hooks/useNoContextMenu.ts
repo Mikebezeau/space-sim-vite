@@ -5,7 +5,6 @@ const useNoContextMenu = () => {
     // define a custom handler function
     // for the contextmenu event
     const handleContextMenu = (e) => {
-      // TODO this is temporary for dev
       if (
         // @ts-ignore - ignore import.meta.env warning
         import.meta.env.DEV &&

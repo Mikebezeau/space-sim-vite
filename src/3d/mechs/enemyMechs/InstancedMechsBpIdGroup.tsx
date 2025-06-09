@@ -8,7 +8,7 @@ import {
   mechInstancedMaterialHitDetect,
   getMechInstancedMaterialColor,
 } from "../materials/mechMaterials";
-import { MECH_STATE } from "../../../classes/mech/Mech";
+import { MECH_STATE } from "../../../constants/mechConstants";
 
 interface instancedMechsInt {
   instancedEnemies: EnemyMech[];

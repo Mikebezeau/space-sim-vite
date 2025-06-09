@@ -206,7 +206,7 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
             : get().hudTargetController.htmlHudTargetsCombat;
         // hide targets
         hideTargets.forEach((htmlHudTarget) => {
-          htmlHudTarget.hideTargetSetMarginLeft();
+          htmlHudTarget.hideTargetSetOpacity();
         });
       }
 

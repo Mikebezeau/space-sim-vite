@@ -2,8 +2,10 @@ import * as THREE from "three";
 import useStore from "../../stores/store";
 import EnemyMech from "./EnemyMech";
 import { FPS } from "../../constants/constants";
-import { calculateFuturePositionBoid } from "../../util/targetingUtils";
-import { BIOD_PARAMS } from "../../classes/BoidController";
+import {
+  MECH_BIOD_PARAMS,
+  ENEMY_MECH_ORDERS,
+} from "../../constants/mechConstants";
 
 interface enemyMechBoidInt {
   resetVectors: () => void;
@@ -16,8 +18,7 @@ interface enemyMechBoidInt {
 class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
   // target for BoidController seek
   isNeedsNewTarget: boolean;
-  isBoidWandering: boolean;
-  isBoidDefending: boolean;
+  currentOrders: number; // ENEMY_MECH_ORDERS
   targetPosition: THREE.Vector3;
   // BoidController vars
   alignCount: number;
@@ -54,9 +55,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
 
     // BoidController vars
     this.isNeedsNewTarget = true;
-    // TODO create constant for this - add to mechState
-    this.isBoidWandering = false;
-    this.isBoidDefending = false;
+    this.currentOrders = ENEMY_MECH_ORDERS.none;
     this.targetPosition = new THREE.Vector3();
 
     this.alignCount = 0;
@@ -72,7 +71,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     this.cohesionSteerVector = new THREE.Vector3();
 
     this.acceleration = new THREE.Vector3();
-    this.maxSpeed = BIOD_PARAMS.maxSpeed;
+    this.maxSpeed = MECH_BIOD_PARAMS.maxSpeed;
 
     this.velocity = new THREE.Vector3(); // set by BoidController
     this.lerpVelocity = new THREE.Vector3(); // use to smooth velocity TODO adjust by accel
@@ -111,14 +110,18 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     return this.lerpVelocity.length();
   }
 
-  getFuturePosition(timeToHit: number) {
+  getFuturePosition(t: number): THREE.Vector3 {
     // calculate future position based on current position, speed, and time to hit
-    return calculateFuturePositionBoid(this, timeToHit);
+    this.futurePositionVec3.copy(this.lerpVelocity);
+    this.futurePositionVec3.multiplyScalar(t * FPS);
+    this.futurePositionVec3.add(this.object3d.position);
+    return this.futurePositionVec3;
   }
 
   // update Boid movement
   updateUseFrameBoidForce(delta: number) {
-    if (this.isMechDead()) {
+    if (this.isMechDead() && !this.isExploding()) {
+      // while mech is exploding, allow movement to continue
       return;
     }
 
@@ -155,7 +158,6 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
         .copy(this.lerpHeading)
         .add(this.object3d.position);
 
-      // TODO try rotateTowards instead of lerp?
       // mesh.quaternion.rotateTowards( targetQuaternion, step );
       this.object3d.lookAt(this.lerpHeadingPlusPosition);
 
@@ -175,21 +177,16 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
         // angle difence between forward and target direction
         const angle = this.forwardVec3.angleTo(this.targetDirectionVec3);
         // if angle is small enough, fire
-        // TODO use the future position of player to predict where to fire
         if (angle < 0.3) {
-          // TODO place in weaponFire function to reduce calcs
           // predictPlayerPosition
-          this.targetObject3d.position.copy(
-            useStore.getState().player.object3d.position
-          );
-          this.targetObject3d.rotation.copy(
-            useStore.getState().player.object3d.rotation
-          );
-          const timeToHit = ((distanceToPlayer / 500) * 1000) / FPS; // in seconds //TODO using beam speed for test
-          const playerSpeed = useStore.getState().player.speed;
-          this.targetObject3d.translateZ((playerSpeed * FPS) / timeToHit);
+          // TODO using beam speed for test
+          //const timeToHit = ((distanceToPlayer / 500) * 1000) / FPS; // in seconds
+          const timeToHit = distanceToPlayer / 500;
           // TODO check to make sure wont hit friend
-          this.fireReadyWeapons(null, this.targetObject3d.position);
+          this.fireReadyWeapons(
+            null,
+            useStore.getState().player.getFuturePosition(timeToHit)
+          );
         }
       }
     }

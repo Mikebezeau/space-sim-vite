@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { v4 as uuidv4 } from "uuid";
-// TODO update TS types
 //used to create space debrie and asteroids
 export const randomData = (count, track, radius, size, randomScale) => {
   return new Array(count).fill(null).map(() => {

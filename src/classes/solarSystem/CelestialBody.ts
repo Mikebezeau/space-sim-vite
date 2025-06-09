@@ -116,7 +116,6 @@ class CelestialBody implements CelestialBodyInt {
   // call this once the mesh is loaded in component
   initObject3d(object3d: THREE.Object3D) {
     if (object3d) {
-      // TODO dispose textures here?
       // keeping position and rotation of original object3d
       const keepPosition = new THREE.Vector3();
       keepPosition.copy(this.object3d.position);
@@ -178,8 +177,6 @@ class CelestialBody implements CelestialBodyInt {
   }
 
   genTexture() {
-    // TODO test if textures are being disposed porperly
-    //this.disposeTextures();
     //for Planet Object3D material shader (lighting / effects)
     this.updateUniforms();
     // useGenFboTextureStore.initComputeRenderer must be called before this

@@ -1,4 +1,4 @@
-import React, { memo, useLayoutEffect, useRef } from "react";
+import { memo } from "react";
 import InstancedMechsBpIdGroup from "./InstancedMechsBpIdGroup";
 import EnemyMechGroup from "../../../classes/mech/EnemyMechGroup";
 
@@ -13,7 +13,7 @@ const InstancedMechs = (props: InstancedMechsInt) => {
   const instancedEnemiesBpIdList: (string | null)[] = [
     ...new Set(
       enemyGroup.enemyMechs.map((enemy) =>
-        enemy.useInstancedMesh ? enemy.mechBP.id : null
+        enemy.isUseInstancedMesh ? enemy.mechBP.id : null
       )
     ),
   ];

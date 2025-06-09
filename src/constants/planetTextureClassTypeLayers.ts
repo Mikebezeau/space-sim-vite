@@ -50,7 +50,6 @@ export type typeCloudShaderUniforms = {
   u_rotateX?: number;
 };
 
-// TODO make consts store arrays of layers
 export const PLANET_CLASS_TEXTURE_MAP: { [id: number]: typeTextureMapOptions } =
   {
     [PLANET_CLASS.terrestrial]: {

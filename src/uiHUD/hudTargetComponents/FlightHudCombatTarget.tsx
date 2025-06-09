@@ -12,7 +12,7 @@ const FlightHudCombatTarget = (props: targetHUDInt) => {
     <div
       ref={(tde) => {
         if (tde) {
-          target.divElement = tde; // updates movement (margin left and top), or hide target (marginLeft -5000)
+          target.divElement = tde; // updates movement (translate3d()), or hide target
         }
       }}
       className="absolute top-1/2 left-1/2"
@@ -53,29 +53,3 @@ const FlightHudCombatTarget = (props: targetHUDInt) => {
 };
 
 export default React.memo(FlightHudCombatTarget);
-
-// triangle svg target - takes to long to render? TODO test again later
-/*
-[0, 1, 2].map((index) => (
-  <svg
-    key={index}
-    // add ref to array
-    ref={(svgElement) => {
-      if (svgElement) {
-        target.divTargetTriangles[index] = svgElement;
-      }
-    }}
-    height="12"
-    width="12"
-    className="absolute transition-all duration-800 ease-in-out"
-  >
-    <polygon
-      points="6, 0 0, 12 12, 12"
-      style={{
-        fill: "red",
-        //stroke: targetIsSelected ? "cyan" : "none",
-        strokeWidth: "2",
-      }}
-    />
-  </svg>
-))*/

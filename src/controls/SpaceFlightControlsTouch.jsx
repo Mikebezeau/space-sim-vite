@@ -49,7 +49,6 @@ const ThrottleControlsDisplay = () => {
 };
 
 const SpaceFlightControlsTouch = () => {
-  // TODO player settings - flip touch control positions
   const isReverseSideTouchControls = usePlayerControlsStore(
     (state) => state.isReverseSideTouchControls
   );

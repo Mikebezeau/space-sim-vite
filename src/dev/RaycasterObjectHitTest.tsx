@@ -50,7 +50,7 @@ const RaycasterObjectHitTest = () => {
       ...useEnemyStore
         .getState()
         .enemyGroup.enemyMechs.map((enemy: Mech) =>
-          enemy.useInstancedMesh ? null : enemy.object3d
+          enemy.isUseInstancedMesh ? null : enemy.object3d
         ),
       // instanceed meshes
       ...useEnemyStore
@@ -77,13 +77,15 @@ const RaycasterObjectHitTest = () => {
           return;
         }
         // expolde mech in enemyGroup corresponding to InstancedMesh object and instanceId
-        useEnemyStore
-          .getState()
-          .enemyGroup.explodeInstancedEnemy(
-            scene,
-            object as THREE.InstancedMesh,
-            instanceId
-          );
+
+        useEnemyStore.getState().enemyGroup.recieveDamageInstancedEnemy(
+          scene,
+          "",
+          object as THREE.InstancedMesh,
+          instanceId,
+          new THREE.Vector3(0, 0, 0), // position is not used in this case
+          10000000 // damage amount - make it explode
+        );
       }
       // end if instanced mesh
       // else, is not instanced mesh

@@ -3,24 +3,10 @@ import useStore from "../stores/store";
 import useDevStore from "../stores/devStore";
 import EnemyMechGroup from "./mech/EnemyMechGroup";
 import EnemyMechBoid from "./mech/EnemyMechBoid";
-
-export const BIOD_PARAMS = {
-  maxSpeed: 0.75,
-  seek: {
-    maxForce: 0.06,
-  },
-  align: {
-    effectiveRange: 50,
-    maxForce: 0.05, //0.18,
-  },
-  separate: {
-    effectiveRangeMult: 2, //based on hitbox sizees
-    maxForce: 0.4, //0.2,
-  },
-  cohesion: {
-    effectiveRange: 150, //160,
-  },
-};
+import {
+  MECH_BIOD_PARAMS,
+  ENEMY_MECH_ORDERS,
+} from "../constants/mechConstants";
 
 export interface boidControllerInt {
   updateDevStorePropModifiers: () => void;
@@ -61,7 +47,7 @@ class BoidController implements boidControllerInt {
   constructor(enemyMechGroup: EnemyMechGroup) {
     this.enemyMechGroup = enemyMechGroup;
     this.bossMech = enemyMechGroup.enemyMechs.find((mech) => mech.isBossMech);
-    this.params = BIOD_PARAMS;
+    this.params = MECH_BIOD_PARAMS;
     this.seekGoalVector = new THREE.Vector3();
     this.seekSteerVector = new THREE.Vector3();
     this.toMeVector = new THREE.Vector3();
@@ -123,7 +109,7 @@ class BoidController implements boidControllerInt {
       // if mech is wandering and needs a target, set target
       if (mech1.getIsLeader()) {
         // seek current target
-        if (mech1.isBoidDefending) {
+        if ((mech1.currentOrders = ENEMY_MECH_ORDERS.defend)) {
           // if player nearby, seek player
           if (
             mech1.object3d.position.distanceTo(
@@ -138,7 +124,7 @@ class BoidController implements boidControllerInt {
             // seek target position
             mech1.applyForce(this.seek(mech1, mech1.targetPosition));
           }
-        } else if (mech1.isBoidWandering) {
+        } else if (mech1.currentOrders === ENEMY_MECH_ORDERS.wander) {
           // if close to target, set new target
           // TODO 100 is a placeholder - use hitboxMaxHalfWidth for calculations - make same as seek
           // create variable for target distance minimum

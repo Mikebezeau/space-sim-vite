@@ -59,7 +59,6 @@ const materialArrowHidden = new THREE.MeshBasicMaterial({
 });
 */
 
-// TODO old code, make TS and clean
 // split file into planets and mech targets
 const HudTargets = () => {
   useStore.getState().updateRenderInfo("HudTargets");

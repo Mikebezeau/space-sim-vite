@@ -1,12 +1,11 @@
-import React, { forwardRef, useEffect } from "react";
+import { forwardRef, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import useStore from "../../stores/store";
 import useEnemyStore from "../../stores/enemyStore";
 import useParticleStore from "../../stores/particleStore";
 import useDevStore from "../../stores/devStore";
-import { MECH_STATE } from "../../classes/mech/Mech";
-import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
+import { MECH_STATE } from "../../constants/mechConstants";
 
 const ObbTest = forwardRef(function ObbTest(
   props: any,
