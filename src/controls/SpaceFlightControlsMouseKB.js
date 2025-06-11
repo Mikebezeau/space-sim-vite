@@ -21,9 +21,6 @@ const SpaceFlightControlsMouseKB = () => {
   const testing = useStore((state) => state.testing);
   const actions = useStore((state) => state.actions);
 
-  const playerControlMode = usePlayerControlsStore(
-    (state) => state.playerControlMode
-  );
   const getPlayerSpeedSetting = usePlayerControlsStore(
     (state) => state.getPlayerSpeedSetting
   );
@@ -86,8 +83,10 @@ const SpaceFlightControlsMouseKB = () => {
   //SPEED UP
   function handleArrowUp() {
     if (
-      playerControlMode === PLAYER.controls.combat ||
-      playerControlMode === PLAYER.controls.scan
+      usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.combat ||
+      usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.scan
     ) {
       if (getPlayerSpeedSetting() < SPEED_VALUES.length - 1) {
         setPlayerSpeedSetting(getPlayerSpeedSetting() + 1);
@@ -98,8 +97,10 @@ const SpaceFlightControlsMouseKB = () => {
 
   const handleMouseWheelRoll = (e) => {
     if (
-      playerControlMode === PLAYER.controls.combat ||
-      playerControlMode === PLAYER.controls.scan
+      usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.combat ||
+      usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.scan
     ) {
       if (e.deltaY < 0) {
         // scroll up
@@ -119,8 +120,10 @@ const SpaceFlightControlsMouseKB = () => {
   //SPEED DOWN
   function handleArrowDown() {
     if (
-      playerControlMode === PLAYER.controls.combat ||
-      playerControlMode === PLAYER.controls.scan
+      usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.combat ||
+      usePlayerControlsStore.getState().playerControlMode ===
+        PLAYER.controls.scan
     ) {
       if (getPlayerSpeedSetting() > 0) {
         setPlayerSpeedSetting(getPlayerSpeedSetting() - 1);

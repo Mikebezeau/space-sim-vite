@@ -9,11 +9,8 @@ import {
   CockpitControlMap,
   CockpitControlView,
 } from "./CockpitControls";
-import { lerp } from "../util/gameUtil";
 import { PLAYER } from "../constants/constants";
 import "./css/uiCockpit.css";
-
-import { setCustomData } from "r3f-perf";
 
 const Cockpit = () => {
   useStore.getState().updateRenderInfo("Cockpit");

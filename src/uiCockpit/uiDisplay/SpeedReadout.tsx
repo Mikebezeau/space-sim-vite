@@ -4,8 +4,6 @@ import usePlayerControlsStore from "../../stores/playerControlsStore";
 
 const SpeedReadout = () => {
   const speed = useStore((state) => state.player.speed);
-  // playerPropUpdate: to re-render component on player object prop change
-  const playerPropUpdate = useStore((state) => state.playerPropUpdate);
   // if warping
   const isPlayerWarping = usePlayerControlsStore(
     (state) => state.isPlayerWarping
