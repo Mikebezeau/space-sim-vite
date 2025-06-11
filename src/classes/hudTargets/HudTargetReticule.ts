@@ -1,9 +1,11 @@
 import * as THREE from "three";
-import useHudTargtingStore from "../../stores/hudTargetingStore";
+import useHudTargtingStore, {
+  HTML_HUD_TARGET_TYPE,
+} from "../../stores/hudTargetingStore";
 import HudTarget, { HudTargetOptionsType } from "./HudTarget";
-import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
-import { getScreenPosition } from "../../util/cameraUtil";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
+import { ifChangedUpdateStyle } from "../../util/gameUtil";
+import { getScreenPosition } from "../../util/cameraUtil";
 
 class HudTargetReticule extends HudTarget {
   constructor(options: HudTargetOptionsType) {
@@ -70,16 +72,14 @@ class HudTargetReticule extends HudTarget {
       ];
       this.divTargetTriangles.forEach((triangle, index) => {
         if (triangle) {
-          const left = `${points[index][0] - 6}px`;
-          const top = `${points[index][1] - 9}px`;
-          if (triangle.style.left !== left) triangle.style.left = left;
-          if (triangle.style.top !== top) triangle.style.top = top;
-          //triangle.style.marginLeft = `-${6}px`;
-          //triangle.style.marginTop = `-${9}px`;
-          // transform is animated transition
-          triangle.style.transform = targetIsLocked
-            ? `rotate(${points[index][2]})`
-            : "rotate(0deg)";
+          //x = `${points[index][0] - 6}px`;
+          //y = `${points[index][1] - 9}px`;
+          const transform =
+            `translate3d(${points[index][0] - 6}px, ${
+              points[index][1] - 9
+            }px, 0)` +
+            (targetIsLocked ? ` rotate(${points[index][2]})` : " rotate(0deg)");
+          ifChangedUpdateStyle(triangle, "transform", transform);
         }
       });
     }

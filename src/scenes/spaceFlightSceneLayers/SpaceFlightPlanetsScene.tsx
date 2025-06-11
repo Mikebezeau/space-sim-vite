@@ -55,16 +55,16 @@ const SpaceFlightPlanetsScene = () => {
 
   return (
     <>
+      <pointLight // light from star at (0,0,0)
+        intensity={1}
+        decay={0}
+      />
       <ambientLight intensity={0.4} color={new Color("#AAAAFF")} />
       <PlayerMech />
       <WeaponFire />
       <Particles />
 
       <group ref={relativePlayerLocalZoneGroupRef}>
-        <pointLight // light from star
-          intensity={1}
-          decay={0}
-        />
         <Stations />
         <SolarSystem />
       </group>

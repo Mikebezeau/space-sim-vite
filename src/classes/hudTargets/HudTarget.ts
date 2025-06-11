@@ -1,18 +1,21 @@
 import * as THREE from "three";
 import useHudTargtingStore from "../../stores/hudTargetingStore";
+import usePlayerControlsStore from "../../stores/playerControlsStore";
 import useGalaxyMapStore from "../../stores/galaxyMapStore";
 import EnemyMechBoid from "../mech/EnemyMech";
 import SpaceStationMech from "../mech/SpaceStationMech";
 import EnemyMechGroup from "../mech/EnemyMechGroup";
 import CelestialBody from "../solarSystem/CelestialBody";
-import { getSystemScaleDistanceLabel } from "../../util/gameUtil";
+import {
+  getSystemScaleDistanceLabel,
+  ifChangedUpdateStyle,
+} from "../../util/gameUtil";
 import {
   getScreenPosition,
   getScreenPositionFromDirection,
 } from "../../util/cameraUtil";
 import { GALAXY_AU_DISTANCE_SCALE } from "../../constants/constants";
 import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
-import usePlayerControlsStore from "../../stores/playerControlsStore";
 
 export type HudTargetOptionsType = {
   id: string;
@@ -29,14 +32,9 @@ export type HudTargetOptionsType = {
 
 interface HudTargetInt {
   setActiveStatus: () => void; // sets isActive true if target is active
-  updateStyle: (
-    divElement: HTMLDivElement | undefined,
-    styleName: string,
-    value: string
-  ) => void;
   //setDivInfoLabelTextContent: (label: string) => void;
   setDivInfoDetailTextContent: (label: string) => void; // method to set target detail label
-  hideTargetSetOpacity: () => void; // method to hide target by setting margin left
+  hideTargetSetOpacity: () => void; // method to hide target by setting opacity 0
   resetPosition: () => void; // method to reset target position
   updateTargetUseFrame: (
     camera: THREE.Camera,
@@ -71,7 +69,7 @@ class HudTarget implements HudTargetInt {
   distanceFromPlayer: number; // used for combat target, coloring: darker for further away targets
   scanProgressNorm: number;
   // set in render
-  divElement?: HTMLDivElement; // main div element for target, used for positioning (margin top and left)
+  divElement?: HTMLDivElement; // main div element for target, used for positioning (transform: translate3d)
   divTargetCircle?: HTMLDivElement; // used for planets, stars, and warp to star targets
   divTargetSquare?: HTMLDivElement; // div element for box crosshair, used for combat targets
   divTargetTriangles: SVGElement[]; // combat aiming reticule triangles, positioned based on future position of EnemyMechBoid
@@ -134,16 +132,6 @@ class HudTarget implements HudTargetInt {
     this.isActive = isActive;
   }
 
-  updateStyle(
-    divElement: HTMLDivElement | undefined,
-    styleName: string,
-    value: string
-  ): void {
-    if (!divElement) return;
-    // only change if different to avoid unnecessary reflows
-    if (divElement.style[styleName] === value) return;
-    divElement.style[styleName] = value;
-  }
   /*
   setDivInfoLabelTextContent(label: string): void {
     this.label = label;
@@ -160,13 +148,16 @@ class HudTarget implements HudTargetInt {
 
   resetPosition(): void {
     this.screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
-    this.updateStyle(this.divElement, "marginLeft", "0px");
-    this.updateStyle(this.divElement, "marginTop", "0px");
+    ifChangedUpdateStyle(
+      this.divElement,
+      "transform",
+      "translate3d(0px, 0px, 0)"
+    );
     if (!this.divElement) return;
   }
 
   hideTargetSetOpacity(): void {
-    if (this.divElement) this.divElement.style.opacity = "0";
+    ifChangedUpdateStyle(this.divElement, "opacity", "0");
   }
 
   updateTargetUseFrame(
@@ -252,26 +243,51 @@ class HudTarget implements HudTargetInt {
 
     const targetIsFocused: boolean = focusedHudTargetId === this.id;
 
-    // @ts-ignore - number assignment to opacity works fine
-    this.divElement.style.opacity = this.opacity
-      ? this.opacity
-      : targetIsFocused
-      ? 0.9
-      : 0.5;
+    ifChangedUpdateStyle(
+      this.divElement,
+      "opacity",
+      // @ts-ignore - number assignment to opacity works fine
+      this.opacity ? this.opacity : targetIsFocused ? 0.9 : 0.5
+    );
 
     if (this.isShowTargetInfo && this.divInfo) {
-      this.divInfo.style.backgroundColor = targetIsFocused
-        ? "black"
-        : "transparent";
-      this.divInfo.style.right = transformX <= 0 ? "100%" : "auto";
-      this.divInfo.style.left = transformX > 0 ? "100%" : "auto";
-      this.divInfo.style.textAlign = transformX <= 0 ? "right" : "left";
-      // border?
+      ifChangedUpdateStyle(
+        this.divInfo,
+        "backgroundColor",
+        targetIsFocused ? "black" : "transparent"
+      );
+
+      ifChangedUpdateStyle(
+        this.divInfo,
+        "right",
+        transformX <= 0 ? "100%" : "auto"
+      );
+
+      ifChangedUpdateStyle(
+        this.divInfo,
+        "left",
+        transformX > 0 ? "100%" : "auto"
+      );
+
+      ifChangedUpdateStyle(
+        this.divInfo,
+        "textAlign",
+        transformX <= 0 ? "right" : "left"
+      );
+
       if (this.divInfoLabel) {
-        this.divInfoLabel.style.opacity = targetIsFocused ? "1" : "0.5";
+        ifChangedUpdateStyle(
+          this.divInfoLabel,
+          "opacity",
+          targetIsFocused ? "1" : "0.5"
+        );
       }
       if (this.divInfoDetail) {
-        this.divInfoDetail.style.opacity = targetIsFocused ? "1" : "0";
+        ifChangedUpdateStyle(
+          this.divInfoDetail,
+          "opacity",
+          targetIsFocused ? "1" : "0"
+        );
       }
     }
 
@@ -292,12 +308,20 @@ class HudTarget implements HudTargetInt {
       }
       targetSize = targetSize * 1; //this.distanceFromPlayer > 0 ? 1 - this.distanceFromPlayer : 1; // scale target size based on distance to target
 
-      this.divTargetCircle.style.width = `${targetSize}px`;
-      this.divTargetCircle.style.height = `${targetSize}px`;
-      this.divTargetCircle.style.left = `${-targetSize / 2}px`;
-      this.divTargetCircle.style.top = `${-targetSize / 2}px`;
+      ifChangedUpdateStyle(this.divTargetCircle, "width", `${targetSize}px`);
+      ifChangedUpdateStyle(this.divTargetCircle, "height", `${targetSize}px`);
+      ifChangedUpdateStyle(
+        this.divTargetCircle,
+        "left",
+        `${-targetSize / 2}px`
+      );
+      ifChangedUpdateStyle(this.divTargetCircle, "top", `${-targetSize / 2}px`);
 
-      this.divTargetCircle.style.borderWidth = targetIsSelected ? "4px" : "2px";
+      ifChangedUpdateStyle(
+        this.divTargetCircle,
+        "borderWidth",
+        targetIsSelected ? "4px" : "2px"
+      );
     }
   }
 }

@@ -18,6 +18,8 @@ import Star from "../classes/solarSystem/Star";
 import Planet from "../classes/solarSystem/Planet";
 import PlayerMech from "../classes/mech/PlayerMech";
 import SpaceStationMech from "../classes/mech/SpaceStationMech";
+// utils
+import { ifChangedUpdateStyle } from "../util/gameUtil";
 // constants
 import { IS_MOBILE, PLAYER, PLAYER_START } from "../constants/constants";
 import { PLANET_TYPE } from "../constants/planetDataConstants";
@@ -509,17 +511,20 @@ const useStore = create<storeState>()((set, get) => ({
           PLAYER.action.manualControl
       ) {
         // @ts-ignore
-        get().customCursorDivElement.style.left = "-3000px";
+        ifChangedUpdateStyle(
+          get().customCursorDivElement,
+          "transform",
+          `translate3d(-5000px, 0, 0)`
+        );
       } else {
         // show cursor
-        // @ts-ignore
-        get().customCursorDivElement.style.left = `${
-          get().mutation.mouseScreen.x
-        }px`;
-        // @ts-ignore
-        get().customCursorDivElement.style.top = `${
-          get().mutation.mouseScreen.y
-        }px`;
+        const left = `${get().mutation.mouseScreen.x}px`;
+        const top = `${get().mutation.mouseScreen.y}px`;
+        ifChangedUpdateStyle(
+          get().customCursorDivElement,
+          "transform",
+          `translate3d(${left}, ${top}, 0)`
+        );
       }
     }
   },

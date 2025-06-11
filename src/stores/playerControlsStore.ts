@@ -43,10 +43,6 @@ interface playerControlStoreState {
     middleClick: () => void;
   };
   // TODO move shoot to here
-  // TODO add Cockpit updateUseFrameCockpit function to update cockpit panels perspective CSS
-  weaponUpdateUiToggle: boolean;
-  toggleWeaponUpdateUi: () => void;
-
   // todo USE flightCameraLookRotation IN TARGETING
   flightCameraLookRotation: {
     rotateX: number;
@@ -160,11 +156,6 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         }
       },
       // TODO mouse button hold actions
-    },
-
-    weaponUpdateUiToggle: false,
-    toggleWeaponUpdateUi: () => {
-      set(() => ({ weaponUpdateUiToggle: !get().weaponUpdateUiToggle }));
     },
 
     flightCameraLookRotation: {
@@ -609,6 +600,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           get().updateFrame.updateFrameHelpers.setPlayerCameraRotation(camera);
           // updates for ui components that are not children of canvas (cannot access useFrame)
           useHudTargtingStore.getState().updateTargetHUD(camera);
+          // update hud weapons readout
+          useHudTargtingStore.getState().updatePlayerWeaponsHudReadout();
+          // update mouse cursor position with the HUD large circle
           useHudTargtingStore.getState().updatePlayerHudCrosshairDiv();
         }
         // update mech

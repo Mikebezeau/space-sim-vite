@@ -55,7 +55,7 @@ interface MechWeaponInt {
   burstValue(): number;
   weight(): number;
   ammoCP(): number;
-  getAmmoCount(): number;
+  getAmmoCount(): number | null;
   reduceAmmo(num?: number): void;
   // game util
   getSpeed(): number;
@@ -261,13 +261,14 @@ class MechWeapon extends MechServo implements MechWeaponInt {
     return 0;
   }
 
+  // TODO not finished
   getAmmoCount() {
-    if (!this.isProjectile) return 1;
+    if (!this.isProjectile) return null;
     return this.ammoList[0].numAmmo;
   }
-
+  // TODO not finished
   reduceAmmo(num: number = 1) {
-    if (this.isProjectile) {
+    if (this.isProjectile && this.ammoList[0].numAmmo >= num) {
       this.ammoList[0].numAmmo -= num;
     }
   }

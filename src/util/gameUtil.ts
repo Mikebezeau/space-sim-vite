@@ -34,6 +34,17 @@ export const roundhundredth = (num: number) => {
   return Math.round(num * 100) / 100;
 };
 
+export const ifChangedUpdateStyle = (
+  divElement: HTMLElement | SVGElement | null | undefined,
+  styleName: string,
+  value: string
+) => {
+  if (!divElement) return;
+  // only change if different to avoid unnecessary reflows
+  if (divElement.style[styleName] === value) return;
+  divElement.style[styleName] = value;
+};
+
 export const setVisible = (obj: any, isVisible: boolean) => {
   obj.traverse((child: any) => {
     if (child.isMesh) {

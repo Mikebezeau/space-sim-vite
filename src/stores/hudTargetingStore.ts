@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import useStore from "./store";
 import usePlayerControlsStore from "./playerControlsStore";
-import EnemyMech from "../classes/mech/EnemyMech";
-import { IS_TOUCH_SCREEN, PLAYER } from "../constants/constants";
 import HudTargetController from "../classes/hudTargets/HudTargetController";
+import EnemyMech from "../classes/mech/EnemyMech";
+import { ifChangedUpdateStyle } from "../util/gameUtil";
+import { IS_TOUCH_SCREEN, PLAYER } from "../constants/constants";
 
 export const HTML_HUD_TARGET_TYPE = {
   WARP_TO_STAR: 0,
@@ -14,6 +15,18 @@ export const HTML_HUD_TARGET_TYPE = {
   ENEMY_TARGETING: 5,
 };
 
+export type typeWeaponsHudReadout = {
+  id: string;
+  weaponType: number;
+  label: string;
+  labelDiv: HTMLElement | null;
+  ammoCount: number | null; // current ammo count
+  ammoCountDiv: HTMLElement | null;
+  weaponReadyCircleDiv: HTMLElement | null;
+  weaponFiringCircleDiv: HTMLElement | null; // used to show firing state
+  weaponNoAmmoCircleDiv: HTMLElement | null; // used to show no ammo state
+};
+
 interface hudTargetingGalaxyMapStoreState {
   // CSS HUD targets
   isMouseOutOfHudCircle: boolean;
@@ -22,6 +35,12 @@ interface hudTargetingGalaxyMapStoreState {
   // HTML HUD player direction control target
   playerHudCrosshairInnerDiv: HTMLDivElement | null;
   updatePlayerHudCrosshairDiv: () => void;
+  // weapons readout
+  weaponsReadoutDivElement: HTMLDivElement | null; // used to set weapons readout div element opacity
+  weaponsHudReadout: typeWeaponsHudReadout[];
+  initWeaponsHudReadout: () => void;
+  // call updatePlayerWeaponsHudReadout each frame to update weapon readout div elements
+  updatePlayerWeaponsHudReadout: () => void;
   // HTML HUD Targets
   hudTargetController: HudTargetController;
   currentPlayerControlMode: number; // used to determine which targets to show
@@ -37,7 +56,6 @@ interface hudTargetingGalaxyMapStoreState {
   doScanHudTarget: () => void;
   checkCanWarpToTarget: () => void;
   checkCanScanTarget: () => void;
-
   // call updateTargetHUD each frame to update target div elements
   updateTargetHUD: (camera: any) => void;
 }
@@ -52,14 +70,78 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
     updatePlayerHudCrosshairDiv: () => {
       const mouseControlNormalVec2 =
         useStore.getState().mutation.mouseControlNormalVec2;
-
       if (get().playerHudCrosshairInnerDiv !== null) {
-        get().playerHudCrosshairInnerDiv!.style.marginLeft = `${
+        get().playerHudCrosshairInnerDiv!.style.transform = `translate3d(${
           mouseControlNormalVec2.x * get().hudRadiusPx - 1.5
-        }px`;
-        get().playerHudCrosshairInnerDiv!.style.marginTop = `${
-          mouseControlNormalVec2.y * get().hudRadiusPx - 1
-        }px`;
+        }px, ${mouseControlNormalVec2.y * get().hudRadiusPx - 1}px, 0)`;
+      }
+    },
+
+    weaponsReadoutDivElement: null, // used to set weapons readout div element opacity
+    weaponsHudReadout: [],
+    initWeaponsHudReadout: () => {
+      const weaponList = useStore
+        .getState()
+        .player.mechBP.weaponList.sort((a, b) => a.weaponType - b.weaponType); // sort by weapon type
+      get().weaponsHudReadout = weaponList.map((weapon) => ({
+        id: weapon.id,
+        weaponType: weapon.weaponType,
+        label: weapon.name,
+        labelDiv: null,
+        ammoCount: 0,
+        ammoCountDiv: null,
+        weaponReadyCircleDiv: null,
+        weaponFiringCircleDiv: null,
+        weaponNoAmmoCircleDiv: null,
+      }));
+    },
+    updatePlayerWeaponsHudReadout: () => {
+      if (!get().weaponsReadoutDivElement) return; // no weapons readout div element set yet
+      if (
+        usePlayerControlsStore.getState().playerControlMode !==
+        PLAYER.controls.combat
+      ) {
+        ifChangedUpdateStyle(get().weaponsReadoutDivElement, "opacity", "0");
+      } else {
+        ifChangedUpdateStyle(get().weaponsReadoutDivElement, "opacity", "1");
+        useStore.getState().player.mechBP.weaponList.forEach((weapon) => {
+          // get waepon from weaponsHudReadout
+          const weaponHud = get().weaponsHudReadout.find(
+            (wHud) => wHud.id === weapon.id
+          );
+          if (weaponHud) {
+            weaponHud.ammoCount = weapon.getAmmoCount();
+            // update label if out of ammo
+            if (weaponHud.ammoCount !== null && weaponHud.ammoCount >= 0) {
+              ifChangedUpdateStyle(
+                weaponHud.labelDiv,
+                "color",
+                weaponHud.ammoCount === 0 ? "red" : "white"
+              ); // update ammo count div
+              if (
+                weaponHud.ammoCountDiv &&
+                weaponHud.ammoCountDiv.textContent !==
+                  weaponHud.ammoCount.toString()
+              ) {
+                weaponHud.ammoCountDiv.textContent =
+                  weaponHud.ammoCount.toString();
+              }
+            }
+
+            // update weapon ready circle divs (default blue is visible)
+            ifChangedUpdateStyle(
+              weaponHud.weaponFiringCircleDiv,
+              "opacity",
+              !weapon.weaponFireData.isReady ? "1" : "0" // show green when firing (when not ready)
+            );
+            // red when no ammo
+            ifChangedUpdateStyle(
+              weaponHud.weaponNoAmmoCircleDiv,
+              "opacity",
+              weaponHud.ammoCount === 0 ? "1" : "0"
+            );
+          }
+        });
       }
     },
 
@@ -259,16 +341,16 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
           get().setFocusedHudTargetId(newFocusedTargetId);
           // z-index and CSS class
           playerControlModeTargets.forEach((htmlHudTarget, index) => {
-            if (htmlHudTarget.divElement) {
-              // apply z-index to div elements
-              htmlHudTarget.divElement.style.zIndex =
-                htmlHudTarget.id === get().selectedHudTargetId
-                  ? "1000" // selected target is always on top
-                  : htmlHudTarget.targetType ===
-                    HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
-                  ? "999" // targeting reticule is right behind current selected target
-                  : index.toString(); // closest to center of screen is on top, targets are reverse ordered above so this works easily here
-            }
+            ifChangedUpdateStyle(
+              htmlHudTarget.divElement,
+              "zIndex",
+              htmlHudTarget.id === get().selectedHudTargetId
+                ? "1000" // selected target is always on top
+                : htmlHudTarget.targetType ===
+                  HTML_HUD_TARGET_TYPE.ENEMY_TARGETING
+                ? "999" // targeting reticule is right behind current selected target
+                : index.toString() // closest to center of screen is on top, targets are reverse ordered above so this works easily here); // reset z-index
+            );
           });
         }
       } else {

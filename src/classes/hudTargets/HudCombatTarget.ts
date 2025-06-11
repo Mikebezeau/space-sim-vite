@@ -3,8 +3,9 @@ import HudTarget, { HudTargetOptionsType } from "./HudTarget";
 import useHudTargtingStore, {
   HTML_HUD_TARGET_TYPE,
 } from "../../stores/hudTargetingStore";
-import { getScreenPosition } from "../../util/cameraUtil";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
+import { getScreenPosition } from "../../util/cameraUtil";
+import { ifChangedUpdateStyle } from "../../util/gameUtil";
 
 class HudCombatTarget extends HudTarget {
   constructor(options: HudTargetOptionsType) {
@@ -75,10 +76,15 @@ class HudCombatTarget extends HudTarget {
 
       targetSize = targetSize * 1; //this.distanceFromPlayer > 0 ? 1 - this.distanceFromPlayer : 1; // scale target size based on distance to target
 
-      this.divTargetSquare.style.width = `${targetSize}px`;
-      this.divTargetSquare.style.height = `${targetSize}px`;
-      this.divTargetSquare.style.left = `${-targetSize / 2}px`;
-      this.divTargetSquare.style.top = `${-targetSize / 2}px`;
+      ifChangedUpdateStyle(this.divTargetSquare, "width", `${targetSize}px`);
+      ifChangedUpdateStyle(this.divTargetSquare, "height", `${targetSize}px`);
+      ifChangedUpdateStyle(
+        this.divTargetSquare,
+        "left",
+        `${-targetSize / 2}px`
+      );
+      ifChangedUpdateStyle(this.divTargetSquare, "top", `${-targetSize / 2}px`);
+
       // for each child set the borderWidth style
       this.divTargetSquare.childNodes.forEach((child) => {
         const box = child as HTMLElement;
@@ -88,14 +94,15 @@ class HudCombatTarget extends HudTarget {
             ? "3px"
             : "1px";
         if (box.style) {
-          // detect side of border and update
-          if (box.style.borderTopWidth) box.style.borderTopWidth = borderWidth;
+          // detect side of border and update if changed
+          if (box.style.borderTopWidth)
+            ifChangedUpdateStyle(box, "borderTopWidth", borderWidth);
           if (box.style.borderLeftWidth)
-            box.style.borderLeftWidth = borderWidth;
+            ifChangedUpdateStyle(box, "borderLeftWidth", borderWidth);
           if (box.style.borderRightWidth)
-            box.style.borderRightWidth = borderWidth;
+            ifChangedUpdateStyle(box, "borderRightWidth", borderWidth);
           if (box.style.borderBottomWidth)
-            box.style.borderBottomWidth = borderWidth;
+            ifChangedUpdateStyle(box, "borderBottomWidth", borderWidth);
         }
       });
     }

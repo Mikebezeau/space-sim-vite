@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import useHudTargtingStore from "../stores/hudTargetingStore";
 import useWindowResize from "../hooks/useWindowResize";
 import CombatHudCrosshairInner from "./CombatHudCrosshairInner";
@@ -84,5 +84,4 @@ const FlightHud = () => {
   );
 };
 
-//export default React.memo(FlightHud);
-export default FlightHud;
+export default memo(FlightHud);

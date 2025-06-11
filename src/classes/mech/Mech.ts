@@ -699,10 +699,6 @@ class Mech implements mechInt {
         // ready all reloaded weapons
         if (!weapon.weaponFireData.isReady) {
           weapon.weaponFireData.isReady = true;
-          if (this.isPlayer) {
-            // trigger weapon readout rerender
-            usePlayerControlStore.getState().toggleWeaponUpdateUi();
-          }
         }
       }
     });
@@ -852,7 +848,7 @@ class Mech implements mechInt {
         this.testFlag = true; // testing
       }
       */
-      if (weapon.getAmmoCount() > 0) {
+      if (weapon.getAmmoCount() === null || weapon.getAmmoCount()! > 0) {
         weapon.reduceAmmo();
         // fire weapon / add weaponFire to weaponFireList for hit detection
         useWeaponFireStore
