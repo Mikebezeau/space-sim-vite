@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Color, Group, Mesh } from "three";
+import { Color, Group, Mesh, Vector3 } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import SolarSystem from "../../3d/solarSystem/SolarSystem";
 import Stations from "../../3d/mechs/Stations";
@@ -32,6 +32,7 @@ const SpaceFlightPlanetsScene = () => {
   const enemyRelativePlayerZoneGroupRef = useRef<Group | null>(null);
   // providing ref for forwardRef used in ObbTest component: not needed
   const obbBoxForwardedRefs = useRef<Mesh[]>([]);
+  const testPositionEquality = new Vector3(0, 0, 0);
 
   useFrame((_, delta) => {
     // must call updatePlayerMechAndCamera before
@@ -39,15 +40,29 @@ const SpaceFlightPlanetsScene = () => {
     updatePlayerMechAndCamera(delta, camera);
 
     // offsetting the player local zone group
-    if (relativePlayerLocalZoneGroupRef.current) {
-      relativePlayerLocalZoneGroupRef.current.position
-        .copy(playerLocalZonePosition)
-        .multiplyScalar(-1);
+    // if not equal, then set position
+    testPositionEquality.copy(playerLocalZonePosition).multiplyScalar(-1); // invert position to position group relative to player local zone
+    if (
+      relativePlayerLocalZoneGroupRef.current &&
+      testPositionEquality.equals(
+        relativePlayerLocalZoneGroupRef.current.position
+      ) === false
+    ) {
+      relativePlayerLocalZoneGroupRef.current.position.copy(
+        testPositionEquality
+      );
     }
     // offsetting the enemy local zone group
-    if (enemyRelativePlayerZoneGroupRef.current) {
+    // if not equal, then set position
+    testPositionEquality.copy(enemyGroup.getRealWorldPosition());
+    if (
+      enemyRelativePlayerZoneGroupRef.current &&
+      testPositionEquality.equals(
+        enemyRelativePlayerZoneGroupRef.current.position
+      ) === false
+    ) {
       enemyRelativePlayerZoneGroupRef.current.position.copy(
-        enemyGroup.getRealWorldPosition()
+        testPositionEquality
       );
     }
     // updatePlayerMechAndCamera updates the player position
@@ -55,16 +70,16 @@ const SpaceFlightPlanetsScene = () => {
 
   return (
     <>
-      <pointLight // light from star at (0,0,0)
-        intensity={1}
-        decay={0}
-      />
       <ambientLight intensity={0.4} color={new Color("#AAAAFF")} />
       <PlayerMech />
       <WeaponFire />
       <Particles />
 
       <group ref={relativePlayerLocalZoneGroupRef}>
+        <pointLight // light from star at (0,0,0)
+          intensity={1}
+          decay={0}
+        />
         <Stations />
         <SolarSystem />
       </group>
