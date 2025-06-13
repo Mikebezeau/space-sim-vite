@@ -17,8 +17,6 @@ import {
   IS_TOUCH_SCREEN,
 } from "../constants/constants";
 
-import { setCustomData } from "r3f-perf";
-
 // reusable objects
 const rotateShipQuat = new Quaternion(),
   adjustCameraViewQuat = new Quaternion(),
@@ -45,10 +43,10 @@ interface playerControlStoreState {
     middleClick: () => void;
   };
   // TODO move shoot to here
-  // todo USE flightCameraLookRotation IN TARGETING
-  flightCameraLookRotation: {
-    rotateX: number;
-    rotateY: number;
+  // todo USE playerLookRotateNormalVec2 IN TARGETING
+  playerLookRotateNormalVec2: {
+    x: number;
+    y: number;
   };
 
   isSwitchingPlayerScreen: boolean;
@@ -157,9 +155,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       // TODO mouse button hold actions
     },
 
-    flightCameraLookRotation: {
-      rotateX: 0,
-      rotateY: 0,
+    playerLookRotateNormalVec2: {
+      x: 0,
+      y: 0,
     },
 
     // isSwitchingPlayerScreen used in AppLoadingScreen to fade in screen
@@ -370,7 +368,7 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
             //useStore.getState().actions.setSpeed(speed);
 
             // if arriving at target position
-            if (currentDistance < speed! * 2) {
+            if (currentDistance < speed! * 2 * deltaFPS) {
               // *2 to reduce glitches
               // set player at target position
               player.object3d.position.copy(get().playerWarpToPosition!);
@@ -389,22 +387,21 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
 
         // update player camera look angle
         updatePlayerCameraLookAngle: () => {
-          get().flightCameraLookRotation.rotateX = lerp(
-            get().flightCameraLookRotation.rotateX,
+          get().playerLookRotateNormalVec2.x = lerp(
+            get().playerLookRotateNormalVec2.x, // didnt change these
             -useStore.getState().mutation.mouseControlNormalVec2.x,
             0.2
           );
 
-          get().flightCameraLookRotation.rotateY = lerp(
-            get().flightCameraLookRotation.rotateY,
+          get().playerLookRotateNormalVec2.y = lerp(
+            get().playerLookRotateNormalVec2.y, // didnt change these
             useStore.getState().mutation.mouseControlNormalVec2.y,
             0.2
           );
         },
 
         updatePlayerCockpitStyles1stPerson: () => {
-          const cockpitDivElement = get().cockpitDivElement;
-          if (cockpitDivElement) {
+          if (get().cockpitDivElement) {
             //let zoomOffsetY = get().zoomOffsetY;
             // move the cockpit down out of the way if isManualControl, back up if not
             get().zoomOffsetY = lerp(
@@ -416,21 +413,21 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
               0.1
             );
             // apply rotation/position styles to cockpit panels
-            [...cockpitDivElement.children].forEach((group: any) => {
+            [...get().cockpitDivElement!.children].forEach((group: any) => {
               group.style.transform = `
-                translate3d(${get().flightCameraLookRotation.rotateX * 60}vh, ${
-                -get().flightCameraLookRotation.rotateY * 60 + get().zoomOffsetY
+                translate3d(${get().playerLookRotateNormalVec2.x * 30}vh, ${
+                -get().playerLookRotateNormalVec2.y * 30 + get().zoomOffsetY
               }vh, 0)
                 rotate3d(1, 0, 0, ${
-                  -get().flightCameraLookRotation.rotateY * 20
+                  -get().playerLookRotateNormalVec2.y * 10
                 }deg)
-                rotateY(${get().flightCameraLookRotation.rotateX * 40}deg)`;
+                rotateY(${get().playerLookRotateNormalVec2.x * 20}deg)`;
               /*
               group.style.transform = `
                 translateX(${translateX}vh)
                 translateY(${translateY}vh)
-                rotateX(${-flightCameraLookRotation.rotateY * 20}deg)
-                rotateY(${-flightCameraLookRotation.rotateX * 40}deg)`;
+                rotateX(${-playerLookRotateNormalVec2.y * 20}deg)
+                rotateY(${-playerLookRotateNormalVec2.x * 40}deg)`;
                 */
               // the rotateX and rotateY are swapped because CSS rotations work that way
             });
@@ -438,31 +435,37 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         },
 
         setPlayerShipRotation: (deltaFPS) => {
-          const player = useStore.getState().player;
-          const mouseControlNormalVec2 =
-            useStore.getState().mutation.mouseControlNormalVec2;
           // rotate player ship based on mouseControlNormalVec2 position / controls
           if (get().isPlayerPilotControl()) {
             // MVmod is a modifier for rotation speed based on ship maneuverability
-            const MVmult = Math.PI / 24;
-            //10 / (player.mechBP.MV() < 0.1 ? 0.1 : player.mechBP.MV());
-            const adjustedManuverability = MVmult * deltaFPS;
+            const MVmult = (Math.PI / 24) * deltaFPS;
+            // TODO impliment player.mechBP.MV() properly and use to modify MVmult
             rotateShipQuat
               .set(
-                mouseControlNormalVec2.y * 0.05 * adjustedManuverability,
-                -mouseControlNormalVec2.x * 0.05 * adjustedManuverability,
-                mouseControlNormalVec2.x * 0.1 * adjustedManuverability,
+                useStore.getState().mutation.mouseControlNormalVec2.y *
+                  0.05 *
+                  MVmult,
+                -useStore.getState().mutation.mouseControlNormalVec2.x *
+                  0.05 *
+                  MVmult,
+                useStore.getState().mutation.mouseControlNormalVec2.x *
+                  0.1 *
+                  MVmult,
                 1
               )
               .normalize();
-            player.object3d.quaternion.multiply(rotateShipQuat);
+            useStore
+              .getState()
+              .player.object3d.quaternion.multiply(rotateShipQuat);
           }
         },
 
         updatePlayerSpeed: (deltaFPS) => {
           // deltaFPS to be used for acceleration / deceleration
-          const player = useStore.getState().player;
-          if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
+          if (
+            useStore.getState().player.speed !==
+            SPEED_VALUES[get().playerSpeedSetting]
+          ) {
             let speed = SPEED_VALUES[get().playerSpeedSetting];
             // changing player class properties does not trigger state subscriptions
             // need to use the setSpeed function that triggers togglePlayerPropUpdate() flag
@@ -471,13 +474,14 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         },
 
         updatePlayerPosition: (deltaFPS) => {
-          const player = useStore.getState().player;
           const devPlayerSpeedX1000 =
             useDevStore.getState().devPlayerSpeedX1000;
           const adjustedSpeed =
-            player.speed * deltaFPS * (devPlayerSpeedX1000 ? 1000 : 1);
+            useStore.getState().player.speed *
+            deltaFPS *
+            (devPlayerSpeedX1000 ? 1000 : 1);
           // move player ship forward / backward
-          player.object3d.translateZ(adjustedSpeed);
+          useStore.getState().player.object3d.translateZ(adjustedSpeed);
           // update player local zone position
           useStore.getState().playerPositionUpdated();
         },
@@ -503,13 +507,13 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
             // additional camera position based on mouse position
             // camera position moves in opposite way of mouse position
             camera.translateX(
-              get().flightCameraLookRotation.rotateX *
-                (4 / windowAspectRatio + 4) *
+              get().playerLookRotateNormalVec2.x *
+                (2 / windowAspectRatio + 4) *
                 player.mechBP.scale
             );
             camera.translateY(
-              get().flightCameraLookRotation.rotateY *
-                (4 / windowAspectRatio + 4) *
+              get().playerLookRotateNormalVec2.y *
+                (2 / windowAspectRatio + 4) *
                 player.mechBP.scale
             );
           }
@@ -524,8 +528,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           adjustCameraViewQuat.setFromAxisAngle(
             {
               // the sign for x is reversed for camera adjustment because camera angle is always reversed
-              x: -get().flightCameraLookRotation.rotateY * 0.4,
-              y: get().flightCameraLookRotation.rotateX * 0.4,
+              x: -get().playerLookRotateNormalVec2.y * 0.2,
+              y: get().playerLookRotateNormalVec2.x * 0.2,
               z: 0,
             },
             Math.PI / 2
@@ -538,8 +542,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           adjustCameraViewQuat.setFromAxisAngle(
             {
               // the sign for x is reversed for camera adjustment because camera angle is always reversed
-              x: get().flightCameraLookRotation.rotateY * 0.4,
-              y: get().flightCameraLookRotation.rotateX * 0.4,
+              x: get().playerLookRotateNormalVec2.y * 0.2,
+              y: get().playerLookRotateNormalVec2.x * 0.2,
               z: 0,
             },
             Math.PI / 2
