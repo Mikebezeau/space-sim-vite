@@ -16,7 +16,6 @@ const WeaponsReadout = () => {
     ) {
       useHudTargetingStore.getState().initWeaponsHudReadout();
     }
-    console.log(weaponsHudReadout);
   }, [weaponList, weaponsHudReadout]);
 
   return (

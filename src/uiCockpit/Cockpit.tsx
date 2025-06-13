@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import useStore from "../stores/store";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import CockpitPanelsRed from "./panels/CockpitPanelsRed";
@@ -19,15 +19,21 @@ const Cockpit = () => {
     (state) => state.playerActionMode
   );
 
+  const aspectRatio = useRef(window.innerWidth / window.innerHeight);
+
   useEffect(() => {
     const cockpitDivElement =
       usePlayerControlsStore.getState().cockpitDivElement;
+
     if (cockpitDivElement !== null) {
+      return;
       const isManualControl =
         usePlayerControlsStore.getState().getPlayerState().playerActionMode ===
         PLAYER.action.manualControl;
-      // changing perspective value instead of translateZ (was not working)
-      const perspective = isManualControl ? "200px" : "400px";
+      // changing perspective value to zoom in (translateZ was not working)
+      // use aspect ratio to modify perspective
+      //const aspectRatio = window.innerWidth / window.innerHeight;
+      const perspective = (isManualControl ? 300 : 200) + "px"; // * aspectRatio + "px";
       const cockpitPanelDivList = [...cockpitDivElement.children];
       cockpitPanelDivList.forEach((group: any) => {
         group.style.perspective = perspective;
@@ -74,4 +80,4 @@ const Cockpit = () => {
 };
 
 //export default React.memo(Cockpit);
-export default Cockpit;
+export default memo(Cockpit);

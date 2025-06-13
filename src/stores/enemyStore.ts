@@ -2,7 +2,7 @@ import { create } from "zustand";
 import * as THREE from "three";
 import EnemyMechGroup from "../classes/mech/EnemyMechGroup";
 
-const NUM_ENEMIES = 50;
+const NUM_ENEMIES = 150;
 
 // from https://www.youtube.com/watch?v=bqtqltqcQhw
 // TODO can use this as directions for boids to check path for boids to avoid obstacles

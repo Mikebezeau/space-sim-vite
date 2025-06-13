@@ -148,7 +148,6 @@ const PanelMiddleRed = () => {
       className="w-full h-full bg-center bg-no-repeat bg-contain"
       style={{
         backgroundImage: `url(${cockpitImage})`,
-        //transform: `translateX(0vh) translateY(0vh) translateZ(0vh) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`,
       }}
     >
       <div>

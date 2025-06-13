@@ -17,6 +17,8 @@ import {
   IS_TOUCH_SCREEN,
 } from "../constants/constants";
 
+import { setCustomData } from "r3f-perf";
+
 // reusable objects
 const rotateShipQuat = new Quaternion(),
   adjustCameraViewQuat = new Quaternion(),
@@ -81,10 +83,7 @@ interface playerControlStoreState {
   updateFrame: {
     updateFrameHelpers: {
       updatePlayerWarpFrame: (deltaFPS: number) => void;
-      updatePlayerCameraLookAngle: (
-        deltaFPS: number,
-        angleNorm?: { x: number; y: number }
-      ) => void;
+      updatePlayerCameraLookAngle: () => void;
       updatePlayerCockpitStyles1stPerson: () => void;
       setPlayerShipRotation: (deltaFPS: number) => void;
       updatePlayerSpeed: (deltaFPS: number) => void;
@@ -389,53 +388,50 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
         },
 
         // update player camera look angle
-        updatePlayerCameraLookAngle: (deltaFPS, angleNorm) => {
-          const mouseControlNormalVec2 =
-            angleNorm || useStore.getState().mutation.mouseControlNormalVec2;
-          const lerpSpeed = 0.2; // isInitializeNoLerp ? 1 : 0.2; //view lerp speed
-
-          const targetRotationX = -mouseControlNormalVec2.x / 2; // TODO
-          const targetRotationY = mouseControlNormalVec2.y / 2;
-
-          // TODO is * deltaFPS right adjustment?
+        updatePlayerCameraLookAngle: () => {
           get().flightCameraLookRotation.rotateX = lerp(
             get().flightCameraLookRotation.rotateX,
-            targetRotationX,
-            lerpSpeed // * deltaFPS
+            -useStore.getState().mutation.mouseControlNormalVec2.x,
+            0.2
           );
 
           get().flightCameraLookRotation.rotateY = lerp(
             get().flightCameraLookRotation.rotateY,
-            targetRotationY,
-            lerpSpeed
+            useStore.getState().mutation.mouseControlNormalVec2.y,
+            0.2
           );
         },
 
         updatePlayerCockpitStyles1stPerson: () => {
           const cockpitDivElement = get().cockpitDivElement;
           if (cockpitDivElement) {
-            let zoomOffsetY = get().zoomOffsetY;
-
-            const flightCameraLookRotation = get().flightCameraLookRotation;
-            const isManualControl =
-              get().getPlayerState().playerActionMode ===
-              PLAYER.action.manualControl;
+            //let zoomOffsetY = get().zoomOffsetY;
             // move the cockpit down out of the way if isManualControl, back up if not
-            const lerpToY = isManualControl ? 20 : 0;
-            zoomOffsetY = lerp(zoomOffsetY, lerpToY, 0.15);
-            const translateX = flightCameraLookRotation.rotateX * 60;
-            const translateY =
-              -flightCameraLookRotation.rotateY *
-                60 *
-                (isManualControl ? 0.5 : 1) +
-              zoomOffsetY;
+            get().zoomOffsetY = lerp(
+              get().zoomOffsetY,
+              get().getPlayerState().playerActionMode ===
+                PLAYER.action.manualControl
+                ? 20
+                : 0,
+              0.1
+            );
             // apply rotation/position styles to cockpit panels
             [...cockpitDivElement.children].forEach((group: any) => {
+              group.style.transform = `
+                translate3d(${get().flightCameraLookRotation.rotateX * 60}vh, ${
+                -get().flightCameraLookRotation.rotateY * 60 + get().zoomOffsetY
+              }vh, 0)
+                rotate3d(1, 0, 0, ${
+                  -get().flightCameraLookRotation.rotateY * 20
+                }deg)
+                rotateY(${get().flightCameraLookRotation.rotateX * 40}deg)`;
+              /*
               group.style.transform = `
                 translateX(${translateX}vh)
                 translateY(${translateY}vh)
                 rotateX(${-flightCameraLookRotation.rotateY * 20}deg)
                 rotateY(${-flightCameraLookRotation.rotateX * 40}deg)`;
+                */
               // the rotateX and rotateY are swapped because CSS rotations work that way
             });
           }
@@ -463,8 +459,8 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           }
         },
 
-        // TODO add acceleration / deceleration
         updatePlayerSpeed: (deltaFPS) => {
+          // deltaFPS to be used for acceleration / deceleration
           const player = useStore.getState().player;
           if (player.speed !== SPEED_VALUES[get().playerSpeedSetting]) {
             let speed = SPEED_VALUES[get().playerSpeedSetting];
@@ -574,19 +570,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       updatePlayerMechAndCamera: (delta, camera) => {
         delta = Math.min(delta, 0.1); // cap delta to 100ms
         const deltaFPS = delta * FPS;
+        get().updateFrame.updateFrameHelpers.updatePlayerCameraLookAngle();
         if (get().playerWarpToPosition !== null) {
-          get().updateFrame.updateFrameHelpers.updatePlayerCameraLookAngle(
-            deltaFPS,
-            {
-              x: 0,
-              y: 0,
-            }
-          );
           get().updateFrame.updateFrameHelpers.updatePlayerWarpFrame(deltaFPS);
         } else {
-          get().updateFrame.updateFrameHelpers.updatePlayerCameraLookAngle(
-            deltaFPS
-          );
           get().updateFrame.updateFrameHelpers.updatePlayerCockpitStyles1stPerson();
           get().updateFrame.updateFrameHelpers.setPlayerShipRotation(deltaFPS);
           get().updateFrame.updateFrameHelpers.updatePlayerSpeed(deltaFPS);
