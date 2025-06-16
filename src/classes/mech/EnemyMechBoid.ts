@@ -16,8 +16,7 @@ interface enemyMechBoidInt {
 }
 
 class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
-  // target for BoidController seek
-  isNeedsNewTarget: boolean;
+  isNeedsNewTarget: boolean; // target for BoidController seek
   currentOrders: number; // ENEMY_MECH_ORDERS
   targetPosition: THREE.Vector3;
   // BoidController vars
@@ -52,7 +51,6 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
 
   constructor(enemyMechBPindex: number = 0, isBossMech: boolean = false) {
     super(enemyMechBPindex, isBossMech);
-
     // BoidController vars
     this.isNeedsNewTarget = true;
     this.currentOrders = ENEMY_MECH_ORDERS.none;

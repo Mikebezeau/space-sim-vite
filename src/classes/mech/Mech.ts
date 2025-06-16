@@ -128,7 +128,6 @@ class Mech implements mechInt {
     isStation: boolean = false // testing
   ) {
     this.testFlag = false; // testing flag for debugging
-
     this.realWorldPosition = new THREE.Vector3();
     this.id = uuidv4();
     this.isPlayer = isPlayer;

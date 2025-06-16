@@ -413,22 +413,16 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
               0.1
             );
             // apply rotation/position styles to cockpit panels
+            // TODO test perf gain from transform: translate3d
+            // and rotate3d
             [...get().cockpitDivElement!.children].forEach((group: any) => {
               group.style.transform = `
                 translate3d(${get().playerLookRotateNormalVec2.x * 30}vh, ${
                 -get().playerLookRotateNormalVec2.y * 30 + get().zoomOffsetY
               }vh, 0)
-                rotate3d(1, 0, 0, ${
-                  -get().playerLookRotateNormalVec2.y * 10
-                }deg)
-                rotateY(${get().playerLookRotateNormalVec2.x * 20}deg)`;
-              /*
-              group.style.transform = `
-                translateX(${translateX}vh)
-                translateY(${translateY}vh)
-                rotateX(${-playerLookRotateNormalVec2.y * 20}deg)
-                rotateY(${-playerLookRotateNormalVec2.x * 40}deg)`;
-                */
+                rotate3d(${-get().playerLookRotateNormalVec2.y}, ${
+                get().playerLookRotateNormalVec2.x * 2
+              }, 0, 10deg)`;
               // the rotateX and rotateY are swapped because CSS rotations work that way
             });
           }

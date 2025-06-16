@@ -10,12 +10,59 @@ import MissileInstancedMesh from "./MissileInstancedMesh ";
 import { defenseNodesType } from "../../classes/mech/EnemyMechGroup";
 import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
 
+// testing
+import useBoidWorkerStore from "../../stores/boidWorkerStore";
+
 const WeaponFire = () => {
   const defenseNodesRef = useRef<defenseNodesType | null>(null);
   const { scene } = useThree();
   // for testing ray position and direction
   const testArrowHelper = false; // can impliment this in testing GUI
   const arrowHelperRef = useRef<THREE.ArrowHelper>(new THREE.ArrowHelper());
+
+  /*
+  const [result, setResult] = useState<any>(null);
+  const workerRef = useRef<Worker | null>(null);
+
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL("../../webWorkers/boidWorker.ts", import.meta.url)
+    );
+
+    workerRef.current.onmessage = (event) => {
+      setResult(event.data);
+      console.log("Worker message received:", event.data);
+    };
+
+    return () => {
+      console.log("Terminating worker");
+      workerRef.current?.terminate();
+    };
+  }, []);
+
+  const runTask = (data) => {
+    if (!workerRef.current) {
+      console.error("Worker is not initialized", workerRef.current);
+      return;
+    }
+    workerRef.current?.postMessage(data);
+  };
+  */
+
+  // testing BoidWorkerStore
+  useEffect(() => {
+    // Set a callback to handle worker data
+    useBoidWorkerStore
+      .getState()
+      .boidWorkerController.updateAllData(
+        useEnemyStore.getState().enemyGroup.enemyMechs
+      );
+
+    return () => {
+      // Clean up the worker when the component unmounts
+      useBoidWorkerStore.getState().boidWorkerController.terminateWorker();
+    };
+  }, []);
 
   useEffect(() => {
     if (testArrowHelper) scene.add(arrowHelperRef.current);
@@ -26,6 +73,9 @@ const WeaponFire = () => {
   }, [testArrowHelper]);
 
   useFrame((_, delta) => {
+    //r TODO send delta time in milliseconds to worker
+    //useBoidWorkerStore.getState().boidWorkerController.commandWorkerToRun();
+
     // synch player and enemy world zone positions
     if (
       !useStore
