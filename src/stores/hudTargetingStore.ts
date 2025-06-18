@@ -321,6 +321,17 @@ const useHudTargtingStore = create<hudTargetingGalaxyMapStoreState>()(
         return 0;
       });
 
+      // if combat mode, limit number of targets to show at 20
+      if (
+        playerControlMode === PLAYER.controls.combat &&
+        playerControlModeTargets.length > 10
+      ) {
+        // for each playerControlModeTargets element after the 10th, set isActive to false
+        for (let i = 10; i < playerControlModeTargets.length; i++) {
+          playerControlModeTargets[i].isActive = false; // hide target
+        }
+      }
+
       // update focused hud target z-index and CSS class
       // focused target is the one closest to the center of the screen
       // only set if there is an active target
