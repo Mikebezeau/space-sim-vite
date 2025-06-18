@@ -41,6 +41,7 @@ export type typeBoidData = {
  */
 
 interface boidWorkerControllerInt {
+  initWorker: () => void;
   updateAllData: (mechArray: EnemyMechBoid[]) => void;
   commandWorkerToRun: () => void;
   terminateWorker: () => void;
@@ -49,41 +50,47 @@ interface boidWorkerControllerInt {
 
 class BoidWorkerController implements boidWorkerControllerInt {
   isBusy: boolean;
-  #worker: Worker;
+  #worker: Worker | null; // The web worker instance
   #dataArray: Float32Array; // The single shared data array
   #mechElementsRef: EnemyMechBoid[]; // Reference to the original EnemyMechBoid[] array in the game
   //#onWorkerDataReceivedCallback: (updatedMechs: EnemyMechBoid[]) => void | null;
 
-  //* @param onWorkerDataReceivedCallback - Callback function to execute when worker returns updated mech data.
-
   constructor() {
     //onWorkerDataReceivedCallback: (updatedMechs: EnemyMechBoid[]) => void | null
-    this.#worker = new Worker(
-      new URL("../webWorkers/boidWorker.ts", import.meta.url),
-      { type: "module" }
-    );
+    this.#worker = null;
 
     //this.#onWorkerDataReceivedCallback = onWorkerDataReceivedCallback;
     this.isBusy = false; // Flag to indicate if the worker is currently processing data
     // Instantiate the typed array once at the beginning
     this.#dataArray = new Float32Array(ARRAY_SIZE);
     this.#mechElementsRef = []; // Initialize as empty, will be set by updateAllData
+  }
+
+  /**
+   * Initializes the worker and prepares the data array.
+   * This method should be called once at the start of the application.
+   */
+  initWorker(): void {
+    this.#worker = new Worker(
+      new URL("../webWorkers/boidWorker.ts", import.meta.url),
+      { type: "module" }
+    );
 
     this.#worker.onmessage = this.#handleWorkerMessage.bind(this);
     this.#worker.onerror = this.#handleWorkerError.bind(this);
 
-    console.log(
-      `BoidWorkerController initialized. Data array size: ${ARRAY_SIZE}`
-    );
+    // Initialize the worker and data array
+    this.#dataArray = new Float32Array(ARRAY_SIZE);
+    this.#mechElementsRef = []; // Reset reference to mech elements
+    this.isBusy = false; // Reset busy flag
+    // Optionally, you can send an initial message to the worker if needed
+    // this.#worker.postMessage({ type: "init", size: ARRAY_SIZE });
   }
 
   /**
    * Updates player and EnemyMechBoid data in the single typed array.
    * This method should be called once per animation frame before commanding the worker.
    * It also saves a reference to the incoming EnemyMechBoid[] array.
-   *
-   * @param playerData - The latest player data.
-   * @param mechArray - The array of EnemyMechBoid objects whose data will be encoded.
    */
   updateAllData(mechArray: EnemyMechBoid[]): void {
     const playerData: typePlayerData = {
@@ -153,6 +160,10 @@ class BoidWorkerController implements boidWorkerControllerInt {
    * The original `this.#dataArray` instance will become 'neutered' after this call.
    */
   commandWorkerToRun(): void {
+    if (!this.#worker) {
+      console.error("BoidWorkerController: Worker is not initialized.");
+      return;
+    }
     if (this.isBusy) {
       console.warn(
         "BoidWorkerController: Worker is busy. Cannot command to run."
@@ -269,7 +280,7 @@ class BoidWorkerController implements boidWorkerControllerInt {
    * Terminates the web worker. Should be called when the worker is no longer needed.
    */
   terminateWorker(): void {
-    this.#worker.terminate();
+    this.#worker?.terminate();
     console.log("BoidWorkerController: Worker terminated.");
   }
 }

@@ -51,6 +51,9 @@ const WeaponFire = () => {
 
   // testing BoidWorkerStore
   useEffect(() => {
+    // Initialize the BoidWorkerController
+    useBoidWorkerStore.getState().boidWorkerController.initWorker();
+
     // Set a callback to handle worker data
     useBoidWorkerStore
       .getState()
