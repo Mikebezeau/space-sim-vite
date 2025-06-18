@@ -1,40 +1,37 @@
 import * as THREE from "three";
-import WorkerMechBoid from "./mech/WorkerMechBoid";
+import useStore from "../../stores/store";
+import useDevStore from "../../stores/devStore";
+import EnemyMechGroup from "../mech/EnemyMechGroup";
+import EnemyMechBoid from "../mech/EnemyMechBoid";
 import {
   MECH_BIOD_PARAMS,
   ENEMY_MECH_ORDERS,
-} from "../constants/mechConstants";
+} from "../../constants/mechConstants";
 
-interface boidControllerInt {
-  updateUseFrameBoids: (
-    playerPosition: THREE.Vector3,
-    playerMaxHalfWidth: number
-  ) => void;
-  seek: (currentMech: WorkerMechBoid, target: THREE.Vector3) => THREE.Vector3;
-  addAlignVector: (mech1: WorkerMechBoid, mech2: WorkerMechBoid) => void;
-  normalizeAlignVector: (currentMech: WorkerMechBoid) => THREE.Vector3;
-  addSeparateVector: (mech1: WorkerMechBoid, mech2: WorkerMechBoid) => void;
-  addSeparateVectorAvoidPlayer: (
-    currentMech: WorkerMechBoid,
-    playerPosition: THREE.Vector3,
-    playerMaxHalfWidth: number
-  ) => void;
-  normalizeSeparateVector: (currentMech: WorkerMechBoid) => THREE.Vector3;
-  addCohesionVector: (mech1: WorkerMechBoid, mech2: WorkerMechBoid) => void;
-  setCohesionGroupVector: (currentMech: WorkerMechBoid) => void;
-  normalizeCohesionVector: (currentMech: WorkerMechBoid) => THREE.Vector3;
-  avoid: (currentMech: WorkerMechBoid, wall: THREE.Vector3) => THREE.Vector3;
-  setWanderTarget: (currentMech: WorkerMechBoid, radius: number) => void;
+export interface boidControllerInt {
+  updateDevStorePropModifiers: () => void;
+  updateUseFrameBoids: () => void;
+  seek: (currentMech: EnemyMechBoid, target: THREE.Vector3) => THREE.Vector3;
+  addAlignVector: (mech1: EnemyMechBoid, mech2: EnemyMechBoid) => void;
+  normalizeAlignVector: (currentMech: EnemyMechBoid) => THREE.Vector3;
+  addSeparateVector: (mech1: EnemyMechBoid, mech2: EnemyMechBoid) => void;
+  addSeparateVectorAvoidPlayer: (currentMech: EnemyMechBoid) => void;
+  normalizeSeparateVector: (currentMech: EnemyMechBoid) => THREE.Vector3;
+  addCohesionVector: (mech1: EnemyMechBoid, mech2: EnemyMechBoid) => void;
+  setCohesionGroupVector: (currentMech: EnemyMechBoid) => void;
+  normalizeCohesionVector: (currentMech: EnemyMechBoid) => THREE.Vector3;
+  avoid: (currentMech: EnemyMechBoid, wall: THREE.Vector3) => THREE.Vector3;
+  setWanderTarget: (currentMech: EnemyMechBoid, radius: number) => void;
   seekOrbitTarget: (
-    currentMech: WorkerMechBoid,
+    currentMech: EnemyMechBoid,
     targetVec3: THREE.Vector3,
     radius?: number
   ) => THREE.Vector3;
 }
 
 class BoidController implements boidControllerInt {
-  workerMechBoids: WorkerMechBoid[];
-  bossMech?: WorkerMechBoid | undefined;
+  enemyMechGroup: EnemyMechGroup;
+  bossMech?: EnemyMechBoid;
   params: any;
   seekGoalVector: THREE.Vector3;
   seekSteerVector: THREE.Vector3;
@@ -47,10 +44,9 @@ class BoidController implements boidControllerInt {
 
   home: THREE.Vector3; // not used
 
-  constructor(workerMechBoids: WorkerMechBoid[]) {
-    // initialize workerMechBoids array with WorkerMechBoid instances
-    this.workerMechBoids = workerMechBoids;
-    this.bossMech = undefined;
+  constructor(enemyMechGroup: EnemyMechGroup) {
+    this.enemyMechGroup = enemyMechGroup;
+    this.bossMech = enemyMechGroup.enemyMechs.find((mech) => mech.isBossMech);
     this.params = MECH_BIOD_PARAMS;
     this.seekGoalVector = new THREE.Vector3();
     this.seekSteerVector = new THREE.Vector3();
@@ -63,41 +59,46 @@ class BoidController implements boidControllerInt {
     this.home = new THREE.Vector3(0, 0, 0);
   }
 
-  updateUseFrameBoids(
-    playerPosition: THREE.Vector3,
-    playerMaxHalfWidth: number
-  ) {
+  updateDevStorePropModifiers() {
+    const { boidAlignmentMod, boidSeparationMod, boidCohesionMod } =
+      useDevStore.getState();
+    this.params.align.maxForce = boidAlignmentMod;
+    this.params.separate.maxForce = boidSeparationMod;
+    this.params.cohesion.maxForce = boidCohesionMod;
+    /*
+    this.params.align.effectiveRange = boidAlignmentRangeMod;
+    this.params.cohesion.effectiveRange = 50 + boidCohesionRangeMod;
+    */
+  }
+
+  updateUseFrameBoids() {
     // reset all mech boid vars
-    this.workerMechBoids.forEach((mech) => {
+    this.enemyMechGroup.enemyMechs.forEach((mech) => {
       mech.resetVectors();
     });
 
     // calculate flocking behaviour of mechs
-    for (let i = 0, il = this.workerMechBoids.length; i < il; i++) {
-      const mech1 = this.workerMechBoids[i];
-
+    for (let i = 0, il = this.enemyMechGroup.enemyMechs.length; i < il; i++) {
+      const mech1 = this.enemyMechGroup.enemyMechs[i];
       // skip this mech if it is in a state that should be ignored
-      if (!mech1.isActive) {
+      if (mech1.isMechDead()) {
         continue;
       }
 
-      const leaderMech =
-        mech1.leaderIndex > -1
-          ? this.workerMechBoids[mech1.leaderIndex]
-          : undefined;
+      const leaderMech = this.enemyMechGroup.getLeaderMech(mech1);
 
       // if mech has a group and is not the leader, follow leader - and orbit leader if target reached
-      if (mech1.getHasGroup() && !mech1.getIsLeader(i)) {
-        if (!mech1.getIsLeader(i) && leaderMech) {
+      if (mech1.getHasGroup() && !mech1.getIsLeader()) {
+        if (!mech1.getIsLeader() && leaderMech) {
           mech1.applyForce(
             this.seekOrbitTarget(
               mech1,
-              leaderMech.position,
+              leaderMech.object3d.position,
               mech1.maxHalfWidth * 5 + leaderMech.maxHalfWidth * 5
             )
           );
         }
-        if (!mech1.getIsLeader(i) && leaderMech !== this.bossMech) {
+        if (!mech1.getIsLeader() && leaderMech !== this.bossMech) {
           // if not leader and leader is not boss, apply group cohesion
           if (mech1.getHasGroup()) {
             this.setCohesionGroupVector(mech1);
@@ -106,13 +107,19 @@ class BoidController implements boidControllerInt {
       }
 
       // if mech is wandering and needs a target, set target
-      if (mech1.getIsLeader(i)) {
+      if (mech1.getIsLeader()) {
         // seek current target
         if (mech1.currentOrders === ENEMY_MECH_ORDERS.defend) {
           // if player nearby, seek player
-          if (mech1.position.distanceTo(playerPosition) < 500) {
+          if (
+            mech1.object3d.position.distanceTo(
+              useStore.getState().player.object3d.position
+            ) < 500
+          ) {
             // seek player position
-            mech1.applyForce(this.seek(mech1, playerPosition));
+            mech1.applyForce(
+              this.seek(mech1, useStore.getState().player.object3d.position)
+            );
           } else {
             // seek target position
             mech1.applyForce(this.seek(mech1, mech1.targetPosition));
@@ -122,7 +129,7 @@ class BoidController implements boidControllerInt {
           // TODO 100 is a placeholder - use hitboxMaxHalfWidth for calculations - make same as seek
           // create variable for target distance minimum
           // TODO can put this in boid mech class
-          if (mech1.position.distanceTo(mech1.targetPosition) < 100) {
+          if (mech1.object3d.position.distanceTo(mech1.targetPosition) < 100) {
             mech1.isNeedsNewTarget = true;
           }
           if (mech1.isNeedsNewTarget) {
@@ -135,10 +142,16 @@ class BoidController implements boidControllerInt {
           // stay within range of boss mech
           if (this.bossMech) {
             // orbit boss mech at current distance
-            const distance = mech1.position.distanceTo(this.bossMech.position);
+            const distance = mech1.object3d.position.distanceTo(
+              this.bossMech.object3d.position
+            );
             // TODO obrbit path goes further and further away from boss mech
             mech1.applyForce(
-              this.seekOrbitTarget(mech1, this.bossMech.position, distance)
+              this.seekOrbitTarget(
+                mech1,
+                this.bossMech.object3d.position,
+                distance
+              )
             );
           } else {
             // stay within range of home
@@ -149,10 +162,14 @@ class BoidController implements boidControllerInt {
 
       // check other mechs for: addAlignVector addCohesionVector addSeparateVector
       // only check mechs against eachother once and apply forces to each
-      for (let j = i + 1, jl = this.workerMechBoids.length; j < jl; j++) {
-        const mech2 = this.workerMechBoids[j];
+      for (
+        let j = i + 1, jl = this.enemyMechGroup.enemyMechs.length;
+        j < jl;
+        j++
+      ) {
+        const mech2 = this.enemyMechGroup.enemyMechs[j];
         // skip this mech if it is in a state that should be ignored
-        if (!mech2.isActive) {
+        if (mech2.isMechDead()) {
           continue;
         }
         if (leaderMech !== this.bossMech) {
@@ -174,11 +191,7 @@ class BoidController implements boidControllerInt {
       );
       */
 
-      this.addSeparateVectorAvoidPlayer(
-        mech1,
-        playerPosition,
-        playerMaxHalfWidth
-      );
+      this.addSeparateVectorAvoidPlayer(mech1);
       // all flocking forces have been calculated for mech1, apply forces to mech1
       mech1.applyForce(this.normalizeAlignVector(mech1));
       mech1.applyForce(this.normalizeSeparateVector(mech1));
@@ -190,9 +203,7 @@ class BoidController implements boidControllerInt {
     }
   }
 
-  // UTILITY FUNCTIONS
-
-  seek(currentMech: WorkerMechBoid, target: THREE.Vector3 | null) {
+  seek(currentMech: EnemyMechBoid, target: THREE.Vector3 | null) {
     if (!target) {
       this.seekGoalVector.set(0, 0, 0);
       return this.seekSteerVector;
@@ -200,7 +211,7 @@ class BoidController implements boidControllerInt {
     const maxSpeed = this.params.maxSpeed;
     const maxForce = this.params.seek.maxForce;
     this.seekGoalVector.set(0, 0, 0);
-    this.seekGoalVector.subVectors(target, currentMech.position);
+    this.seekGoalVector.subVectors(target, currentMech.object3d.position);
     //const distance = this.seekGoalVector.length(); // not used
     this.seekGoalVector.normalize();
     this.seekGoalVector.multiplyScalar(maxSpeed);
@@ -211,7 +222,7 @@ class BoidController implements boidControllerInt {
       this.seekSteerVector.clampLength(0, maxForce);
     }
     // if close enogh to target do not apply any force
-    const distance = currentMech.position.distanceTo(target);
+    const distance = currentMech.object3d.position.distanceTo(target);
     if (distance < currentMech.maxHalfWidth * 4) {
       this.seekSteerVector.set(0, 0, 0);
     }
@@ -225,10 +236,10 @@ class BoidController implements boidControllerInt {
     return this.seekSteerVector;
   }
 
-  addAlignVector(mech1: WorkerMechBoid, mech2: WorkerMechBoid) {
+  addAlignVector(mech1: EnemyMechBoid, mech2: EnemyMechBoid) {
     const effectiveRange = this.params.align.effectiveRange;
 
-    const dist = mech1.position.distanceTo(mech2.position);
+    const dist = mech1.object3d.position.distanceTo(mech2.object3d.position);
     if (dist > 0 && dist < effectiveRange) {
       mech1.alignSumVector.add(mech2.velocity);
       mech1.alignCount++;
@@ -237,7 +248,7 @@ class BoidController implements boidControllerInt {
     }
   }
 
-  normalizeAlignVector(currentMech: WorkerMechBoid) {
+  normalizeAlignVector(currentMech: EnemyMechBoid) {
     if (currentMech.alignCount > 0) {
       const maxSpeed = this.params.maxSpeed;
       const maxForce = this.params.align.maxForce;
@@ -258,15 +269,18 @@ class BoidController implements boidControllerInt {
     return currentMech.alignSteerVector;
   }
 
-  addSeparateVector(mech1: WorkerMechBoid, mech2: WorkerMechBoid) {
-    const dist = mech1.position.distanceTo(mech2.position);
+  addSeparateVector(mech1: EnemyMechBoid, mech2: EnemyMechBoid) {
+    const dist = mech1.object3d.position.distanceTo(mech2.object3d.position);
     const separateDistance =
       mech1.maxHalfWidth +
       mech2.maxHalfWidth * this.params.separate.effectiveRangeMult;
     if (dist > 0 && dist < separateDistance) {
       // mech1
       this.toMeVector.set(0, 0, 0);
-      this.toMeVector.subVectors(mech1.position, mech2.position);
+      this.toMeVector.subVectors(
+        mech1.object3d.position,
+        mech2.object3d.position
+      );
       this.toMeVector.normalize();
       this.toMeVector.divideScalar(dist / separateDistance);
       // mech1
@@ -283,19 +297,19 @@ class BoidController implements boidControllerInt {
     }
   }
 
-  addSeparateVectorAvoidPlayer(
-    mech1: WorkerMechBoid,
-    playerPosition: THREE.Vector3,
-    playerMaxHalfWidth: number
-  ) {
-    const dist = mech1.position.distanceTo(playerPosition);
+  addSeparateVectorAvoidPlayer(mech1: EnemyMechBoid) {
+    const player = useStore.getState().player;
+    const dist = mech1.object3d.position.distanceTo(player.object3d.position);
     const separateDistance =
       mech1.maxHalfWidth +
-      playerMaxHalfWidth * this.params.separate.effectiveRangeMult;
+      player.maxHalfWidth * this.params.separate.effectiveRangeMult;
     if (dist > 0 && dist < separateDistance) {
       // mech1
       this.toMeVector.set(0, 0, 0);
-      this.toMeVector.subVectors(mech1.position, playerPosition);
+      this.toMeVector.subVectors(
+        mech1.object3d.position,
+        player.object3d.position
+      );
       this.toMeVector.normalize();
       this.toMeVector.divideScalar(dist / separateDistance);
       // mech1
@@ -307,7 +321,7 @@ class BoidController implements boidControllerInt {
     }
   }
 
-  normalizeSeparateVector(currentMech: WorkerMechBoid) {
+  normalizeSeparateVector(currentMech: EnemyMechBoid) {
     if (currentMech.separateCount > 0) {
       const maxSpeed = this.params.maxSpeed;
       const maxForce = this.params.separate.maxForce;
@@ -328,23 +342,22 @@ class BoidController implements boidControllerInt {
     return currentMech.seperateSteerVector;
   }
 
-  addCohesionVector(mech1: WorkerMechBoid, mech2: WorkerMechBoid) {
+  addCohesionVector(mech1: EnemyMechBoid, mech2: EnemyMechBoid) {
     const effectiveRange = this.params.cohesion.effectiveRange;
     // general cohesion
-    const dist = mech1.position.distanceTo(mech2.position);
+    const dist = mech1.object3d.position.distanceTo(mech2.object3d.position);
     if (dist > 0 && dist < effectiveRange) {
-      mech1.cohesionSumVector.add(mech2.position);
+      mech1.cohesionSumVector.add(mech2.object3d.position);
       mech1.cohesionCount++;
-      mech2.cohesionSumVector.add(mech1.position);
+      mech2.cohesionSumVector.add(mech1.object3d.position);
       mech2.cohesionCount++;
     }
   }
 
-  setCohesionGroupVector(currentMech: WorkerMechBoid) {
+  setCohesionGroupVector(currentMech: EnemyMechBoid) {
     // no minimum distance to flock to group leader
-    if (currentMech.leaderIndex < 0) return;
     const leaderPosition =
-      this.workerMechBoids[currentMech.leaderIndex].position;
+      this.enemyMechGroup.getLeaderMech(currentMech)?.object3d.position;
 
     if (leaderPosition) {
       currentMech.cohesionSumVector.copy(leaderPosition);
@@ -352,7 +365,7 @@ class BoidController implements boidControllerInt {
     }
   }
 
-  normalizeCohesionVector(currentMech: WorkerMechBoid) {
+  normalizeCohesionVector(currentMech: EnemyMechBoid) {
     if (currentMech.cohesionCount > 0) {
       currentMech.cohesionSumVector.divideScalar(currentMech.cohesionCount);
       currentMech.cohesionSteerVector.add(
@@ -364,12 +377,15 @@ class BoidController implements boidControllerInt {
   }
 
   avoid(
-    currentMech: WorkerMechBoid,
+    currentMech: EnemyMechBoid,
     avoidPosition = new THREE.Vector3(),
     avoidDistance = 100
   ) {
     this.avoidSteerVector.set(0, 0, 0);
-    this.avoidSteerVector.subVectors(currentMech.position, avoidPosition);
+    this.avoidSteerVector.subVectors(
+      currentMech.object3d.position,
+      avoidPosition
+    );
     const distance = this.toMeVector.length();
     if (distance > avoidDistance) {
       this.avoidSteerVector.normalize();
@@ -387,7 +403,7 @@ class BoidController implements boidControllerInt {
     return this.avoidSteerVector;
   }
 
-  setWanderTarget(currentMech: WorkerMechBoid, radius = 100) {
+  setWanderTarget(currentMech: EnemyMechBoid, radius = 100) {
     // select random point within radius
     // TODO make sure point is not within radius of obsticals
     currentMech.targetPosition.random();
@@ -396,19 +412,19 @@ class BoidController implements boidControllerInt {
   }
 
   seekOrbitTarget(
-    currentMech: WorkerMechBoid,
+    currentMech: EnemyMechBoid,
     targetVec3: THREE.Vector3,
     radius = 100
   ) {
     // get closest point of ring on x plane of radius distance from target
     const angle = Math.atan2(
-      currentMech.position.z - targetVec3.z,
-      currentMech.position.x - targetVec3.x
+      currentMech.object3d.position.z - targetVec3.z,
+      currentMech.object3d.position.x - targetVec3.x
     );
     this.toMeVector.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
 
     // distance to orbit ring target position
-    const distance = currentMech.position.distanceTo(this.toMeVector);
+    const distance = currentMech.object3d.position.distanceTo(this.toMeVector);
     const orbitRingWidth = radius / 3;
     // travel closer to target before starting orbit
     if (distance > orbitRingWidth) {

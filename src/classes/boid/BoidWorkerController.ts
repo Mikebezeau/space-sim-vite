@@ -1,11 +1,11 @@
-import useStore from "../stores/store";
-import EnemyMechBoid from "./mech/EnemyMechBoid";
+import useStore from "../../stores/store";
+import EnemyMechBoid from "../mech/EnemyMechBoid";
 import { setCustomData } from "r3f-perf";
 import {
   PLAYER_PROPS_COUNT,
   MECH_PROPS_COUNT,
   MAX_MECHS,
-} from "../constants/boidConstants";
+} from "../../constants/boidConstants";
 // Calculate the total size of the Float32Array
 export const ARRAY_SIZE = PLAYER_PROPS_COUNT + MECH_PROPS_COUNT * MAX_MECHS;
 
