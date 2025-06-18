@@ -13,7 +13,7 @@ import { COMPONENT_RENDER_ORDER } from "../../constants/constants";
 // testing
 import useBoidWorkerStore from "../../stores/boidWorkerStore";
 
-const WeaponFire = () => {
+const BattleZone = () => {
   const defenseNodesRef = useRef<defenseNodesType | null>(null);
   const { scene } = useThree();
   // for testing ray position and direction
@@ -137,4 +137,4 @@ const WeaponFire = () => {
   );
 };
 
-export default memo(WeaponFire);
+export default memo(BattleZone);
