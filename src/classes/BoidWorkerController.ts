@@ -1,7 +1,13 @@
-import { Vector3 } from "three";
 import useStore from "../stores/store";
 import EnemyMechBoid from "./mech/EnemyMechBoid";
 import { setCustomData } from "r3f-perf";
+import {
+  PLAYER_PROPS_COUNT,
+  MECH_PROPS_COUNT,
+  MAX_MECHS,
+} from "../constants/boidConstants";
+// Calculate the total size of the Float32Array
+export const ARRAY_SIZE = PLAYER_PROPS_COUNT + MECH_PROPS_COUNT * MAX_MECHS;
 
 export type typePlayerData = {
   // transfered as a series of floats in a single Float32Array
@@ -16,6 +22,7 @@ export type typePlayerData = {
   maxHalfWidth: number;
 };
 
+/*
 export type typeBoidData = {
   isActive: boolean;
   isExploding: boolean;
@@ -26,6 +33,7 @@ export type typeBoidData = {
   maxHalfWidth: number;
   isBossMech: boolean;
 };
+*/
 
 /**
  * Controls communication with the Boid Web Worker, managing the shared data array.
@@ -40,18 +48,7 @@ interface boidWorkerControllerInt {
 }
 
 class BoidWorkerController implements boidWorkerControllerInt {
-  // Static constants defining the structure of the Float32Array
-  static readonly PLAYER_PROPS_COUNT = 9; // [playerX, playerY, playerZ, pRotationX, pRotationY, pRotationZ, playerSpeed, playerTargetIndex, playerHalfWidth]
-  static readonly MECH_PROPS_COUNT = 10; // [isActive, x, y, z, scale, leaderIndex, currentOrders, isBoss]
-  static readonly MAX_MECHS = 1000;
-
-  // Calculate the total size of the Float32Array
-  static readonly ARRAY_SIZE =
-    BoidWorkerController.PLAYER_PROPS_COUNT +
-    BoidWorkerController.MECH_PROPS_COUNT * BoidWorkerController.MAX_MECHS;
-
   isBusy: boolean;
-  isObjectsNeedUpdate: boolean;
   #worker: Worker;
   #dataArray: Float32Array; // The single shared data array
   #mechElementsRef: EnemyMechBoid[]; // Reference to the original EnemyMechBoid[] array in the game
@@ -68,16 +65,15 @@ class BoidWorkerController implements boidWorkerControllerInt {
 
     //this.#onWorkerDataReceivedCallback = onWorkerDataReceivedCallback;
     this.isBusy = false; // Flag to indicate if the worker is currently processing data
-    this.isObjectsNeedUpdate = false; // Flag to indicate if the objects need to be updated
     // Instantiate the typed array once at the beginning
-    this.#dataArray = new Float32Array(BoidWorkerController.ARRAY_SIZE);
+    this.#dataArray = new Float32Array(ARRAY_SIZE);
     this.#mechElementsRef = []; // Initialize as empty, will be set by updateAllData
 
     this.#worker.onmessage = this.#handleWorkerMessage.bind(this);
     this.#worker.onerror = this.#handleWorkerError.bind(this);
 
     console.log(
-      `BoidWorkerController initialized. Data array size: ${BoidWorkerController.ARRAY_SIZE}`
+      `BoidWorkerController initialized. Data array size: ${ARRAY_SIZE}`
     );
   }
 
@@ -97,7 +93,7 @@ class BoidWorkerController implements boidWorkerControllerInt {
       rotationX: useStore.getState().player.object3d.rotation.x,
       rotationY: useStore.getState().player.object3d.rotation.y,
       rotationZ: useStore.getState().player.object3d.rotation.z,
-      speed: useStore.getState().player.object3d.userData.speed,
+      speed: useStore.getState().player.speed,
       targetIndex: -1, // useStore.getState().player.targetIndex,
       maxHalfWidth: useStore.getState().player.maxHalfWidth,
     };
@@ -113,13 +109,11 @@ class BoidWorkerController implements boidWorkerControllerInt {
     this.#dataArray[6] = playerData.speed;
     this.#dataArray[7] = playerData.targetIndex;
     this.#dataArray[8] = playerData.maxHalfWidth;
+    // element flag to set (1) or clear (2) all boids objects data
+    this.#dataArray[9] = 1;
 
     // Encode EnemyMechBoid Elements
-    for (
-      let i = 0;
-      i < Math.min(mechArray.length, BoidWorkerController.MAX_MECHS);
-      i++
-    ) {
+    for (let i = 0; i < Math.min(mechArray.length, MAX_MECHS); i++) {
       const mech = mechArray[i];
 
       const leaderIndex = mech.groupLeaderId
@@ -127,21 +121,27 @@ class BoidWorkerController implements boidWorkerControllerInt {
         : -1; // If no leader, set to -1
 
       // Offset for mech data starts after player data
-      const offset =
-        BoidWorkerController.PLAYER_PROPS_COUNT +
-        i * BoidWorkerController.MECH_PROPS_COUNT;
-      // isActive
-      this.#dataArray[offset + 0] = mech.isMechDead() ? 1 : 0; // Boolean to float (1 or 0)
+      const offset = PLAYER_PROPS_COUNT + i * MECH_PROPS_COUNT;
+
+      // if mech.isMechDead() is true, set isActive to 0, otherwise set to 1
+      this.#dataArray[offset + 0] = mech.isMechDead() ? 0 : 1; // Boolean to float (1 or 0)
       this.#dataArray[offset + 1] = mech.isExploding() ? 1 : 0; // Boolean to float (1 or 0)
-      // isExploding add here
       this.#dataArray[offset + 2] = mech.object3d.position.x;
       this.#dataArray[offset + 3] = mech.object3d.position.y;
       this.#dataArray[offset + 4] = mech.object3d.position.z;
       this.#dataArray[offset + 5] = leaderIndex;
       this.#dataArray[offset + 6] = mech.currentOrders;
-      this.#dataArray[offset + 7] = mech.mechBP.scale;
+      this.#dataArray[offset + 7] = mech.sizeMechBP;
       this.#dataArray[offset + 8] = mech.maxHalfWidth;
       this.#dataArray[offset + 9] = mech.isBossMech ? 1 : 0; // Boolean to float (1 or 0)
+      // velocity vector
+      this.#dataArray[offset + 10] = mech.velocity.x;
+      this.#dataArray[offset + 11] = mech.velocity.y;
+      this.#dataArray[offset + 12] = mech.velocity.z;
+      // final acceleration vector
+      this.#dataArray[offset + 13] = mech.acceleration.x;
+      this.#dataArray[offset + 14] = mech.acceleration.y;
+      this.#dataArray[offset + 15] = mech.acceleration.z;
     }
     // If mechArray.length < MAX_MECHS, the remaining elements in dataArray retain their values (likely 0 or previous states)
     // This is fine as their isActive will be 0, so the worker won't process them.
@@ -165,6 +165,42 @@ class BoidWorkerController implements boidWorkerControllerInt {
       );
       return;
     }
+
+    // update player position
+    this.#dataArray[0] = useStore.getState().player.object3d.position.x;
+    this.#dataArray[1] = useStore.getState().player.object3d.position.y;
+    this.#dataArray[2] = useStore.getState().player.object3d.position.z;
+
+    for (
+      let i = 0;
+      i < Math.min(this.#mechElementsRef.length, MAX_MECHS);
+      i++
+    ) {
+      const mech = this.#mechElementsRef[i];
+
+      const leaderIndex = mech.groupLeaderId
+        ? this.#mechElementsRef.findIndex((m) => m.id === mech.groupLeaderId) // Find the index of the leader in the mechElementsRef array
+        : -1; // If no leader, set to -1
+
+      const offset = PLAYER_PROPS_COUNT + i * MECH_PROPS_COUNT;
+
+      // Update the dataArray with the latest mech data
+      this.#dataArray[offset + 0] = 1; //mech.isMechDead() ? 0 : 1; // Boolean to float (1 or 0)
+      this.#dataArray[offset + 1] = mech.isExploding() ? 1 : 0; // Boolean to float (1 or 0)
+      this.#dataArray[offset + 2] = mech.object3d.position.x;
+      this.#dataArray[offset + 3] = mech.object3d.position.y;
+      this.#dataArray[offset + 4] = mech.object3d.position.z;
+      this.#dataArray[offset + 5] = leaderIndex;
+      this.#dataArray[offset + 6] = mech.currentOrders;
+      // velocity vector
+      this.#dataArray[offset + 10] = mech.velocity.x;
+      this.#dataArray[offset + 11] = mech.velocity.y;
+      this.#dataArray[offset + 12] = mech.velocity.z;
+      // final acceleration vector
+      this.#dataArray[offset + 13] = 0; //mech.acceleration.x;
+      this.#dataArray[offset + 14] = 0; //mech.acceleration.y;
+      this.#dataArray[offset + 15] = 0; //mech.acceleration.z;
+    }
     // Transfer the ArrayBuffer. The ArrayBuffer (and thus the Float32Array) is moved, not copied.
     this.#worker.postMessage(this.#dataArray.buffer, [this.#dataArray.buffer]);
     this.#dataArray = null!; // Mark as null/undefined to indicate it's been transferred
@@ -183,32 +219,36 @@ class BoidWorkerController implements boidWorkerControllerInt {
     // Decode EnemyMechBoid elements back into the stored #mechElementsRef array
     for (
       let i = 0;
-      i <
-      Math.min(this.#mechElementsRef.length, BoidWorkerController.MAX_MECHS);
+      i < Math.min(this.#mechElementsRef.length, MAX_MECHS);
       i++
     ) {
       const mech = this.#mechElementsRef[i];
-      const offset =
-        BoidWorkerController.PLAYER_PROPS_COUNT +
-        i * BoidWorkerController.MECH_PROPS_COUNT;
+      const offset = PLAYER_PROPS_COUNT + i * MECH_PROPS_COUNT;
 
       // Update the existing mech object with new values from the array
-      // TODO updating position immediately??
-      //TODO must update position at end of worker routine
-      // this way it will be sent back to the main thread
-      mech.object3d.position.x = this.#dataArray[offset + 2];
-      mech.object3d.position.y = this.#dataArray[offset + 3];
-      mech.object3d.position.z = this.#dataArray[offset + 4];
+      //mech.velocity.x = this.#dataArray[offset + 10];
+      //mech.velocity.y = this.#dataArray[offset + 11];
+      //mech.velocity.z = this.#dataArray[offset + 12];
+      mech.acceleration.x = this.#dataArray[offset + 13];
+      mech.acceleration.y = this.#dataArray[offset + 14];
+      mech.acceleration.z = this.#dataArray[offset + 15];
     }
-    setCustomData(this.#mechElementsRef[9].object3d.position.x);
-    // Call the user-provided callback, indicating that mechs have been updated
+    /*
+    setCustomData(
+      this.#dataArray[
+        PLAYER_PROPS_COUNT +
+          3 * MECH_PROPS_COUNT +
+          13
+      ]
+    );
+*/
+    // Call the user-provided callack, indicating that mechs have been updated
     /*
     if (this.#onWorkerDataReceivedCallback) {
       this.#onWorkerDataReceivedCallback(this.#mechElementsRef);
     }
     */
     this.isBusy = false; // Reset busy flag after processing
-    this.isObjectsNeedUpdate = true; // Set flag to indicate objects need to be updated
   }
 
   /**

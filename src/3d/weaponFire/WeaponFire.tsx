@@ -57,7 +57,12 @@ const WeaponFire = () => {
       .boidWorkerController.updateAllData(
         useEnemyStore.getState().enemyGroup.enemyMechs
       );
-
+    /*
+    setTimeout(() => {
+      console.log("run worker");
+      useBoidWorkerStore.getState().boidWorkerController.commandWorkerToRun();
+    }, 1000);
+    */
     return () => {
       // Clean up the worker when the component unmounts
       useBoidWorkerStore.getState().boidWorkerController.terminateWorker();
@@ -73,9 +78,6 @@ const WeaponFire = () => {
   }, [testArrowHelper]);
 
   useFrame((_, delta) => {
-    //r TODO send delta time in milliseconds to worker
-    //useBoidWorkerStore.getState().boidWorkerController.commandWorkerToRun();
-
     // synch player and enemy world zone positions
     if (
       !useStore
@@ -111,6 +113,9 @@ const WeaponFire = () => {
           useEnemyStore.getState().enemyGroup.defenseNodes;
       }
     }
+
+    useBoidWorkerStore.getState().boidWorkerController.commandWorkerToRun();
+
     useWeaponFireStore.getState().updateWeaponFireUseFrame(
       delta,
       scene,

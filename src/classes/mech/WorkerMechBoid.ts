@@ -15,7 +15,7 @@ class WorkerMechBoid implements workerMechBoidInt {
   position: THREE.Vector3;
   leaderIndex: number; // -1 for no leader
   currentOrders: number; // constant for specific commands
-  scale: number;
+  sizeMechBP: number;
   maxHalfWidth: number;
   isBossMech: boolean;
 
@@ -43,8 +43,8 @@ class WorkerMechBoid implements workerMechBoidInt {
     this.isExploding = false; // Default to not dead
     this.position = new THREE.Vector3(0, 0, 0);
     this.leaderIndex = -1;
-    this.currentOrders = ENEMY_MECH_ORDERS.wander;
-    this.scale = 1;
+    this.currentOrders = ENEMY_MECH_ORDERS.none;
+    this.sizeMechBP = 1;
     this.isBossMech = false;
 
     // BoidController vars

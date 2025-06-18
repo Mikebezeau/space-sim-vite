@@ -97,6 +97,8 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     this.cohesionCount = 0;
     this.cohesionSumVector.set(0, 0, 0);
     this.cohesionSteerVector.set(0, 0, 0);
+
+    this.acceleration.set(0, 0, 0); // Reset acceleration
   }
 
   // Boid apply force
@@ -128,8 +130,6 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
 
       // update velocity
       this.velocity.add(this.acceleration);
-      // reset acc
-      this.acceleration.multiplyScalar(0);
 
       // limit velocity
       this.velocity.clampLength(0, this.maxSpeed);

@@ -325,7 +325,8 @@ class EnemyMechGroup implements enemyMechGroupInt {
     ) {
       delta = Math.min(delta, 0.1); // cap delta to 100ms
 
-      this.boidController?.updateUseFrameBoids();
+      // old boid controller still functions
+      //this.boidController?.updateUseFrameBoids();
 
       this.enemyMechs.forEach((enemy) => {
         enemy.updateUseFrameBoidForce(delta);
