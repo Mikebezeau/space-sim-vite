@@ -2,10 +2,11 @@ import * as THREE from "three";
 import WorkerMechBoid from "../mech/WorkerMechBoid";
 import {
   MECH_BIOD_PARAMS,
-  ENEMY_MECH_ORDERS,
-} from "../../constants/mechConstants";
+  BOID_MECH_ORDERS,
+} from "../../constants/boidConstants";
 
 export interface boidControllerInt {
+  //updateDevStorePropModifiers: () => void; // TODO not used ATM
   updateUseFrameBoids: (
     workerMechBoids: WorkerMechBoid[],
     playerPosition: THREE.Vector3,
@@ -64,7 +65,18 @@ class BoidController implements boidControllerInt {
 
     this.home = new THREE.Vector3(0, 0, 0);
   }
-
+  /*  // TODO this is not used ATM
+  // update dev store boid modifiers - not used
+  updateDevStorePropModifiers() {
+    const { boidAlignmentMod, boidSeparationMod, boidCohesionMod } =
+      useDevStore.getState();
+    this.params.align.maxForce = boidAlignmentMod;
+    this.params.separate.maxForce = boidSeparationMod;
+    this.params.cohesion.maxForce = boidCohesionMod;
+    this.params.align.effectiveRange = boidAlignmentRangeMod;
+    this.params.cohesion.effectiveRange = 50 + boidCohesionRangeMod;
+  }
+*/
   updateUseFrameBoids(
     workerMechBoids: WorkerMechBoid[],
     playerPosition: THREE.Vector3,
@@ -131,7 +143,7 @@ class BoidController implements boidControllerInt {
       // if mech is wandering and needs a target, set target
       if (mech1.getIsLeader(i)) {
         // seek current target
-        if (mech1.currentOrders === ENEMY_MECH_ORDERS.defend) {
+        if (mech1.currentOrders === BOID_MECH_ORDERS.defend) {
           // if player nearby, seek player
           if (mech1.position.distanceTo(playerPosition) < 500) {
             // seek player position
@@ -142,7 +154,7 @@ class BoidController implements boidControllerInt {
             testing.seekTargetPosition++;
             mech1.applyForce(this.seek(mech1, mech1.targetPosition));
           }
-        } else if (mech1.currentOrders === ENEMY_MECH_ORDERS.wander) {
+        } else if (mech1.currentOrders === BOID_MECH_ORDERS.wander) {
           // if close to target, set new target
           // TODO 100 is a placeholder - use hitboxMaxHalfWidth for calculations - make same as seek
           // create variable for target distance minimum

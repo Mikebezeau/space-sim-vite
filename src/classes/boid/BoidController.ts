@@ -5,8 +5,8 @@ import EnemyMechGroup from "../mech/EnemyMechGroup";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
 import {
   MECH_BIOD_PARAMS,
-  ENEMY_MECH_ORDERS,
-} from "../../constants/mechConstants";
+  BOID_MECH_ORDERS,
+} from "../../constants/boidConstants";
 
 export interface boidControllerInt {
   updateDevStorePropModifiers: () => void;
@@ -109,7 +109,7 @@ class BoidController implements boidControllerInt {
       // if mech is wandering and needs a target, set target
       if (mech1.getIsLeader()) {
         // seek current target
-        if (mech1.currentOrders === ENEMY_MECH_ORDERS.defend) {
+        if (mech1.currentOrders === BOID_MECH_ORDERS.defend) {
           // if player nearby, seek player
           if (
             mech1.object3d.position.distanceTo(
@@ -124,7 +124,7 @@ class BoidController implements boidControllerInt {
             // seek target position
             mech1.applyForce(this.seek(mech1, mech1.targetPosition));
           }
-        } else if (mech1.currentOrders === ENEMY_MECH_ORDERS.wander) {
+        } else if (mech1.currentOrders === BOID_MECH_ORDERS.wander) {
           // if close to target, set new target
           // TODO 100 is a placeholder - use hitboxMaxHalfWidth for calculations - make same as seek
           // create variable for target distance minimum

@@ -4,8 +4,8 @@ import EnemyMech from "./EnemyMech";
 import { FPS } from "../../constants/constants";
 import {
   MECH_BIOD_PARAMS,
-  ENEMY_MECH_ORDERS,
-} from "../../constants/mechConstants";
+  BOID_MECH_ORDERS,
+} from "../../constants/boidConstants";
 
 interface enemyMechBoidInt {
   resetVectors: () => void;
@@ -17,7 +17,7 @@ interface enemyMechBoidInt {
 
 class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
   isNeedsNewTarget: boolean; // target for BoidController seek
-  currentOrders: number; // ENEMY_MECH_ORDERS
+  currentOrders: number; // BOID_MECH_ORDERS
   targetPosition: THREE.Vector3;
   // BoidController vars
   alignCount: number;
@@ -53,7 +53,7 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     super(enemyMechBPindex, isBossMech);
     // BoidController vars
     this.isNeedsNewTarget = true;
-    this.currentOrders = ENEMY_MECH_ORDERS.none;
+    this.currentOrders = BOID_MECH_ORDERS.none;
     this.targetPosition = new THREE.Vector3();
 
     this.alignCount = 0;

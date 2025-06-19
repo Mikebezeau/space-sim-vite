@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { ENEMY_MECH_ORDERS } from "../../constants/mechConstants";
+import { BOID_MECH_ORDERS } from "../../constants/boidConstants";
 
 interface workerMechBoidInt {
   resetVectors: () => void;
@@ -43,7 +43,7 @@ class WorkerMechBoid implements workerMechBoidInt {
     this.isExploding = false; // Default to not dead
     this.position = new THREE.Vector3(0, 0, 0);
     this.leaderIndex = -1;
-    this.currentOrders = ENEMY_MECH_ORDERS.none;
+    this.currentOrders = BOID_MECH_ORDERS.none;
     this.sizeMechBP = 1;
     this.isBossMech = false;
 

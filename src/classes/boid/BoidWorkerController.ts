@@ -72,7 +72,7 @@ class BoidWorkerController implements boidWorkerControllerInt {
    */
   initWorker(): void {
     this.#worker = new Worker(
-      new URL("../webWorkers/boidWorker.ts", import.meta.url),
+      new URL("../../webWorkers/boidWorker.ts", import.meta.url),
       { type: "module" }
     );
 

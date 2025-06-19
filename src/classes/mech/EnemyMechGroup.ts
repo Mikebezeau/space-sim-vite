@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import useStore from "../../stores/store";
 import EnemyMechBoid from "./EnemyMechBoid";
 import mechDesigns from "../../equipment/data/mechDesigns";
-import BoidController from "../BoidController";
+import BoidController from "../boid/BoidController";
 import { FPS } from "../../constants/constants";
-import { ENEMY_MECH_ORDERS } from "../../constants/mechConstants";
+import { BOID_MECH_ORDERS } from "../../constants/boidConstants";
 
 export type defenseNodesType = {
   curve: THREE.CatmullRomCurve3;
@@ -312,7 +312,7 @@ class EnemyMechGroup implements enemyMechGroupInt {
             : curr
         );
         */
-      enemy.currentOrders = ENEMY_MECH_ORDERS.defend;
+      enemy.currentOrders = BOID_MECH_ORDERS.defend;
       enemy.targetPosition.copy(interceptPoint); //closestPoint);
     });
   }
