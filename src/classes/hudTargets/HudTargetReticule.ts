@@ -11,6 +11,7 @@ class HudTargetReticule extends HudTarget {
   constructor(options: typeHudTargetOptions) {
     super(options);
     this.isShowTargetInfo = false; // reticule does not show target info
+    this.htmlElementRefs = { divTargetTriangles: [] }; // initialize with empty array for triangles
   }
 
   updateTargetUseFrame(
@@ -59,7 +60,10 @@ class HudTargetReticule extends HudTarget {
     super.updateTargetStylesUseFrame(selectedHudTargetId, focusedHudTargetId);
 
     // update triangle positions for triangles
-    if (this.divTargetTriangles.length > 0) {
+    if (
+      this.htmlElementRefs.divTargetTriangles &&
+      this.htmlElementRefs.divTargetTriangles.length > 0
+    ) {
       const targetIsLocked: boolean = selectedHudTargetId !== null;
 
       let targetSize: number = 32;
@@ -70,7 +74,7 @@ class HudTargetReticule extends HudTarget {
         [-targetSize / 2, targetSize / 2, "45deg"],
         [targetSize / 2, targetSize / 2, "-45deg"],
       ];
-      this.divTargetTriangles.forEach((triangle, index) => {
+      this.htmlElementRefs.divTargetTriangles.forEach((triangle, index) => {
         if (triangle) {
           //x = `${points[index][0] - 6}px`;
           //y = `${points[index][1] - 9}px`;

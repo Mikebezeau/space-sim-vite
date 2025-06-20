@@ -292,7 +292,7 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
       const hideTargets = // hide targets of previous control mode
         playerControlMode !== PLAYER.controls.scan
           ? get().hudTargetController.htmlHudTargets
-          : get().hudTargetController.htmlHudTargetsCombat;
+          : get().hudTargetController.dataHudTargetsCombat;
       // hide targets
       hideTargets.forEach((htmlHudTarget) => {
         htmlHudTarget.hideTargetSetOpacity();
@@ -302,7 +302,7 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
     const playerControlModeTargets =
       playerControlMode === PLAYER.controls.scan
         ? get().hudTargetController.htmlHudTargets
-        : get().hudTargetController.htmlHudTargetsCombat;
+        : get().hudTargetController.dataHudTargetsCombat;
 
     const playerPosition = useStore.getState().player.object3d.position;
 
@@ -312,7 +312,7 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
       playerPosition
     );
 
-    // update all action mode target data
+    // update target data of targets for current player control mode
     playerControlModeTargets.forEach((htmlHudTarget) => {
       // TODO combat target calculations could be limited to
       // mechs in front of player, and closest?
@@ -330,23 +330,22 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
       return 0;
     });
 
+    // TODO move this to combat target update?
     // if combat mode, use the html element refs of MAX_COMBAT_TARGETS
     if (playerControlMode === PLAYER.controls.combat) {
       // if not enough combat targets set isActive to false
-      for (let i = 0; i < MAX_COMBAT_TARGETS; i++) {
-        if (!playerControlModeTargets[i]) {
-          playerControlModeTargets[i].isActive = false; // hide target
+      for (let i = 0; i < playerControlModeTargets.length; i++) {
+        if (i > MAX_COMBAT_TARGETS - 1) {
+          playerControlModeTargets[i].isActive = false;
         } else {
-          playerControlModeTargets[i].isActive = true; // show target
-          // set the div element refs to the htmlTargetsCombatElementRefs element refs
-          playerControlModeTargets[i].divElement =
-            get().hudTargetController.htmlTargetsCombatElementRefs[
-              i
-            ].divElement;
-          playerControlModeTargets[i].divTargetSquare =
-            get().hudTargetController.htmlTargetsCombatElementRefs[
-              i
-            ].divTargetSquare;
+          if (!playerControlModeTargets[i]) {
+            playerControlModeTargets[i].isActive = false; // hide excess targets
+          } else {
+            playerControlModeTargets[i].isActive = true; // show target
+            // set the div element refs to the htmlTargetsCombatElementRefs element refs
+            playerControlModeTargets[i].htmlElementRefs =
+              get().hudTargetController.htmlTargetsCombatElementRefs[i];
+          }
         }
       }
     }
@@ -369,10 +368,13 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
       ) {
         // set focused target id
         get().setFocusedHudTargetId(newFocusedTargetId);
-        // z-index and CSS class
+        // z-index and CSS class - no longer nessicary for combat targets
+        // but still used for scan targets, so keep here
+        // only want to set z index if in manual control mode
+        // update z-index of all targets
         playerControlModeTargets.forEach((htmlHudTarget, index) => {
           ifChangedUpdateStyle(
-            htmlHudTarget.divElement,
+            htmlHudTarget.htmlElementRefs.divElement,
             "zIndex",
             htmlHudTarget.id === get().selectedHudTargetId
               ? "1000" // selected target is always on top

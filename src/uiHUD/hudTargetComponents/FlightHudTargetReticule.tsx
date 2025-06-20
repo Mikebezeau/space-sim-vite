@@ -12,7 +12,7 @@ const FlightHudTargetReticule = (props: targetHUDInt) => {
     <div
       ref={(tde) => {
         if (tde) {
-          target.divElement = tde; // updates movement (translate3d()), or hide target
+          target.htmlElementRefs.divElement = tde; // updates movement (translate3d()), or hide target
         }
       }}
       className="absolute top-1/2 left-1/2"
@@ -24,7 +24,9 @@ const FlightHudTargetReticule = (props: targetHUDInt) => {
           // add ref to array
           ref={(svgElement) => {
             if (svgElement) {
-              target.divTargetTriangles[index] = svgElement;
+              if (target.htmlElementRefs.divTargetTriangles) {
+                target.htmlElementRefs.divTargetTriangles[index] = svgElement;
+              }
             }
           }}
           height="12"

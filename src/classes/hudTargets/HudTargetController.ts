@@ -3,7 +3,7 @@ import useHudTargtingStore, {
   HTML_HUD_TARGET_TYPE,
 } from "../../stores/hudTargetingStore";
 import useEnemyStore from "../../stores/enemyStore";
-import HudTarget from "./HudTarget";
+import HudTarget, { typeHtmlElementRefs } from "./HudTarget";
 import HudCombatTarget from "./HudCombatTarget";
 import HudTargetReticule from "./HudTargetReticule";
 import EnemyMechGroup from "../mech/EnemyMechGroup";
@@ -13,7 +13,7 @@ export const MAX_COMBAT_TARGETS = 20; // max number of combat targets to show
 
 interface HudTargetControllerInt {
   generateTargets: () => void;
-  generateEnemyCombatTargets: (enemyGroup?: EnemyMechGroup) => void;
+  generateDataHudTargetsCombat: (enemyGroup?: EnemyMechGroup) => void;
 
   setTargetDead: (id: string) => void; // method to set target as dead
 
@@ -32,10 +32,10 @@ interface HudTargetControllerInt {
 
 class HudTargetController implements HudTargetControllerInt {
   htmlHudTargets: (HudTarget | HudCombatTarget)[]; // array of targets
-  // create MAX_COMBAT_TARGETS number of html elements to use with combat targeting
-  htmlTargetsCombatElementRefs: HudCombatTarget[];
+  // create MAX_COMBAT_TARGETS number of html elements to render and use with combat targeting
+  htmlTargetsCombatElementRefs: typeHtmlElementRefs[];
   // call this hudTargetsCombatData
-  htmlHudTargetsCombat: HudCombatTarget[]; // array of targets
+  dataHudTargetsCombat: HudCombatTarget[]; // array of targets
   htmlHudTargetReticule: HudTargetReticule; // targeting reticule
 
   constructor() {
@@ -43,17 +43,11 @@ class HudTargetController implements HudTargetControllerInt {
     // create MAX_COMBAT_TARGETS number of html elements to use with combat targeting
     this.htmlTargetsCombatElementRefs = Array.from(
       { length: MAX_COMBAT_TARGETS },
-      (_, index) =>
-        new HudCombatTarget({
-          id: `combat-target-${index}`,
-          playerControlModeActive: PLAYER.controls.combat,
-          targetType: HTML_HUD_TARGET_TYPE.ENEMY_COMBAT,
-          label: "",
-          color: "transparent",
-          opacity: 1,
-        })
+      () => {
+        return { divElement: undefined, divTargetSquare: undefined };
+      } // initialize with null refs)
     );
-    this.htmlHudTargetsCombat = [];
+    this.dataHudTargetsCombat = [];
     // targeting reticule
     this.htmlHudTargetReticule = new HudTargetReticule({
       id: "targeting-reticule",
@@ -141,16 +135,16 @@ class HudTargetController implements HudTargetControllerInt {
     );
   }
 
-  generateEnemyCombatTargets(
+  generateDataHudTargetsCombat(
     enemyGroup: EnemyMechGroup = useEnemyStore.getState().enemyGroup
   ) {
     // keep current non-combat targets
-    this.htmlHudTargetsCombat = [];
+    this.dataHudTargetsCombat = [];
 
     enemyGroup.enemyMechs.forEach((enemyMech) => {
       //if is not dead
       if (enemyMech.isMechDead()) return;
-      this.htmlHudTargetsCombat.push(
+      this.dataHudTargetsCombat.push(
         new HudCombatTarget({
           id: `${enemyMech.id}`,
           playerControlModeActive: PLAYER.controls.combat,
@@ -184,7 +178,7 @@ class HudTargetController implements HudTargetControllerInt {
   getHudTargetById(id: string) {
     return (
       this.htmlHudTargets.find((target) => target.id === id) ||
-      this.htmlHudTargetsCombat.find((target) => target.id === id)
+      this.dataHudTargetsCombat.find((target) => target.id === id)
     );
   }
 
@@ -194,7 +188,7 @@ class HudTargetController implements HudTargetControllerInt {
         (target) =>
           target.id === useHudTargtingStore.getState().focusedHudTargetId
       ) ||
-      this.htmlHudTargetsCombat.find(
+      this.dataHudTargetsCombat.find(
         (target) =>
           target.id === useHudTargtingStore.getState().focusedHudTargetId
       )
@@ -207,7 +201,7 @@ class HudTargetController implements HudTargetControllerInt {
         (target) =>
           target.id === useHudTargtingStore.getState().selectedHudTargetId
       ) ||
-      this.htmlHudTargetsCombat.find(
+      this.dataHudTargetsCombat.find(
         (target) =>
           target.id === useHudTargtingStore.getState().selectedHudTargetId
       )

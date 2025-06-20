@@ -38,6 +38,7 @@ class HudCombatTarget extends HudTarget {
       return;
     }
     if (this.targetType !== HTML_HUD_TARGET_TYPE.ENEMY_COMBAT) {
+      // if ony using the visulals of a combat target, use the base class method for updating target
       super.updateTargetUseFrame(camera, playerPosition);
     } else {
       let targetEntity = this.entity as EnemyMechBoid | undefined;
@@ -61,7 +62,7 @@ class HudCombatTarget extends HudTarget {
     super.updateTargetStylesUseFrame(selectedHudTargetId, focusedHudTargetId);
 
     // thick border lines for when selected
-    if (this.divTargetSquare && this.isActive) {
+    if (this.htmlElementRefs.divTargetSquare && this.isActive) {
       const targetIsSelected: boolean = selectedHudTargetId === this.id;
 
       const targetIsFocused: boolean = focusedHudTargetId === this.id;
@@ -76,17 +77,29 @@ class HudCombatTarget extends HudTarget {
 
       targetSize = targetSize * 1; //this.distanceFromPlayer > 0 ? 1 - this.distanceFromPlayer : 1; // scale target size based on distance to target
 
-      ifChangedUpdateStyle(this.divTargetSquare, "width", `${targetSize}px`);
-      ifChangedUpdateStyle(this.divTargetSquare, "height", `${targetSize}px`);
       ifChangedUpdateStyle(
-        this.divTargetSquare,
+        this.htmlElementRefs.divTargetSquare,
+        "width",
+        `${targetSize}px`
+      );
+      ifChangedUpdateStyle(
+        this.htmlElementRefs.divTargetSquare,
+        "height",
+        `${targetSize}px`
+      );
+      ifChangedUpdateStyle(
+        this.htmlElementRefs.divTargetSquare,
         "left",
         `${-targetSize / 2}px`
       );
-      ifChangedUpdateStyle(this.divTargetSquare, "top", `${-targetSize / 2}px`);
+      ifChangedUpdateStyle(
+        this.htmlElementRefs.divTargetSquare,
+        "top",
+        `${-targetSize / 2}px`
+      );
 
       // for each child set the borderWidth style
-      this.divTargetSquare.childNodes.forEach((child) => {
+      this.htmlElementRefs.divTargetSquare.childNodes.forEach((child) => {
         const box = child as HTMLElement;
         const borderWidth =
           targetIsSelected ||

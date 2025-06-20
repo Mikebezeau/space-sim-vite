@@ -38,7 +38,7 @@ export type typeHtmlElementRefs = {
   // div element for box crosshair, used for combat targets
   divTargetSquare?: HTMLDivElement; // div element for box crosshair, used for combat targets
   // combat aiming reticule triangles, positioned based on future position of EnemyMechBoid
-  divTargetTriangles: SVGElement[]; // combat aiming reticule triangles, positioned based on future position of EnemyMechBoid
+  divTargetTriangles?: SVGElement[]; // combat aiming reticule triangles, positioned based on future position of EnemyMechBoid
   // text info elements
   divInfo?: HTMLDivElement; // div element for target info
   divInfoLabel?: HTMLDivElement; // div element for target info label
@@ -85,7 +85,7 @@ class HudTarget implements HudTargetInt {
   scanProgressNorm: number;
   //
   htmlElementRefs: typeHtmlElementRefs;
-
+  /*
   divElement?: HTMLDivElement; // main div element for target, used for positioning (transform: translate3d)
   divTargetCircle?: HTMLDivElement; // used for planets, stars, and warp to star targets
   divTargetSquare?: HTMLDivElement; // div element for box crosshair, used for combat targets
@@ -94,7 +94,7 @@ class HudTarget implements HudTargetInt {
   divInfo?: HTMLDivElement; // div element for target info
   divInfoLabel?: HTMLDivElement; // div element for target info label
   divInfoDetail?: HTMLDivElement; // div element for target info detail
-
+*/
   constructor(options: typeHudTargetOptions) {
     const {
       id,
@@ -127,8 +127,8 @@ class HudTarget implements HudTargetInt {
     };
     this.distanceFromPlayer = 0;
     this.scanProgressNorm = 0;
-    //div element refs provided on render of target
-    this.divTargetTriangles = [];
+    // div element refs provided on render of target
+    this.htmlElementRefs = {};
   }
 
   setActiveStatus() {
@@ -157,23 +157,23 @@ class HudTarget implements HudTargetInt {
   }
   */
   setDivInfoDetailTextContent(info: string): void {
-    if (this.divInfoDetail) {
-      this.divInfoDetail.textContent = info;
+    if (this.htmlElementRefs.divInfoDetail) {
+      this.htmlElementRefs.divInfoDetail.textContent = info;
     }
   }
 
   resetPosition(): void {
     this.screenPosition = { xn: 0, yn: 0, angleDiff: 0 };
     ifChangedUpdateStyle(
-      this.divElement,
+      this.htmlElementRefs.divElement,
       "transform",
       "translate3d(0px, 0px, 0)"
     );
-    if (!this.divElement) return;
+    if (!this.htmlElementRefs.divElement) return;
   }
 
   hideTargetSetOpacity(): void {
-    ifChangedUpdateStyle(this.divElement, "opacity", "0");
+    ifChangedUpdateStyle(this.htmlElementRefs.divElement, "opacity", "0");
   }
 
   updateTargetUseFrame(
@@ -182,7 +182,7 @@ class HudTarget implements HudTargetInt {
   ): void {
     this.screenPosition = { xn: 0, yn: 0, angleDiff: 10 }; // angleDiff for sorting to find focused target
 
-    if (!this.divElement) return;
+    if (!this.htmlElementRefs.divElement) return;
 
     this.setActiveStatus();
 
@@ -240,7 +240,7 @@ class HudTarget implements HudTargetInt {
     selectedHudTargetId: string | null,
     focusedHudTargetId: string | null
   ): void {
-    if (!this.divElement) return;
+    if (!this.htmlElementRefs.divElement) return;
     if (!this.isActive) {
       // if not active move off screen
       this.hideTargetSetOpacity();
@@ -255,52 +255,52 @@ class HudTarget implements HudTargetInt {
         this.screenPosition.yn,
         this.screenPosition.angleDiff
       );
-    this.divElement.style.transform = `translate3d(${transformX}px, ${transformY}px, 0)`;
+    this.htmlElementRefs.divElement.style.transform = `translate3d(${transformX}px, ${transformY}px, 0)`;
 
     const targetIsFocused: boolean = focusedHudTargetId === this.id;
 
     ifChangedUpdateStyle(
-      this.divElement,
+      this.htmlElementRefs.divElement,
       "opacity",
       // @ts-ignore - number assignment to opacity works fine
       this.opacity ? this.opacity : targetIsFocused ? 0.9 : 0.5
     );
 
-    if (this.isShowTargetInfo && this.divInfo) {
+    if (this.isShowTargetInfo && this.htmlElementRefs.divInfo) {
       ifChangedUpdateStyle(
-        this.divInfo,
+        this.htmlElementRefs.divInfo,
         "backgroundColor",
         targetIsFocused ? "black" : "transparent"
       );
 
       ifChangedUpdateStyle(
-        this.divInfo,
+        this.htmlElementRefs.divInfo,
         "right",
         transformX <= 0 ? "100%" : "auto"
       );
 
       ifChangedUpdateStyle(
-        this.divInfo,
+        this.htmlElementRefs.divInfo,
         "left",
         transformX > 0 ? "100%" : "auto"
       );
 
       ifChangedUpdateStyle(
-        this.divInfo,
+        this.htmlElementRefs.divInfo,
         "textAlign",
         transformX <= 0 ? "right" : "left"
       );
 
-      if (this.divInfoLabel) {
+      if (this.htmlElementRefs.divInfoLabel) {
         ifChangedUpdateStyle(
-          this.divInfoLabel,
+          this.htmlElementRefs.divInfoLabel,
           "opacity",
           targetIsFocused ? "1" : "0.5"
         );
       }
-      if (this.divInfoDetail) {
+      if (this.htmlElementRefs.divInfoDetail) {
         ifChangedUpdateStyle(
-          this.divInfoDetail,
+          this.htmlElementRefs.divInfoDetail,
           "opacity",
           targetIsFocused ? "1" : "0"
         );
@@ -308,7 +308,7 @@ class HudTarget implements HudTargetInt {
     }
 
     // update, circle target only used with basic non-combat target
-    if (this.divTargetCircle) {
+    if (this.htmlElementRefs.divTargetCircle) {
       const flightHudTargetDiameterPx =
         useHudTargtingStore.getState().flightHudTargetDiameterPx;
 
@@ -324,17 +324,29 @@ class HudTarget implements HudTargetInt {
       }
       targetSize = targetSize * 1; //this.distanceFromPlayer > 0 ? 1 - this.distanceFromPlayer : 1; // scale target size based on distance to target
 
-      ifChangedUpdateStyle(this.divTargetCircle, "width", `${targetSize}px`);
-      ifChangedUpdateStyle(this.divTargetCircle, "height", `${targetSize}px`);
       ifChangedUpdateStyle(
-        this.divTargetCircle,
+        this.htmlElementRefs.divTargetCircle,
+        "width",
+        `${targetSize}px`
+      );
+      ifChangedUpdateStyle(
+        this.htmlElementRefs.divTargetCircle,
+        "height",
+        `${targetSize}px`
+      );
+      ifChangedUpdateStyle(
+        this.htmlElementRefs.divTargetCircle,
         "left",
         `${-targetSize / 2}px`
       );
-      ifChangedUpdateStyle(this.divTargetCircle, "top", `${-targetSize / 2}px`);
+      ifChangedUpdateStyle(
+        this.htmlElementRefs.divTargetCircle,
+        "top",
+        `${-targetSize / 2}px`
+      );
 
       ifChangedUpdateStyle(
-        this.divTargetCircle,
+        this.htmlElementRefs.divTargetCircle,
         "borderWidth",
         targetIsSelected ? "4px" : "2px"
       );

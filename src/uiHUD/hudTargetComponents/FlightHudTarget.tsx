@@ -13,7 +13,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
     <div
       ref={(divElement) => {
         if (divElement) {
-          target.divElement = divElement; // updates movement (translate3d()), or hide target
+          target.htmlElementRefs.divElement = divElement; // updates movement (translate3d()), or hide target
         }
       }}
       className="absolute top-1/2 left-1/2"
@@ -23,7 +23,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
         <div
           ref={(divInfo) => {
             if (divInfo) {
-              target.divInfo = divInfo; // update backgroundColor if focused
+              target.htmlElementRefs.divInfo = divInfo; // update backgroundColor if focused
             }
           }}
           // updated in hudTargtingStore
@@ -36,7 +36,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
           <div
             ref={(divInfoLabel) => {
               if (divInfoLabel) {
-                target.divInfoLabel = divInfoLabel; // update label opacity if focused
+                target.htmlElementRefs.divInfoLabel = divInfoLabel; // update label opacity if focused
               }
             }}
             style={{
@@ -48,7 +48,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
           <div
             ref={(divInfoDetail) => {
               if (divInfoDetail) {
-                target.divInfoDetail = divInfoDetail; //update hides when not focused
+                target.htmlElementRefs.divInfoDetail = divInfoDetail; //update hides when not focused
               }
             }}
             className="text-white"
@@ -66,7 +66,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
             className="absolute"
             ref={(divTargetSquare) => {
               if (divTargetSquare) {
-                target.divTargetSquare = divTargetSquare;
+                target.htmlElementRefs.divTargetSquare = divTargetSquare;
               }
             }}
           >
@@ -113,7 +113,7 @@ const FlightHudTarget = (props: targetHUDInt) => {
           <div
             ref={(divElement) => {
               if (divElement) {
-                target.divTargetCircle = divElement;
+                target.htmlElementRefs.divTargetCircle = divElement;
               }
             }}
             style={{

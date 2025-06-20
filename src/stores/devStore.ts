@@ -244,7 +244,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
     useEnemyStore.getState().enemyGroup.dispose();
     useHudTargtingStore
       .getState()
-      .hudTargetController.generateEnemyCombatTargets();
+      .hudTargetController.generateDataHudTargetsCombat();
   },
   spawnEnemies() {
     useEnemyStore.getState().createEnemyGroup();
@@ -255,7 +255,7 @@ const useDevStore = create<devStoreState>()((set, get) => ({
       );
     useHudTargtingStore
       .getState()
-      .hudTargetController.generateEnemyCombatTargets();
+      .hudTargetController.generateDataHudTargetsCombat();
   },
 
   // NOTE: these are old and not used mostly

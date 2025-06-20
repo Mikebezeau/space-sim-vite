@@ -109,7 +109,7 @@ const BattleZone = () => {
         // set enemy targets for Hud
         useHudTargtingStore
           .getState()
-          .hudTargetController.generateEnemyCombatTargets();
+          .hudTargetController.generateDataHudTargetsCombat();
 
         // testing
         defenseNodesRef.current =
