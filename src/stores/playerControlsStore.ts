@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Object3D, Quaternion, Vector3 } from "three";
 import useStore from "./store";
 import useGalaxyMapStore from "./galaxyMapStore";
+import useHudWarningStoreStore from "./hudWarningStore";
 import useHudTargtingStore, { HTML_HUD_TARGET_TYPE } from "./hudTargetingStore";
 import useDevStore from "./devStore";
 import TouchController from "../hooks/controls/TouchController";
@@ -584,6 +585,9 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
           );
           get().updateFrame.updateFrameHelpers.setPlayerCameraRotation(camera);
           // updates for ui components that are not children of canvas (cannot access useFrame)
+          // update warning messages
+          useHudWarningStoreStore.getState().updateWarningMessage(delta);
+          // update hud targeting
           useHudTargtingStore.getState().updateTargetHUD(camera);
           // update hud weapons readout
           useHudTargtingStore.getState().updatePlayerWeaponsHudReadout();

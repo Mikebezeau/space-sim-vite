@@ -5,72 +5,51 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: 80vw;
-  max-width: 600px; /* Max width to prevent over-stretching on very wide screens */
+  max-width: 600px;
   text-align: center;
   pointer-events: none; /* Allow clicks/interactions to pass through */
-  /*opacity: 0;*/ /* Initially hidden */
-  transition: opacity 0.2s ease-in; /* Default transition for initial show/hide */
-  z-index: 5000; /* Ensure it's above other HUD elements */
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Subtle shadow for readability */
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out; /* Default transition for all opacity changes */
+  z-index: 1000;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 
-  /* CSS variables will be set via JS for animation durations and counts */
+  /* CSS variables for dynamic animation values (set by JS) */
   --blink-duration: 0.3s;
   --blink-count: 3;
-  --permanent-fade-duration: 1s;
-}
-
-/* State for the entire container */
-.warning-container.is-active {
-  opacity: 1;
-}
-
-.warning-container.fade-out-permanent {
-  transition: opacity var(--permanent-fade-duration) ease-out;
-  /*opacity: 0;*/
 }
 
 /* Base styles for main text */
 .warning-main-text {
-  font-size: 8vw; /* Stretches to fill container */
-  white-space: nowrap; /* Prevent wrapping */
-  overflow: hidden; /* Hide overflow if text is too long */
-  text-overflow: ellipsis; /* Add ellipsis if text is too long (though usually stretched) */
+  font-size: 8vw;
+  white-space: nowrap;
+  /*
+    overflow: hidden;
+    text-overflow: ellipsis;
+    */
   padding: 0;
   margin: 0;
-  /* Color will be set by JS via style.color */
+  /* Color and animation will be set by JS */
 }
 
-/* Animation class for the main text */
-.warning-main-text.is-blinking {
-  animation: warnBlink var(--blink-duration) ease-in-out var(--blink-count)
-    forwards;
-}
-
-/* Base styles for description */
-.warning-description {
-  font-size: 2vw; /* Smaller, stretches proportionally */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0;
-  margin-top: 10px; /* Space below main warning */
-  /* Color will be set by JS via style.color */
-  /*opacity: 0;*/ /* Initially hidden */
-  transition: opacity 0.5s ease-in; /* For description fade-in */
-}
-
-/* State for description */
-.warning-description.is-visible {
-  opacity: 1;
-}
-
-/* Keyframes for the "blinking" animation */
+/* Keyframes for the "blinking" animation (still defined here) */
 @keyframes warnBlink {
   0%,
   100% {
     opacity: 0.7;
-  } /* Semi-transparent */
+  }
   50% {
     opacity: 1;
-  } /* Fully opaque */
+  }
+}
+
+/* Base styles for description */
+.warning-description {
+  font-size: 2vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0;
+  margin-top: 10px;
+  /* Color and opacity will be set by JS */
+  transition: opacity 0.5s ease-in; /* For description fade-in */
 }
