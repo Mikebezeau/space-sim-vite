@@ -79,9 +79,16 @@ const useWeaponFireStore = create<weaponFireStoreState>()((set, get) => ({
         .getState()
         .effects.addLaser(position, euler, weaponFireLifeTime);
     } else if (weapon.weaponType === equipData.weaponType.projectile) {
+      // TODO testing weaponDamageSizeMod
+      const weaponDamageSizeMod = weapon.damage() / 10; // TODO implement for other types of weapons
       particleIndexRange = useParticleStore
         .getState()
-        .effects.addBullet(position, euler, weaponFireLifeTime);
+        .effects.addBullet(
+          position,
+          euler,
+          weaponFireLifeTime,
+          weaponDamageSizeMod
+        );
     } else if (weapon.weaponType === equipData.weaponType.missile) {
       useParticleStore
         .getState()

@@ -2,13 +2,13 @@ import * as THREE from "three";
 import useHudTargtingStore, {
   HTML_HUD_TARGET_TYPE,
 } from "../../stores/hudTargetingStore";
-import HudTarget, { HudTargetOptionsType } from "./HudTarget";
+import HudTarget, { typeHudTargetOptions } from "./HudTarget";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
 import { ifChangedUpdateStyle } from "../../util/gameUtil";
 import { getScreenPosition } from "../../util/cameraUtil";
 
 class HudTargetReticule extends HudTarget {
-  constructor(options: HudTargetOptionsType) {
+  constructor(options: typeHudTargetOptions) {
     super(options);
     this.isShowTargetInfo = false; // reticule does not show target info
   }

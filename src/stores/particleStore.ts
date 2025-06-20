@@ -81,7 +81,8 @@ interface particleStoreState {
     addBullet: (
       position: Vector3 | { x: number; y: number; z: number },
       direction: Euler,
-      weaponFireLifeTime: number
+      weaponFireLifeTime: number,
+      weaponDamageSizeMod?: number // TODO implement for other types of weapons
     ) => number[]; // returns particleIndexRange
     addLaser: (
       position: Vector3 | { x: number; y: number; z: number },
@@ -197,7 +198,13 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
         }
       }
     },
-    addBullet: (position, direction, weaponFireLifeTime) => {
+    addBullet: (
+      position,
+      direction,
+      weaponFireLifeTime,
+      weaponDamageSizeMod = 1 // TODO implement for other types of weapons
+      // create main function for weapon fire effects, and sub-functions for each weapon type
+    ) => {
       let particleIndexRange: number[] = [];
       if (get().particleController) {
         const numParticles = 25;
@@ -227,7 +234,7 @@ const useParticleStore = create<particleStoreState>()((set, get) => ({
             color: get().colors.yellow,
             endColor: get().colors.red,
             lifeTime: weaponFireLifeTime,
-            size: 300 * size,
+            size: 300 * size * weaponDamageSizeMod,
           });
           // update particleRange
           particleIndexRange.push(particleIndex);

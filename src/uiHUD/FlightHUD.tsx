@@ -10,8 +10,8 @@ const FlightHud = () => {
   const htmlHudTargets = useHudTargtingStore(
     (state) => state.hudTargetController.htmlHudTargets
   );
-  const htmlHudTargetsCombat = useHudTargtingStore(
-    (state) => state.hudTargetController.htmlHudTargetsCombat
+  const htmlTargetsCombatElementRefs = useHudTargtingStore(
+    (state) => state.hudTargetController.htmlTargetsCombatElementRefs
   );
   const htmlHudTargetReticule = useHudTargtingStore(
     (state) => state.hudTargetController.htmlHudTargetReticule
@@ -71,12 +71,22 @@ const FlightHud = () => {
       >
         <CombatHudCrosshairInner />
       </div>
-      {htmlHudTargets.map((target) => (
-        <FlightHudTarget key={target.id} target={target} />
-      ))}
-      {htmlHudTargetsCombat.map((target) => (
-        <FlightHudCombatTarget key={target.id} target={target} />
-      ))}
+      {
+        // these targets will not change while the player is in the soloar system
+        htmlHudTargets.map((target) => (
+          <FlightHudTarget key={target.id} target={target} />
+        ))
+      }
+      {
+        // only storing the div refs for combat targets, so we can use them for targeting any mechs
+        // currently creating MAX_COMBAT_TARGETS (20) combat targets
+        htmlTargetsCombatElementRefs.map((htmlElementRefs, i) => (
+          <FlightHudCombatTarget
+            key={`combat-target-${i}`}
+            htmlElementRefs={htmlElementRefs}
+          />
+        ))
+      }
       {htmlHudTargetReticule && (
         <FlightHudTargetReticule target={htmlHudTargetReticule} />
       )}

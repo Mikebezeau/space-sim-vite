@@ -1,6 +1,5 @@
 import useStore from "../../stores/store";
 import EnemyMechBoid from "../mech/EnemyMechBoid";
-import { setCustomData } from "r3f-perf";
 import {
   PLAYER_PROPS_COUNT,
   MECH_PROPS_COUNT,
@@ -244,15 +243,6 @@ class BoidWorkerController implements boidWorkerControllerInt {
       mech.acceleration.y = this.#dataArray[offset + 14];
       mech.acceleration.z = this.#dataArray[offset + 15];
     }
-    /*
-    setCustomData(
-      this.#dataArray[
-        PLAYER_PROPS_COUNT +
-          3 * MECH_PROPS_COUNT +
-          13
-      ]
-    );
-*/
     // Call the user-provided callack, indicating that mechs have been updated
     /*
     if (this.#onWorkerDataReceivedCallback) {

@@ -5,6 +5,7 @@ import useDevStore from "./stores/devStore";
 import SpaceFlightControlsMouseKB from "./controls/SpaceFlightControlsMouseKB";
 import SpaceFlightControlsTouch from "./controls/SpaceFlightControlsTouch";
 import FlightHud from "./uiHUD/FlightHud";
+import WarningMessage from "./uiHUD/WarningMessage";
 import Cockpit from "./uiCockpit/Cockpit";
 import {
   ActionModeControlGroup,
@@ -70,6 +71,7 @@ const AppUI = () => {
                 <ShieldsReadout />
               </div>
               <FlightHud />
+              <WarningMessage />
               <WeaponsReadout />
               {IS_TOUCH_SCREEN ? (
                 <SpaceFlightControlsTouch />

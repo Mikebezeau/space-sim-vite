@@ -9,6 +9,8 @@ import HudTargetReticule from "./HudTargetReticule";
 import EnemyMechGroup from "../mech/EnemyMechGroup";
 import { PLAYER } from "../../constants/constants";
 
+export const MAX_COMBAT_TARGETS = 20; // max number of combat targets to show
+
 interface HudTargetControllerInt {
   generateTargets: () => void;
   generateEnemyCombatTargets: (enemyGroup?: EnemyMechGroup) => void;
@@ -30,11 +32,27 @@ interface HudTargetControllerInt {
 
 class HudTargetController implements HudTargetControllerInt {
   htmlHudTargets: (HudTarget | HudCombatTarget)[]; // array of targets
+  // create MAX_COMBAT_TARGETS number of html elements to use with combat targeting
+  htmlTargetsCombatElementRefs: HudCombatTarget[];
+  // call this hudTargetsCombatData
   htmlHudTargetsCombat: HudCombatTarget[]; // array of targets
   htmlHudTargetReticule: HudTargetReticule; // targeting reticule
 
   constructor() {
     this.htmlHudTargets = [];
+    // create MAX_COMBAT_TARGETS number of html elements to use with combat targeting
+    this.htmlTargetsCombatElementRefs = Array.from(
+      { length: MAX_COMBAT_TARGETS },
+      (_, index) =>
+        new HudCombatTarget({
+          id: `combat-target-${index}`,
+          playerControlModeActive: PLAYER.controls.combat,
+          targetType: HTML_HUD_TARGET_TYPE.ENEMY_COMBAT,
+          label: "",
+          color: "transparent",
+          opacity: 1,
+        })
+    );
     this.htmlHudTargetsCombat = [];
     // targeting reticule
     this.htmlHudTargetReticule = new HudTargetReticule({
@@ -152,11 +170,11 @@ class HudTargetController implements HudTargetControllerInt {
       htmlHudTarget.isActive = false; // update active status
     }
     // set focused target null if dead target is focused
+    // TODO need this?
     if (useHudTargtingStore.getState().focusedHudTargetId === id) {
       useHudTargtingStore.getState().focusedHudTargetId = null; // reset focused target
     }
     if (useHudTargtingStore.getState().selectedHudTargetId === id) {
-      useHudTargtingStore.getState().focusedHudTargetId = null; // reset focused target
       useHudTargtingStore.getState().selectedHudTargetId = null; // reset selected target
       // reset reticule target position to center
       this.htmlHudTargetReticule.resetPosition();

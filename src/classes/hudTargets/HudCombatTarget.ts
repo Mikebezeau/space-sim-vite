@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import HudTarget, { HudTargetOptionsType } from "./HudTarget";
+import HudTarget, { typeHudTargetOptions } from "./HudTarget";
 import useHudTargtingStore, {
   HTML_HUD_TARGET_TYPE,
 } from "../../stores/hudTargetingStore";
@@ -8,7 +8,7 @@ import { getScreenPosition } from "../../util/cameraUtil";
 import { ifChangedUpdateStyle } from "../../util/gameUtil";
 
 class HudCombatTarget extends HudTarget {
-  constructor(options: HudTargetOptionsType) {
+  constructor(options: typeHudTargetOptions) {
     super(options);
     if (this.targetType === HTML_HUD_TARGET_TYPE.ENEMY_COMBAT) {
       this.isShowTargetInfo = false; // combat targets do not show target info

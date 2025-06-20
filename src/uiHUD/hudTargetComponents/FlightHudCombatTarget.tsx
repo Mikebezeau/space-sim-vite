@@ -1,18 +1,18 @@
 import React from "react";
-import HudTarget from "../../classes/hudTargets/HudTarget";
+import { typeHtmlElementRefs } from "../../classes/hudTargets/HudTarget";
 
-type targetHUDInt = {
-  target: HudTarget;
+type flightHudCombatTargetInt = {
+  htmlElementRefs: typeHtmlElementRefs;
 };
 
-const FlightHudCombatTarget = (props: targetHUDInt) => {
-  const { target } = props;
+const FlightHudCombatTarget = (props: flightHudCombatTargetInt) => {
+  const { htmlElementRefs } = props;
 
   return (
     <div
       ref={(tde) => {
         if (tde) {
-          target.divElement = tde; // updates movement (translate3d()), or hide target
+          htmlElementRefs.divElement = tde; // updates movement (translate3d()), or hide htmlElementRefs
         }
       }}
       className="absolute top-1/2 left-1/2"
@@ -22,7 +22,7 @@ const FlightHudCombatTarget = (props: targetHUDInt) => {
         className="absolute"
         ref={(divTargetSquare) => {
           if (divTargetSquare) {
-            target.divTargetSquare = divTargetSquare;
+            htmlElementRefs.divTargetSquare = divTargetSquare;
           }
         }}
       >

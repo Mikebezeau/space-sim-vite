@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import usePlayerControlsStore from "../stores/playerControlsStore";
 import CyberMenuBorder from "../uiMenuComponents/common/CyberMenuBorder";
 import CyberButton from "../uiMenuComponents/common/CyberButton";
@@ -9,8 +9,6 @@ import TitleScreenContainer from "./TitleScreenContainer";
 import titleDeath from "/images/titleDeath2.png";
 // @ts-ignore
 import stationSrc from "/images/station.jpg";
-// @ts-ignore
-//import camera from "../assets/icons/camera-change.svg";
 
 const MainMenu = () => {
   const { switchScreen } = usePlayerControlsStore((state) => state.actions);

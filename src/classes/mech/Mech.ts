@@ -66,6 +66,11 @@ interface mechInt {
   ) => void;
   fireMissile: (missileWeapon: MechWeapon) => void;
   fireWeapon: (weapon: MechWeapon, weaponFireEuler: THREE.Euler) => void;
+  reduceAmmo: (
+    weaponId: string,
+    ammoUsed?: number,
+    ammoType?: number | undefined
+  ) => void;
   dispose: () => void;
 }
 
@@ -83,6 +88,11 @@ class Mech implements mechInt {
   expoldeTimeCounter: number;
   isUseInstancedMesh: boolean;
   _mechBP: MechBP;
+  ammoUsed: {
+    [weaponId: string]: {
+      ammoUsed: number; // total ammo used for this weapon
+    };
+  };
   sizeMechBP: number;
   // threejs
   object3d: THREE.Object3D;
@@ -139,6 +149,7 @@ class Mech implements mechInt {
     // try to set 'new MechBP' directly error:
     // uncaught ReferenceError: Cannot access 'MechServo' before initialization at MechWeapon.ts:61:26
     this._mechBP = loadBlueprint(mechDesign);
+    this.ammoUsed = {}; // used to track ammo used for each weapon
     this.sizeMechBP = this._mechBP.size();
     this.object3d = new THREE.Object3D(); // set from ref, updating this will update the object on screen for non-instanced mesh
     this.object3d.userData.mechId = this.id; // this gets set again when object3d is replaced for non-instanced mesh
@@ -759,7 +770,7 @@ class Mech implements mechInt {
         const RoFTime = 1 / RoF; // 1 second divided by RoF
         // RoFTime divided by num weapons in the group
 
-        // TODO add weapon burst mode value for grouped bursts
+        // TODO add weapon burst mode value for grouped bursts from chained weapons
         const burstModeNormValue = 1; //0.5;
 
         const groupNextFireTime = //TODO weaponList should be weapon group list
@@ -847,8 +858,11 @@ class Mech implements mechInt {
         this.testFlag = true; // testing
       }
       */
-      if (weapon.getAmmoCount() === null || weapon.getAmmoCount()! > 0) {
-        weapon.reduceAmmo();
+      if (
+        weapon.getAmmoCount() === null ||
+        weapon.getAmmoCount()! - (this.ammoUsed[weapon.id]?.ammoUsed || 0) > 0
+      ) {
+        this.reduceAmmo(weapon.id);
         // fire weapon / add weaponFire to weaponFireList for hit detection
         useWeaponFireStore
           .getState()
@@ -873,6 +887,27 @@ class Mech implements mechInt {
     } else {
       console.warn("servoOffset not found for weapon", weapon);
     }*/
+  }
+
+  // TODO not finished BPs are shared, will need to keep track of ammo
+  // seperately in Mech class
+  reduceAmmo(
+    weaponId: string,
+    ammoUsed: number = 1, // default ammo used is 1
+    ammoType?: number | undefined // ammo type for multi-ammo weapons
+  ) {
+    // TODO get weapon.ammoList.type
+    // set used ammo count for weapon
+    if (!this.ammoUsed[weaponId]) {
+      this.ammoUsed[weaponId] = { ammoUsed: 0 };
+    }
+    this.ammoUsed[weaponId].ammoUsed += ammoUsed;
+    // TODO? only log ammo used if weapon has ammo / missiles
+    /*
+    if (this.isProjectile && this.ammoList[0].numAmmo >= num) {
+      this.ammoList[0].numAmmo -= num;
+    }
+    */
   }
 
   dispose() {

@@ -17,7 +17,7 @@ import {
 import { GALAXY_AU_DISTANCE_SCALE } from "../../constants/constants";
 import { HTML_HUD_TARGET_TYPE } from "../../stores/hudTargetingStore";
 
-export type HudTargetOptionsType = {
+export type typeHudTargetOptions = {
   id: string;
   playerControlModeActive: number; // player control mode target is active in
   targetType: number;
@@ -28,6 +28,21 @@ export type HudTargetOptionsType = {
   borderColor?: string;
   opacity?: number;
   entity?: EnemyMechBoid | SpaceStationMech | EnemyMechGroup | CelestialBody;
+};
+
+export type typeHtmlElementRefs = {
+  // these are set when component is rendered
+  divElement?: HTMLDivElement; // main div element for target, used for positioning (transform: translate3d)
+  // used for planets, stars, and warp to star targets
+  divTargetCircle?: HTMLDivElement; // used for planets, stars, and warp to star targets
+  // div element for box crosshair, used for combat targets
+  divTargetSquare?: HTMLDivElement; // div element for box crosshair, used for combat targets
+  // combat aiming reticule triangles, positioned based on future position of EnemyMechBoid
+  divTargetTriangles: SVGElement[]; // combat aiming reticule triangles, positioned based on future position of EnemyMechBoid
+  // text info elements
+  divInfo?: HTMLDivElement; // div element for target info
+  divInfoLabel?: HTMLDivElement; // div element for target info label
+  divInfoDetail?: HTMLDivElement; // div element for target info detail
 };
 
 interface HudTargetInt {
@@ -68,7 +83,9 @@ class HudTarget implements HudTargetInt {
   }; // used to sort targets and limit combat targets
   distanceFromPlayer: number; // used for combat target, coloring: darker for further away targets
   scanProgressNorm: number;
-  // set in render
+  //
+  htmlElementRefs: typeHtmlElementRefs;
+
   divElement?: HTMLDivElement; // main div element for target, used for positioning (transform: translate3d)
   divTargetCircle?: HTMLDivElement; // used for planets, stars, and warp to star targets
   divTargetSquare?: HTMLDivElement; // div element for box crosshair, used for combat targets
@@ -78,7 +95,7 @@ class HudTarget implements HudTargetInt {
   divInfoLabel?: HTMLDivElement; // div element for target info label
   divInfoDetail?: HTMLDivElement; // div element for target info detail
 
-  constructor(options: HudTargetOptionsType) {
+  constructor(options: typeHudTargetOptions) {
     const {
       id,
       playerControlModeActive,
@@ -110,9 +127,8 @@ class HudTarget implements HudTargetInt {
     };
     this.distanceFromPlayer = 0;
     this.scanProgressNorm = 0;
-    //this.divElement = div element refs provided on render of target
+    //div element refs provided on render of target
     this.divTargetTriangles = [];
-    //this.divTargetCircle = divTargetCircle;
   }
 
   setActiveStatus() {
