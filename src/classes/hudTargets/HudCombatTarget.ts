@@ -23,7 +23,7 @@ class HudCombatTarget extends HudTarget {
     ) {
       this.isActive =
         useHudTargtingStore.getState().selectedHudTargetId === this.id || // always show if selected target
-        this.screenPosition.angleDiff < 0.15; // set combat target active if within x radian of camera
+        this.screenPosition.angleDiff < 1.5; // set combat target active if within x radian of camera
     }
   }
 

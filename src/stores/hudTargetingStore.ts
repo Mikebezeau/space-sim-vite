@@ -313,9 +313,7 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
     );
 
     // update target data of targets for current player control mode
-    playerControlModeTargets.forEach((htmlHudTarget) => {
-      // TODO combat target calculations could be limited to
-      // mechs in front of player, and closest?
+    playerControlModeTargets.forEach((htmlHudTarget, i) => {
       htmlHudTarget.updateTargetUseFrame(camera, playerPosition);
     });
 
@@ -323,10 +321,10 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
     // using the index in array to set z-index
     // this will make the target closest to the center of the screen on top
     playerControlModeTargets.sort((a, b) => {
-      if (a.screenPosition.angleDiff + 0.01 < b.screenPosition.angleDiff)
+      if (a.screenPosition.angleDiff + 0.01 < b.screenPosition.angleDiff) {
         // 0.01 small buffer to avoid flicker issues
         return -1; // a is closer to center, so it should come first
-
+      }
       return 0;
     });
 
@@ -335,17 +333,12 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
     if (playerControlMode === PLAYER.controls.combat) {
       // if not enough combat targets set isActive to false
       for (let i = 0; i < playerControlModeTargets.length; i++) {
-        if (i > MAX_COMBAT_TARGETS - 1) {
-          playerControlModeTargets[i].isActive = false;
+        if (i >= MAX_COMBAT_TARGETS) {
+          playerControlModeTargets[i].htmlElementRefs = {}; // hide excess targets
         } else {
-          if (!playerControlModeTargets[i]) {
-            playerControlModeTargets[i].isActive = false; // hide excess targets
-          } else {
-            playerControlModeTargets[i].isActive = true; // show target
-            // set the div element refs to the htmlTargetsCombatElementRefs element refs
-            playerControlModeTargets[i].htmlElementRefs =
-              get().hudTargetController.htmlTargetsCombatElementRefs[i];
-          }
+          // set the div element refs to the htmlTargetsCombatElementRefs element refs
+          playerControlModeTargets[i].htmlElementRefs =
+            get().hudTargetController.htmlTargetsCombatElementRefs[i];
         }
       }
     }
@@ -408,16 +401,19 @@ const useHudTargtingStore = create<hudTargetingStoreState>()((set, get) => ({
 
     // update all target HTML HUD target div element styles
     // update targeting reticule
+
     get().hudTargetController.htmlHudTargetReticule.updateTargetStylesUseFrame(
       get().selectedHudTargetId,
       get().focusedHudTargetId
     );
     // update all action mode target data
-    playerControlModeTargets.forEach((htmlHudTarget) => {
-      htmlHudTarget.updateTargetStylesUseFrame(
-        get().selectedHudTargetId,
-        get().focusedHudTargetId
-      );
+    playerControlModeTargets.forEach((htmlHudTarget, i) => {
+      if (i < MAX_COMBAT_TARGETS) {
+        htmlHudTarget.updateTargetStylesUseFrame(
+          get().selectedHudTargetId,
+          get().focusedHudTargetId
+        );
+      }
     });
   },
 }));
