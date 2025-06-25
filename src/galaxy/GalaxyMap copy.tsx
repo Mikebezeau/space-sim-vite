@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { extend, useThree, useFrame } from "@react-three/fiber";
 import { TrackballControls } from "@react-three/drei";
@@ -26,13 +26,11 @@ const RAYCAST_THRESHOLD = 1;
 const GalaxyMap = () => {
   useStore.getState().updateRenderInfo("GalaxyMap");
 
-  const { camera, scene } = useThree();
-
   const galaxy = useStore((state) => state.galaxy);
 
   const VIEW_MODE = { local: 0, full: 1 };
-  const viewMode = useRef<number>(VIEW_MODE.local); // galaxy or star
-
+  const [viewMode, setViewMode] = useState(VIEW_MODE.local); // galaxy or star
+  const { camera, scene } = useThree();
   const controlsRef = useRef<any | null>(null);
   const galaxyRef = useRef<THREE.Group | null>(null);
   const polarGridHelperRef = useRef<THREE.PolarGridHelper | null>(null);
@@ -376,15 +374,16 @@ const GalaxyMap = () => {
       }
 
       if (e.button === 2) {
-        if (viewMode.current === VIEW_MODE.local) {
+        if (viewMode === VIEW_MODE.local) {
           // right click to view full galaxy map
-          viewMode.current = VIEW_MODE.full;
+          setViewMode(VIEW_MODE.full);
           viewGalaxy();
         } else {
           // right click to view local star map
-          viewMode.current = VIEW_MODE.local;
+          setViewMode(VIEW_MODE.local);
           viewPlayerStar();
         }
+        console.log(viewMode);
       } else {
         // set selected star if left mouse button is clicked
         setSelectedTargetStar(e);

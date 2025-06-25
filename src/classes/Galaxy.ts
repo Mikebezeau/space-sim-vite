@@ -70,7 +70,8 @@ class Galaxy implements galaxyInt {
       console.warn("initStars called more than once");
     }
 
-    galaxyGen(this.numStars, this.galaxySize).then((galaxyData) => {
+    //galaxyGen(this.numStars, this.galaxySize).then((galaxyData) => {
+    galaxyGen().then((galaxyData) => {
       // note:memory leaks occur when buffer attributes are replaced, always update them
       this.starCoordsBuffer = galaxyData.starCoordsBuffer;
       this.starColorBuffer = galaxyData.starColorBuffer;

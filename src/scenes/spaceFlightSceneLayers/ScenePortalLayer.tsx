@@ -19,7 +19,7 @@ const ScenePortalLayer = (props: ScenePortalLayerInt) => {
   const { /*gl, size,*/ camera } = useThree();
 
   useEffect(() => {
-    camera.layers.enable(1); // testing
+    camera.layers.enable(1); // TODO testing
   }, []);
 
   useFrame(({ gl /*, camera*/ }) => {
