@@ -70,6 +70,7 @@ class BoidWorkerController implements boidWorkerControllerInt {
    * This method should be called once at the start of the application.
    */
   initWorker(): void {
+    console.log("BoidWorkerController: Initializing worker");
     this.#worker = new Worker(
       new URL("../../webWorkers/boidWorker.ts", import.meta.url),
       { type: "module" }
