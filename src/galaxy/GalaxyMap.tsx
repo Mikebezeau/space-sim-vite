@@ -14,10 +14,14 @@ import {
   useMouseMove,
 } from "../hooks/controls/useMouseKBControls";
 import useTouchController from "../hooks/controls/useTouchController";
+import { GALAXY_CORE_RADIUS } from "./galaxyGen";
 import { STAR_DISPLAY_MODE } from "./galaxyConstants";
 import { IS_MOBILE } from "../constants/constants";
 import StarPoints from "./StarPoints";
 import isMouseOverStarInfoCard from "../galaxy/isMouseOverStarInfoCard";
+
+import { setCustomData } from "r3f-perf";
+
 extend({ MeshLineGeometry, MeshLineMaterial });
 
 const RAYCAST_LENGTH = 10;
@@ -469,12 +473,22 @@ const GalaxyMap = () => {
     );
   };
 
+  const posZero = new THREE.Vector3(0, 0, 0);
+  const fadeDenominator = 500; //GALAXY_CORE_RADIUS / 2.0;
+  //const test = 1.0 - dist / fadeDenominator;
+
   useFrame(() => {
+    // test
+    const dist = camera.position.distanceTo(posZero);
+    setCustomData(1.0 - dist / fadeDenominator);
+
     if (polarGridHelperRef.current) {
       polarGridHelperRef.current.quaternion.copy(camera.quaternion);
       // rotate polarGridHelper to be perpendicular to camera
       polarGridHelperRef.current.rotateX(Math.PI / 2);
     }
+    useStore.getState().starPointsShaderMaterial.uniforms.uCameraDist.value =
+      camera.position.distanceTo(posZero); // used in starPointsShader to fade stars based on distance from camera
   });
 
   return (

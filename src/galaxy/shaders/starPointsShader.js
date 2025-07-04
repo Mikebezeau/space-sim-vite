@@ -2,10 +2,14 @@ const starPointsShader = {
   uniforms: {
     uTexture: { value: null }, // performance: draw circle instead of texture?
     uTextureNebula: { value: null },
+    uCameraDist: { value: 1.0 }, // updated in GalaxyMap.tsx to fade stars based on distance from camera
+    uGalaxyCoreRadius: { value: 0.0 }, // updated in GalaxyMap.tsx
   },
 
   vertShader: `
   uniform float uBackground;
+  uniform float uCameraDist;
+  uniform float uGalaxyCoreRadius;
   attribute float aSize;
   attribute vec3 aColor;
   attribute float aSelected;
@@ -38,7 +42,7 @@ const starPointsShader = {
         // discarding point that player is located at by setting position beyond clip plane
         gl_Position = vec4( 0.0 );
       }
-     else if( round( vSelected ) == 1.0 ){
+      else if( round( vSelected ) == 1.0 ){
         gl_PointSize =  25.0;
         vColor = vec4( 0.2, 0.5, 0.8, 1.0 );
       }
@@ -48,7 +52,14 @@ const starPointsShader = {
         if( vColor.w < 0.1 ) gl_Position = vec4( 0.0 );
       }
     }
-
+    else {
+      float fadeDenominator = 500.0; //uGalaxyCoreRadius / 2.0; //uGalaxyCoreRadius = GALAXY_CORE_RADIUS = 20 atm
+      // Use exponential decay to approach 0 slowly instead of linear
+      float fade = exp(-uCameraDist / fadeDenominator);
+      vColor = vec4(aColor, clamp(fade, 0.005, 1.0));
+      // test fade effect
+      //vColor = vec4(clamp(1.0 - dist / fadeDenominator, 0.4, 1.0));
+    }
   }
   `,
 

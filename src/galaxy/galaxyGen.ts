@@ -27,215 +27,90 @@ export const starTypeGen = (starIndex) => {
   return star;
 };
 
-const galaxyGenOld = async (
-  starsInGalaxy = 1000,
-  galaxySize = 40,
-  galaxyScale = 10,
-  onlyCore = false,
-  onlyArms = false
-) => {
-  const galaxySeed = 123456;
-  const rng = seedrandom(galaxySeed);
-  const starCoords: number[] = [];
-  const starColors: number[] = [];
-  const starSizes: number[] = [];
-  const calaxyCoreSizeFactor = 0.15;
-  const numGalaxyArms = 2;
-  // placement in core is determined as star count i increases, higher probability to be placed in core
-  // additional factor in determining star placement in center sphere
-  const placeStarInCoreProbabilityFactor = 0.5;
-  const approxArmStarPopulation =
-    (starsInGalaxy * (1 - placeStarInCoreProbabilityFactor)) / numGalaxyArms;
-  const armRotationFactor = 1.5;
-  const armDensityFactor = 2;
-  const randomArmStarOffsetFactor = (galaxySize / 10) * 0.6;
-  const flattenFactor = 0.5;
+// ---
 
-  const placeCoreStar = (i) => {
-    // position stars in spherical coordinates in core of galaxy
-    const phi = Math.acos(2 * rng() - 1);
-    const coreRadius =
-      ((Math.cbrt(rng()) * galaxySize) / 2) * calaxyCoreSizeFactor;
+// Applies hierarchical, fast gravitational clumping to a star field by recursively pulling stars into smaller, randomly chosen subgroups.
+// Each iteration clusters stars within smaller random subsets, not the whole set, for speed and locality.
+// This version uses the largest stars as cluster centers.
+export function applyLooseClumpingFast(
+  stars: Vec3[],
+  starSizes: number[],
+  rng: () => number,
+  iterations: number = 4,
+  baseClumpStrength: number = 0.12,
+  maxClusters: number = 2000,
+  subgroupSize: number = 600 // controls local group size, smaller = more local
+): Vec3[] {
+  const starCount = stars.length;
 
-    let x = coreRadius * Math.sin(phi) * Math.cos(i * 2);
-    let y = coreRadius * Math.sin(phi) * Math.sin(i * 2);
-    // flattening the sphere: bring stars z position closer to center plane the higher the x y distance from center
-    const distanceFromCenterXY = Math.sqrt(x * x + y * y);
+  // Step 1: Use largest stars as initial cluster seeds (top N)
+  const groupCount = Math.min(
+    maxClusters,
+    Math.floor(starCount / subgroupSize)
+  );
+  // Find indices of the largest stars
+  const sizeIndices = Array.from({ length: starCount }, (_, i) => i);
+  sizeIndices.sort((a, b) => starSizes[b] - starSizes[a]);
+  const clusterIndices = sizeIndices.slice(0, groupCount);
 
-    let z =
-      coreRadius *
-      Math.cos(phi) *
-      Math.exp(-distanceFromCenterXY / galaxySize) *
-      flattenFactor;
+  for (let step = 0; step < iterations; step++) {
+    // Assign each star to the nearest cluster center (by Euclidean distance)
+    const groupAssignments = new Array(starCount);
+    for (let i = 0; i < starCount; i++) {
+      let minDist = Infinity;
+      let minIdx = 0;
+      for (let g = 0; g < clusterIndices.length; g++) {
+        const cIdx = clusterIndices[g];
+        const dx = stars[i][0] - stars[cIdx][0];
+        const dy = stars[i][1] - stars[cIdx][1];
+        const dz = stars[i][2] - stars[cIdx][2];
+        const dist = dx * dx + dy * dy + dz * dz;
+        if (dist < minDist) {
+          minDist = dist;
+          minIdx = g;
+        }
+      }
+      groupAssignments[i] = minIdx;
+    }
 
-    // Adjust x, y, and z positions to be more likely to be nearer to the center
-    const distanceFromCenterNormalized = distanceFromCenterXY / galaxySize;
-    const distanceFactor = Math.exp(-distanceFromCenterNormalized);
-    const positionFactor = rng() * distanceFactor;
-    x *= positionFactor;
-    y *= positionFactor;
-    z *= positionFactor;
-    return { x, y, z };
-  };
+    // Build groups
+    const groups: Vec3[][] = Array.from({ length: groupCount }, () => []);
+    for (let i = 0; i < starCount; i++) {
+      groups[groupAssignments[i]].push(stars[i]);
+    }
 
-  const placeArmStar = (i, startingAngle = 0) => {
-    const armRadius = galaxySize / 2 / armDensityFactor;
-    // Placing stars randomly in the arms or center sphere, so use approximateI
-    const approximateI = (i / numGalaxyArms) * placeStarInCoreProbabilityFactor;
+    // For each group, compute a local center (mean position)
+    const groupCenters: Vec3[] = groups.map((group) => {
+      if (group.length === 0) return [0, 0, 0];
+      let sx = 0,
+        sy = 0,
+        sz = 0;
+      for (const s of group) {
+        sx += s[0];
+        sy += s[1];
+        sz += s[2];
+      }
+      return [sx / group.length, sy / group.length, sz / group.length];
+    });
 
-    const distance = (approximateI / approxArmStarPopulation) * armRadius;
-    const armAngleIncrement =
-      ((2 * Math.PI) / approxArmStarPopulation) * armRotationFactor;
-    const armAngle = startingAngle + armAngleIncrement * approximateI;
-    // As distance increases distanceOffsetFactor will decrease from 1 to 0
-    const distanceOffsetFactor = (armRadius - distance) / armRadius;
-    // randomOffsetAdjustment adds a little more randomness to the star positions
-    const randomOffsetAdjustment = galaxySize / 400;
-    const offsetFactor =
-      randomArmStarOffsetFactor *
-      (distanceOffsetFactor + randomOffsetAdjustment);
-
-    const baseX = distance * Math.cos(armAngle);
-    const baseY = distance * Math.sin(armAngle);
-
-    const randomOffsetX = rng() * offsetFactor - offsetFactor / 2;
-    const randomOffsetY = rng() * offsetFactor - offsetFactor / 2;
-
-    let x = baseX + randomOffsetX;
-    let y = baseY + randomOffsetY;
-    /*
-    let r = Math.sqrt(x**2 + y**2)
-    let theta = offset
-    theta += x > 0 ? Math.atan(y/x) : Math.atan(y/x) + Math.PI
-    theta += (r/ARM_X_DIST) * SPIRAL
-    return new Vector3(r*Math.cos(theta), r*Math.sin(theta), z)
-    */
-    const distanceFromBaseXY = Math.sqrt(
-      (x - baseX) * (x - baseX) + (y - baseY) * (y - baseY)
-    );
-    //const distanceFromBaseXYNormalized = distanceFromBaseXY / offsetFactor;
-    const baseDistanceFactor = Math.exp(-distanceFromBaseXY); //Math.exp(-distanceFromBaseXYNormalized);
-    x *= baseDistanceFactor;
-    y *= baseDistanceFactor;
-
-    const distanceFromCenterXY = Math.sqrt(x * x + y * y);
-    const distanceFromCenterNormalized = distanceFromCenterXY / galaxySize;
-    const zDistanceFactor = Math.exp(-distanceFromCenterNormalized);
-    const zPositionFactor = rng() * zDistanceFactor;
-    /*
-    const u = 1 - rng();
-    const v = rng();
-    let z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-    //return z * stdev + mean
-    */
-    let z = rng();
-    z =
-      (z * offsetFactor - offsetFactor / 2) *
-      Math.sqrt(zPositionFactor * flattenFactor);
-    return { x, y, z };
-  };
-
-  let x = 0,
-    y = 0,
-    z = 0;
-  for (let i = 0; i < starsInGalaxy; i++) {
-    const star = genStarData(i); //starTypeGen(i);
-    const starColor = star.colorRGB;
-    const starSize = star.size;
-    // As i increases, distancePlacementFactor will decrease from 1 to 0
-    const distancePlacementFactor = (starsInGalaxy - i) / starsInGalaxy;
-    const starPlacement = rng();
-    // stars are more likely placed in center sphere as i increases
-    if (
-      starPlacement * placeStarInCoreProbabilityFactor >
-      distancePlacementFactor
-    ) {
-      // Place star in center sphere or arms.
-      if (onlyArms === false) ({ x, y, z } = placeCoreStar(i));
-    } else {
-      // Place star in arms, giving starting agle for each arm to space them out evenly
-      const armStartingAngle =
-        ((i % numGalaxyArms) * Math.PI * 2) / numGalaxyArms;
-      if (onlyCore === false) {
-        ({ x, y, z } = placeArmStar(i, armStartingAngle));
+    // Step 3: Pull stars in each group toward their group center
+    // Quadratic easing for clump strength
+    const progress = (step + 1) / iterations;
+    const t = baseClumpStrength * (progress * progress);
+    for (let g = 0; g < groupCount; g++) {
+      const center = groupCenters[g];
+      for (const s of groups[g]) {
+        const fuzz = () => (rng() * 2 - 1) * 0.5;
+        s[0] += (center[0] - s[0]) * t + fuzz();
+        s[1] += (center[1] - s[1]) * t + fuzz();
+        s[2] += (center[2] - s[2]) * t + fuzz() * 0.2;
       }
     }
-    starCoords.push(x * galaxyScale, y * galaxyScale, z * galaxyScale);
-    starColors.push(...starColor);
-    starSizes.push(starSize);
   }
-  const starCoordsBuffer = new THREE.BufferAttribute(
-    new Float32Array(starCoords),
-    3 // x, y, z values
-  );
-  const starColorBuffer = new THREE.BufferAttribute(
-    new Float32Array(starColors),
-    3 // RBG values
-  );
-  const starSizeBuffer = new THREE.BufferAttribute(
-    new Float32Array(starSizes),
-    1 // float value
-  );
-  return {
-    starCoordsBuffer,
-    starColorBuffer,
-    starSizeBuffer,
-  };
-};
-
-// ----------------
-
-function bulgeDensity(r: number): number {
-  return Math.exp(-BULGE_BN * (Math.pow(r / BULGE_RE, 1 / BULGE_N) - 1));
+  return stars;
 }
 
-function diskDensity(x: number, y: number, z: number): number {
-  const r = Math.sqrt(x * x + y * y);
-  return (
-    Math.exp(-r / DISK_SCALE_LENGTH) *
-    Math.exp(-Math.abs(z) / DISK_SCALE_HEIGHT)
-  );
-}
-
-function spiralArmDensity(x: number, y: number, z: number): number {
-  const r = Math.sqrt(x * x + y * y);
-  const theta = Math.atan2(y, x);
-
-  let minDist = Infinity;
-
-  for (let i = 0; i < NUM_ARMS; i++) {
-    const offset = (i / NUM_ARMS) * TAU;
-    const armTheta = theta - offset;
-    const armR = SPIRAL_A * Math.exp(SPIRAL_B * armTheta);
-    const dist = Math.abs(r - armR);
-    minDist = Math.min(minDist, dist);
-  }
-
-  return Math.exp((-minDist * minDist) / (2 * SPIRAL_FLUFF ** 2));
-}
-
-function barDensity(x: number, y: number, z: number): number {
-  const xRot = x * Math.cos(BAR_ANGLE) + y * Math.sin(BAR_ANGLE);
-  const yRot = -x * Math.sin(BAR_ANGLE) + y * Math.cos(BAR_ANGLE);
-  return Math.exp(
-    -Math.pow(xRot / BAR_LENGTH, 2) - Math.pow(yRot / BAR_WIDTH, 2)
-  );
-}
-/*
-function haloDensity(x: number, y: number, z: number): number {
-  const r = Math.sqrt(x * x + y * y + z * z);
-  return r > 5 ? 1 / (r * r + 1) : 0;
-}
-*/
-function haloDensity(x: number, y: number, z: number): number {
-  const r = Math.sqrt(x * x + y * y + z * z);
-  const rc = 1.0; // core radius
-  const alpha = 3.0; // falloff exponent
-  return 1 / Math.pow(r * r + rc * rc, alpha / 2);
-}
-
-// -----------------
-
+// ---
 function sampleBulge(rng): Vec3 {
   const u = rng();
   const r = (BULGE_RE * Math.pow(-Math.log(1 - u), BULGE_N)) / BULGE_BN;
@@ -247,75 +122,109 @@ function sampleBulge(rng): Vec3 {
     r * Math.cos(phi) * 0.7, // Oblate bulge
   ];
 }
-
+// ---
 function exponentialFalloffZ(rng, scale: number): number {
   const u = rng();
   const sign = rng() < 0.5 ? -1 : 1;
   return sign * -scale * Math.log(1 - u); // Exponential falloff
 }
+function sampleDisk(rng: () => number): Vec3 {
+  let r: number;
 
-function sampleDisk(rng): Vec3 {
-  const r = -DISK_SCALE_LENGTH * Math.log(1 - rng());
+  // Rejection sampling to suppress small r
+  while (true) {
+    const u = rng();
+    r = -DISK_SCALE_LENGTH * Math.log(1 - u);
+
+    // Suppression function: lower chance of keeping small r
+    // Adjust exponent for sharper or softer suppression
+    const suppression = Math.pow(r / GALAXY_CORE_RADIUS, 2); // 0 at r=0, 1 at r=max
+    if (rng() < suppression) break;
+  }
+
   const theta = rng() * TAU;
-  //const z = (rng() * 2 - 1) * DISK_SCALE_HEIGHT * 3;
-  const z = exponentialFalloffZ(rng, DISK_SCALE_HEIGHT);
+
+  // Radial-dependent scale height to suppress vertical column
+  const minScale = 0.05;
+  const maxScale = DISK_SCALE_HEIGHT;
+  const radialBlend = Math.min(r / 5, 1);
+  const zScale = minScale + (maxScale - minScale) * radialBlend;
+
+  const z = exponentialFalloffZ(rng, zScale);
+
   return [r * Math.cos(theta), r * Math.sin(theta), z];
 }
-/*
-function sampleSpiralArm(): Vec3 {
+// ---
+function spiralFluffAtRadius(r: number, maxR: number): number {
+  const minFluff = 0.1;
+  const maxFluff = 2.0;
+  //const t = r / GALAXY_CORE_RADIUS;
+  const t = Math.min(r / maxR, 1); // Clamp to [0, 1]
+  const decay = Math.pow(1 - t, 2); // sharper decay than linear
+  //return (maxFluff + (minFluff - maxFluff)) * decay;
+  return maxFluff * decay + minFluff * (1 - decay);
+}
+function sampleSpiralArm(rng: () => number): Vec3 {
   const arm = Math.floor(rng() * NUM_ARMS);
-  const theta = rng() * 4 * Math.PI;
-  const r = SPIRAL_A * Math.exp(SPIRAL_B * theta);
 
-  const armTheta = theta + (arm / NUM_ARMS) * TAU;
-  const x = r * Math.cos(armTheta) + gaussian(rng, 0, SPIRAL_FLUFF);
-  const y = r * Math.sin(armTheta) + gaussian(rng, 0, SPIRAL_FLUFF);
-  const z = gaussian(rng, 0, DISK_SCALE_HEIGHT);
+  const minTheta = 0.5 * Math.PI;
+  const maxTheta = SPIRAL_TURNS * 2 * Math.PI;
+  const theta = minTheta + rng() * (maxTheta - minTheta);
+
+  const r = SPIRAL_A * Math.exp(SPIRAL_B * theta);
+  const maxR = SPIRAL_A * Math.exp(SPIRAL_B * maxTheta);
+  if (r < maxR / (BAR_LENGTH * 1.5)) return sampleSpiralArm(rng); // prevent inner crowding
+  // at the end of the arms make it less likely to sample
+  if (r > maxR * 0.8) {
+    // Gradually increase rejection probability as r approaches maxR
+    const t = (r - maxR * 0.8) / (maxR * 0.2); // t goes from 0 to 1 as r goes from 0.8*maxR to maxR
+    const rejectionProb = t; // Linear, can use Math.pow(t, n) for sharper curve
+    if (rng() < rejectionProb) return sampleSpiralArm(rng);
+  }
+
+  const baseTheta = theta + (arm / NUM_ARMS) * TAU;
+  const baseX = r * Math.cos(baseTheta);
+  const baseY = r * Math.sin(baseTheta);
+
+  const fluff = spiralFluffAtRadius(r, maxR);
+  // As r approaches maxR, increase spread exponentially
+  const t = Math.min(r / maxR, 1);
+  const spreadMultiplier = Math.exp(2 * t); // Exponential increase, adjust factor as needed
+
+  const x = baseX + gaussian(rng, 0, fluff * 2 * spreadMultiplier);
+  const y = baseY + gaussian(rng, 0, fluff * 2 * spreadMultiplier);
+
+  const zSpread = gaussian(rng, 0, fluff * spreadMultiplier);
+  // pick random number between -zSpread and zSpread
+  const z = (rng() * 2 - 1) * zSpread;
+
   return [x, y, z];
 }
-*/
-function sampleSpiralArm(rng): Vec3 {
-  const arm = Math.floor(rng() * NUM_ARMS);
-  const theta = rng() * 4 * Math.PI;
-  const r = SPIRAL_A * Math.exp(SPIRAL_B * theta);
-
-  const armTheta = theta + (arm / NUM_ARMS) * TAU;
-  const baseX = r * Math.cos(armTheta);
-  const baseY = r * Math.sin(armTheta);
-
-  const fluff = spiralFluffAtRadius(r);
-  const x = baseX + gaussian(rng, 0, fluff);
-  const y = baseY + gaussian(rng, 0, fluff);
-  //const z = gaussian(rng, 0, DISK_SCALE_HEIGHT); // remains thin in z
-  const verticalScale = 0.2 + 0.3 * (1 - r / GALAXY_RADIUS);
-  const z = gaussian(rng, 0, verticalScale);
-
-  return [x, y, z];
-}
-
+// ---
 function sampleBar(rng): Vec3 {
-  const x = gaussian(rng, 0, BAR_LENGTH / 2);
-  const y = gaussian(rng, 0, BAR_WIDTH / 2);
-  const z = gaussian(rng, 0, 0.2);
+  const x = gaussian(rng, 0, BAR_LENGTH);
+  const y = gaussian(rng, 0, BAR_WIDTH);
+  const z = gaussian(rng, 0, BAR_HEIGHT);
   const xRot = x * Math.cos(-BAR_ANGLE) + y * Math.sin(-BAR_ANGLE);
   const yRot = -x * Math.sin(-BAR_ANGLE) + y * Math.cos(-BAR_ANGLE);
   return [xRot, yRot, z];
 }
-
+// ---
+function smoothstep(edge0: number, edge1: number, x: number): number {
+  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t); // smooth cubic easing
+}
 function sampleHalo(rng): Vec3 {
-  const alpha = 3.0;
-  const rMax = GALAXY_RADIUS;
-  const rc = 1.0;
+  const rMax = GALAXY_CORE_RADIUS * 5;
+  const rMin = GALAXY_CORE_RADIUS / 3; // Minimum radius to avoid singularity
+  const r = Math.pow(rng(), 3) * rMax;
+  // Smooth fade in (inner radius) and fade out (outer edge)
+  const fadeIn = smoothstep(rMin, rMin * 3, r);
+  const fadeOut = 1 - smoothstep(rMax * 0.7, rMax, r);
+  const acceptance = fadeIn * fadeOut;
+  if (rng() > acceptance) return sampleHalo(rng); // rejection sampling
 
-  // Inverse transform sampling for power-law shell
-  let r;
-  while (true) {
-    r = rng() * rMax;
-    const density = 1 / Math.pow(r * r + rc * rc, alpha / 2);
-    if (rng() < density * 10) break; // Rejection sampling
-  }
-
-  const theta = rng() * Math.PI * 2;
+  const theta = rng() * TAU;
   const phi = Math.acos(2 * rng() - 1);
   return [
     r * Math.sin(phi) * Math.cos(theta),
@@ -323,7 +232,7 @@ function sampleHalo(rng): Vec3 {
     r * Math.cos(phi),
   ];
 }
-
+// ---
 // Gaussian random number using Box-Muller transform
 function gaussian(rng, mean = 0, stdDev = 1): number {
   const u = 1 - rng();
@@ -332,127 +241,97 @@ function gaussian(rng, mean = 0, stdDev = 1): number {
     Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v) * stdDev + mean
   );
 }
-/*
-function spiralFluffAtRadius(r: number): number {
-  const maxR = GALAXY_RADIUS;
-  const minFluff = 0.05;
-  const maxFluff = 0.5;
-  return maxFluff - (maxFluff - minFluff) * (r / maxR);
-}
-*/
-function spiralFluffAtRadius(r: number): number {
-  const minFluff = 0.01;
-  const maxFluff = 6.0;
-  const t = r / GALAXY_RADIUS;
-  const decay = 1 / (1 + 0.5 * t * t); // sharper decay than linear
-  return minFluff + (maxFluff - minFluff) * decay;
-}
-
-// -----------------
-
+// ---
 type Vec3 = [number, number, number];
 
 const TAU = Math.PI * 2;
 
 // Galactic structure parameters
+export const GALAXY_CORE_RADIUS = 20;
+
 const BULGE_N = 0.8;
 const BULGE_RE = 1.0; // kpc
 const BULGE_BN = 1.9992 * BULGE_N - 0.3271;
 
-const DISK_SCALE_LENGTH = 4.0;
-const DISK_SCALE_HEIGHT = 0.3;
+const DISK_SCALE_LENGTH = GALAXY_CORE_RADIUS * 1.5;
+const DISK_SCALE_HEIGHT = DISK_SCALE_LENGTH * 0.03; // 3% of radius
 
-const BAR_LENGTH = 4.0;
-const BAR_WIDTH = 1.0;
+const BAR_LENGTH = GALAXY_CORE_RADIUS / 4;
+const BAR_WIDTH = BAR_LENGTH / 2;
+const BAR_HEIGHT = BAR_WIDTH / 3; // Variation in height
 const BAR_ANGLE = Math.PI / 6; // 30 degrees
 
 const NUM_ARMS = 4;
+const SPIRAL_TURNS = 2; // Number of times spiral arms turn around the center
 const SPIRAL_A = 1.5;
 const SPIRAL_B = 0.3;
-const SPIRAL_FLUFF = 0.25;
 
-const GALAXY_RADIUS = 15;
 const TOTAL_STARS = 150000;
 
 /**
  * Unified Milky Way galaxy star generator
  */
-export function galaxyGenMW2(starCount: number = TOTAL_STARS): Vec3[] {
-  const galaxySeed = 64654654;
-  const rng = seedrandom(galaxySeed);
-
+export function galaxyGenMW2(rng, starCount: number = TOTAL_STARS): Vec3[] {
   const stars: Vec3[] = [];
 
   for (let i = 0; i < starCount; i++) {
-    let star: Vec3 | null = null; //TODO testing
+    let star: Vec3 | null = null;
 
-    // Use rejection sampling
-    while (true) {
-      const r = rng() * GALAXY_RADIUS;
-      const theta = rng() * TAU;
-      const x = r * Math.cos(theta);
-      const y = r * Math.sin(theta);
-      const z = (rng() * 2 - 1) * 2.0;
+    // Define relative weights for each component
+    const bulgeW = 0.0; // stars clustered in center too much
+    const diskW = 0.25;
+    const barW = 0.25;
+    const armW = 1.0;
+    const haloW = 0.1;
 
-      // Compute weights
-      const bulgeW = bulgeDensity(Math.sqrt(x * x + y * y + z * z));
-      const diskW = diskDensity(x, y, z);
-      const barW = barDensity(x, y, z);
-      const armW = spiralArmDensity(x, y, z);
-      const haloW = haloDensity(x, y, z);
+    const totalW = bulgeW + diskW + barW + armW + haloW;
 
-      const total = bulgeW + diskW + barW + armW + haloW;
+    const u = rng() * totalW;
 
-      // Normalize
-      const u = rng() * total;
-      star = null;
-      if (u < bulgeW) {
-        star = sampleBulge(rng);
-        break;
-      } else if (u < bulgeW + diskW) {
-        star = sampleDisk(rng);
-        break;
-      } else if (u < bulgeW + diskW + armW) {
-        star = sampleSpiralArm(rng);
-        break;
-      } else if (u < bulgeW + diskW + armW + barW) {
-        star = sampleBar(rng);
-        break;
-      } else if (u < total) {
-        star = sampleHalo(rng);
-        break;
-      }
-    }
-    if (star) {
-      stars.push(star);
+    if (u < bulgeW) {
+      star = sampleBulge(rng);
+    } else if (u < bulgeW + diskW) {
+      star = sampleDisk(rng);
+    } else if (u < bulgeW + diskW + barW) {
+      star = sampleBar(rng);
+    } else if (u < bulgeW + diskW + barW + armW) {
+      star = sampleSpiralArm(rng);
     } else {
-      stars.push([0, 0, 0]);
+      star = sampleHalo(rng);
     }
+    stars.push(star ?? [0, 0, 0]); // fallback in case sample failed
   }
-
   return stars;
 }
 
 const galaxyGen = async () => {
-  const stars = galaxyGenMW2();
+  const galaxySeed = 64654654;
+  const rng = seedrandom(galaxySeed);
+  const stars = galaxyGenMW2(rng);
   // Convert stars to buffers for THREE.js
   const starCoords: number[] = [];
   const starColors: number[] = [];
   const starSizes: number[] = [];
 
-  const galaxyScale = 20;
+  const galaxyScale = 2;
 
-  stars.forEach((star, i) => {
+  stars.forEach((_, i) => {
     const starData = genStarData(i); //starTypeGen(i);
     const starColor = starData.colorRGB;
     const starSize = starData.size;
+    starColors.push(...starColor);
+    starSizes.push(starSize);
+  });
+
+  // now we have star sizes, create clusters
+  //applyLooseClumpingFast(stars, starSizes, rng); // Apply mild clumping
+
+  stars.forEach((star) => {
     starCoords.push(
       star[0] * galaxyScale,
       star[1] * galaxyScale,
       star[2] * galaxyScale
     );
-    starColors.push(...starColor);
-    starSizes.push(starSize);
   });
 
   const starCoordsBuffer = new THREE.BufferAttribute(
