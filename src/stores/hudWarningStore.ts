@@ -6,16 +6,20 @@ export interface WarningMessageOptions {
   mainText: string;
   descriptionText: string;
   mainColor: string;
-  descriptionColor: string;
+  descriptionColor: string; // EVENT_TYPE that must be met for this message to complete
+  eventCompletionCondition?: number; // EVENT_TYPE that must be met for this message to complete
+  eventConditionCount: number; // number of times completion condition must be met before the message disappears
+  eventConditionCountCurrent: number; // Current count of how many times the condition has been met
+  // if no event condition, completionCondition may be set to a function that returns a boolean
   // Condition that must be met for this message to disappear and the next to show
-  completionCondition?: () => boolean | Promise<boolean>;
+  completionCondition?: () => boolean;
 }
 
 interface ActiveWarningState extends WarningMessageOptions {
   currentPhase:
     | "showMessage"
     | "showDescription"
-    | "blinkFinished"
+    | "finishBlink"
     | "waitingForCompletion"
     | "endMessage";
   accumulatedTime: number; // Total time (seconds) elapsed for current warning
@@ -48,6 +52,8 @@ const defaultWarningOptions: Omit<WarningMessageOptions, "id"> = {
   descriptionText: "Set warning options",
   mainColor: "rgba(255, 255, 0, 0.7)",
   descriptionColor: "rgba(255, 255, 255, 0.9)",
+  eventConditionCount: 1,
+  eventConditionCountCurrent: 0,
 };
 
 const useHudWarningStore = create<hudWarningStoreInt>((set, get) => ({
@@ -72,6 +78,14 @@ const useHudWarningStore = create<hudWarningStoreInt>((set, get) => ({
       ...defaultWarningOptions,
       ...options,
     };
+    // if event, set completionCondition to check if the event condition count has been met
+    if (newWarning.eventCompletionCondition !== undefined) {
+      newWarning.completionCondition = () =>
+        // completionCondition checks if the event condition count has been met
+        get().currentActiveWarning!.eventConditionCountCurrent >=
+        get().currentActiveWarning!.eventConditionCount;
+    }
+
     set((state) => ({ warningQueue: [...state.warningQueue, newWarning] }));
   },
 
@@ -89,7 +103,6 @@ const useHudWarningStore = create<hudWarningStoreInt>((set, get) => ({
 
     // pick the next warning from the queue
     if (!get().currentActiveWarning && warningQueue.length > 0) {
-      console.log("WarningMessage: Picking next warning from queue");
       // If no active warning, take the first one from the queue
       // Note: This assumes the queue is ordered by priority or time added
       // If you want to prioritize differently, you can modify this logic
@@ -112,66 +125,63 @@ const useHudWarningStore = create<hudWarningStoreInt>((set, get) => ({
     // Proceed with the current active warning
     get().currentActiveWarning!.accumulatedTime += deltaTime;
 
-    const mainText = warningMainTextRef;
-    const description = warningDescriptionRef;
-
     switch (get().currentActiveWarning!.currentPhase) {
       case "showMessage":
-        mainText.textContent =
+        warningMainTextRef.textContent =
           get().currentActiveWarning!.mainText.toUpperCase();
-        description.textContent = get().currentActiveWarning!.descriptionText;
-        mainText.style.color = get().currentActiveWarning!.mainColor;
-        description.style.color = get().currentActiveWarning!.descriptionColor;
-        mainText.classList.remove("opacity-0");
-        mainText.classList.add("animate-blink3");
-        description.classList.remove("-translate-y-[50vh]");
+        warningDescriptionRef.textContent =
+          get().currentActiveWarning!.descriptionText;
+        warningMainTextRef.style.color = get().currentActiveWarning!.mainColor;
+        warningDescriptionRef.style.color =
+          get().currentActiveWarning!.descriptionColor;
+        warningMainTextRef.classList.remove("opacity-0");
+        warningMainTextRef.classList.add("animate-blink3");
+        warningDescriptionRef.classList.remove("-translate-y-[50vh]");
         get().currentActiveWarning!.currentPhase = "showDescription"; // DIRECT MUTATION
         break;
 
       case "showDescription":
-        if (get().currentActiveWarning!.accumulatedTime >= 1) {
-          description.classList.remove("opacity-0");
-          get().currentActiveWarning!.currentPhase = "blinkFinished"; // DIRECT MUTATION
+        if (get().currentActiveWarning!.accumulatedTime >= 0.5) {
+          warningDescriptionRef.classList.remove("opacity-0");
+          get().currentActiveWarning!.currentPhase = "finishBlink"; // DIRECT MUTATION
         }
         break;
 
-      case "blinkFinished":
-        if (get().currentActiveWarning!.accumulatedTime >= 2) {
-          mainText.classList.remove("animate-blink3");
-          mainText.classList.add("opacity-0");
+      case "finishBlink":
+        if (get().currentActiveWarning!.accumulatedTime >= 1.5) {
+          warningMainTextRef.classList.remove("animate-blink3");
+          warningMainTextRef.classList.add("opacity-0");
           get().currentActiveWarning!.currentPhase = "waitingForCompletion"; // DIRECT MUTATION
         }
         break;
 
       case "waitingForCompletion":
-        if (get().currentActiveWarning!.accumulatedTime < 5) {
+        if (get().currentActiveWarning!.accumulatedTime < 2) {
           break;
         }
 
         let conditionMet = false;
         if (get().currentActiveWarning!.completionCondition !== undefined) {
-          description.classList.add("-translate-y-[50vh]");
-          const result = get().currentActiveWarning!.completionCondition!();
-          if (result instanceof Promise) {
-            conditionMet = await result;
-          } else {
-            conditionMet = result;
-          }
+          warningDescriptionRef.classList.add("-translate-y-[50vh]");
+          conditionMet = get().currentActiveWarning!.completionCondition!();
         }
 
         if (
-          conditionMet ||
-          (!get().currentActiveWarning!.completionCondition &&
-            get().currentActiveWarning!.accumulatedTime >= 6)
+          conditionMet || // if completion condition is met
+          (!get().currentActiveWarning!.completionCondition && // or if no completion condition
+            get().currentActiveWarning!.accumulatedTime >= 6) // and enough time has passed
         ) {
-          description.classList.add("opacity-0");
+          warningDescriptionRef.classList.add("opacity-0");
           get().currentActiveWarning!.currentPhase = "endMessage"; // DIRECT MUTATION
         }
         break;
 
       case "endMessage":
-        if (get().currentActiveWarning!.accumulatedTime >= 7) {
-          description.style.top = "0";
+        if (
+          get().currentActiveWarning!.completionCondition ||
+          get().currentActiveWarning!.accumulatedTime >= 7
+        ) {
+          warningDescriptionRef.style.top = "0";
           set({ currentActiveWarning: null });
         }
         break;

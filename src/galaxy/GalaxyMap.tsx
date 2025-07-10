@@ -18,13 +18,14 @@ import { GALAXY_CORE_RADIUS } from "./galaxyGen";
 import { STAR_DISPLAY_MODE } from "./galaxyConstants";
 import { IS_MOBILE } from "../constants/constants";
 import StarPoints from "./StarPoints";
+import NebulaPoints from "./NebulaPoints";
 import isMouseOverStarInfoCard from "../galaxy/isMouseOverStarInfoCard";
 
 import { setCustomData } from "r3f-perf";
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 
-const RAYCAST_LENGTH = 10;
+const RAYCAST_LENGTH = 20;
 const RAYCAST_THRESHOLD = 1;
 
 const GalaxyMap = () => {
@@ -412,7 +413,13 @@ const GalaxyMap = () => {
       },
     });
 
-    return <StarPoints ref={starPointsRef} />;
+    //<NebulaPoints />;
+
+    return (
+      <>
+        <StarPoints ref={starPointsRef} />
+      </>
+    );
   };
 
   interface LineInt {

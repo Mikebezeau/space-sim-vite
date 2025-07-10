@@ -1,7 +1,8 @@
 import React, { memo, useRef, useEffect } from "react";
-import useHudWarningStoreStore from "../stores/hudWarningStore";
+import useHudWarningStore from "../stores/hudWarningStore";
 import usePlayerControlsStore from "../stores/playerControlsStore";
-import { PLAYER } from "../constants/constants";
+import { PLAYER, IS_TOUCH_SCREEN } from "../constants/constants";
+import { EVENT_TYPE } from "../constants/eventConstants";
 
 /* NOTE the following required in tailwind.config.js
 theme: {
@@ -22,16 +23,14 @@ theme: {
 */
 
 const WarningMessage: React.FC = () => {
-  const queueWarning = useHudWarningStoreStore((state) => state.queueWarning);
+  const queueWarning = useHudWarningStore((state) => state.queueWarning);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mainTextRef = useRef<HTMLParagraphElement>(null);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
 
   // Get the action to set refs in the store
-  const setWarningRefs = useHudWarningStoreStore(
-    (state) => state.setWarningRefs
-  );
+  const setWarningRefs = useHudWarningStore((state) => state.setWarningRefs);
 
   // Effect to register the refs with the Zustand store once the component mounts
   useEffect(() => {
@@ -49,10 +48,9 @@ const WarningMessage: React.FC = () => {
 
     // test code to queue a warning message
     if (
-      useHudWarningStoreStore.getState().currentActiveWarning === null &&
-      useHudWarningStoreStore.getState().warningQueue.length === 0
+      useHudWarningStore.getState().currentActiveWarning === null &&
+      useHudWarningStore.getState().warningQueue.length === 0
     ) {
-      // Step 1: Welcome message, disappears when player moves
       queueWarning({
         mainText: "ENEMY DETECTED",
         descriptionText: "ENTER COMBAT MODE",
@@ -62,17 +60,32 @@ const WarningMessage: React.FC = () => {
             usePlayerControlsStore.getState().playerControlMode ===
             PLAYER.controls.combat
           );
-        }, // Condition checks state
+        },
       });
 
-      // Step 2: Combat message, disappears after 3 enemies defeated
+      if (!IS_TOUCH_SCREEN) {
+        queueWarning({
+          mainText: "ENGAGE PILOT MODE",
+          descriptionText: "CLICK CROSSHAIRS TO ENTER PILOTING MODE",
+          mainColor: "rgba(13, 69, 255, 0.7)",
+          completionCondition: () => {
+            return (
+              usePlayerControlsStore.getState().playerControlMode ===
+              PLAYER.controls.combat
+            );
+          },
+        });
+      }
+
+      // Combat message, disappears after 3 enemies defeated
       queueWarning({
         mainText: "ENEMY CONTACT!",
-        descriptionText: `Defeat 3 enemies.`,
+        descriptionText: `Destroy 3 enemies.`,
         mainColor: "rgba(255, 165, 0, 0.8)", // Orange
-        completionCondition: () => true, // Condition checks state
+        eventCompletionCondition: EVENT_TYPE.enemyDestroyed, // Condition checks state
+        eventConditionCount: 3, // Number of enemies to defeat
       });
-
+      /*
       // Step 3: Item pickup message, disappears when item is picked up
       queueWarning({
         mainText: "SUPPLY DROP!",
@@ -80,7 +93,7 @@ const WarningMessage: React.FC = () => {
         mainColor: "rgba(0, 255, 0, 0.8)", // Green
         completionCondition: () => true, // Condition checks state
       });
-
+*/
       // Step 4: Final congratulations, disappears after a set time
       queueWarning({
         mainText: "TUTORIAL COMPLETE!",

@@ -111,6 +111,132 @@ export function applyLooseClumpingFast(
 }
 
 // ---
+
+type NebulaPositionBias = "disk" | "bulge" | "halo" | "spiral" | "random";
+
+interface NebulaParameters {
+  numNebulas: number;
+  nebulaDensity: number;
+  nebulaSize: number;
+  nebulaColor: THREE.Color;
+  nebulaPositionBias: NebulaPositionBias;
+  rng: () => number;
+}
+
+function generateNebulaPoints(params: NebulaParameters): {
+  positions: THREE.Vector3[];
+  colors: THREE.Color[];
+} {
+  const {
+    numNebulas,
+    nebulaDensity,
+    nebulaSize,
+    nebulaColor,
+    nebulaPositionBias,
+    rng,
+  } = params;
+
+  const nebulaPositions: THREE.Vector3[] = [];
+  const nebulaColors: THREE.Color[] = [];
+  const tempColor = new THREE.Color();
+
+  for (let i = 0; i < numNebulas; i++) {
+    let center: Vec3;
+
+    switch (nebulaPositionBias) {
+      case "disk": {
+        // Place within the disk, favoring inner disk
+        let r = -DISK_SCALE_LENGTH * 0.8 * Math.log(1 - rng());
+        r = Math.min(r, GALAXY_CORE_RADIUS * 1.5 * 0.9);
+        const theta = rng() * TAU;
+        const z = (rng() - 0.5) * DISK_SCALE_HEIGHT * 0.2;
+        center = [r * Math.cos(theta), r * Math.sin(theta), z];
+        break;
+      }
+      case "bulge": {
+        // Place within the bulge
+        const r = BULGE_RE * Math.pow(rng(), 0.5);
+        const phi = rng() * TAU;
+        const theta = Math.acos(2 * rng() - 1);
+        center = [
+          r * Math.sin(theta) * Math.cos(phi),
+          r * Math.sin(theta) * Math.sin(phi),
+          r * Math.cos(theta) * 0.7,
+        ];
+        break;
+      }
+      case "halo": {
+        // Place within the halo
+        const r = GALAXY_CORE_RADIUS * 5 * Math.pow(rng(), 0.3);
+        const phi = rng() * TAU;
+        const theta = Math.acos(2 * rng() - 1);
+        center = [
+          r * Math.sin(theta) * Math.cos(phi),
+          r * Math.sin(theta) * Math.sin(phi),
+          r * Math.cos(theta),
+        ];
+        break;
+      }
+      case "spiral": {
+        // Place along spiral arms, stretching out to follow the arm shape
+        const arm = Math.floor(rng() * NUM_ARMS);
+
+        const minTheta = 0.5 * Math.PI;
+        const maxTheta = SPIRAL_TURNS * 2 * Math.PI;
+        // Favor outer arms for more dramatic nebulas
+        const theta = minTheta + Math.pow(rng(), 1.2) * (maxTheta - minTheta);
+
+        const r = SPIRAL_A * Math.exp(SPIRAL_B * theta);
+
+        // Add some spread so nebulas are not exactly on the arm
+        const armSpread = 2.5 + 2.5 * rng(); // kpc, tweak as needed
+        const baseTheta = theta + (arm / NUM_ARMS) * TAU;
+        const x = r * Math.cos(baseTheta) + (rng() - 0.5) * armSpread;
+        const y = r * Math.sin(baseTheta) + (rng() - 0.5) * armSpread;
+
+        // Z: slightly above/below disk, but mostly flat
+        const z = (rng() - 0.5) * DISK_SCALE_HEIGHT * 0.7;
+
+        center = [x, y, z];
+        break;
+      }
+      case "random":
+      default: {
+        // Anywhere in the galaxy's general bounds
+        center = [
+          (rng() - 0.5) * GALAXY_CORE_RADIUS * 3,
+          (rng() - 0.5) * GALAXY_CORE_RADIUS * 3,
+          (rng() - 0.5) * DISK_SCALE_HEIGHT * 10,
+        ];
+        break;
+      }
+    }
+
+    // Generate particles for this nebula
+    for (let j = 0; j < nebulaDensity; j++) {
+      // Spherical distribution around the center, with falloff
+      const r_particle = nebulaSize * Math.pow(rng(), 0.5);
+      const phi_particle = rng() * TAU;
+      const theta_particle = Math.acos(2 * rng() - 1);
+
+      const x =
+        center[0] +
+        r_particle * Math.sin(theta_particle) * Math.cos(phi_particle);
+      const y =
+        center[1] +
+        r_particle * Math.sin(theta_particle) * Math.sin(phi_particle);
+      const z = center[2] + r_particle * Math.cos(theta_particle);
+
+      nebulaPositions.push(new THREE.Vector3(x, y, z));
+      tempColor.copy(nebulaColor).multiplyScalar(0.7 + rng() * 0.6);
+      nebulaColors.push(tempColor.clone());
+    }
+  }
+
+  return { positions: nebulaPositions, colors: nebulaColors };
+}
+
+// ---
 function sampleBulge(rng): Vec3 {
   const u = rng();
   const r = (BULGE_RE * Math.pow(-Math.log(1 - u), BULGE_N)) / BULGE_BN;
@@ -312,6 +438,9 @@ const galaxyGen = async () => {
   const starCoords: number[] = [];
   const starColors: number[] = [];
   const starSizes: number[] = [];
+  // nebula data
+  const nebulaCoords: number[] = [];
+  const nebulaColors: number[] = [];
 
   const galaxyScale = 2;
 
@@ -347,10 +476,45 @@ const galaxyGen = async () => {
     1 // float value
   );
 
+  // generateNebulaPoints
+  const nebulaParams: NebulaParameters = {
+    numNebulas: 1000,
+    nebulaDensity: 100,
+    nebulaSize: 0.5, // kpc
+    nebulaColor: new THREE.Color(0x8888ff),
+    nebulaPositionBias: "random", // "disk", "bulge", "halo", "spiral", "random"
+    rng: () => rng(),
+  };
+  const nebulaData = generateNebulaPoints(nebulaParams);
+
+  nebulaData.positions.forEach((nebPoint) => {
+    nebulaCoords.push(
+      nebPoint.x * galaxyScale,
+      nebPoint.y * galaxyScale,
+      nebPoint.z * galaxyScale
+    );
+  });
+
+  // Add nebula data to buffers
+  const nebulaCoordsBuffer = new THREE.BufferAttribute(
+    new Float32Array(nebulaCoords),
+    3 // x, y, z values
+  );
+
+  nebulaData.colors.forEach((nebColor) => {
+    nebulaColors.push(nebColor.r, nebColor.g, nebColor.b);
+  });
+  const nebulaColorBuffer = new THREE.BufferAttribute(
+    new Float32Array(nebulaColors),
+    3 // RBG values
+  );
+
   return {
     starCoordsBuffer,
     starColorBuffer,
     starSizeBuffer,
+    nebulaCoordsBuffer,
+    nebulaColorBuffer,
   };
 };
 

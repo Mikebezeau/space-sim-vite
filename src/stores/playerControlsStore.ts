@@ -106,9 +106,10 @@ const usePlayerControlsStore = create<playerControlStoreState>()(
       }));
     },
 
-    playerActionMode: IS_TOUCH_SCREEN
+    playerActionMode: PLAYER.action.inspect,
+    /*IS_TOUCH_SCREEN
       ? PLAYER.action.inspect
-      : PLAYER.action.manualControl,
+      : PLAYER.action.manualControl,*/
     playerControlMode: PLAYER.controls.scan, //TODO switch to combat when in combat zone - display message
     playerViewMode: PLAYER.view.firstPerson,
     playerScreen: PLAYER.screen.mainMenu,

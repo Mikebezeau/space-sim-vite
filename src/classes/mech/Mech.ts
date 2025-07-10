@@ -3,7 +3,7 @@ import { OBB } from "three/addons/math/OBB.js";
 import { v4 as uuidv4 } from "uuid";
 //import { CSG } from "three-csg-ts";//used for merging / subrtacting geometry
 import MechBP from "../mechBP/MechBP";
-import usePlayerControlStore from "../../stores/playerControlsStore";
+import useEventStore from "../../stores/eventStore";
 import useMechBpBuildStore from "../../stores/mechBpBuildStore";
 import useParticleStore from "../../stores/particleStore";
 import useWeaponFireStore from "../../stores/weaponFireStore";
@@ -23,6 +23,7 @@ import { FPS } from "../../constants/constants";
 import { MECH_STATE } from "../../constants/mechConstants";
 //import { mechMaterial } from "../../constants/mechMaterialConstants";
 import { DESIGN_TYPE } from "../../constants/particleConstants";
+import { EVENT_TYPE } from "../../constants/eventConstants";
 
 interface mechInt {
   getRealWorldPosition(): void;
@@ -544,6 +545,10 @@ class Mech implements mechInt {
     this.structureTemp.damage += damage;
     if (this.structureTemp.damage > this.structureTemp.max) {
       this.explode(scene);
+      // log enemy mech destroyed event
+      if (this.isEnemy) {
+        useEventStore.getState().logEvent(EVENT_TYPE.enemyDestroyed);
+      }
     }
   }
 

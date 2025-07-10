@@ -28,6 +28,9 @@ class Galaxy implements galaxyInt {
   starCoordsBuffer: THREE.BufferAttribute | null;
   starColorBuffer: THREE.BufferAttribute | null;
   starSizeBuffer: THREE.BufferAttribute | null;
+  nebulaCoordsBuffer: THREE.BufferAttribute | null;
+  nebulaColorBuffer: THREE.BufferAttribute | null;
+  // values in starSelectedBuffer alters the display of the stars
   starSelectedBuffer: THREE.BufferAttribute;
   // for star points background of space flight scene
   starBackgroundCoordsBuffer: THREE.BufferAttribute;
@@ -76,6 +79,8 @@ class Galaxy implements galaxyInt {
       this.starCoordsBuffer = galaxyData.starCoordsBuffer;
       this.starColorBuffer = galaxyData.starColorBuffer;
       this.starSizeBuffer = galaxyData.starSizeBuffer;
+      this.nebulaCoordsBuffer = galaxyData.nebulaCoordsBuffer;
+      this.nebulaColorBuffer = galaxyData.nebulaColorBuffer;
       useStore.getState().updateRenderDoneInfo(componentName);
     });
   }
