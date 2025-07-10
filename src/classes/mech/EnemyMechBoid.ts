@@ -98,12 +98,16 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
     this.cohesionSumVector.set(0, 0, 0);
     this.cohesionSteerVector.set(0, 0, 0);
 
-    this.acceleration.set(0, 0, 0); // Reset acceleration
+    // reset if not dead / exploding
+    if (!this.isMechDead()) {
+      this.acceleration.set(0, 0, 0); // Reset acceleration
+    }
   }
 
   // Boid apply force
   applyForce(fVec3: THREE.Vector3) {
-    if (!this.isBossMech) this.acceleration.add(fVec3);
+    // if mech is dead / exploding, do not change force
+    if (!this.isBossMech && !this.isExploding()) this.acceleration.add(fVec3);
   }
 
   getSpeed() {
@@ -120,14 +124,21 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
 
   // update Boid movement
   updateUseFrameBoidForce(delta: number) {
-    if (this.isMechDead() && !this.isExploding()) {
-      // while mech is exploding, allow movement to continue
+    const deltaFPS = delta * FPS;
+
+    if (this.isMechDead()) {
+      if (this.isExploding()) {
+        // continue moving while exploding
+        this.object3d.position.add(
+          this.adjustedLerpVelocityDeltaFPS
+            .copy(this.lerpVelocity)
+            .multiplyScalar(deltaFPS)
+        );
+      }
       return;
     }
 
     if (!this.isBossMech) {
-      const deltaFPS = delta * FPS;
-
       // update velocity
       this.velocity.add(this.acceleration);
 
@@ -143,10 +154,6 @@ class EnemyMechBoid extends EnemyMech implements enemyMechBoidInt {
 
       // update position
       this.object3d.position.add(this.adjustedLerpVelocityDeltaFPS); // TESTING WITH AVERAGE
-
-      if (this.isExploding()) {
-        return;
-      }
 
       // lookAt
       this.heading.copy(this.velocity); // set to average velocity

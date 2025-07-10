@@ -136,7 +136,7 @@ const useHudWarningStore = create<hudWarningStoreInt>((set, get) => ({
           get().currentActiveWarning!.descriptionColor;
         warningMainTextRef.classList.remove("opacity-0");
         warningMainTextRef.classList.add("animate-blink3");
-        warningDescriptionRef.classList.remove("-translate-y-[50vh]");
+        warningDescriptionRef.classList.remove("-translate-y-[50vh]"); // TODO no working - use style if change
         get().currentActiveWarning!.currentPhase = "showDescription"; // DIRECT MUTATION
         break;
 
